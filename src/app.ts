@@ -1,4 +1,4 @@
-import express, { Application, Request, Response } from "express"
+import express, { type Application } from "express"
 import bodyParser from "body-parser"
 import cookieParser from "cookie-parser"
 import cors from "cors"
@@ -14,7 +14,7 @@ app.use(cookieParser())
 declare global {
   namespace Express {
     interface Request {
-      user: any
+      user: unknown
     }
   }
 }
