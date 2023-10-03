@@ -1,0 +1,1433 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model access_tokens {
+  id          BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  user_id     BigInt   @unique(map: "access_tokens_user_id_unique")
+  token       String   @db.VarChar(64)
+  has_expired Int      @default(0) @db.TinyInt
+  expiry_at   DateTime @default(dbgenerated("'0000-00-00 00:00:00'")) @db.Timestamp(0)
+  created_at  DateTime @default(dbgenerated("'0000-00-00 00:00:00'")) @db.Timestamp(0)
+  updated_at  DateTime @default(dbgenerated("'0000-00-00 00:00:00'")) @db.Timestamp(0)
+}
+
+model admins {
+  id                     Int       @id @default(autoincrement())
+  user_id                Int?
+  email                  String    @unique(map: "index_admins_on_email") @default("") @db.VarChar(255)
+  encrypted_password     String    @default("") @db.VarChar(255)
+  reset_password_token   String?   @unique(map: "index_admins_on_reset_password_token") @db.VarChar(255)
+  reset_password_sent_at DateTime? @db.DateTime(0)
+  remember_created_at    DateTime? @db.DateTime(0)
+  sign_in_count          Int       @default(0)
+  current_sign_in_at     DateTime? @db.DateTime(0)
+  last_sign_in_at        DateTime? @db.DateTime(0)
+  current_sign_in_ip     String?   @db.VarChar(255)
+  last_sign_in_ip        String?   @db.VarChar(255)
+  created_at             DateTime? @db.DateTime(0)
+  updated_at             DateTime? @db.DateTime(0)
+
+  @@index([user_id], map: "index_admins_on_user_id")
+}
+
+model answer_options {
+  id           Int       @id @default(autoincrement())
+  answer_id    Int?
+  sequence_no  Int?
+  name         String?   @db.VarChar(100)
+  display_name String?   @db.VarChar(100)
+  rate         Decimal?  @default(0.00) @db.Decimal(5, 2)
+  description  String?   @db.VarChar(255)
+  is_active    Boolean?
+  created_at   DateTime? @db.DateTime(0)
+  updated_at   DateTime? @db.DateTime(0)
+
+  @@index([answer_id], map: "index_answer_options_on_answer_id")
+}
+
+model answers {
+  id          Int       @id @default(autoincrement())
+  name        String?   @db.VarChar(100)
+  description String?   @db.VarChar(255)
+  is_active   Boolean?
+  created_at  DateTime? @db.DateTime(0)
+  updated_at  DateTime? @db.DateTime(0)
+}
+
+model approval_manifest_logs {
+  id                   Int       @id @default(autoincrement())
+  user_id              Int?
+  approval_manifest_id Int?
+  approver_id          Int?
+  admin_id             Int?
+  created_at           DateTime? @db.DateTime(0)
+  updated_at           DateTime? @db.DateTime(0)
+
+  @@index([admin_id], map: "index_approval_manifest_logs_on_admin_id")
+  @@index([approval_manifest_id], map: "index_approval_manifest_logs_on_approval_manifest_id")
+  @@index([approver_id], map: "index_approval_manifest_logs_on_approver_id")
+  @@index([user_id], map: "index_approval_manifest_logs_on_user_id")
+}
+
+model approval_manifests {
+  id          Int                       @id @default(autoincrement())
+  approver_id Int?
+  user_id     Int?
+  status      approval_manifests_status @default(active)
+  created_at  DateTime                  @db.DateTime(0)
+  updated_at  DateTime                  @db.DateTime(0)
+  approvers   approvers?                @relation(fields: [approver_id], references: [id], onDelete: Cascade, map: "approval_manifests_approvers")
+  users       users?                    @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "approval_manifests_users")
+
+  @@index([approver_id], map: "index_approval_manifests_on_approver_id")
+  @@index([status], map: "index_approval_manifests_on_status")
+  @@index([user_id], map: "index_approval_manifests_on_user_id")
+}
+
+model approvers {
+  id                 Int                    @id @default(autoincrement())
+  user_id            Int?
+  status             approvers_status       @default(active)
+  approver_for       approvers_approver_for @default(leave)
+  other_status       String?                @db.VarChar(100)
+  created_at         DateTime               @db.DateTime(0)
+  updated_at         DateTime               @db.DateTime(0)
+  approval_manifests approval_manifests[]
+  users              users?                 @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "approvers_users")
+
+  @@index([approver_for], map: "index_approvers_on_approver_for")
+  @@index([status], map: "index_approvers_on_status")
+  @@index([user_id], map: "index_approvers_on_user_id")
+}
+
+model ar_internal_metadata {
+  key        String   @id @db.VarChar(255)
+  value      String?  @db.VarChar(255)
+  created_at DateTime @db.DateTime(0)
+  updated_at DateTime @db.DateTime(0)
+}
+
+model attendances {
+  id            Int       @id @default(autoincrement())
+  date          DateTime? @db.Date
+  user_id       Int?
+  att_type      Int?      @default(0)
+  late_flag     String?   @default("") @db.VarChar(50)
+  hours_worked  Decimal?  @default(0.00) @db.Decimal(14, 2)
+  hours_late    Decimal?  @default(0.00) @db.Decimal(14, 2)
+  hours_ut      Decimal?  @default(0.00) @db.Decimal(14, 2)
+  hours_unpaid  Decimal?  @default(0.00) @db.Decimal(14, 2)
+  review_status String?   @default("") @db.VarChar(255)
+  created_at    DateTime? @db.DateTime(0)
+  updated_at    DateTime? @db.DateTime(0)
+
+  @@index([user_id], map: "index_attendances_on_user_id")
+}
+
+model chairs {
+  id          Int       @id @default(autoincrement())
+  code        String?   @db.VarChar(255)
+  name        String?   @db.VarChar(255)
+  description String?   @db.Text
+  location    String?   @db.VarChar(255)
+  created_at  DateTime? @db.DateTime(0)
+  updated_at  DateTime? @db.DateTime(0)
+  occupants   Int?
+}
+
+model cities {
+  id            Int      @id @default(autoincrement())
+  name          String?  @db.VarChar(255)
+  local_name    String?  @db.VarChar(255)
+  slug          String?  @unique(map: "index_cities_on_slug") @db.VarChar(255)
+  state         String?  @db.VarChar(255)
+  local_state   String?  @db.VarChar(255)
+  zip           String?  @db.VarChar(255)
+  country       String?  @db.VarChar(255)
+  local_country String?  @db.VarChar(255)
+  created_at    DateTime @db.DateTime(0)
+  updated_at    DateTime @db.DateTime(0)
+
+  @@index([country], map: "index_cities_on_country")
+  @@index([local_country], map: "index_cities_on_local_country")
+  @@index([local_name], map: "index_cities_on_local_name")
+  @@index([local_state], map: "index_cities_on_local_state")
+  @@index([name], map: "index_cities_on_name")
+}
+
+model clients {
+  id                 Int       @id @default(autoincrement())
+  name               String?   @db.VarChar(100)
+  display_name       String?   @db.VarChar(100)
+  contact_first_name String?   @db.VarChar(100)
+  contact_last_name  String?   @db.VarChar(100)
+  contact_no         String?   @db.VarChar(100)
+  email              String?   @db.VarChar(255)
+  address1           String?   @db.VarChar(100)
+  address2           String?   @db.VarChar(100)
+  city               String?   @db.VarChar(100)
+  state              String?   @db.VarChar(100)
+  country_id         Int?
+  postal_code        Int?
+  company_id         Int?
+  currency_id        Int?
+  payment_term_id    Int?
+  remarks            String?   @db.Text
+  status             String?   @default("Active") @db.VarChar(20)
+  created_at         DateTime? @db.DateTime(0)
+  updated_at         DateTime? @db.DateTime(0)
+  is_delinquent      Boolean?  @default(false)
+
+  @@index([company_id], map: "index_clients_on_company_id")
+  @@index([currency_id], map: "index_clients_on_currency_id")
+}
+
+model companies {
+  id                   Int                    @id @default(autoincrement())
+  name                 String                 @db.VarChar(80)
+  shorthand            String?                @db.VarChar(255)
+  slug                 String                 @db.VarChar(255)
+  city                 String?                @db.VarChar(255)
+  state                String?                @db.VarChar(255)
+  country              String?                @db.VarChar(70)
+  zip                  String?                @db.VarChar(255)
+  moderator_id         Int?
+  public_url           String?                @db.VarChar(255)
+  email                String?                @db.VarChar(255)
+  phone                String?                @db.VarChar(30)
+  street               String?                @db.VarChar(100)
+  static_ip            String?                @db.VarChar(255)
+  is_active            Boolean?
+  created_at           DateTime               @db.DateTime(0)
+  updated_at           DateTime               @db.DateTime(0)
+  company_ip_addresses company_ip_addresses[]
+  company_teams        company_teams[]
+  company_users        company_users[]
+  leave_periods        leave_periods[]
+  leave_types          leave_types[]
+
+  @@index([city], map: "index_companies_on_city")
+  @@index([country], map: "index_companies_on_country")
+  @@index([moderator_id], map: "index_companies_on_moderator_id")
+  @@index([name], map: "index_companies_on_name")
+  @@index([slug], map: "index_companies_on_slug")
+  @@index([state], map: "index_companies_on_state")
+  @@index([zip], map: "index_companies_on_zip")
+}
+
+model company_ip_addresses {
+  id         Int       @id @default(autoincrement())
+  company_id Int
+  ip_address String    @db.VarChar(255)
+  companies  companies @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_00326baf5d")
+
+  @@index([company_id], map: "index_company_ip_addresses_on_company_id")
+}
+
+model company_teams {
+  id         Int        @id @default(autoincrement())
+  company_id Int?
+  team_id    Int?
+  teams      teams?     @relation(fields: [team_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_3abfc86e24")
+  companies  companies? @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_c6b06a284e")
+
+  @@index([company_id], map: "index_company_teams_on_company_id")
+  @@index([team_id], map: "index_company_teams_on_team_id")
+}
+
+model company_users {
+  id          Int                       @id @default(autoincrement())
+  company_id  Int?
+  user_id     Int?
+  user_level  company_users_user_level  @default(user)
+  user_status company_users_user_status @default(Active)
+  uid         String?                   @db.VarChar(30)
+  created_at  DateTime                  @db.DateTime(0)
+  updated_at  DateTime                  @db.DateTime(0)
+  users       users?                    @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "company_users_users")
+  companies   companies?                @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_e859b00397")
+
+  @@index([company_id, user_status], map: "index_company_status_on_company_users")
+  @@index([company_id], map: "index_company_users_on_company_id")
+  @@index([uid], map: "index_company_users_on_uid")
+  @@index([user_id], map: "index_company_users_on_user_id")
+}
+
+model computers {
+  id            Int       @id @default(autoincrement())
+  code          String?   @db.VarChar(255)
+  name          String?   @db.VarChar(255)
+  os            String?   @db.VarChar(255)
+  processor     String?   @db.VarChar(255)
+  ram           String?   @db.VarChar(255)
+  storage       String?   @db.VarChar(255)
+  gpu           String?   @db.VarChar(255)
+  serial_number String?   @db.VarChar(255)
+  cd_key        String?   @db.VarChar(255)
+  notes         String?   @db.Text
+  created_at    DateTime? @db.DateTime(0)
+  updated_at    DateTime? @db.DateTime(0)
+}
+
+model contract_logs {
+  id          Int       @id @default(autoincrement())
+  contract_id Int?
+  action      String?   @default("") @db.VarChar(100)
+  prev_status String?   @default("") @db.VarChar(20)
+  new_status  String?   @default("") @db.VarChar(20)
+  remarks     String?   @db.Text
+  user_id     Int?
+  created_at  DateTime? @db.DateTime(0)
+  updated_at  DateTime? @db.DateTime(0)
+
+  @@index([contract_id], map: "index_contract_logs_on_contract_id")
+  @@index([user_id], map: "index_contract_logs_on_user_id")
+}
+
+model contracts {
+  id                   Int       @id @default(autoincrement())
+  client_id            Int?
+  company_id           Int?
+  project_id           Int?
+  contract_no          String?   @db.VarChar(20)
+  parent_contract_id   Int?
+  description          String?   @db.VarChar(255)
+  contract_type        String?   @default("") @db.VarChar(50)
+  start_date           DateTime? @db.Date
+  end_date             DateTime? @db.Date
+  auto_renew           Boolean?
+  addendum             Boolean?  @default(false)
+  addendum_sequence_no Int?
+  client_liaison_id    Int?
+  currency_id          Int?
+  contract_amount      Decimal?  @default(0.00) @db.Decimal(8, 2)
+  est_monthly_rate     Decimal?  @default(0.00) @db.Decimal(8, 2)
+  est_monthly_mm       Decimal?  @default(0.00) @db.Decimal(8, 2)
+  total_mm             Decimal?  @default(0.00) @db.Decimal(8, 2)
+  payment_term_id      Int?
+  type                 String?   @default("") @db.VarChar(20)
+  status               String?   @default("") @db.VarChar(20)
+  is_signed            Boolean?
+  draft_google_link    String?   @db.VarChar(255)
+  draft_filename       String?   @db.VarChar(255)
+  contract_filename    String?   @db.VarChar(255)
+  remarks              String?   @db.Text
+  created_at           DateTime? @db.DateTime(0)
+  updated_at           DateTime? @db.DateTime(0)
+  deleted_at           DateTime? @db.DateTime(0)
+
+  @@index([client_id], map: "index_contracts_on_client_id")
+  @@index([client_liaison_id], map: "index_contracts_on_client_liaison_id")
+  @@index([company_id], map: "index_contracts_on_company_id")
+  @@index([currency_id], map: "index_contracts_on_currency_id")
+  @@index([project_id], map: "index_contracts_on_project_id")
+}
+
+model countries {
+  id                Int      @id @default(autoincrement())
+  name              String?  @db.VarChar(255)
+  full_name         String?  @db.VarChar(255)
+  capital           String?  @db.VarChar(255)
+  citizenship       String?  @db.VarChar(255)
+  currency          String?  @db.VarChar(255)
+  currency_code     String?  @db.VarChar(10)
+  currency_sub_unit String?  @db.VarChar(255)
+  iso_3166_2        String?  @db.VarChar(2)
+  iso_3166_3        String?  @db.VarChar(3)
+  country_code      String?  @db.VarChar(3)
+  region_code       String?  @db.VarChar(3)
+  sub_region_code   String?  @db.VarChar(3)
+  eea               Int?     @db.TinyInt
+  is_active         Boolean?
+}
+
+model currencies {
+  id         Int       @id @default(autoincrement())
+  name       String?   @db.VarChar(50)
+  code       String?   @db.VarChar(10)
+  prefix     String?   @db.VarChar(10)
+  created_at DateTime? @db.DateTime(0)
+  updated_at DateTime? @db.DateTime(0)
+}
+
+model email_recipients {
+  id         Int       @id @default(autoincrement())
+  email_type String?   @default("") @db.VarChar(255)
+  email      String    @default("") @db.VarChar(255)
+  status     Boolean?  @default(true)
+  created_at DateTime? @db.DateTime(0)
+  updated_at DateTime? @db.DateTime(0)
+}
+
+model evaluation_administrations {
+  id                       Int       @id @default(autoincrement())
+  name                     String?   @default("") @db.VarChar(100)
+  eval_schedule_start_date DateTime? @db.Date
+  eval_schedule_end_date   DateTime? @db.Date
+  eval_period_start_date   DateTime? @db.Date
+  eval_period_end_date     DateTime? @db.Date
+  remarks                  String?   @db.Text
+  status                   String?   @default("") @db.VarChar(20)
+  created_by_id            Int?
+  updated_by_id            Int?
+  created_at               DateTime? @db.DateTime(0)
+  updated_at               DateTime? @db.DateTime(0)
+}
+
+model evaluation_ratings {
+  id                             Int       @id @default(autoincrement())
+  evaluation_administration_id   Int?
+  evaluation_id                  Int?
+  evaluation_template_id         Int?
+  evaluation_template_content_id Int?
+  answer_option_id               Int?
+  rate                           Decimal?  @default(0.00) @db.Decimal(5, 2)
+  percentage                     Decimal?  @default(0.00) @db.Decimal(8, 2)
+  score                          Decimal?  @default(0.00) @db.Decimal(8, 2)
+  created_at                     DateTime? @db.DateTime(0)
+  updated_at                     DateTime? @db.DateTime(0)
+
+  @@index([answer_option_id], map: "index_evaluation_ratings_on_answer_option_id")
+  @@index([evaluation_administration_id], map: "index_evaluation_ratings_on_evaluation_administration_id")
+  @@index([evaluation_id], map: "index_evaluation_ratings_on_evaluation_id")
+  @@index([evaluation_template_content_id], map: "index_evaluation_ratings_on_evaluation_template_content_id")
+  @@index([evaluation_template_id], map: "index_evaluation_ratings_on_evaluation_template_id")
+}
+
+model evaluation_result_details {
+  id                           Int       @id @default(autoincrement())
+  evaluation_administration_id Int?
+  user_id                      Int?
+  evaluation_result_id         Int?
+  evaluation_template_id       Int?
+  score                        Decimal?  @default(0.0000) @db.Decimal(8, 4)
+  weight                       Decimal?  @default(0.0000) @db.Decimal(8, 4)
+  zscore                       Decimal?  @default(0.0000) @db.Decimal(8, 4)
+  weighted_score               Decimal?  @default(0.0000) @db.Decimal(10, 4)
+  weighted_zscore              Decimal?  @default(0.0000) @db.Decimal(10, 4)
+  banding                      String?   @default("") @db.VarChar(20)
+  created_at                   DateTime? @db.DateTime(0)
+  updated_at                   DateTime? @db.DateTime(0)
+
+  @@index([evaluation_administration_id], map: "index_evaluation_result_details_on_evaluation_administration_id")
+  @@index([evaluation_result_id], map: "index_evaluation_result_details_on_evaluation_result_id")
+  @@index([evaluation_template_id], map: "index_evaluation_result_details_on_evaluation_template_id")
+  @@index([user_id], map: "index_evaluation_result_details_on_user_id")
+}
+
+model evaluation_results {
+  id                           Int       @id @default(autoincrement())
+  evaluation_administration_id Int?
+  user_id                      Int?
+  score                        Decimal?  @default(0.00) @db.Decimal(5, 2)
+  zscore                       Decimal?  @default(0.00) @db.Decimal(8, 2)
+  banding                      String?   @default("") @db.VarChar(20)
+  submitted_date               DateTime? @db.Date
+  employee_comments            String?   @db.Text
+  cm_comments                  String?   @db.Text
+  action_plans                 String?   @db.Text
+  status                       String?   @default("") @db.VarChar(20)
+  created_by_id                Int?
+  updated_by_id                Int?
+  created_at                   DateTime? @db.DateTime(0)
+  updated_at                   DateTime? @db.DateTime(0)
+
+  @@index([evaluation_administration_id], map: "index_evaluation_results_on_evaluation_administration_id")
+  @@index([user_id], map: "index_evaluation_results_on_user_id")
+}
+
+model evaluation_setups {
+  id                     Int       @id @default(autoincrement())
+  evaluator_role_id      Int?
+  evaluee_role_id        Int?
+  evaluation_template_id Int?
+  description            String?   @db.VarChar(255)
+  is_active              Boolean?
+  created_at             DateTime? @db.DateTime(0)
+  updated_at             DateTime? @db.DateTime(0)
+}
+
+model evaluation_template_contents {
+  id                     Int       @id @default(autoincrement())
+  evaluation_template_id Int?
+  sequence_no            Int?
+  name                   String?   @db.VarChar(100)
+  description            String?   @db.Text
+  category               String?   @db.VarChar(100)
+  rate                   Decimal?  @default(0.00) @db.Decimal(5, 2)
+  is_active              Boolean?
+  created_at             DateTime? @db.DateTime(0)
+  updated_at             DateTime? @db.DateTime(0)
+
+  @@index([evaluation_template_id], map: "index_evaluation_template_contents_on_evaluation_template_id")
+}
+
+model evaluation_templates {
+  id                Int       @id @default(autoincrement())
+  name              String?   @db.VarChar(100)
+  display_name      String?   @default("") @db.VarChar(100)
+  template_type     String?   @db.VarChar(100)
+  template_class    String?   @db.VarChar(100)
+  evaluator_role_id Int?
+  evaluee_role_id   Int?
+  rate              Decimal?  @default(0.00) @db.Decimal(5, 2)
+  answer_id         Int?
+  description       String?   @db.VarChar(255)
+  is_active         Boolean?
+  created_at        DateTime? @db.DateTime(0)
+  updated_at        DateTime? @db.DateTime(0)
+}
+
+model evaluations {
+  id                           Int       @id @default(autoincrement())
+  evaluation_template_id       Int?
+  evaluation_administration_id Int?
+  evaluation_result_id         Int?
+  evaluator_id                 Int?
+  evaluee_id                   Int?
+  project_id                   Int?
+  eval_start_date              DateTime? @db.Date
+  eval_end_date                DateTime? @db.Date
+  percent_involvement          Decimal?  @default(0.00) @db.Decimal(5, 2)
+  score                        Decimal?  @default(0.00) @db.Decimal(5, 2)
+  weight                       Decimal?  @default(0.0000) @db.Decimal(10, 4)
+  weighted_score               Decimal?  @default(0.0000) @db.Decimal(10, 4)
+  zscore                       Decimal?  @default(0.0000) @db.Decimal(10, 4)
+  weighted_zscore              Decimal?  @default(0.0000) @db.Decimal(10, 4)
+  comments                     String?   @db.Text
+  status                       String?   @default("") @db.VarChar(20)
+  batch_name                   String?   @default("") @db.VarChar(255)
+  filename                     String?   @default("") @db.VarChar(255)
+  submission_method            String?   @default("Manual") @db.VarChar(20)
+  submitted_date               DateTime? @db.Date
+  created_at                   DateTime? @db.DateTime(0)
+  updated_at                   DateTime? @db.DateTime(0)
+
+  @@index([evaluation_administration_id], map: "index_evaluations_on_evaluation_administration_id")
+  @@index([evaluation_result_id], map: "index_evaluations_on_evaluation_result_id")
+  @@index([evaluation_template_id], map: "index_evaluations_on_evaluation_template_id")
+  @@index([evaluator_id], map: "index_evaluations_on_evaluator_id")
+  @@index([evaluee_id], map: "index_evaluations_on_evaluee_id")
+  @@index([project_id], map: "index_evaluations_on_project_id")
+}
+
+model holidays {
+  id           Int       @id @default(autoincrement())
+  name         String?   @db.VarChar(255)
+  date         DateTime? @db.Date
+  holiday_type String?   @db.VarChar(255)
+  recurring    Int?      @db.TinyInt
+  created_at   DateTime? @db.DateTime(0)
+  updated_at   DateTime? @db.DateTime(0)
+}
+
+model invoices {
+  id             Int       @id @default(autoincrement())
+  client_id      Int?
+  company_id     Int?
+  contract_id    Int?
+  currency_id    Int?
+  invoice_no     String?   @default("") @db.VarChar(20)
+  details        String?   @default("") @db.VarChar(255)
+  invoice_date   DateTime? @db.Date
+  due_date       DateTime? @db.Date
+  payment_date   DateTime? @db.Date
+  invoice_amount Decimal?  @default(0.00) @db.Decimal(8, 2)
+  tax_amount     Decimal?  @default(0.00) @db.Decimal(8, 2)
+  payment_amount Decimal?  @default(0.00) @db.Decimal(8, 2)
+  invoice_status String?   @default("") @db.VarChar(20)
+  payment_status String?   @default("") @db.VarChar(20)
+  remarks        String?   @db.Text
+  created_at     DateTime? @db.DateTime(0)
+  updated_at     DateTime? @db.DateTime(0)
+
+  @@index([client_id], map: "index_invoices_on_client_id")
+  @@index([company_id], map: "index_invoices_on_company_id")
+  @@index([contract_id], map: "index_invoices_on_contract_id")
+  @@index([currency_id], map: "index_invoices_on_currency_id")
+}
+
+model item_assignments {
+  id         Int       @id @default(autoincrement())
+  item_id    Int?
+  user_id    Int?
+  start_date DateTime? @db.Date
+  end_date   DateTime? @db.Date
+  status     Int?
+  notes      String?   @db.Text
+  created_at DateTime? @db.DateTime(0)
+  updated_at DateTime? @db.DateTime(0)
+
+  @@index([item_id], map: "index_item_assignments_on_item_id")
+  @@index([user_id], map: "index_item_assignments_on_user_id")
+}
+
+model items {
+  id                 Int       @id @default(autoincrement())
+  status             Int?
+  company_id         Int?
+  asset_code         String?   @db.VarChar(255)
+  inventory_id       Int?
+  inventory_type     String?   @db.VarChar(255)
+  inventory_category String?   @db.VarChar(255)
+  date_purchased     DateTime? @db.Date
+  price              Decimal?  @db.Decimal(12, 3)
+  created_at         DateTime? @db.DateTime(0)
+  updated_at         DateTime? @db.DateTime(0)
+
+  @@index([company_id], map: "index_items_on_company_id")
+  @@index([inventory_id, inventory_type], map: "index_items_on_inventory_id_and_inventory_type")
+}
+
+model leave_breakdowns {
+  id            Int       @id @default(autoincrement())
+  leave_id      Int?
+  user_id       Int?
+  leave_date    DateTime? @db.Date
+  duration      Decimal?  @default(0.0) @db.Decimal(3, 1)
+  duration_type String?   @db.VarChar(10)
+  created_at    DateTime? @db.DateTime(0)
+  updated_at    DateTime? @db.DateTime(0)
+  leaves        leaves?   @relation(fields: [leave_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rails_d29ad84900")
+  users         users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_fd8236f8c4")
+
+  @@index([leave_id], map: "index_leave_breakdowns_on_leave_id")
+  @@index([user_id], map: "index_leave_breakdowns_on_user_id")
+}
+
+model leave_credit_logs {
+  id              Int       @id @default(autoincrement())
+  leave_credit_id Int?
+  action          String?   @db.VarChar(500)
+  remarks         String?   @db.VarChar(100)
+  admin_id        Int?
+  created_at      DateTime? @db.DateTime(0)
+  updated_at      DateTime? @db.DateTime(0)
+
+  @@index([leave_credit_id], map: "index_leave_credit_logs_on_leave_credit_id")
+}
+
+model leave_credits {
+  id              Int            @id @default(autoincrement())
+  user_id         Int?
+  leave_type_id   Int?
+  leave_period_id Int?
+  carried_over    Float?         @db.Float
+  remaining       Float?         @db.Float
+  applied         Float?         @db.Float
+  scheduled       Float?         @db.Float
+  taken           Float?         @db.Float
+  add_on          Float?         @db.Float
+  default         Float?         @db.Float
+  total           Float?         @db.Float
+  created_at      DateTime       @db.DateTime(0)
+  updated_at      DateTime       @db.DateTime(0)
+  leave_types     leave_types?   @relation(fields: [leave_type_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rails_0f8cd61d12")
+  leave_periods   leave_periods? @relation(fields: [leave_period_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rails_9509ed8b72")
+  users           users?         @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "leave_credits_user_id")
+  user_leaves     user_leaves[]
+
+  @@index([leave_period_id], map: "index_leave_credits_on_leave_period_id")
+  @@index([leave_type_id], map: "index_leave_credits_on_leave_type_id")
+  @@index([user_id], map: "index_leave_credits_on_user_id")
+}
+
+model leave_logs {
+  id            Int       @id @default(autoincrement())
+  leave_id      Int?
+  action        String?   @db.VarChar(20)
+  updated_by_id Int?
+  created_at    DateTime? @db.DateTime(0)
+  updated_at    DateTime? @db.DateTime(0)
+
+  @@index([leave_id], map: "index_leave_logs_on_leave_id")
+}
+
+model leave_periods {
+  id            Int             @id @default(autoincrement())
+  company_id    Int?
+  from_date     DateTime?       @db.Date
+  to_date       DateTime?       @db.Date
+  leave_credits leave_credits[]
+  companies     companies?      @relation(fields: [company_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rails_2c13d7641d")
+
+  @@index([company_id], map: "index_leave_periods_on_company_id")
+}
+
+model leave_types {
+  id            Int             @id @default(autoincrement())
+  name          String?         @db.VarChar(80)
+  company_id    Int?
+  leave_credits leave_credits[]
+  companies     companies?      @relation(fields: [company_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rails_86c375c3f7")
+
+  @@index([company_id], map: "index_leave_types_on_company_id")
+}
+
+model leaves {
+  id               Int                   @id @default(autoincrement())
+  user_id          Int?
+  leave_type_id    Int?
+  starts_at        DateTime?             @db.DateTime(0)
+  ends_at          DateTime?             @db.DateTime(0)
+  status           leaves_status?        @default(default)
+  type_of_leave    leaves_type_of_leave? @default(vacation)
+  comments         String?               @db.Text
+  created_at       DateTime              @db.DateTime(0)
+  updated_at       DateTime              @db.DateTime(0)
+  leave_breakdowns leave_breakdowns[]
+  users            users?                @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "leaves_users")
+  user_leaves      user_leaves[]
+
+  @@index([status], map: "index_leaves_on_status")
+  @@index([type_of_leave], map: "index_leaves_on_type")
+  @@index([user_id], map: "index_leaves_on_user_id")
+}
+
+model memo_categories {
+  id            Int      @id @default(autoincrement())
+  no            String?  @db.VarChar(255)
+  memo_group_id Int?
+  memo_type_id  Int?
+  name          String?  @db.VarChar(255)
+  is_active     Boolean?
+
+  @@index([memo_type_id], map: "index_memo_categories_on_memo_type_id")
+}
+
+model memo_groups {
+  id        Int      @id @default(autoincrement())
+  no        String?  @db.VarChar(255)
+  name      String?  @db.VarChar(255)
+  is_active Boolean?
+}
+
+model memo_penalties {
+  id            Int      @id @default(autoincrement())
+  memo_type_id  Int?
+  offense_count Int?
+  sequence_no   Int?
+  penalty       String?  @db.VarChar(255)
+  description   String?  @db.VarChar(255)
+  is_active     Boolean?
+}
+
+model memo_types {
+  id          Int      @id @default(autoincrement())
+  name        String?  @db.VarChar(255)
+  description String?  @db.VarChar(255)
+  is_active   Boolean?
+}
+
+model overtime_breakdown_logs {
+  id                    Int       @id @default(autoincrement())
+  overtime_id           Int?
+  overtime_breakdown_id Int?
+  user_id               Int?
+  status                String?   @default("") @db.VarChar(20)
+  remarks               String?   @db.Text
+  created_at            DateTime? @db.DateTime(0)
+  updated_at            DateTime? @db.DateTime(0)
+
+  @@index([overtime_breakdown_id], map: "index_overtime_breakdown_logs_on_overtime_breakdown_id")
+  @@index([overtime_id], map: "index_overtime_breakdown_logs_on_overtime_id")
+  @@index([user_id], map: "index_overtime_breakdown_logs_on_user_id")
+}
+
+model overtime_breakdowns {
+  id               Int                         @id @default(autoincrement())
+  overtime_id      Int?
+  total_hours      Decimal?                    @default(0.00) @db.Decimal(5, 2)
+  total_deductions Decimal?                    @default(0.00) @db.Decimal(5, 2)
+  wd_no_prem       Decimal?                    @default(0.00) @db.Decimal(5, 2)
+  wd_no_prem_night Decimal?                    @default(0.00) @db.Decimal(5, 2)
+  wd_regular       Decimal?                    @default(0.00) @db.Decimal(5, 2)
+  wd_premium       Decimal?                    @default(0.00) @db.Decimal(5, 2)
+  rd_regular       Decimal?                    @default(0.00) @db.Decimal(5, 2)
+  rd_premium       Decimal?                    @default(0.00) @db.Decimal(5, 2)
+  sh_regular       Decimal?                    @default(0.00) @db.Decimal(5, 2)
+  sh_premium       Decimal?                    @default(0.00) @db.Decimal(5, 2)
+  sh_on_rd_regular Decimal?                    @default(0.00) @db.Decimal(5, 2)
+  sh_on_rd_premium Decimal?                    @default(0.00) @db.Decimal(5, 2)
+  rh_regular       Decimal?                    @default(0.00) @db.Decimal(5, 2)
+  rh_premium       Decimal?                    @default(0.00) @db.Decimal(5, 2)
+  rh_on_rd_regular Decimal?                    @default(0.00) @db.Decimal(5, 2)
+  rh_on_rd_premium Decimal?                    @default(0.00) @db.Decimal(5, 2)
+  created_at       DateTime?                   @db.DateTime(0)
+  updated_at       DateTime?                   @db.DateTime(0)
+  status           overtime_breakdowns_status?
+
+  @@index([overtime_id], map: "index_overtime_breakdowns_on_overtime_id")
+}
+
+model overtime_logs {
+  id          Int       @id @default(autoincrement())
+  overtime_id Int?
+  user_id     Int?
+  action      String?   @db.VarChar(50)
+  remarks     String?   @db.Text
+  created_at  DateTime? @db.DateTime(0)
+  updated_at  DateTime? @db.DateTime(0)
+
+  @@index([overtime_id], map: "index_overtime_logs_on_overtime_id")
+  @@index([user_id], map: "index_overtime_logs_on_user_id")
+}
+
+model overtimes {
+  id              Int               @id @default(autoincrement())
+  user_id         Int?
+  starts_at       DateTime?         @db.DateTime(0)
+  ends_at         DateTime?         @db.DateTime(0)
+  status          overtimes_status? @default(default)
+  notes           String?           @db.Text
+  created_at      DateTime          @db.DateTime(0)
+  updated_at      DateTime          @db.DateTime(0)
+  project_name    String?           @db.VarChar(150)
+  with_meal_break Boolean?
+  users           users?            @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "overtimes_users")
+
+  @@index([status], map: "index_leaves_on_status")
+  @@index([user_id], map: "index_overtimes_on_user_id")
+}
+
+model payment_terms {
+  id          Int       @id @default(autoincrement())
+  name        String?   @db.VarChar(20)
+  sequence_no Int?
+  no_of_days  Int?
+  description String?   @db.VarChar(255)
+  is_active   Boolean?
+  created_at  DateTime? @db.DateTime(0)
+  updated_at  DateTime? @db.DateTime(0)
+}
+
+model payroll_batches {
+  id             Int       @id @default(autoincrement())
+  payroll_batch  String?   @db.VarChar(255)
+  payroll_period String?   @db.VarChar(255)
+  payroll_date   DateTime? @db.Date
+  status         Boolean?
+  remarks        String?   @db.Text
+  created_at     DateTime? @db.DateTime(0)
+  updated_at     DateTime? @db.DateTime(0)
+}
+
+model payslips {
+  id                      Int       @id @default(autoincrement())
+  user_id                 Int?
+  payroll_batch           String?   @db.VarChar(255)
+  payroll_period          String?   @db.VarChar(255)
+  payroll_date            DateTime? @db.Date
+  days_vl                 Decimal?  @default(0.00) @db.Decimal(5, 2)
+  days_sl                 Decimal?  @default(0.00) @db.Decimal(5, 2)
+  days_el                 Decimal?  @default(0.00) @db.Decimal(5, 2)
+  days_ol                 Decimal?  @default(0.00) @db.Decimal(5, 2)
+  days_absent             Decimal?  @default(0.00) @db.Decimal(5, 2)
+  hours_late              Decimal?  @default(0.00) @db.Decimal(5, 2)
+  hours_ot                Decimal?  @default(0.00) @db.Decimal(5, 2)
+  dec_basic               Decimal?  @default(0.00) @db.Decimal(8, 2)
+  dec_vl                  Decimal?  @default(0.00) @db.Decimal(8, 2)
+  dec_sl                  Decimal?  @default(0.00) @db.Decimal(8, 2)
+  dec_el                  Decimal?  @default(0.00) @db.Decimal(8, 2)
+  dec_ol                  Decimal?  @default(0.00) @db.Decimal(8, 2)
+  dec_absences            Decimal?  @default(0.00) @db.Decimal(8, 2)
+  dec_lates               Decimal?  @default(0.00) @db.Decimal(8, 2)
+  dec_ot                  Decimal?  @default(0.00) @db.Decimal(8, 2)
+  dec_late_credits        Decimal?  @default(0.00) @db.Decimal(8, 2)
+  dec_other_income        Decimal?  @default(0.00) @db.Decimal(8, 2)
+  less_sss                Decimal?  @default(0.00) @db.Decimal(8, 2)
+  less_ph                 Decimal?  @default(0.00) @db.Decimal(8, 2)
+  less_hdmf               Decimal?  @default(0.00) @db.Decimal(8, 2)
+  less_tax                Decimal?  @default(0.00) @db.Decimal(8, 2)
+  less_others             Decimal?  @default(0.00) @db.Decimal(8, 2)
+  less_loan_sss_salary    Decimal?  @default(0.00) @db.Decimal(8, 2)
+  less_loan_sss_calamity  Decimal?  @default(0.00) @db.Decimal(8, 2)
+  less_loan_hdmf_salary   Decimal?  @default(0.00) @db.Decimal(8, 2)
+  less_loan_hdmf_calamity Decimal?  @default(0.00) @db.Decimal(8, 2)
+  less_loan_co_salary     Decimal?  @default(0.00) @db.Decimal(8, 2)
+  less_loan_co_gadget     Decimal?  @default(0.00) @db.Decimal(8, 2)
+  less_loan_co_others     Decimal?  @default(0.00) @db.Decimal(8, 2)
+  dec_net_pay             Decimal?  @default(0.00) @db.Decimal(8, 2)
+  remarks                 String?   @db.Text
+  send_email              Boolean?  @default(false)
+  status                  String?   @db.VarChar(20)
+  filename                String?   @db.VarChar(255)
+  payslip_sent_at         DateTime? @db.Date
+  created_at              DateTime? @db.DateTime(0)
+  updated_at              DateTime? @db.DateTime(0)
+
+  @@index([user_id], map: "index_payslips_on_user_id")
+}
+
+model project_infos {
+  id             Int       @id @default(autoincrement())
+  project_id     Int?
+  git_url        String?   @db.VarChar(255)
+  git_clone_link String?   @db.VarChar(255)
+  github         String?   @db.VarChar(255)
+  bitbucket      String?   @db.VarChar(255)
+  trello         String?   @db.VarChar(255)
+  jira           String?   @db.VarChar(255)
+  created_at     DateTime  @db.DateTime(0)
+  updated_at     DateTime  @db.DateTime(0)
+  projects       projects? @relation(fields: [project_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_ddb295a93d")
+
+  @@index([project_id], map: "index_project_infos_on_project_id")
+}
+
+model project_members {
+  id              Int       @id @default(autoincrement())
+  project_id      Int?
+  user_id         Int?
+  project_role_id Int?
+  start_date      DateTime? @db.Date
+  end_date        DateTime? @db.Date
+  allocation_rate Decimal?  @default(100.00) @db.Decimal(5, 2)
+  remarks         String?   @db.Text
+  created_at      DateTime? @db.DateTime(0)
+  updated_at      DateTime? @db.DateTime(0)
+
+  @@index([project_id], map: "index_project_members_on_project_id")
+  @@index([project_role_id], map: "index_project_members_on_project_role_id")
+  @@index([user_id], map: "index_project_members_on_user_id")
+}
+
+model project_roles {
+  id          Int       @id @default(autoincrement())
+  name        String?   @db.VarChar(100)
+  short_name  String?   @db.VarChar(10)
+  description String?   @db.Text
+  is_evaluee  Boolean?  @default(false)
+  created_at  DateTime? @db.DateTime(0)
+  updated_at  DateTime? @db.DateTime(0)
+}
+
+model project_tasks {
+  id         Int       @id @default(autoincrement())
+  project_id Int?
+  task_id    Int?
+  projects   projects? @relation(fields: [project_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rails_13deef9e52")
+  tasks      tasks?    @relation(fields: [task_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rails_88d960144f")
+
+  @@index([project_id], map: "index_project_tasks_on_project_id")
+  @@index([task_id], map: "index_project_tasks_on_task_id")
+}
+
+model project_teams {
+  id         Int       @id @default(autoincrement())
+  project_id Int?
+  team_id    Int?
+  created_at DateTime  @db.DateTime(0)
+  updated_at DateTime  @db.DateTime(0)
+  teams      teams?    @relation(fields: [team_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rails_534c359cda")
+  projects   projects? @relation(fields: [project_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rails_7cc6dea147")
+
+  @@index([project_id], map: "index_project_teams_on_project_id")
+  @@index([team_id], map: "index_project_teams_on_team_id")
+}
+
+model projects {
+  id            Int             @id @default(autoincrement())
+  slug          String?         @db.VarChar(80)
+  name          String?         @db.VarChar(255)
+  type          String?         @db.VarChar(100)
+  client_id     Int?
+  start_date    DateTime?       @db.Date
+  end_date      DateTime?       @db.Date
+  status        String?         @db.VarChar(50)
+  description   String?         @db.Text
+  created_at    DateTime        @db.DateTime(0)
+  updated_at    DateTime        @db.DateTime(0)
+  project_infos project_infos[]
+  project_tasks project_tasks[]
+  project_teams project_teams[]
+
+  @@index([client_id], map: "index_projects_on_client_id")
+}
+
+model schema_migrations {
+  version String @unique(map: "unique_schema_migrations") @db.VarChar(255)
+}
+
+model system_settings {
+  id         Int       @id @default(autoincrement())
+  name       String?   @db.VarChar(255)
+  value      String?   @db.VarChar(255)
+  details    String?   @db.Text
+  created_at DateTime? @db.DateTime(0)
+  updated_at DateTime? @db.DateTime(0)
+}
+
+model tables {
+  id          Int       @id @default(autoincrement())
+  code        String?   @db.VarChar(255)
+  name        String?   @db.VarChar(255)
+  description String?   @db.Text
+  location    String?   @db.VarChar(255)
+  created_at  DateTime? @db.DateTime(0)
+  updated_at  DateTime? @db.DateTime(0)
+  occupants   Int?
+}
+
+model task_assignments {
+  id          Int       @id @default(autoincrement())
+  task_id     Int?
+  user_id     Int?
+  due_at      DateTime? @db.DateTime(0)
+  hero_points Int?      @db.TinyInt
+  tasks       tasks?    @relation(fields: [task_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rails_e6ca1bc3d3")
+  users       users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "task_assignments_user_id")
+
+  @@index([due_at], map: "index_task_assignments_on_due_at")
+  @@index([task_id], map: "index_task_assignments_on_task_id")
+  @@index([user_id], map: "index_task_assignments_on_user_id")
+}
+
+model task_authors {
+  id      Int    @id @default(autoincrement())
+  task_id Int?
+  user_id Int?
+  tasks   tasks? @relation(fields: [task_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rails_627bcfb05f")
+  users   users? @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "task_authors")
+
+  @@index([task_id], map: "index_task_authors_on_task_id")
+  @@index([user_id], map: "index_task_authors_on_user_id")
+}
+
+model task_logs {
+  id            Int           @id @default(autoincrement())
+  task_id       Int?
+  user_id       Int?
+  time_entry_id Int?
+  hours         Int?          @db.TinyInt
+  minutes       Int?          @db.TinyInt
+  created_at    DateTime      @db.DateTime(0)
+  updated_at    DateTime      @db.DateTime(0)
+  tasks         tasks?        @relation(fields: [task_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_rails_1ab4291341")
+  time_entries  time_entries? @relation(fields: [time_entry_id], references: [id], onDelete: Cascade, map: "task_logs_time_entries")
+  users         users?        @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "task_logs_users")
+
+  @@index([task_id], map: "index_task_logs_on_task_id")
+  @@index([time_entry_id], map: "index_task_logs_on_time_entry_id")
+  @@index([user_id], map: "index_task_logs_on_user_id")
+}
+
+model tasks {
+  id               Int                @id @default(autoincrement())
+  description      String?            @db.VarChar(255)
+  priority         tasks_priority     @default(medium)
+  status           tasks_status       @default(pending)
+  created_at       DateTime           @db.DateTime(0)
+  updated_at       DateTime           @db.DateTime(0)
+  project_tasks    project_tasks[]
+  task_assignments task_assignments[]
+  task_authors     task_authors[]
+  task_logs        task_logs[]
+
+  @@index([priority], map: "index_tasks_on_priority")
+  @@index([status], map: "index_tasks_on_status")
+}
+
+model team_members {
+  id         Int      @id @default(autoincrement())
+  user_id    Int?
+  hero_name  String?  @db.VarChar(255)
+  team_id    Int?
+  role       String?  @db.VarChar(255)
+  created_at DateTime @db.DateTime(0)
+  updated_at DateTime @db.DateTime(0)
+  teams      teams?   @relation(fields: [team_id], references: [id], onDelete: Cascade, map: "team_members_team_id")
+  users      users?   @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "team_members_user_id")
+
+  @@index([team_id], map: "index_team_members_on_team_id")
+  @@index([user_id], map: "index_team_members_on_user_id")
+}
+
+model teams {
+  id            Int             @id @default(autoincrement())
+  user_id       Int?
+  slug          String?         @db.VarChar(255)
+  name          String?         @db.VarChar(100)
+  email         String?         @db.VarChar(255)
+  description   String?         @db.VarChar(255)
+  created_at    DateTime        @db.DateTime(0)
+  updated_at    DateTime        @db.DateTime(0)
+  company_teams company_teams[]
+  project_teams project_teams[]
+  team_members  team_members[]
+  users         users?          @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: SetNull, map: "fk_rails_67c5d3c478")
+
+  @@index([email], map: "index_teams_on_email")
+  @@index([name], map: "index_teams_on_name")
+  @@index([user_id], map: "index_teams_on_user_id")
+}
+
+model time_entries {
+  id               Int                  @id @default(autoincrement())
+  user_id          Int?
+  status           time_entries_status? @default(default)
+  project_id       Int?
+  date             DateTime?            @db.Date
+  starts_at        DateTime?            @db.DateTime(0)
+  finish_at        DateTime?            @db.DateTime(0)
+  timed_in_at_ip   String?              @db.VarChar(80)
+  timed_out_at_ip  String?              @db.VarChar(80)
+  should_start_at  DateTime?            @db.DateTime(0)
+  should_finish_at DateTime?            @db.DateTime(0)
+  late_deduct_at   DateTime?            @db.DateTime(0)
+  comments         String?              @db.Text
+  created_at       DateTime             @db.DateTime(0)
+  updated_at       DateTime             @db.DateTime(0)
+  parent_id        Int?
+  review_status    String?              @default("Pending") @db.VarChar(255)
+  is_late          Boolean?             @default(false)
+  count_late       Boolean?             @default(false)
+  user_memo_id     Int?
+  task_logs        task_logs[]
+  users            users?               @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "time_entries_user_id")
+
+  @@index([finish_at, should_finish_at], map: "index_time_entries_on_finish")
+  @@index([project_id], map: "index_time_entries_on_project_id")
+  @@index([review_status], map: "index_time_entries_on_review_status")
+  @@index([should_start_at], map: "index_time_entries_on_should_start_at")
+  @@index([starts_at], map: "index_time_entries_on_starts_at")
+  @@index([status], map: "index_time_entries_on_status")
+  @@index([user_id], map: "index_time_entries_on_user_id")
+}
+
+model time_entry_logs {
+  id            Int       @id @default(autoincrement())
+  user_id       Int?
+  time_entry_id Int?
+  date          DateTime? @db.Date
+  action        String?   @default("") @db.VarChar(255)
+  late_status   String?   @db.VarChar(255)
+  is_late       Boolean?
+  is_memo       Boolean?
+  late_count    Int?
+  memo_count    Int?
+  remarks       String?   @default("") @db.VarChar(255)
+  admin_id      Int?
+  created_at    DateTime? @db.DateTime(0)
+  updated_at    DateTime? @db.DateTime(0)
+
+  @@index([admin_id], map: "index_time_entry_logs_on_admin_id")
+  @@index([time_entry_id], map: "index_time_entry_logs_on_time_entry_id")
+  @@index([user_id], map: "index_time_entry_logs_on_user_id")
+}
+
+model user_contact_informations {
+  id             Int      @id @default(autoincrement())
+  user_id        Int?
+  mobile         String?  @db.VarChar(30)
+  phone          String?  @db.VarChar(30)
+  personal_email String?  @db.VarChar(255)
+  street_address String?  @db.VarChar(150)
+  city           String?  @db.VarChar(80)
+  state          String?  @db.VarChar(80)
+  zip            String?  @db.VarChar(20)
+  country        String?  @db.VarChar(80)
+  created_at     DateTime @db.DateTime(0)
+  updated_at     DateTime @db.DateTime(0)
+  users          users?   @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_users")
+
+  @@index([user_id], map: "index_user_contact_informations_on_user_id")
+}
+
+model user_details {
+  id                Int       @id @default(autoincrement())
+  user_id           Int?
+  id_no             String?   @db.VarChar(10)
+  user_type         String?   @default("probationary") @db.VarChar(100)
+  user_position     String?   @default("") @db.VarChar(100)
+  cm_id             Int?
+  sss_number        String?   @default("") @db.VarChar(100)
+  hdmf_number       String?   @default("") @db.VarChar(100)
+  tin_number        String?   @default("") @db.VarChar(100)
+  philhealth_number String?   @default("") @db.VarChar(100)
+  bank_account_no   String?   @db.VarChar(50)
+  referred_by       String?   @db.VarChar(255)
+  date_regularized  DateTime? @db.Date
+  start_date        DateTime? @db.Date
+  end_date          DateTime? @db.Date
+  end_remarks       String?   @db.Text
+  update_by_id      Int?
+  created_at        DateTime? @db.DateTime(0)
+  updated_at        DateTime? @db.DateTime(0)
+
+  @@index([cm_id], map: "index_user_details_on_cm_id")
+  @@index([user_id], map: "index_user_details_on_user_id")
+}
+
+model user_healths {
+  id            Int       @id @default(autoincrement())
+  temperature   Decimal?  @db.Decimal(5, 2)
+  cough         Boolean?
+  sore_throat   Boolean?
+  body_pain     Boolean?
+  others        String?   @db.VarChar(255)
+  recorded_at   String?   @db.VarChar(3)
+  user_id       Int?
+  time_entry_id Int?
+  created_at    DateTime? @db.DateTime(0)
+  updated_at    DateTime? @db.DateTime(0)
+}
+
+model user_late_credits {
+  id             Int       @id @default(autoincrement())
+  user_id        Int?
+  date           DateTime? @db.Date
+  credits_earned Int?      @default(0)
+  credits_left   Int?      @default(0)
+  admin_id       Int?
+  status         String?   @default("") @db.VarChar(255)
+  availment      String?   @default("") @db.VarChar(255)
+  date_availed   DateTime? @db.Date
+  time_entry_id  Int?
+  remarks        String?   @db.Text
+  created_at     DateTime? @db.DateTime(0)
+  updated_at     DateTime? @db.DateTime(0)
+
+  @@index([time_entry_id], map: "index_user_late_credits_on_time_entry_id")
+}
+
+model user_leaves {
+  id              Int            @id @default(autoincrement())
+  user_id         Int?
+  leave_credit_id Int?
+  leave_id        Int?
+  leave_credits   leave_credits? @relation(fields: [leave_credit_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rails_1f33144e3c")
+  leaves          leaves?        @relation(fields: [leave_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_rails_9ee613ebb1")
+  users           users?         @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "user_leaves_users_id")
+
+  @@index([leave_credit_id], map: "index_user_leaves_on_leave_credit_id")
+  @@index([leave_id], map: "index_user_leaves_on_leave_id")
+  @@index([user_id], map: "index_user_leaves_on_user_id")
+}
+
+model user_memos {
+  id               Int       @id @default(autoincrement())
+  user_id          Int?
+  date             DateTime? @db.Date
+  memo_group_id    Int?
+  memo_category_id Int?
+  offense_count    Int?
+  remarks          String?   @db.Text
+  status           String?   @db.VarChar(255)
+  date_served      DateTime? @db.Date
+  admin_id         Int?
+  created_at       DateTime? @db.DateTime(0)
+  updated_at       DateTime? @db.DateTime(0)
+
+  @@index([admin_id], map: "index_user_memos_on_admin_id")
+  @@index([user_id], map: "index_user_memos_on_user_id")
+}
+
+model user_profiles {
+  id          Int      @id @default(autoincrement())
+  user_id     Int?
+  description String?  @db.Text
+  created_at  DateTime @db.DateTime(0)
+  updated_at  DateTime @db.DateTime(0)
+  users       users    @relation(fields: [id], references: [id], onDelete: Cascade, map: "user_profiles_user_id")
+
+  @@index([user_id], map: "index_user_profiles_on_user_id")
+}
+
+model user_roles {
+  id          Int       @id @default(autoincrement())
+  name        String?   @db.VarChar(100)
+  description String?   @db.VarChar(255)
+  user_id     Int?
+  created_at  DateTime? @db.DateTime(0)
+  updated_at  DateTime? @db.DateTime(0)
+}
+
+model user_setting_logs {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?
+  admin_id   Int?
+  remarks    String?   @db.Text
+  created_at DateTime? @db.DateTime(0)
+  updated_at DateTime? @db.DateTime(0)
+
+  @@index([admin_id], map: "index_user_setting_logs_on_admin_id")
+  @@index([user_id], map: "index_user_setting_logs_on_user_id")
+}
+
+model user_settings {
+  id         Int      @id @default(autoincrement())
+  user_id    Int?
+  name       String?  @db.VarChar(50)
+  setting    String?  @db.VarChar(255)
+  created_at DateTime @db.DateTime(0)
+  updated_at DateTime @db.DateTime(0)
+  users      users?   @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "user_settings_users")
+
+  @@index([name], map: "index_user_settings_on_name")
+  @@index([user_id], map: "index_user_settings_on_user_id")
+}
+
+model users {
+  id                        Int                         @id @default(autoincrement())
+  slug                      String?                     @db.VarChar(255)
+  email                     String                      @unique(map: "index_users_on_email") @default("") @db.VarChar(255)
+  encrypted_password        String                      @default("") @db.VarChar(255)
+  uid                       String?                     @db.VarChar(255)
+  provider                  String?                     @db.VarChar(70)
+  first_name                String?                     @db.VarChar(100)
+  middle_name               String?                     @db.VarChar(75)
+  last_name                 String?                     @db.VarChar(75)
+  gender                    users_gender?
+  birth_date                DateTime?                   @db.Date
+  nationality               String?                     @db.VarChar(50)
+  picture                   String?                     @db.VarChar(255)
+  authentication_token      String?                     @db.VarChar(255)
+  reset_password_token      String?                     @unique(map: "index_users_on_reset_password_token") @db.VarChar(255)
+  reset_password_sent_at    DateTime?                   @db.DateTime(0)
+  remember_created_at       DateTime?                   @db.DateTime(0)
+  sign_in_count             Int                         @default(0)
+  current_sign_in_at        DateTime?                   @db.DateTime(0)
+  last_sign_in_at           DateTime?                   @db.DateTime(0)
+  current_sign_in_ip        String?                     @db.VarChar(255)
+  last_sign_in_ip           String?                     @db.VarChar(255)
+  created_at                DateTime?                   @db.DateTime(0)
+  updated_at                DateTime?                   @db.DateTime(0)
+  py_company_id             Int?
+  is_active                 Boolean?
+  late_offense              Int?                        @default(0)
+  late_count                Int?                        @default(0)
+  for_memo                  Boolean?                    @default(false)
+  late_credits              Int?                        @default(0)
+  approval_manifests        approval_manifests[]
+  approvers                 approvers[]
+  company_users             company_users[]
+  leave_breakdowns          leave_breakdowns[]
+  leave_credits             leave_credits[]
+  leaves                    leaves[]
+  overtimes                 overtimes[]
+  task_assignments          task_assignments[]
+  task_authors              task_authors[]
+  task_logs                 task_logs[]
+  team_members              team_members[]
+  teams                     teams[]
+  time_entries              time_entries[]
+  user_contact_informations user_contact_informations[]
+  user_leaves               user_leaves[]
+  user_profiles             user_profiles?
+  user_settings             user_settings[]
+
+  @@index([birth_date], map: "index_users_on_birth_date")
+  @@index([first_name, last_name], map: "index_users_on_first_name_and_last_name")
+  @@index([for_memo], map: "index_users_on_for_memo")
+  @@index([is_active], map: "index_users_on_is_active")
+  @@index([py_company_id], map: "index_users_on_py_company_id")
+  @@index([slug], map: "index_users_on_slug")
+}
+
+model worker_logs {
+  id         Int       @id @default(autoincrement())
+  name       String?   @default("") @db.VarChar(100)
+  remarks    String?   @db.Text
+  created_at DateTime? @db.DateTime(0)
+  updated_at DateTime? @db.DateTime(0)
+}
+
+enum approvers_status {
+  active
+  inactive
+}
+
+enum tasks_priority {
+  critical
+  high
+  medium
+  low
+  lowest
+}
+
+enum time_entries_status {
+  default
+  pending
+  approved
+  denied
+}
+
+enum approval_manifests_status {
+  active
+  inactive
+}
+
+enum approvers_approver_for {
+  leave
+  overtime
+  other
+}
+
+enum company_users_user_level {
+  user
+  admin
+  root
+}
+
+enum tasks_status {
+  pending
+  in_progress @map("in progress")
+  completed
+  re_opened   @map("re-opened")
+  closed
+  deleted
+}
+
+enum company_users_user_status {
+  New
+  OnBoarding
+  Active
+  Inactive
+  Exiting
+  Resigned
+  Retired
+  Terminated
+}
+
+enum overtimes_status {
+  default
+  pending
+  approved
+  denied
+  canceled
+}
+
+enum leaves_status {
+  default
+  pending
+  approved
+  denied
+  expired
+  taken
+  canceled
+}
+
+enum leaves_type_of_leave {
+  vacation
+  sick
+  emergency
+  other
+}
+
+enum users_gender {
+  male
+  female
+}
+
+enum overtime_breakdowns_status {
+  Reviewed
+  For_Review @map("For Review")
+  Pending
+}
