@@ -3,6 +3,8 @@ import bodyParser from "body-parser"
 import cookieParser from "cookie-parser"
 import cors from "cors"
 
+import homeRoute from "./routes/home_route"
+
 const app: Application = express()
 
 app.use(cors({ credentials: true, origin: true }))
@@ -17,8 +19,6 @@ declare global {
   }
 }
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("ok")
-})
+app.use("/", homeRoute)
 
 export default app
