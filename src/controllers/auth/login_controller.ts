@@ -1,32 +1,74 @@
 import { type Request, type Response } from "express"
 import prisma from "../../utils/prisma"
+import axios from "axios"
+import jwt from "jsonwebtoken"
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email } = req.body
+    const { email, password } = req.body
 
-    // TODO: validate inputs
+    // Send data to KH api
+    const response = await axios.post(
+      "https://kaishahero.com/users/sign_in.json",
+      {
+        "user[email]": email,
+        "user[password]": password,
+      },
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    )
+
+    const data = response.data
 
     const existingUser = await prisma.users.findUnique({
       where: {
-        email,
+        email: data.email,
       },
     })
 
     if (existingUser === null)
       return res.status(400).json({ message: "Invalid credentials" })
 
-    // TODO: validate password
+    const accessToken = jwt.sign(
+      {
+        email: existingUser.email,
+        firstName: existingUser.first_name,
+        lastName: existingUser.last_name,
+      },
+      process.env.ACCESS_TOKEN_SECRET as string,
+      {
+        expiresIn: "5m",
+      }
+    )
 
-    // TODO: access token
-    const accessToken = "sample access token"
+    const refreshToken = jwt.sign(
+      {
+        email: existingUser.email,
+        firstName: existingUser.first_name,
+        lastName: existingUser.last_name,
+      },
+      process.env.REFRESH_TOKEN_SECRET as string,
+      {
+        expiresIn: "7d",
+      }
+    )
+
+    res.cookie("jwt", refreshToken, {
+      httpOnly: true, // accessible by web server only
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+      secure: true, // Set to true if using HTTPS
+      sameSite: "none", // Set to 'none' if using cross-site requests
+    })
 
     res.json({
       accessToken,
       user: {
         email,
-        firstName: existingUser?.first_name,
-        lastName: existingUser?.last_name,
+        firstName: existingUser.first_name,
+        lastName: existingUser.last_name,
       },
     })
   } catch (error) {
