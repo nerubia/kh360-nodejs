@@ -29,7 +29,14 @@ export const refreshToken = async (req: Request, res: Response) => {
           expiresIn: "5m",
         }
       )
-      res.json({ accessToken })
+      res.json({
+        accessToken,
+        user: {
+          email: decodedToken.email,
+          firstName: decodedToken.firstName,
+          lastName: decodedToken.lastName,
+        },
+      })
     }
   )
 }
