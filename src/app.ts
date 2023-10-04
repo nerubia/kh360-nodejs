@@ -3,8 +3,11 @@ import bodyParser from "body-parser"
 import cookieParser from "cookie-parser"
 import cors from "cors"
 
+import { authMiddleware } from "./middlewares/auth_middleware"
+
 import homeRoute from "./routes/home_route"
 import authRoute from "./routes/auth_route"
+import userRoute from "./routes/user_route"
 
 const app: Application = express()
 
@@ -23,5 +26,7 @@ declare global {
 
 app.use("/", homeRoute)
 app.use("/auth", authRoute)
+
+app.use("/user", authMiddleware, userRoute)
 
 export default app
