@@ -5,4 +5,4 @@
 /dist
 
 # local env files
-.env*
+.env
