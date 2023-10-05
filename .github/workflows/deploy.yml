@@ -13,17 +13,11 @@ jobs:
       matrix:
         node-version: [18.x]
     steps:
-      - uses: actions/checkout@v3
-      - name: Build & Deploy
-        env:
-          PRIVATE_KEY: ${{ secrets.SSH_KEY }}
-          HOSTNAME: ${{ secrets.HOST }}
-          USER_NAME: ${{ secrets.USERNAME }}
-        run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-              cd /home/jlerit/kh360-nodejs &&
-              git pull &&
-              sudo npm run build &&
-              sudo systemctl restart kh360
-              '
+      - uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          USERNAME: ${{ secrets.USERNAME }}
+          PORT: 22
+          KEY: ${{ secrets.SSHKEY }}
+          script: ls
+            '
