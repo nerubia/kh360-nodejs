@@ -3,6 +3,8 @@ import bodyParser from "body-parser"
 import cookieParser from "cookie-parser"
 import cors from "cors"
 
+import { type UserToken } from "./types/user_token"
+
 import { authMiddleware } from "./middlewares/auth_middleware"
 
 import homeRoute from "./routes/home_route"
@@ -19,7 +21,7 @@ app.use(cookieParser())
 declare global {
   namespace Express {
     interface Request {
-      user: unknown
+      user: UserToken
     }
   }
 }
