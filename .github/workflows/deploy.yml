@@ -1,8 +1,10 @@
 name: Deploy
 
 on:
-  push:
-    branches: ["main"]
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
 
 jobs:
   deploy:
@@ -15,8 +17,8 @@ jobs:
       - name: Build & Deploy
         env:
           PRIVATE_KEY: ${{ secrets.SSH_KEY }}
-          HOSTNAME: ${{secrets.HOST}}
-          USER_NAME: ${{secrets.USERNAME}}
+          HOSTNAME: ${{ secrets.HOST }}
+          USER_NAME: ${{ secrets.USERNAME }}
 
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
