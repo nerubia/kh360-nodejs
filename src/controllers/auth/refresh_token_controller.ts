@@ -21,7 +21,7 @@ export const refreshToken = async (req: Request, res: Response) => {
         },
         process.env.ACCESS_TOKEN_SECRET as string,
         {
-          expiresIn: "5m",
+          expiresIn: process.env.ACCESS_TOKEN_EXPIRATION,
         }
       )
       res.json({

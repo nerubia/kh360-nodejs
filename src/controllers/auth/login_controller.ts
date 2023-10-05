@@ -2,6 +2,7 @@ import { type Request, type Response } from "express"
 import prisma from "../../utils/prisma"
 import axios from "axios"
 import jwt from "jsonwebtoken"
+import ms from "ms"
 
 export const login = async (req: Request, res: Response) => {
   try {
@@ -40,7 +41,7 @@ export const login = async (req: Request, res: Response) => {
       },
       process.env.ACCESS_TOKEN_SECRET as string,
       {
-        expiresIn: "5m",
+        expiresIn: process.env.ACCESS_TOKEN_EXPIRATION,
       }
     )
 
@@ -52,13 +53,13 @@ export const login = async (req: Request, res: Response) => {
       },
       process.env.REFRESH_TOKEN_SECRET as string,
       {
-        expiresIn: "7d",
+        expiresIn: process.env.REFRESH_TOKEN_EXPIRATION,
       }
     )
 
     res.cookie("jwt", refreshToken, {
       httpOnly: true, // accessible by web server only
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+      maxAge: ms(process.env.REFRESH_TOKEN_EXPIRATION as string),
       secure: true, // Set to true if using HTTPS
       sameSite: "none", // Set to 'none' if using cross-site requests
     })
