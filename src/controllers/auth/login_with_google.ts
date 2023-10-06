@@ -4,21 +4,35 @@ import jwt from "jsonwebtoken"
 import ms from "ms"
 import prisma from "../../utils/prisma"
 
-const client = new OAuth2Client(process.env.GOOGLE_OAUTH_CLIENT_ID)
+const client = new OAuth2Client(
+  process.env.GOOGLE_OAUTH_CLIENT_ID,
+  process.env.GOOGLE_OAUTH_SECRET_KEY,
+  "postmessage"
+)
 
 export const loginWithGoogle = async (req: Request, res: Response) => {
   try {
-    const { credential } = req.body
+    const { code } = req.body
+
+    const tokenResponse = await client.getToken(code)
+
+    if (
+      tokenResponse.tokens.id_token === undefined ||
+      tokenResponse.tokens.id_token === null
+    ) {
+      return res.status(400).json({ message: "Invalid credentials" })
+    }
 
     const loginTicket = await client.verifyIdToken({
-      idToken: credential,
+      idToken: tokenResponse.tokens.id_token,
       audience: process.env.GOOGLE_OAUTH_CLIENT_ID,
     })
 
     const payload = loginTicket.getPayload()
 
-    if (payload === undefined)
+    if (payload === undefined) {
       return res.status(400).json({ message: "Invalid credentials" })
+    }
 
     const existingUser = await prisma.users.findUnique({
       where: {
@@ -26,8 +40,9 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
       },
     })
 
-    if (existingUser === null)
+    if (existingUser === null) {
       return res.status(400).json({ message: "Invalid credentials" })
+    }
 
     const accessToken = jwt.sign(
       {
