@@ -67,7 +67,7 @@ export const login = async (req: Request, res: Response) => {
     res.json({
       accessToken,
       user: {
-        email,
+        email: existingUser.email,
         firstName: existingUser.first_name,
         lastName: existingUser.last_name,
       },
