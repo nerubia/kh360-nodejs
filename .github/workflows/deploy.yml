@@ -22,6 +22,8 @@ jobs:
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+              export NVM_DIR=~/.nvm
+              source ~/.nvm/nvm.sh &&
               cd /home/jlerit/kh360-nodejs &&
               git pull &&
               npm run build &&
