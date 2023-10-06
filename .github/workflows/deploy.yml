@@ -19,4 +19,8 @@ jobs:
           USERNAME: ${{ secrets.USERNAME }}
           PORT: 22
           KEY: ${{ secrets.SSH_KEY }}
-          script: ls
+          script: |
+            cd kh360-nodejs
+            git pull
+            npm run build
+            systemctl restart kh360
