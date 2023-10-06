@@ -1,8 +1,8 @@
 import { type Request, type Response } from "express"
-import prisma from "../../utils/prisma"
 import axios from "axios"
 import jwt from "jsonwebtoken"
 import ms from "ms"
+import prisma from "../../utils/prisma"
 
 export const login = async (req: Request, res: Response) => {
   try {
