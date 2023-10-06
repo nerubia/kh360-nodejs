@@ -23,4 +23,4 @@ jobs:
             cd kh360-nodejs
             git pull
             npm run build
-            systemctl restart kh360
+            pm2 restart kh360
