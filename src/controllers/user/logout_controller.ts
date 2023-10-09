@@ -2,7 +2,9 @@ import { type Request, type Response } from "express"
 
 export const logout = async (req: Request, res: Response) => {
   try {
-    res.cookie("jwt", "none")
+    res.clearCookie("jwt", {
+      sameSite: "none",
+    })
     res.json({
       message: "Logged out successfully",
     })
