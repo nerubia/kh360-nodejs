@@ -26,6 +26,7 @@ jobs:
               source ~/.nvm/nvm.sh &&
               cd /home/jlerit/kh360-nodejs &&
               git pull &&
+              npm install &&
               npm run build &&
               pm2 restart kh360
               '
