@@ -6,7 +6,7 @@ import prisma from "../../utils/prisma"
 
 const client = new OAuth2Client(
   process.env.GOOGLE_OAUTH_CLIENT_ID,
-  process.env.GOOGLE_OAUTH_SECRET_KEY,
+  process.env.GOOGLE_OAUTH_CLIENT_SECRET,
   "postmessage"
 )
 
@@ -25,7 +25,6 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
 
     const loginTicket = await client.verifyIdToken({
       idToken: tokenResponse.tokens.id_token,
-      audience: process.env.GOOGLE_OAUTH_CLIENT_ID,
     })
 
     const payload = loginTicket.getPayload()
