@@ -16,19 +16,19 @@ nvm install v18.18.0
 nvm use v18.18.0
 ```
 
-### 4. Clone this repository to your local machine using Git:
+### 4. Clone this repository to your local machine using Git
 
 ```
 git clone https://github.com/nerubia/kh360-nodejs.git
 ```
 
-### 5. Navigate to the project directory:
+### 5. Navigate to the project directory
 
 ```
 cd kh360-nodejs
 ```
 
-### 6. Install the project dependencies using npm (Node Package Manager):
+### 6. Install the project dependencies using npm (Node Package Manager)
 
 ```
 npm install
@@ -56,7 +56,7 @@ SENDGRID_API_KEY=sendgrid api key
 SENDGRID_FROM_ADDRESS=from@yourdomain.com
 ```
 
-### 2. Start the development server:
+### 2. Start the development server
 
 ```
 npm run dev
