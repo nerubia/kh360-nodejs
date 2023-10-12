@@ -66,6 +66,12 @@ export const login = async (req: Request, res: Response) => {
       sameSite: "none", // Set to 'none' if using cross-site requests
     })
 
+    const userRoles = await prisma.user_roles.findMany({
+      where: {
+        user_id: existingUser.id,
+      },
+    })
+
     res.json({
       accessToken,
       user: {
@@ -73,6 +79,7 @@ export const login = async (req: Request, res: Response) => {
         email: existingUser.email,
         firstName: existingUser.first_name,
         lastName: existingUser.last_name,
+        roles: userRoles.map((role) => role.name),
       },
     })
   } catch (error) {
