@@ -27,6 +27,5 @@ jobs:
               cd /home/jlerit/kh360-nodejs &&
               git pull &&
               npm install &&
-              npm run build &&
-              pm2 stop kh360
+              npm run build
               '
