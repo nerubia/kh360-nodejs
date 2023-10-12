@@ -10,7 +10,10 @@ export const getProfile = async (req: Request, res: Response) => {
         email: user.email,
       },
     })
-    res.json(userData)
+    res.json({
+      userData,
+      message: "ok",
+    })
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
