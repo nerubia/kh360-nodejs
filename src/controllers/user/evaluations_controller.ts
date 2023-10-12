@@ -3,6 +3,15 @@ import { createEvaluationSchema } from "../../utils/validation/evaluations/creat
 import { ValidationError } from "yup"
 import prisma from "../../utils/prisma"
 
+export const getEvaluations = async (req: Request, res: Response) => {
+  try {
+    const evaluations = await prisma.evaluation_administrations.findMany()
+    res.json(evaluations)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
 export const createEvaluation = async (req: Request, res: Response) => {
   try {
     const {
