@@ -10,6 +10,7 @@ import { authMiddleware } from "./middlewares/auth_middleware"
 import homeRoute from "./routes/home_route"
 import authRoute from "./routes/auth_route"
 import userRoute from "./routes/user_route"
+import evaluationsRoute from "./routes/evaluations_route"
 
 const app: Application = express()
 
@@ -30,5 +31,6 @@ app.use("/", homeRoute)
 app.use("/auth", authRoute)
 
 app.use("/user", authMiddleware, userRoute)
+app.use("/evaluations", authMiddleware, evaluationsRoute)
 
 export default app
