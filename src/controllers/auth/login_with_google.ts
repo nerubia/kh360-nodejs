@@ -45,6 +45,7 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
 
     const accessToken = jwt.sign(
       {
+        id: existingUser.id,
         email: existingUser.email,
         firstName: existingUser.first_name,
         lastName: existingUser.last_name,
@@ -57,6 +58,7 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
 
     const refreshToken = jwt.sign(
       {
+        id: existingUser.id,
         email: existingUser.email,
         firstName: existingUser.first_name,
         lastName: existingUser.last_name,
@@ -77,6 +79,7 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
     res.json({
       accessToken,
       user: {
+        id: existingUser.id,
         email: existingUser.email,
         firstName: existingUser.first_name,
         lastName: existingUser.last_name,

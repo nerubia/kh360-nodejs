@@ -15,6 +15,7 @@ export const refreshToken = async (req: Request, res: Response) => {
       const decodedToken = decoded as UserToken
       const accessToken = jwt.sign(
         {
+          id: decodedToken.id,
           email: decodedToken.email,
           firstName: decodedToken.firstName,
           lastName: decodedToken.lastName,
@@ -27,6 +28,7 @@ export const refreshToken = async (req: Request, res: Response) => {
       res.json({
         accessToken,
         user: {
+          id: decodedToken.id,
           email: decodedToken.email,
           firstName: decodedToken.firstName,
           lastName: decodedToken.lastName,
