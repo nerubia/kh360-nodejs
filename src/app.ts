@@ -6,6 +6,7 @@ import cors from "cors"
 import { type UserToken } from "./types/user_token"
 
 import { authMiddleware } from "./middlewares/auth_middleware"
+import { adminMiddleware } from "./middlewares/admin_middleware"
 
 import homeRoute from "./routes/home_route"
 import authRoute from "./routes/auth_route"
@@ -31,6 +32,7 @@ app.use("/", homeRoute)
 app.use("/auth", authRoute)
 
 app.use("/user", authMiddleware, userRoute)
-app.use("/evaluations", authMiddleware, evaluationsRoute)
+
+app.use("/evaluations", adminMiddleware, evaluationsRoute)
 
 export default app
