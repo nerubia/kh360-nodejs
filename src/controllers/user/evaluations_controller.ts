@@ -51,3 +51,17 @@ export const createEvaluation = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+export const getEvaluation = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const evaluation = await prisma.evaluation_administrations.findUnique({
+      where: {
+        id: Number(id),
+      },
+    })
+    res.json(evaluation)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
