@@ -1,5 +1,5 @@
 import express from "express"
-import { getEmployees } from "../controllers/user/employees_controller"
+import { getEmployees } from "../controllers/admin/employees_controller"
 
 const router = express.Router()
 

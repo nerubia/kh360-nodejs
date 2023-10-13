@@ -3,7 +3,7 @@ import {
   createEvaluation,
   getEvaluation,
   getEvaluations,
-} from "../controllers/user/evaluations_controller"
+} from "../controllers/admin/evaluations_controller"
 
 const router = express.Router()
 
