@@ -12,6 +12,7 @@ import homeRoute from "./routes/home_route"
 import authRoute from "./routes/auth_route"
 import userRoute from "./routes/user_route"
 import evaluationsRoute from "./routes/evaluations_route"
+import employeesRoute from "./routes/employees_route"
 
 const app: Application = express()
 
@@ -34,5 +35,6 @@ app.use("/auth", authRoute)
 app.use("/user", authMiddleware, userRoute)
 
 app.use("/evaluations", adminMiddleware, evaluationsRoute)
+app.use("/employees", adminMiddleware, employeesRoute)
 
 export default app
