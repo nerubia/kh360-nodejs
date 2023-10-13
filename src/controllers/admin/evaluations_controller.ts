@@ -65,3 +65,31 @@ export const getEvaluation = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+export const setEvaluators = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const { employee_ids } = req.body
+
+    // TODO: validate ??
+    // id           - evaluation_administrations
+    // employee_ids - users
+
+    const employeeIds = employee_ids as number[]
+
+    const data = employeeIds.map((employeeId) => {
+      return {
+        evaluation_administration_id: Number(id),
+        user_id: employeeId,
+      }
+    })
+
+    await prisma.evaluation_results.createMany({
+      data,
+    })
+
+    res.json(employee_ids)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
