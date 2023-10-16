@@ -33,12 +33,21 @@ export const login = async (req: Request, res: Response) => {
     if (existingUser === null)
       return res.status(400).json({ message: "Invalid credentials" })
 
-    const accessToken = jwt.sign(
+    const userRoles = await prisma.user_roles.findMany({
+      where: {
+        user_id: existingUser.id,
+      },
+    })
+
+    const roles = userRoles.map((role) => role.name)
+
+    const access_token = jwt.sign(
       {
         id: existingUser.id,
         email: existingUser.email,
-        firstName: existingUser.first_name,
-        lastName: existingUser.last_name,
+        first_name: existingUser.first_name,
+        last_name: existingUser.last_name,
+        roles,
       },
       process.env.ACCESS_TOKEN_SECRET as string,
       {
@@ -50,8 +59,8 @@ export const login = async (req: Request, res: Response) => {
       {
         id: existingUser.id,
         email: existingUser.email,
-        firstName: existingUser.first_name,
-        lastName: existingUser.last_name,
+        first_name: existingUser.first_name,
+        last_name: existingUser.last_name,
       },
       process.env.REFRESH_TOKEN_SECRET as string,
       {
@@ -66,20 +75,14 @@ export const login = async (req: Request, res: Response) => {
       sameSite: "none", // Set to 'none' if using cross-site requests
     })
 
-    const userRoles = await prisma.user_roles.findMany({
-      where: {
-        user_id: existingUser.id,
-      },
-    })
-
     res.json({
-      accessToken,
+      access_token,
       user: {
         id: existingUser.id,
         email: existingUser.email,
-        firstName: existingUser.first_name,
-        lastName: existingUser.last_name,
-        roles: userRoles.map((role) => role.name),
+        first_name: existingUser.first_name,
+        last_name: existingUser.last_name,
+        roles,
       },
     })
   } catch (error) {
