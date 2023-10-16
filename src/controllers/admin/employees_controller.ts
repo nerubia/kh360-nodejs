@@ -10,6 +10,7 @@ export const getEmployees = async (req: Request, res: Response) => {
         email: employee.email,
         first_name: employee.first_name,
         last_name: employee.last_name,
+        is_active: employee.is_active,
       }
     })
     res.json(list)
