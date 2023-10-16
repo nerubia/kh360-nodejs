@@ -8,8 +8,8 @@ export const getEmployees = async (req: Request, res: Response) => {
       return {
         id: employee.id,
         email: employee.email,
-        firstName: employee.first_name,
-        lastName: employee.last_name,
+        first_name: employee.first_name,
+        last_name: employee.last_name,
       }
     })
     res.json(list)

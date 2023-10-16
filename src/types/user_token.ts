@@ -1,6 +1,7 @@
 export interface UserToken {
   id: number
   email: string
-  firstName: string
-  lastName: string
+  first_name: string
+  last_name: string
+  roles: string[]
 }
