@@ -25,7 +25,9 @@ jobs:
               export NVM_DIR=~/.nvm
               source ~/.nvm/nvm.sh &&
               cd /home/jlerit/kh360-nodejs &&
+              pm2 kill &&
               git pull &&
               npm install &&
-              npm run build
+              npm run build &&
+              pm2 start npm -- start
               '
