@@ -1,7 +1,6 @@
 import { type Request, type Response, type NextFunction } from "express"
 import jwt from "jsonwebtoken"
 import { type UserToken } from "../types/user_token"
-import prisma from "../utils/prisma"
 
 export const adminMiddleware = async (
   req: Request,
@@ -19,27 +18,8 @@ export const adminMiddleware = async (
     async (error: unknown, decoded: unknown) => {
       if (error != null) return res.status(403).json({ message: "Forbidden" })
       const decodedToken = decoded as UserToken
-
-      const existingUser = await prisma.users.findUnique({
-        where: {
-          email: decodedToken.email,
-        },
-      })
-
-      if (existingUser === null)
-        return res.status(403).json({ message: "Forbidden" })
-
-      const userRoles = await prisma.user_roles.findMany({
-        where: {
-          user_id: existingUser.id,
-        },
-      })
-
-      const roles = userRoles.map((role) => role.name)
-
-      if (!roles.includes("kh360"))
+      if (!decodedToken.roles.includes("kh360"))
         return res.status(403).json({ message: "PermissionError" })
-
       req.user = decodedToken
       next()
     }
