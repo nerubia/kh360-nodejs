@@ -12,9 +12,9 @@ model access_tokens {
   user_id     BigInt   @unique(map: "access_tokens_user_id_unique")
   token       String   @db.VarChar(64)
   has_expired Int      @default(0) @db.TinyInt
-  expiry_at   DateTime @default(dbgenerated("'0000-00-00 00:00:00'")) @db.Timestamp(0)
-  created_at  DateTime @default(dbgenerated("'0000-00-00 00:00:00'")) @db.Timestamp(0)
-  updated_at  DateTime @default(dbgenerated("'0000-00-00 00:00:00'")) @db.Timestamp(0)
+  expiry_at   DateTime @default(now()) @db.Timestamp(0)
+  created_at  DateTime @default(now()) @db.Timestamp(0)
+  updated_at  DateTime @default(now()) @db.Timestamp(0)
 }
 
 model admins {
@@ -373,6 +373,8 @@ model evaluation_administrations {
   eval_period_start_date   DateTime? @db.Date
   eval_period_end_date     DateTime? @db.Date
   remarks                  String?   @db.Text
+  email_subject            String?   @default("") @db.VarChar(255)
+  email_content            String?   @db.Text
   status                   String?   @default("") @db.VarChar(20)
   created_by_id            Int?
   updated_by_id            Int?
