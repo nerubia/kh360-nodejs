@@ -30,5 +30,8 @@ jobs:
               git pull &&
               npm install &&
               npm run build &&
+              npx prisma migrate resolve --applied 0_init &&
+              npx prisma migrate deploy &&
+              npx prisma generate &&
               pm2 start npm -- start
               '

@@ -6,3 +6,6 @@
 
 # local env files
 .env
+
+# prisma
+migration_lock.toml
