@@ -13,6 +13,7 @@ import authRoute from "./routes/auth_route"
 import userRoute from "./routes/user_route"
 import evaluationsRoute from "./routes/admin/evaluations_route"
 import employeesRoute from "./routes/admin/employees_route"
+import emailTemplatesRoute from "./routes/admin/email_templates_route"
 
 const app: Application = express()
 
@@ -36,5 +37,6 @@ app.use("/user", authMiddleware, userRoute)
 
 app.use("/admin/evaluations", adminMiddleware, evaluationsRoute)
 app.use("/admin/employees", adminMiddleware, employeesRoute)
+app.use("/admin/email/templates", adminMiddleware, emailTemplatesRoute)
 
 export default app
