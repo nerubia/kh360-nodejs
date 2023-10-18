@@ -4,7 +4,7 @@ import {
   getEvaluation,
   getEvaluations,
   setEvaluators,
-} from "../controllers/admin/evaluations_controller"
+} from "../../controllers/admin/evaluations_controller"
 
 const router = express.Router()
 

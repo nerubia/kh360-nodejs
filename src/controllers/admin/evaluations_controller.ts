@@ -5,8 +5,51 @@ import prisma from "../../utils/prisma"
 
 export const getEvaluations = async (req: Request, res: Response) => {
   try {
-    const evaluations = await prisma.evaluation_administrations.findMany()
-    res.json(evaluations)
+    const { name, status, page } = req.query
+
+    const evaluationStatus = status === "all" ? "" : status
+
+    const itemsPerPage = 20
+    const parsedPage = parseInt(page as string)
+    const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
+
+    const evaluations = await prisma.evaluation_administrations.findMany({
+      skip: (currentPage - 1) * itemsPerPage,
+      take: itemsPerPage,
+      where: {
+        name: {
+          contains: name as string,
+        },
+        status: {
+          contains: evaluationStatus as string,
+        },
+      },
+      orderBy: {
+        id: "desc",
+      },
+    })
+
+    const totalItems = await prisma.evaluation_administrations.count({
+      where: {
+        name: {
+          contains: name as string,
+        },
+        status: {
+          contains: evaluationStatus as string,
+        },
+      },
+    })
+
+    const totalPages = Math.ceil(totalItems / itemsPerPage)
+
+    res.json({
+      data: evaluations,
+      pageInfo: {
+        hasPreviousPage: currentPage > 1,
+        hasNextPage: currentPage < totalPages,
+        totalPages,
+      },
+    })
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
