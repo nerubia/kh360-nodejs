@@ -365,6 +365,19 @@ model email_recipients {
   updated_at DateTime? @db.DateTime(0)
 }
 
+model email_templates {
+  id            Int       @id @default(autoincrement())
+  name          String?   @db.VarChar(255)
+  template_type String?   @db.VarChar(100)
+  is_default    Boolean?
+  subject       String?   @default("") @db.VarChar(255)
+  content       String?   @db.Text
+  created_by_id Int?
+  updated_by_id Int?
+  created_at    DateTime? @db.DateTime(0)
+  updated_at    DateTime? @db.DateTime(0)
+}
+
 model evaluation_administrations {
   id                       Int       @id @default(autoincrement())
   name                     String?   @default("") @db.VarChar(100)
