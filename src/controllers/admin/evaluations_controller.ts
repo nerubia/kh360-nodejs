@@ -64,6 +64,8 @@ export const createEvaluation = async (req: Request, res: Response) => {
       eval_schedule_start_date,
       eval_schedule_end_date,
       remarks,
+      email_subject,
+      email_content,
     } = req.body
 
     await createEvaluationSchema.validate({
@@ -73,6 +75,8 @@ export const createEvaluation = async (req: Request, res: Response) => {
       eval_schedule_start_date,
       eval_schedule_end_date,
       remarks,
+      email_subject,
+      email_content,
     })
 
     const newEvaluation = await prisma.evaluation_administrations.create({
@@ -83,6 +87,8 @@ export const createEvaluation = async (req: Request, res: Response) => {
         eval_schedule_start_date: new Date(eval_schedule_start_date),
         eval_schedule_end_date: new Date(eval_schedule_end_date),
         remarks,
+        email_subject,
+        email_content,
       },
     })
 
