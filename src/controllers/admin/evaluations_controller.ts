@@ -115,7 +115,7 @@ export const getEvaluation = async (req: Request, res: Response) => {
   }
 }
 
-export const setEvaluators = async (req: Request, res: Response) => {
+export const createEvaluees = async (req: Request, res: Response) => {
   try {
     const user = req.user
     const { id } = req.params
