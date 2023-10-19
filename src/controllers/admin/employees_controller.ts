@@ -13,8 +13,13 @@ export const getEmployees = async (req: Request, res: Response) => {
 
     const where = {
       is_active: true,
+      user_details: {
+        user_type: {
+          contains: userType as string,
+        },
+      },
     }
-    
+
     if (name !== undefined) {
       Object.assign(where, {
         OR: [
@@ -28,13 +33,28 @@ export const getEmployees = async (req: Request, res: Response) => {
               contains: name as string,
             },
           },
-        ]
+        ],
       })
     }
-    
+
     const employees = await prisma.users.findMany({
       skip: (currentPage - 1) * itemsPerPage,
       take: itemsPerPage,
+      select: {
+        id: true,
+        email: true,
+        first_name: true,
+        last_name: true,
+        is_active: true,
+        user_details: {
+          select: {
+            user_id: true,
+            start_date: true,
+            user_type: true,
+            user_position: true,
+          },
+        },
+      },
       where,
       orderBy: [
         {
@@ -44,44 +64,16 @@ export const getEmployees = async (req: Request, res: Response) => {
           first_name: "asc",
         },
       ],
-    });
-    const user_details = await prisma.user_details.findMany({
-      select: {
-        user_id: true,
-        start_date: true,
-        user_type: true,
-        user_position: true,
-      },
-      where: {
-        user_type: {
-          contains: userType as string,
-        },
-      },
     })
 
-    const employeeList = employees.map((employee) => {
-    const userDetail = user_details.find((detail) => detail.user_id === employee.id);
-    if (userDetail) {
-      return {
-        id: employee.id,
-        email: employee.email,
-        first_name: employee.first_name,
-        last_name: employee.last_name,
-        is_active: employee.is_active,
-        user_type: userDetail?.user_type,
-        user_position: userDetail?.user_position,
-        start_date: userDetail?.start_date,
-      };
-    }
-    return null
-  }).filter((employee) => employee !== null)
-
-    const totalItems = employeeList.length
+    const totalItems = await prisma.users.count({
+      where,
+    })
 
     const totalPages = Math.ceil(totalItems / itemsPerPage)
 
     res.json({
-      data: employeeList,
+      data: employees,
       pageInfo: {
         hasPreviousPage: currentPage > 1,
         hasNextPage: currentPage < totalPages,

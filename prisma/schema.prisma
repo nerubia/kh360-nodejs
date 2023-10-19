@@ -1175,6 +1175,7 @@ model user_details {
   update_by_id      Int?
   created_at        DateTime? @db.DateTime(0)
   updated_at        DateTime? @db.DateTime(0)
+  users             users    @relation(fields: [id], references: [id], onDelete: Cascade, map: "user_details_user_id")
 
   @@index([cm_id], map: "index_user_details_on_cm_id")
   @@index([user_id], map: "index_user_details_on_user_id")
@@ -1337,6 +1338,7 @@ model users {
   user_leaves               user_leaves[]
   user_profiles             user_profiles?
   user_settings             user_settings[]
+  user_details              user_details?
 
   @@index([birth_date], map: "index_users_on_birth_date")
   @@index([first_name, last_name], map: "index_users_on_first_name_and_last_name")
