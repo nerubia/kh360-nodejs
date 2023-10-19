@@ -106,7 +106,7 @@ export const getEvaluation = async (req: Request, res: Response) => {
     const { id } = req.params
     const evaluation = await prisma.evaluation_administrations.findUnique({
       where: {
-        id: Number(id),
+        id: parseInt(id),
       },
     })
     res.json(evaluation)
@@ -117,19 +117,29 @@ export const getEvaluation = async (req: Request, res: Response) => {
 
 export const setEvaluators = async (req: Request, res: Response) => {
   try {
+    const user = req.user
     const { id } = req.params
     const { employee_ids } = req.body
 
-    // TODO: validate ??
-    // id           - evaluation_administrations
-    // employee_ids - users
-
     const employeeIds = employee_ids as number[]
+
+    if (employeeIds.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Must have at least 1 employee selected" })
+    }
+
+    const currentDate = new Date()
 
     const data = employeeIds.map((employeeId) => {
       return {
-        evaluation_administration_id: Number(id),
+        evaluation_administration_id: parseInt(id),
         user_id: employeeId,
+        status: "pending",
+        created_by_id: user.id,
+        updated_by_id: user.id,
+        created_at: currentDate,
+        updated_at: currentDate,
       }
     })
 
