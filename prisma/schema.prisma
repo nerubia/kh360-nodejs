@@ -501,29 +501,32 @@ model evaluation_templates {
 }
 
 model evaluations {
-  id                           Int       @id @default(autoincrement())
+  id                           Int              @id @default(autoincrement())
   evaluation_template_id       Int?
   evaluation_administration_id Int?
   evaluation_result_id         Int?
   evaluator_id                 Int?
   evaluee_id                   Int?
   project_id                   Int?
-  eval_start_date              DateTime? @db.Date
-  eval_end_date                DateTime? @db.Date
-  percent_involvement          Decimal?  @default(0.00) @db.Decimal(5, 2)
-  score                        Decimal?  @default(0.00) @db.Decimal(5, 2)
-  weight                       Decimal?  @default(0.0000) @db.Decimal(10, 4)
-  weighted_score               Decimal?  @default(0.0000) @db.Decimal(10, 4)
-  zscore                       Decimal?  @default(0.0000) @db.Decimal(10, 4)
-  weighted_zscore              Decimal?  @default(0.0000) @db.Decimal(10, 4)
-  comments                     String?   @db.Text
-  status                       String?   @default("") @db.VarChar(20)
-  batch_name                   String?   @default("") @db.VarChar(255)
-  filename                     String?   @default("") @db.VarChar(255)
-  submission_method            String?   @default("Manual") @db.VarChar(20)
-  submitted_date               DateTime? @db.Date
-  created_at                   DateTime? @db.DateTime(0)
-  updated_at                   DateTime? @db.DateTime(0)
+  project_member_id            Int?
+  for_evaluation               Boolean?         @default(false)
+  eval_start_date              DateTime?        @db.Date
+  eval_end_date                DateTime?        @db.Date
+  percent_involvement          Decimal?         @default(0.00) @db.Decimal(5, 2)
+  score                        Decimal?         @default(0.00) @db.Decimal(5, 2)
+  weight                       Decimal?         @default(0.0000) @db.Decimal(10, 4)
+  weighted_score               Decimal?         @default(0.0000) @db.Decimal(10, 4)
+  zscore                       Decimal?         @default(0.0000) @db.Decimal(10, 4)
+  weighted_zscore              Decimal?         @default(0.0000) @db.Decimal(10, 4)
+  comments                     String?          @db.Text
+  status                       String?          @default("") @db.VarChar(20)
+  batch_name                   String?          @default("") @db.VarChar(255)
+  filename                     String?          @default("") @db.VarChar(255)
+  submission_method            String?          @default("Manual") @db.VarChar(20)
+  submitted_date               DateTime?        @db.Date
+  created_at                   DateTime?        @db.DateTime(0)
+  updated_at                   DateTime?        @db.DateTime(0)
+  project_members              project_members? @relation(fields: [project_member_id], references: [id])
 
   @@index([evaluation_administration_id], map: "index_evaluations_on_evaluation_administration_id")
   @@index([evaluation_result_id], map: "index_evaluations_on_evaluation_result_id")
@@ -898,16 +901,17 @@ model project_infos {
 }
 
 model project_members {
-  id              Int       @id @default(autoincrement())
+  id              Int           @id @default(autoincrement())
   project_id      Int?
   user_id         Int?
   project_role_id Int?
-  start_date      DateTime? @db.Date
-  end_date        DateTime? @db.Date
-  allocation_rate Decimal?  @default(100.00) @db.Decimal(5, 2)
-  remarks         String?   @db.Text
-  created_at      DateTime? @db.DateTime(0)
-  updated_at      DateTime? @db.DateTime(0)
+  start_date      DateTime?     @db.Date
+  end_date        DateTime?     @db.Date
+  allocation_rate Decimal?      @default(100.00) @db.Decimal(5, 2)
+  remarks         String?       @db.Text
+  created_at      DateTime?     @db.DateTime(0)
+  updated_at      DateTime?     @db.DateTime(0)
+  evaluations     evaluations[]
 
   @@index([project_id], map: "index_project_members_on_project_id")
   @@index([project_role_id], map: "index_project_members_on_project_role_id")
