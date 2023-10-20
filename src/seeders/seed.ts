@@ -4,24 +4,35 @@ import { faker } from "@faker-js/faker"
 const prisma = new PrismaClient()
 
 const createUsers = async () => {
+  const userList = [
+    {
+      email: "jlerit@nerubia.com",
+      first_name: "J",
+      last_name: "admin",
+      picture: faker.internet.avatar(),
+    },
+    {
+      email: "eacha@nerubia.com",
+      first_name: "Cat",
+      last_name: "admin",
+    },
+    {
+      email: "nardiente@nerubia.com",
+      first_name: "Nino",
+      last_name: "admin",
+    },
+  ]
+  for (let i = 0; i < 200; i++) {
+    userList.push({
+      email: `email${i}@gmail.com`,
+      first_name: faker.person.firstName(),
+      last_name: faker.person.lastName(),
+      picture: faker.internet.avatar(),
+    })
+  }
   await prisma.users.createMany({
-    data: [
-      {
-        email: "jlerit@nerubia.com",
-        first_name: "J",
-        last_name: "admin",
-      },
-      {
-        email: "eacha@nerubia.com",
-        first_name: "Cat",
-        last_name: "admin",
-      },
-      {
-        email: "nardiente@nerubia.com",
-        first_name: "Nino",
-        last_name: "admin",
-      },
-    ],
+    data: userList,
+    skipDuplicates: true,
   })
 }
 
@@ -79,11 +90,27 @@ export const createEmailTemplates = async () => {
   })
 }
 
+export const createEvaluationResults = async () => {
+  const evaluationResults = []
+  const userCount = await prisma.users.count()
+  for (let i = 1; i <= userCount; i++) {
+    evaluationResults.push({
+      evaluation_administration_id: 1,
+      user_id: i,
+      status: faker.helpers.arrayElement(["reviewed", "pending", "draft"]),
+    })
+  }
+  await prisma.evaluation_results.createMany({
+    data: evaluationResults,
+  })
+}
+
 async function main() {
   await createUsers()
   await createRoles()
   await createEvaluations()
   await createEmailTemplates()
+  await createEvaluationResults()
 }
 
 main()

@@ -452,6 +452,7 @@ model evaluation_results {
   updated_by_id                Int?
   created_at                   DateTime? @db.DateTime(0)
   updated_at                   DateTime? @db.DateTime(0)
+  users                        users?    @relation(fields: [user_id], references: [id])
 
   @@index([evaluation_administration_id], map: "index_evaluation_results_on_evaluation_administration_id")
   @@index([user_id], map: "index_evaluation_results_on_user_id")
@@ -1175,7 +1176,7 @@ model user_details {
   update_by_id      Int?
   created_at        DateTime? @db.DateTime(0)
   updated_at        DateTime? @db.DateTime(0)
-  users             users    @relation(fields: [id], references: [id], onDelete: Cascade, map: "user_details_user_id")
+  users             users     @relation(fields: [id], references: [id], onDelete: Cascade, map: "user_details_user_id")
 
   @@index([cm_id], map: "index_user_details_on_cm_id")
   @@index([user_id], map: "index_user_details_on_user_id")
@@ -1338,6 +1339,7 @@ model users {
   user_leaves               user_leaves[]
   user_profiles             user_profiles?
   user_settings             user_settings[]
+  evaluation_results        evaluation_results[]
   user_details              user_details?
 
   @@index([birth_date], map: "index_users_on_birth_date")
