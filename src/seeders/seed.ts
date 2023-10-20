@@ -71,6 +71,28 @@ const createEvaluations = async () => {
   }
 }
 
+const createUserDetails = async () => {
+  await prisma.user_details.createMany({
+    data: [
+      {
+        user_type: "Regular",
+        user_position: "Project Manager",
+        user_id: 4,
+      },
+      {
+        user_type: "Probationary",
+        user_position: "Quality Assurance",
+        user_id: 5,
+      },
+      {
+        user_type: "Intern",
+        user_position: "Developer",
+        user_id: 6,
+      },
+    ],
+  })
+}
+
 export const createEmailTemplates = async () => {
   await prisma.email_templates.createMany({
     data: [
@@ -110,6 +132,7 @@ async function main() {
   await createRoles()
   await createEvaluations()
   await createEmailTemplates()
+  await createUserDetails()
   await createEvaluationResults()
 }
 
