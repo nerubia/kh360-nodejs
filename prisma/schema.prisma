@@ -1162,7 +1162,7 @@ model user_contact_informations {
 
 model user_details {
   id                Int       @id @default(autoincrement())
-  user_id           Int?
+  user_id           Int?      @unique
   id_no             String?   @db.VarChar(10)
   user_type         String?   @default("probationary") @db.VarChar(100)
   user_position     String?   @default("") @db.VarChar(100)
@@ -1180,7 +1180,7 @@ model user_details {
   update_by_id      Int?
   created_at        DateTime? @db.DateTime(0)
   updated_at        DateTime? @db.DateTime(0)
-  users             users     @relation(fields: [id], references: [id], onDelete: Cascade, map: "user_details_user_id")
+  users             users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "user_details_user_id")
 
   @@index([cm_id], map: "index_user_details_on_cm_id")
   @@index([user_id], map: "index_user_details_on_user_id")
