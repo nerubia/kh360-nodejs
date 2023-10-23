@@ -10,16 +10,19 @@ const createUsers = async () => {
       first_name: "J",
       last_name: "admin",
       picture: faker.internet.avatar(),
+      is_active: true,
     },
     {
       email: "eacha@nerubia.com",
       first_name: "Cat",
       last_name: "admin",
+      is_active: true,
     },
     {
       email: "nardiente@nerubia.com",
       first_name: "Nino",
       last_name: "admin",
+      is_active: true,
     },
   ]
   for (let i = 0; i < 200; i++) {
@@ -28,6 +31,7 @@ const createUsers = async () => {
       first_name: faker.person.firstName(),
       last_name: faker.person.lastName(),
       picture: faker.internet.avatar(),
+      is_active: true,
     })
   }
   await prisma.users.createMany({
@@ -72,24 +76,20 @@ const createEvaluations = async () => {
 }
 
 const createUserDetails = async () => {
+  const userDetailsList = []
+  const userTypes = ["Probationary", "Regular", "Intern"]
+  const userCount = await prisma.users.count()
+  for (let i = 0; i < userCount; i++) {
+    userDetailsList.push({
+      user_id: i,
+      user_type: userTypes[Math.floor(Math.random() * userTypes.length)],
+      user_position: faker.person.jobTitle(),
+      start_date: faker.date.past(),
+    })
+  }
   await prisma.user_details.createMany({
-    data: [
-      {
-        user_type: "Regular",
-        user_position: "Project Manager",
-        user_id: 4,
-      },
-      {
-        user_type: "Probationary",
-        user_position: "Quality Assurance",
-        user_id: 5,
-      },
-      {
-        user_type: "Intern",
-        user_position: "Developer",
-        user_id: 6,
-      },
-    ],
+    data: userDetailsList,
+    skipDuplicates: true,
   })
 }
 
