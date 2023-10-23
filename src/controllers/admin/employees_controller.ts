@@ -1,6 +1,42 @@
 import { type Request, type Response } from "express"
 import prisma from "../../utils/prisma"
 
+export const getAllEmployees = async (req: Request, res: Response) => {
+  try {
+    const employees = await prisma.users.findMany({
+      select: {
+        id: true,
+        email: true,
+        first_name: true,
+        last_name: true,
+        is_active: true,
+        user_details: {
+          select: {
+            user_id: true,
+            start_date: true,
+            user_type: true,
+            user_position: true,
+          },
+        },
+      },
+      orderBy: [
+        {
+          last_name: "asc",
+        },
+        {
+          first_name: "asc",
+        },
+      ],
+    })
+
+    res.json({
+      data: employees,
+    })
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
 export const getEmployees = async (req: Request, res: Response) => {
   try {
     const { name, user_type, page } = req.query

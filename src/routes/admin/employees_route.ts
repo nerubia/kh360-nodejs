@@ -1,8 +1,12 @@
 import express from "express"
-import { getEmployees } from "../../controllers/admin/employees_controller"
+import {
+  getEmployees,
+  getAllEmployees,
+} from "../../controllers/admin/employees_controller"
 
 const router = express.Router()
 
 router.get("/", getEmployees)
+router.get("/all", getAllEmployees)
 
 export default router
