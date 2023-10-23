@@ -100,7 +100,7 @@ export const deleteEvaluee = async (req: Request, res: Response) => {
         evaluation_result_id: parseInt(id),
       },
     })
-    res.json(id)
+    res.json({ id })
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
