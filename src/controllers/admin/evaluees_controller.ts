@@ -86,3 +86,22 @@ export const getEvaluees = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+export const deleteEvaluee = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    await prisma.evaluation_results.deleteMany({
+      where: {
+        id: parseInt(id),
+      },
+    })
+    await prisma.evaluations.deleteMany({
+      where: {
+        evaluation_result_id: parseInt(id),
+      },
+    })
+    res.json(id)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
