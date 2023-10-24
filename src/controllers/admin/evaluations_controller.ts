@@ -115,6 +115,74 @@ export const getEvaluation = async (req: Request, res: Response) => {
   }
 }
 
+export const updateEvaluation = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+
+    const {
+      name,
+      eval_period_start_date,
+      eval_period_end_date,
+      eval_schedule_start_date,
+      eval_schedule_end_date,
+      remarks,
+      email_subject,
+      email_content,
+    } = req.body
+
+    const evaluation = await prisma.evaluation_administrations.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+    })
+
+    if (
+      evaluation?.status === "draft" &&
+      (evaluation.name !== null ||
+        evaluation.eval_period_start_date !== null ||
+        eval_period_end_date !== null ||
+        evaluation.email_subject !== null ||
+        evaluation.email_content !== null)
+    ) {
+      return res.status(400).json({ message: "This action is not allowed" })
+    }
+
+    await createEvaluationSchema.validate({
+      name,
+      eval_period_start_date,
+      eval_period_end_date,
+      eval_schedule_start_date,
+      eval_schedule_end_date,
+      remarks,
+      email_subject,
+      email_content,
+    })
+
+    const updatedEvaluation = await prisma.evaluation_administrations.update({
+      where: {
+        id: parseInt(id),
+      },
+      data: {
+        name,
+        eval_period_start_date: new Date(eval_period_start_date),
+        eval_period_end_date: new Date(eval_period_end_date),
+        eval_schedule_start_date: new Date(eval_schedule_start_date),
+        eval_schedule_end_date: new Date(eval_schedule_end_date),
+        remarks,
+        email_subject,
+        email_content,
+      },
+    })
+
+    res.json(updatedEvaluation)
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
 export const createEvaluees = async (req: Request, res: Response) => {
   try {
     const user = req.user
