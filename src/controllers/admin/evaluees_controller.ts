@@ -47,6 +47,7 @@ export const getEvaluees = async (req: Request, res: Response) => {
         status: true,
         users: {
           select: {
+            slug: true,
             first_name: true,
             last_name: true,
             picture: true,
@@ -101,6 +102,44 @@ export const deleteEvaluee = async (req: Request, res: Response) => {
       },
     })
     res.json({ id })
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+export const getEvaluationTemplates = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const { employee_slug } = req.query
+
+    const user = await prisma.users.findFirst({
+      where: {
+        slug: employee_slug as string,
+      },
+    })
+
+    const evaluations = await prisma.evaluations.findMany({
+      where: {
+        evaluation_template_id: { not: null },
+        evaluation_result_id: parseInt(id),
+        evaluee_id: user?.id,
+      },
+      distinct: ["evaluation_template_id"],
+    })
+
+    const evalTemplateIds = evaluations.map(
+      (evaluation) => evaluation.evaluation_template_id
+    )
+
+    const evalTemplates = await prisma.evaluation_templates.findMany({
+      where: {
+        id: {
+          in: evalTemplateIds as number[],
+        },
+      },
+    })
+
+    res.json(evalTemplates)
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
