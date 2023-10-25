@@ -3,7 +3,13 @@ import { createEvaluationSchema } from "../../utils/validation/evaluations/creat
 import { ValidationError } from "yup"
 import prisma from "../../utils/prisma"
 
-export const getEvaluations = async (req: Request, res: Response) => {
+/**
+ * List evaluation administrations based on provided filters.
+ * @param req.query.name - Filter by name.
+ * @param req.query.status - Filter by status.
+ * @param req.query.page - Page number for pagination.
+ */
+export const index = async (req: Request, res: Response) => {
   try {
     const { name, status, page } = req.query
 
@@ -55,7 +61,18 @@ export const getEvaluations = async (req: Request, res: Response) => {
   }
 }
 
-export const createEvaluation = async (req: Request, res: Response) => {
+/**
+ * Store a new evaluation administration.
+ * @param req.body.name - Name.
+ * @param req.body.eval_period_start_date - Evaluation period start date.
+ * @param req.body.eval_period_end_date - Evaluation period end date.
+ * @param req.body.eval_schedule_start_date - Evaluation schedule start date.
+ * @param req.body.eval_schedule_end_date - Evaluation schedule end date.
+ * @param req.body.remarks - Remarks.
+ * @param req.body.email_subject - Email subject.
+ * @param req.body.email_content - Email content.
+ */
+export const store = async (req: Request, res: Response) => {
   try {
     const {
       name,
@@ -101,7 +118,11 @@ export const createEvaluation = async (req: Request, res: Response) => {
   }
 }
 
-export const getEvaluation = async (req: Request, res: Response) => {
+/**
+ * Get a specific evaluation administration by ID.
+ * @param req.params.id - The unique ID of the evaluation administration
+ */
+export const show = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const evaluation = await prisma.evaluation_administrations.findUnique({
@@ -115,7 +136,19 @@ export const getEvaluation = async (req: Request, res: Response) => {
   }
 }
 
-export const updateEvaluation = async (req: Request, res: Response) => {
+/**
+ * Update an existing evaluation administration by ID.
+ * @param req.params.id - The unique ID of the evaluation administration.
+ * @param req.body.name - Name.
+ * @param req.body.eval_period_start_date - Evaluation period start date.
+ * @param req.body.eval_period_end_date - Evaluation period end date.
+ * @param req.body.eval_schedule_start_date - Evaluation schedule start date.
+ * @param req.body.eval_schedule_end_date - Evaluation schedule end date.
+ * @param req.body.remarks - Remarks.
+ * @param req.body.email_subject - Email subject.
+ * @param req.body.email_content - Email content.
+ */
+export const update = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
 
@@ -183,6 +216,7 @@ export const updateEvaluation = async (req: Request, res: Response) => {
   }
 }
 
+// TODO: Move
 export const createEvaluees = async (req: Request, res: Response) => {
   try {
     const user = req.user
