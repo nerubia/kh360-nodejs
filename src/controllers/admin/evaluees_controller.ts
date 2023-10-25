@@ -47,6 +47,7 @@ export const getEvaluees = async (req: Request, res: Response) => {
         status: true,
         users: {
           select: {
+            slug: true,
             first_name: true,
             last_name: true,
             picture: true,

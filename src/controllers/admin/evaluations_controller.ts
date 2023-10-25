@@ -215,6 +215,156 @@ export const createEvaluees = async (req: Request, res: Response) => {
       data,
     })
 
+    const evaluationAdministration =
+      await prisma.evaluation_administrations.findUnique({
+        where: {
+          id: parseInt(id),
+        },
+      })
+
+    const evaluationResults = await prisma.evaluation_results.findMany({
+      select: {
+        id: true,
+        users: {
+          select: {
+            id: true,
+          },
+        },
+      },
+      where: {
+        evaluation_administration_id: evaluationAdministration?.id,
+      },
+    })
+
+    const hrTemplate = await prisma.evaluation_templates.findFirst({
+      where: {
+        evaluee_role_id: 2,
+      },
+    })
+
+    const hrEvaluators = await prisma.user_roles.findMany({
+      select: {
+        user_id: true,
+      },
+      where: {
+        name: "khv2_hr_evaluators",
+      },
+    })
+
+    evaluationResults.forEach(async (evaluationResult) => {
+      const evalueeId = evaluationResult.users?.id
+
+      const projects = await prisma.project_members.findMany({
+        where: {
+          user_id: evalueeId,
+          OR: [
+            {
+              start_date: {
+                gte:
+                  evaluationAdministration?.eval_period_start_date ??
+                  new Date(),
+                lte:
+                  evaluationAdministration?.eval_period_end_date ?? new Date(),
+              },
+            },
+            {
+              end_date: {
+                gte:
+                  evaluationAdministration?.eval_period_start_date ??
+                  new Date(),
+                lte:
+                  evaluationAdministration?.eval_period_end_date ?? new Date(),
+              },
+            },
+          ],
+        },
+      })
+
+      projects.forEach(async (project) => {
+        const projectId = project.project_id
+        const roleId = project.project_role_id
+
+        const members = await prisma.project_members.findMany({
+          where: {
+            user_id: {
+              not: evalueeId,
+            },
+            project_id: projectId,
+            OR: [
+              {
+                start_date: {
+                  gte:
+                    evaluationAdministration?.eval_period_start_date ??
+                    new Date(),
+                  lte:
+                    evaluationAdministration?.eval_period_end_date ??
+                    new Date(),
+                },
+              },
+              {
+                end_date: {
+                  gte:
+                    evaluationAdministration?.eval_period_start_date ??
+                    new Date(),
+                  lte:
+                    evaluationAdministration?.eval_period_end_date ??
+                    new Date(),
+                },
+              },
+            ],
+          },
+        })
+
+        members.forEach(async (member) => {
+          const evaluatorRoleId = member.project_role_id
+
+          const evaluationTemplate =
+            await prisma.evaluation_templates.findFirst({
+              where: {
+                evaluee_role_id: roleId,
+                evaluator_role_id: evaluatorRoleId,
+              },
+            })
+
+          await prisma.evaluations.create({
+            data: {
+              evaluation_template_id: evaluationTemplate?.id,
+              evaluation_administration_id: evaluationAdministration?.id,
+              evaluation_result_id: evaluationResult.id,
+              evaluator_id: member.user_id,
+              evaluee_id: evalueeId,
+              project_id: projectId,
+              project_member_id: project.id,
+              for_evaluation: false,
+              eval_start_date: project.start_date,
+              eval_end_date: project.end_date,
+              percent_involvement: project.allocation_rate,
+              status: "draft",
+            },
+          })
+        })
+      })
+
+      hrEvaluators.forEach(async (hr) => {
+        await prisma.evaluations.create({
+          data: {
+            evaluation_template_id: hrTemplate?.id,
+            evaluation_administration_id: evaluationAdministration?.id,
+            evaluation_result_id: evaluationResult.id,
+            evaluator_id: hr.user_id,
+            evaluee_id: evalueeId,
+            project_id: null,
+            project_member_id: null,
+            for_evaluation: false,
+            eval_start_date: evaluationAdministration?.eval_period_start_date,
+            eval_end_date: evaluationAdministration?.eval_period_end_date,
+            percent_involvement: 100,
+            status: "draft",
+          },
+        })
+      })
+    })
+
     res.json(employee_ids)
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
