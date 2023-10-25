@@ -6,6 +6,7 @@ const prisma = new PrismaClient()
 const createUsers = async () => {
   const userList = [
     {
+      slug: "j-admin",
       email: "jlerit@nerubia.com",
       first_name: "J",
       last_name: "admin",
@@ -13,12 +14,14 @@ const createUsers = async () => {
       is_active: true,
     },
     {
+      slug: "cat-admin",
       email: "eacha@nerubia.com",
       first_name: "Cat",
       last_name: "admin",
       is_active: true,
     },
     {
+      slug: "nino-admin",
       email: "nardiente@nerubia.com",
       first_name: "Nino",
       last_name: "admin",
@@ -26,10 +29,13 @@ const createUsers = async () => {
     },
   ]
   for (let i = 0; i < 200; i++) {
+    const firstName = faker.person.firstName()
+    const lastName = faker.person.lastName()
     userList.push({
+      slug: `${firstName.toLowerCase()}-${lastName.toLowerCase()}`,
       email: `email${i}@gmail.com`,
-      first_name: faker.person.firstName(),
-      last_name: faker.person.lastName(),
+      first_name: firstName,
+      last_name: lastName,
       picture: faker.internet.avatar(),
       is_active: true,
     })
