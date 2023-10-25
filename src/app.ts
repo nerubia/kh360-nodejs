@@ -11,7 +11,8 @@ import { adminMiddleware } from "./middlewares/admin_middleware"
 import homeRoute from "./routes/home_route"
 import authRoute from "./routes/auth_route"
 import userRoute from "./routes/user_route"
-import evaluationsRoute from "./routes/admin/evaluations_route"
+
+import evaluationAdministrationsRoute from "./routes/admin/evaluation_administrations_route"
 import employeesRoute from "./routes/admin/employees_route"
 import evalueesRoute from "./routes/admin/evaluees_route"
 import emailTemplatesRoute from "./routes/admin/email_templates_route"
@@ -36,7 +37,15 @@ app.use("/auth", authRoute)
 
 app.use("/user", authMiddleware, userRoute)
 
-app.use("/admin/evaluations", adminMiddleware, evaluationsRoute)
+/**
+ * Admin routes
+ */
+
+app.use(
+  "/admin/evaluation-administrations",
+  adminMiddleware,
+  evaluationAdministrationsRoute
+)
 app.use("/admin/employees", adminMiddleware, employeesRoute)
 app.use("/admin/evaluees", adminMiddleware, evalueesRoute)
 app.use("/admin/email/templates", adminMiddleware, emailTemplatesRoute)
