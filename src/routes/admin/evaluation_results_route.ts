@@ -1,16 +1,18 @@
 import express from "express"
 import {
-  deleteEvaluee,
+  deleteEvaluationResult,
   getEvaluationTemplates,
-  getEvaluees,
+  index,
   show,
-} from "../../controllers/admin/evaluees_controller"
+} from "../../controllers/admin/evaluation_results_controller"
 
 const router = express.Router()
 
-router.get("/", getEvaluees)
+router.get("/", index)
 router.get("/:id", show)
-router.delete("/:id", deleteEvaluee)
+router.delete("/:id", deleteEvaluationResult)
+
+// TODO: Refactor
 router.get("/:id/templates", getEvaluationTemplates)
 
 export default router

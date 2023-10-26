@@ -1,8 +1,14 @@
 import { type Request, type Response } from "express"
 import prisma from "../../utils/prisma"
 
-// TODO: Refactor
-export const getEvaluees = async (req: Request, res: Response) => {
+/**
+ * List evaluation results based on provided filters.
+ * @param req.query.evaluation_administration_id - Filter by evaluation administration id.
+ * @param req.query.name - Filter by name.
+ * @param req.query.status - Filter by status.
+ * @param req.query.page - Page number for pagination.
+ */
+export const index = async (req: Request, res: Response) => {
   try {
     const { evaluation_administration_id, name, status, page } = req.query
 
@@ -119,8 +125,11 @@ export const show = async (req: Request, res: Response) => {
   }
 }
 
-// TODO: Refactor
-export const deleteEvaluee = async (req: Request, res: Response) => {
+/**
+ * Delete a specific evaluation result by ID.
+ * @param req.params.id - The unique ID of the evaluation result
+ */
+export const deleteEvaluationResult = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     await prisma.evaluation_results.deleteMany({
