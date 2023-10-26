@@ -1,6 +1,7 @@
 import { type Request, type Response } from "express"
 import prisma from "../../utils/prisma"
 
+// TODO: Refactor
 export const getEvaluees = async (req: Request, res: Response) => {
   try {
     const { evaluation_administration_id, name, status, page } = req.query
@@ -88,6 +89,37 @@ export const getEvaluees = async (req: Request, res: Response) => {
   }
 }
 
+/**
+ * Get a specific evaluation result by ID.
+ * @param req.params.id - The unique ID of the evaluation result
+ */
+export const show = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const evaluationResult = await prisma.evaluation_results.findUnique({
+      select: {
+        id: true,
+        status: true,
+        users: {
+          select: {
+            slug: true,
+            first_name: true,
+            last_name: true,
+            picture: true,
+          },
+        },
+      },
+      where: {
+        id: parseInt(id),
+      },
+    })
+    res.json(evaluationResult)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+// TODO: Refactor
 export const deleteEvaluee = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
@@ -107,22 +139,15 @@ export const deleteEvaluee = async (req: Request, res: Response) => {
   }
 }
 
+// TODO: Refactor
 export const getEvaluationTemplates = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params
-    const { employee_slug } = req.query
-
-    const user = await prisma.users.findFirst({
-      where: {
-        slug: employee_slug as string,
-      },
-    })
+    const { evaluation_result_id } = req.query
 
     const evaluations = await prisma.evaluations.findMany({
       where: {
         evaluation_template_id: { not: null },
-        evaluation_result_id: parseInt(id),
-        evaluee_id: user?.id,
+        evaluation_result_id: parseInt(evaluation_result_id as string),
       },
       distinct: ["evaluation_template_id"],
     })
