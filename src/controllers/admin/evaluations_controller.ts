@@ -22,6 +22,7 @@ export const index = async (req: Request, res: Response) => {
         evaluation_template_id: parseInt(evaluation_template_id as string),
         evaluation_result_id: parseInt(evaluation_result_id as string),
       },
+      distinct: ["evaluator_id", "project_id"],
     })
 
     const finalEvaluations = await Promise.all(
@@ -53,9 +54,9 @@ export const index = async (req: Request, res: Response) => {
         })
         return {
           id: evaluation.id,
-          percent_involvement: evaluation.percent_involvement,
           eval_start_date: evaluation.eval_start_date,
           eval_end_date: evaluation.eval_end_date,
+          percent_involvement: evaluation.percent_involvement,
           evaluator,
           project,
           project_role: projectRole,
