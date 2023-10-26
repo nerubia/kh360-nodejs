@@ -13,6 +13,7 @@ import authRoute from "./routes/auth_route"
 import userRoute from "./routes/user_route"
 
 import evaluationAdministrationsRoute from "./routes/admin/evaluation_administrations_route"
+import evaluationsRoute from "./routes/admin/evaluations_route"
 import employeesRoute from "./routes/admin/employees_route"
 import evalueesRoute from "./routes/admin/evaluees_route"
 import emailTemplatesRoute from "./routes/admin/email_templates_route"
@@ -46,6 +47,9 @@ app.use(
   adminMiddleware,
   evaluationAdministrationsRoute
 )
+app.use("/admin/evaluations", adminMiddleware, evaluationsRoute)
+
+// TODO: Refactor
 app.use("/admin/employees", adminMiddleware, employeesRoute)
 app.use("/admin/evaluees", adminMiddleware, evalueesRoute)
 app.use("/admin/email/templates", adminMiddleware, emailTemplatesRoute)
