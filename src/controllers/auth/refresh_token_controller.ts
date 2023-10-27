@@ -1,6 +1,6 @@
 import { type Request, type Response } from "express"
 import jwt from "jsonwebtoken"
-import { type UserToken } from "../../types/user_token"
+import { type UserToken } from "../../types/userTokenType"
 import prisma from "../../utils/prisma"
 
 export const refreshToken = async (req: Request, res: Response) => {
