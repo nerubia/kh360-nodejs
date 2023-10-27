@@ -16,7 +16,7 @@ import evaluationAdministrationsRoute from "./routes/admin/evaluation_administra
 import evaluationResultsRoute from "./routes/admin/evaluation_results_route"
 import evaluationsRoute from "./routes/admin/evaluations_route"
 
-import employeesRoute from "./routes/admin/employees_route"
+import usersRoute from "./routes/admin/users_route"
 import emailTemplatesRoute from "./routes/admin/email_templates_route"
 
 const app: Application = express()
@@ -50,9 +50,9 @@ app.use(
 )
 app.use("/admin/evaluation-results", adminMiddleware, evaluationResultsRoute)
 app.use("/admin/evaluations", adminMiddleware, evaluationsRoute)
+app.use("/admin/users", adminMiddleware, usersRoute)
 
 // TODO: Refactor
-app.use("/admin/employees", adminMiddleware, employeesRoute)
 app.use("/admin/email/templates", adminMiddleware, emailTemplatesRoute)
 
 export default app
