@@ -99,7 +99,6 @@ export const index = async (req: Request, res: Response) => {
 
 /**
  * Store multiple evaluation results.
- * @param req.body.name - Name.
  * @param req.body.evaluation_administration_id - Evaluation administration id.
  * @param req.body.employee_ids - Employee IDs.
  */
