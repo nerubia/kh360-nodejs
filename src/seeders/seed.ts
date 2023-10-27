@@ -1,5 +1,7 @@
 import { PrismaClient } from "@prisma/client"
 import { faker } from "@faker-js/faker"
+import { EvaluationAdministrationStatus } from "../types/evaluationAdministrationType"
+import { EvaluationResultStatus } from "../types/evaluationResultType"
 
 const prisma = new PrismaClient()
 
@@ -18,6 +20,7 @@ const createUsers = async () => {
       email: "eacha@nerubia.com",
       first_name: "Cat",
       last_name: "admin",
+      picture: faker.internet.avatar(),
       is_active: true,
     },
     {
@@ -25,6 +28,7 @@ const createUsers = async () => {
       email: "nardiente@nerubia.com",
       first_name: "Nino",
       last_name: "admin",
+      picture: faker.internet.avatar(),
       is_active: true,
     },
   ]
@@ -74,7 +78,7 @@ const createEvaluations = async () => {
         eval_schedule_end_date: faker.date.anytime(),
         eval_period_start_date: faker.date.anytime(),
         eval_period_end_date: faker.date.anytime(),
-        status: faker.helpers.arrayElement(["completed", "ongoing", "draft"]),
+        status: faker.helpers.enumValue(EvaluationAdministrationStatus),
         created_at: new Date(),
       },
     })
@@ -125,7 +129,7 @@ export const createEvaluationResults = async () => {
     evaluationResults.push({
       evaluation_administration_id: 1,
       user_id: i,
-      status: faker.helpers.arrayElement(["reviewed", "pending", "draft"]),
+      status: faker.helpers.enumValue(EvaluationResultStatus),
     })
   }
   await prisma.evaluation_results.createMany({

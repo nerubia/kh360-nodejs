@@ -3,7 +3,7 @@ import bodyParser from "body-parser"
 import cookieParser from "cookie-parser"
 import cors from "cors"
 
-import { type UserToken } from "./types/user_token"
+import { type UserToken } from "./types/userTokenType"
 
 import { authMiddleware } from "./middlewares/auth_middleware"
 import { adminMiddleware } from "./middlewares/admin_middleware"
