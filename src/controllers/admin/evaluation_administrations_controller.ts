@@ -130,11 +130,12 @@ export const show = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
 
-    const evaluationAdministration = await prisma.evaluation_administrations.findUnique({
-      where: {
-        id: parseInt(id),
-      },
-    })
+    const evaluationAdministration =
+      await prisma.evaluation_administrations.findUnique({
+        where: {
+          id: parseInt(id),
+        },
+      })
 
     const evaluationResults = await prisma.evaluation_results.findMany({
       select: {
@@ -146,79 +147,98 @@ export const show = async (req: Request, res: Response) => {
       },
     })
 
-    const evaluation_results_details = await Promise.all(evaluationResults.map(async (evaluationResult) => {
-      const evaluations = await prisma.evaluations.findMany({
-        where: {
-          evaluation_administration_id: parseInt(id),
-          evaluee_id: evaluationResult.users?.id,
-        },
-        distinct: ["evaluator_id", "project_id"],
-      })
-
-      const evaluationDetails = await Promise.all(evaluations.map(async (evaluation) => {
-        const evaluation_template = await prisma.evaluation_templates.findFirst({
+    const evaluation_results_details = await Promise.all(
+      evaluationResults.map(async (evaluationResult) => {
+        const evaluations = await prisma.evaluations.findMany({
           where: {
-            id: evaluation.evaluation_template_id as number,
+            evaluation_administration_id: parseInt(id),
+            evaluee_id: evaluationResult.users?.id,
+            for_evaluation: true,
           },
+          distinct: ["evaluator_id", "project_id"],
         })
 
-        const evaluee_role = await prisma.project_roles.findFirst({
-          where: {
-            id: evaluation_template?.evaluee_role_id ?? undefined,
-          }
-        })
+        const evaluationDetails = await Promise.all(
+          evaluations.map(async (evaluation) => {
+            const evaluation_template =
+              await prisma.evaluation_templates.findFirst({
+                where: {
+                  id: evaluation.evaluation_template_id as number,
+                },
+              })
 
-        const evaluator_role = await prisma.project_roles.findFirst({
-          where: {
-            id: evaluation_template?.evaluator_role_id ?? undefined,
-          }
-        })
+            const evaluee_role = await prisma.project_roles.findFirst({
+              where: {
+                id: evaluation_template?.evaluee_role_id ?? undefined,
+              },
+            })
 
-        const evaluator = await prisma.users.findFirst({
-          where: {
-            id: evaluation.evaluator_id as number,
-          },
-        })
+            const evaluator_role = await prisma.project_roles.findFirst({
+              where: {
+                id: evaluation_template?.evaluator_role_id ?? undefined,
+              },
+            })
 
-        const project = await prisma.projects.findFirst({
-          where: {
-            id: evaluation.project_id as number,
-          },
-        })
-  
-        return {
-          id,
-          evaluator,
-          project,
-          evaluee_role,
-          evaluator_role,
-          percent_involvement: evaluation.percent_involvement,
-          eval_start_date: evaluation.eval_start_date,
-          eval_end_date: evaluation.eval_end_date,
-          evaluation_template_name: evaluation_template?.display_name,
-        }
-      }))
+            const evaluator = await prisma.users.findFirst({
+              where: {
+                id: evaluation.evaluator_id as number,
+              },
+            })
 
-      const evaluation_details_grouped = evaluationDetails.reduce((evaluation, group) => {
-        const found = evaluation.find((x) => x.evaluation_template_name === group.evaluation_template_name)
-      
-        if (found) {
-          found.evaluation_details.push(group)
-        } else {
-          const evaluationTemplateName = group.evaluation_template_name || ""
-          evaluation.push({
-            evaluation_template_name: evaluationTemplateName,
-            evaluation_details: [group],
+            const project = await prisma.projects.findFirst({
+              where: {
+                id: evaluation.project_id as number,
+              },
+            })
+
+            return {
+              id,
+              evaluator,
+              project,
+              evaluee_role,
+              evaluator_role,
+              percent_involvement: evaluation.percent_involvement,
+              eval_start_date: evaluation.eval_start_date,
+              eval_end_date: evaluation.eval_end_date,
+              evaluation_template_id: evaluation_template?.id,
+              evaluation_template_name: evaluation_template?.display_name,
+            }
           })
-        }
-        return evaluation
-      }, [] as { evaluation_template_name: string, evaluation_details: any[] }[])
+        )
 
-      return {
-        evaluee: evaluationResult.users,
-        evaluation_templates: evaluation_details_grouped,
-      }
-    }))
+        const evaluation_details_grouped = evaluationDetails.reduce<
+          Array<{
+            evaluation_template_id: number
+            evaluation_template_name: string
+            evaluation_details: Array<Record<string, unknown>>
+          }>
+        >((evaluation, group) => {
+          const found = evaluation.find(
+            (x) => x.evaluation_template_id === group.evaluation_template_id
+          )
+
+          if (found !== null && found !== undefined) {
+            found?.evaluation_details.push(group)
+          } else {
+            const evaluationTemplateName = group.evaluation_template_name ?? ""
+            const evaluationTemplateId = group.evaluation_template_id ?? 0
+
+            evaluation.push({
+              evaluation_template_id: evaluationTemplateId,
+              evaluation_template_name: evaluationTemplateName,
+              evaluation_details: [group],
+            })
+          }
+          return evaluation
+        }, [])
+
+        return {
+          id: evaluationResult.id,
+          evaluee: evaluationResult.users,
+          evaluation_templates: evaluation_details_grouped,
+        }
+      })
+    )
 
     Object.assign(evaluationAdministration as Record<string, unknown>, {
       evaluation_results: evaluation_results_details,
