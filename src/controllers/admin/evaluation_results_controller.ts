@@ -306,6 +306,7 @@ export const show = async (req: Request, res: Response) => {
     const evaluationResult = await prisma.evaluation_results.findUnique({
       select: {
         id: true,
+        evaluation_administration_id: true,
         status: true,
         users: {
           select: {
@@ -320,7 +321,30 @@ export const show = async (req: Request, res: Response) => {
         id: parseInt(id),
       },
     })
-    res.json(evaluationResult)
+
+    const previousEvaluationResult = await prisma.evaluation_results.findFirst({
+      where: {
+        id: { lt: evaluationResult?.id },
+        evaluation_administration_id:
+          evaluationResult?.evaluation_administration_id,
+      },
+      orderBy: { id: "desc" },
+    })
+
+    const nextEvaluationResult = await prisma.evaluation_results.findFirst({
+      where: {
+        id: { gt: evaluationResult?.id },
+        evaluation_administration_id:
+          evaluationResult?.evaluation_administration_id,
+      },
+      orderBy: { id: "asc" },
+    })
+
+    res.json({
+      data: evaluationResult,
+      previousId: previousEvaluationResult?.id,
+      nextId: nextEvaluationResult?.id,
+    })
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
