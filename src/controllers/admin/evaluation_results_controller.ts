@@ -298,7 +298,7 @@ export const store = async (req: Request, res: Response) => {
 
 /**
  * Get a specific evaluation result by ID.
- * @param req.params.id - The unique ID of the evaluation result
+ * @param req.params.id - The unique ID of the evaluation result.
  */
 export const show = async (req: Request, res: Response) => {
   try {
@@ -352,9 +352,9 @@ export const show = async (req: Request, res: Response) => {
 
 /**
  * Delete a specific evaluation result by ID.
- * @param req.params.id - The unique ID of the evaluation result
+ * @param req.params.id - The unique ID of the evaluation result.
  */
-export const deleteEvaluationResult = async (req: Request, res: Response) => {
+export const destroy = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     await prisma.evaluation_results.deleteMany({
@@ -368,6 +368,44 @@ export const deleteEvaluationResult = async (req: Request, res: Response) => {
       },
     })
     res.json({ id })
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Update evaluation result status by ID.
+ * @param req.params.id - The unique ID of the evaluation result.
+ * @param req.body.status - Evaluation result status.
+ */
+export const setStatus = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const { status } = req.body
+
+    const evaluationResult = await prisma.evaluation_results.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+    })
+
+    if (evaluationResult === null) {
+      return res.status(400).json({ message: "Invalid id" })
+    }
+
+    await prisma.evaluation_results.update({
+      where: {
+        id: evaluationResult.id,
+      },
+      data: {
+        status,
+      },
+    })
+
+    res.json({
+      id,
+      status,
+    })
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
