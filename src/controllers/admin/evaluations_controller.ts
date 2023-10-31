@@ -1,5 +1,6 @@
 import { type Request, type Response } from "express"
 import prisma from "../../utils/prisma"
+import { EvaluationStatus } from "../../types/evaluationType"
 
 /**
  * List evaluations based on provided filters.
@@ -60,11 +61,51 @@ export const index = async (req: Request, res: Response) => {
           evaluator,
           project,
           project_role: projectRole,
+          for_evaluation: evaluation.for_evaluation,
         }
       })
     )
 
     res.json(finalEvaluations)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Update for_evaluation by ID
+ * @param req.params.id - The unique ID of the evaluation.
+ * @param req.body.for_evaluation - Evaluation for_evaluation.
+ */
+export const setForEvaluation = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const { for_evaluation } = req.body
+
+    const evaluation = await prisma.evaluations.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+    })
+
+    if (evaluation === null) {
+      return res.status(400).json({ message: "Invalid id" })
+    }
+
+    await prisma.evaluations.update({
+      where: {
+        id: evaluation.id,
+      },
+      data: {
+        status:
+          for_evaluation === true
+            ? EvaluationStatus.Draft
+            : EvaluationStatus.Excluded,
+        for_evaluation,
+      },
+    })
+
+    res.json({ id })
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
