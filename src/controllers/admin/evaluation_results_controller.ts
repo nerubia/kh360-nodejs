@@ -2,6 +2,7 @@ import { type Request, type Response } from "express"
 import prisma from "../../utils/prisma"
 import { EvaluationResultStatus } from "../../types/evaluationResultType"
 import { EvaluationStatus } from "../../types/evaluationType"
+import { Decimal } from "@prisma/client/runtime/library"
 
 /**
  * List evaluation results based on provided filters.
@@ -117,13 +118,22 @@ export const store = async (req: Request, res: Response) => {
         .json({ message: "Must have at least 1 employee selected" })
     }
 
+    const evaluationAdministration =
+      await prisma.evaluation_administrations.findUnique({
+        where: {
+          id: parseInt(evaluation_administration_id as string),
+        },
+      })
+
+    if (evaluationAdministration === null) {
+      return res.status(400).json({ message: "Invalid id" })
+    }
+
     const currentDate = new Date()
 
     const data = employeeIds.map((employeeId) => {
       return {
-        evaluation_administration_id: parseInt(
-          evaluation_administration_id as string
-        ),
+        evaluation_administration_id: evaluationAdministration.id,
         user_id: employeeId,
         status: EvaluationResultStatus.ForReview,
         created_by_id: user.id,
@@ -137,13 +147,6 @@ export const store = async (req: Request, res: Response) => {
       data,
     })
 
-    const evaluationAdministration =
-      await prisma.evaluation_administrations.findUnique({
-        where: {
-          id: parseInt(evaluation_administration_id as string),
-        },
-      })
-
     const evaluationResults = await prisma.evaluation_results.findMany({
       select: {
         id: true,
@@ -154,7 +157,7 @@ export const store = async (req: Request, res: Response) => {
         },
       },
       where: {
-        evaluation_administration_id: evaluationAdministration?.id,
+        evaluation_administration_id: evaluationAdministration.id,
       },
     })
 
@@ -183,26 +186,49 @@ export const store = async (req: Request, res: Response) => {
             {
               start_date: {
                 gte:
-                  evaluationAdministration?.eval_period_start_date ??
-                  new Date(),
+                  evaluationAdministration.eval_period_start_date ?? new Date(),
                 lte:
-                  evaluationAdministration?.eval_period_end_date ?? new Date(),
+                  evaluationAdministration.eval_period_end_date ?? new Date(),
               },
             },
             {
               end_date: {
                 gte:
-                  evaluationAdministration?.eval_period_start_date ??
-                  new Date(),
+                  evaluationAdministration.eval_period_start_date ?? new Date(),
                 lte:
-                  evaluationAdministration?.eval_period_end_date ?? new Date(),
+                  evaluationAdministration.eval_period_end_date ?? new Date(),
               },
             },
           ],
         },
       })
 
-      projects.forEach(async (project) => {
+      const evaluations: Array<{
+        evaluation_template_id: number
+        evaluation_administration_id: number | undefined
+        evaluation_result_id: number
+        evaluator_id: number | null
+        evaluee_id: number | undefined
+        project_id: number | null
+        project_member_id: number | null
+        for_evaluation: boolean
+        eval_start_date: Date | null
+        eval_end_date: Date | null
+        percent_involvement: Decimal | null
+        status: string
+      }> = []
+
+      const evaluationResultDetails: Array<{
+        evaluation_administration_id: number | undefined
+        user_id: number | undefined
+        evaluation_result_id: number
+        evaluation_template_id: number
+        weight: Decimal | null
+        created_at: Date
+        updated_at: Date
+      }> = []
+
+      for (const project of projects) {
         const projectId = project.project_id
         const roleId = project.project_role_id
 
@@ -216,28 +242,26 @@ export const store = async (req: Request, res: Response) => {
               {
                 start_date: {
                   gte:
-                    evaluationAdministration?.eval_period_start_date ??
+                    evaluationAdministration.eval_period_start_date ??
                     new Date(),
                   lte:
-                    evaluationAdministration?.eval_period_end_date ??
-                    new Date(),
+                    evaluationAdministration.eval_period_end_date ?? new Date(),
                 },
               },
               {
                 end_date: {
                   gte:
-                    evaluationAdministration?.eval_period_start_date ??
+                    evaluationAdministration.eval_period_start_date ??
                     new Date(),
                   lte:
-                    evaluationAdministration?.eval_period_end_date ??
-                    new Date(),
+                    evaluationAdministration.eval_period_end_date ?? new Date(),
                 },
               },
             ],
           },
         })
 
-        members.forEach(async (member) => {
+        for (const member of members) {
           const evaluatorRoleId = member.project_role_id
 
           const evaluationTemplate =
@@ -249,46 +273,78 @@ export const store = async (req: Request, res: Response) => {
             })
 
           if (evaluationTemplate !== null) {
-            await prisma.evaluations.create({
-              data: {
-                evaluation_template_id: evaluationTemplate.id,
-                evaluation_administration_id: evaluationAdministration?.id,
-                evaluation_result_id: evaluationResult.id,
-                evaluator_id: member.user_id,
-                evaluee_id: evalueeId,
-                project_id: projectId,
-                project_member_id: project.id,
-                for_evaluation: false,
-                eval_start_date: project.start_date,
-                eval_end_date: project.end_date,
-                percent_involvement: project.allocation_rate,
-                status: EvaluationStatus.Draft,
-              },
+            evaluations.push({
+              evaluation_template_id: evaluationTemplate.id,
+              evaluation_administration_id: evaluationAdministration.id,
+              evaluation_result_id: evaluationResult.id,
+              evaluator_id: member.user_id,
+              evaluee_id: evalueeId,
+              project_id: projectId,
+              project_member_id: project.id,
+              for_evaluation: false,
+              eval_start_date: project.start_date,
+              eval_end_date: project.end_date,
+              percent_involvement: project.allocation_rate,
+              status: EvaluationStatus.Draft,
             })
+
+            const evaluationResultDetail = evaluationResultDetails.find(
+              (evaluationResultDetail) =>
+                evaluationResultDetail.evaluation_template_id ===
+                evaluationTemplate.id
+            )
+
+            if (evaluationResultDetail === undefined) {
+              evaluationResultDetails.push({
+                evaluation_administration_id: evaluationAdministration.id,
+                user_id: evalueeId,
+                evaluation_result_id: evaluationResult.id,
+                evaluation_template_id: evaluationTemplate.id,
+                weight: evaluationTemplate.rate,
+                created_at: currentDate,
+                updated_at: currentDate,
+              })
+            }
           }
-        })
-      })
+        }
+      }
 
       if (hrTemplate !== null) {
-        hrEvaluators.forEach(async (hr) => {
-          await prisma.evaluations.create({
-            data: {
-              evaluation_template_id: hrTemplate.id,
-              evaluation_administration_id: evaluationAdministration?.id,
-              evaluation_result_id: evaluationResult.id,
-              evaluator_id: hr.user_id,
-              evaluee_id: evalueeId,
-              project_id: null,
-              project_member_id: null,
-              for_evaluation: false,
-              eval_start_date: evaluationAdministration?.eval_period_start_date,
-              eval_end_date: evaluationAdministration?.eval_period_end_date,
-              percent_involvement: 100,
-              status: EvaluationStatus.Draft,
-            },
+        for (const hr of hrEvaluators) {
+          evaluations.push({
+            evaluation_template_id: hrTemplate.id,
+            evaluation_administration_id: evaluationAdministration.id,
+            evaluation_result_id: evaluationResult.id,
+            evaluator_id: hr.user_id,
+            evaluee_id: evalueeId,
+            project_id: null,
+            project_member_id: null,
+            for_evaluation: false,
+            eval_start_date: evaluationAdministration.eval_period_start_date,
+            eval_end_date: evaluationAdministration.eval_period_end_date,
+            percent_involvement: new Decimal(100),
+            status: EvaluationStatus.Draft,
           })
+        }
+
+        evaluationResultDetails.push({
+          evaluation_administration_id: evaluationAdministration.id,
+          user_id: evalueeId,
+          evaluation_result_id: evaluationResult.id,
+          evaluation_template_id: hrTemplate.id,
+          weight: hrTemplate.rate,
+          created_at: currentDate,
+          updated_at: currentDate,
         })
       }
+
+      await prisma.evaluations.createMany({
+        data: evaluations,
+      })
+
+      await prisma.evaluation_result_details.createMany({
+        data: evaluationResultDetails,
+      })
     })
 
     res.json(employee_ids)
