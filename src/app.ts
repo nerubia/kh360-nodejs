@@ -14,6 +14,7 @@ import userRoute from "./routes/user_route"
 
 import evaluationAdministrationsRoute from "./routes/admin/evaluation_administrations_route"
 import evaluationResultsRoute from "./routes/admin/evaluation_results_route"
+import evaluationTemplateContentsRoute from "./routes/admin/evaluation_template_contents_route"
 import evaluationsRoute from "./routes/admin/evaluations_route"
 
 import usersRoute from "./routes/admin/users_route"
@@ -49,6 +50,11 @@ app.use(
   evaluationAdministrationsRoute
 )
 app.use("/admin/evaluation-results", adminMiddleware, evaluationResultsRoute)
+app.use(
+  "/admin/evaluation-template-contents",
+  adminMiddleware,
+  evaluationTemplateContentsRoute
+)
 app.use("/admin/evaluations", adminMiddleware, evaluationsRoute)
 app.use("/admin/users", adminMiddleware, usersRoute)
 
