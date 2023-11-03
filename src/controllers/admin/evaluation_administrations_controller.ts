@@ -5,6 +5,7 @@ import prisma from "../../utils/prisma"
 import { EvaluationAdministrationStatus } from "../../types/evaluationAdministrationType"
 import { EvaluationStatus } from "../../types/evaluationType"
 import { EvaluationResultStatus } from "../../types/evaluationResultType"
+import { type Decimal } from "@prisma/client/runtime/library"
 
 /**
  * List evaluation administrations based on provided filters.
@@ -317,7 +318,17 @@ export const generate = async (req: Request, res: Response) => {
       },
     })
 
-    evaluationResults.forEach(async (evaluationResult) => {
+    const evaluationRatings: Array<{
+      evaluation_administration_id: number
+      evaluation_id: number
+      evaluation_template_id: number | null
+      evaluation_template_content_id: number
+      percentage: Decimal | null
+      created_at: Date
+      updated_at: Date
+    }> = []
+
+    for (const evaluationResult of evaluationResults) {
       const evaluations = await prisma.evaluations.findMany({
         where: {
           evaluation_result_id: evaluationResult.id,
@@ -325,7 +336,7 @@ export const generate = async (req: Request, res: Response) => {
         distinct: ["evaluator_id", "project_id"],
       })
 
-      evaluations.forEach(async (evaluation) => {
+      for (const evaluation of evaluations) {
         if (
           evaluation.status === EvaluationStatus.Draft &&
           evaluation.for_evaluation === true
@@ -350,23 +361,23 @@ export const generate = async (req: Request, res: Response) => {
               },
             })
 
-          evaluationTemplateContents.forEach(
-            async (evaluationTemplateContent) => {
-              await prisma.evaluation_ratings.create({
-                data: {
-                  evaluation_administration_id: evaluationAdministration.id,
-                  evaluation_id: evaluation.id,
-                  evaluation_template_id: evaluation.evaluation_template_id,
-                  evaluation_template_content_id: evaluationTemplateContent.id,
-                  percentage: evaluationTemplateContent.rate,
-                  created_at: currentDate,
-                  updated_at: currentDate,
-                },
-              })
-            }
-          )
+          for (const evaluationTemplateContent of evaluationTemplateContents) {
+            evaluationRatings.push({
+              evaluation_administration_id: evaluationAdministration.id,
+              evaluation_id: evaluation.id,
+              evaluation_template_id: evaluation.evaluation_template_id,
+              evaluation_template_content_id: evaluationTemplateContent.id,
+              percentage: evaluationTemplateContent.rate,
+              created_at: currentDate,
+              updated_at: currentDate,
+            })
+          }
         }
-      })
+      }
+    }
+
+    await prisma.evaluation_ratings.createMany({
+      data: evaluationRatings,
     })
 
     res.json({ id })
