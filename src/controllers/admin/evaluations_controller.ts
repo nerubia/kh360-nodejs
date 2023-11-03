@@ -30,6 +30,7 @@ export const index = async (req: Request, res: Response) => {
       evaluations.map(async (evaluation) => {
         const evaluator = await prisma.users.findUnique({
           select: {
+            id: true,
             first_name: true,
             last_name: true,
           },
@@ -39,6 +40,7 @@ export const index = async (req: Request, res: Response) => {
         })
         const project = await prisma.projects.findUnique({
           select: {
+            id: true,
             name: true,
           },
           where: {
@@ -47,6 +49,7 @@ export const index = async (req: Request, res: Response) => {
         })
         const projectRole = await prisma.project_roles.findUnique({
           select: {
+            id: true,
             name: true,
           },
           where: {
