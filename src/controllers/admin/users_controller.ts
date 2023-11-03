@@ -54,6 +54,7 @@ export const index = async (req: Request, res: Response) => {
         is_active: true,
         user_details: {
           select: {
+            id: true,
             user_id: true,
             start_date: true,
             user_type: true,
@@ -103,6 +104,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
         is_active: true,
         user_details: {
           select: {
+            id: true,
             user_id: true,
             start_date: true,
             user_type: true,
