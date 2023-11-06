@@ -5,12 +5,14 @@ import {
   getProfile,
   sendSampleMail,
   submitAnswer,
+  submitComment,
 } from "../controllers/user/user_controller"
 
 const router = express.Router()
 
 router.get("/evaluations", getEvaluations)
 router.post("/evaluations/:id/submit-answer", submitAnswer)
+router.post("/evaluations/:id/submit-comment", submitComment)
 
 // TODO: Refactor
 router.get("/profile", getProfile)

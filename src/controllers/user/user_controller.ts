@@ -172,6 +172,50 @@ export const submitAnswer = async (req: Request, res: Response) => {
   }
 }
 
+/**
+ * Submit comment by ID
+ * @param req.params.id - The unique ID of the evaluation.
+ * @param req.body.comment - Evaluation comment.
+ */
+export const submitComment = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+    const { id } = req.params
+    const { comment } = req.body
+
+    const evaluation = await prisma.evaluations.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+    })
+
+    if (evaluation === null) {
+      return res.status(400).json({ message: "Invalid id" })
+    }
+
+    if (evaluation.evaluator_id !== user.id) {
+      return res.status(403).json({
+        message: "You do not have permission to answer this.",
+      })
+    }
+
+    await prisma.evaluations.update({
+      where: {
+        id: evaluation.id,
+      },
+      data: {
+        comments: comment,
+        status: EvaluationStatus.Ongoing,
+        updated_at: new Date(),
+      },
+    })
+
+    res.json({ id })
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
 // TODO: Refactor
 export const getProfile = async (req: Request, res: Response) => {
   try {
