@@ -66,6 +66,7 @@ export const index = async (req: Request, res: Response) => {
             id: evaluation.project_members?.project_role_id ?? undefined,
           },
         })
+
         return {
           id: evaluation.id,
           eval_start_date: evaluation.eval_start_date,

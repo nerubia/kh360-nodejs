@@ -472,12 +472,20 @@ export const setStatus = async (req: Request, res: Response) => {
 // TODO: Refactor
 export const getEvaluationTemplates = async (req: Request, res: Response) => {
   try {
-    const { evaluation_result_id } = req.query
+    const { evaluation_result_id, for_evaluation } = req.query
+
+    const where = {
+      evaluation_result_id: parseInt(evaluation_result_id as string),
+    }
+
+    if (for_evaluation !== undefined) {
+      Object.assign(where, {
+        for_evaluation: true,
+      })
+    }
 
     const evaluations = await prisma.evaluations.findMany({
-      where: {
-        evaluation_result_id: parseInt(evaluation_result_id as string),
-      },
+      where,
       distinct: ["evaluation_template_id"],
     })
 
