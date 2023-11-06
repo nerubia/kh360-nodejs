@@ -5,20 +5,13 @@ import { EvaluationStatus } from "../../types/evaluationType"
 /**
  * List evaluations based on provided filters.
  * @param req.query.evaluation_template_id - Filter by evaluation template id.
- * @param req.query.evaluation_administration_id - Filter by evaluation administration id.
  * @param req.query.evaluation_result_id - Filter by evaluation result id.
- * @param req.query.evaluator_id - Filter by evaluator id.
  * @param req.query.for_evaluation - Filter by for_evaluation.
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const {
-      evaluation_template_id,
-      evaluation_administration_id,
-      evaluation_result_id,
-      evaluator_id,
-      for_evaluation,
-    } = req.query
+    const { evaluation_template_id, evaluation_result_id, for_evaluation } =
+      req.query
 
     const evaluations = await prisma.evaluations.findMany({
       include: {
@@ -29,20 +22,9 @@ export const index = async (req: Request, res: Response) => {
         },
       },
       where: {
-        OR: [
-          {
-            evaluation_template_id: parseInt(evaluation_template_id as string),
-            evaluation_result_id: parseInt(evaluation_result_id as string),
-            for_evaluation: Boolean(parseInt(for_evaluation as string)),
-          },
-          {
-            evaluation_administration_id: parseInt(
-              evaluation_administration_id as string
-            ),
-            evaluator_id: parseInt(evaluator_id as string),
-            for_evaluation: Boolean(parseInt(for_evaluation as string)),
-          },
-        ],
+        evaluation_template_id: parseInt(evaluation_template_id as string),
+        evaluation_result_id: parseInt(evaluation_result_id as string),
+        for_evaluation: Boolean(parseInt(for_evaluation as string)),
       },
       distinct: ["evaluator_id", "project_id"],
     })

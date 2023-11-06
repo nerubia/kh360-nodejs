@@ -4,6 +4,95 @@ import { sendMail } from "../../services/mail_service"
 import { EvaluationStatus } from "../../types/evaluationType"
 
 /**
+ * List user evaluations based on provided filters.
+ * @param req.query.evaluation_administration_id - Filter by evaluation administration id.
+ * @param req.query.for_evaluation - Filter by for_evaluation.
+ */
+export const getEvaluations = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+    const { evaluation_administration_id, for_evaluation } = req.query
+
+    const evaluations = await prisma.evaluations.findMany({
+      include: {
+        project_members: {
+          select: {
+            project_role_id: true,
+          },
+        },
+      },
+      where: {
+        evaluation_administration_id: parseInt(
+          evaluation_administration_id as string
+        ),
+        evaluator_id: user.id,
+        for_evaluation: Boolean(parseInt(for_evaluation as string)),
+      },
+      distinct: ["evaluator_id", "project_id"],
+    })
+
+    const finalEvaluations = await Promise.all(
+      evaluations.map(async (evaluation) => {
+        const evaluator = await prisma.users.findUnique({
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+          },
+          where: {
+            id: evaluation.evaluator_id ?? undefined,
+          },
+        })
+        const evaluee = await prisma.users.findUnique({
+          select: {
+            id: true,
+            first_name: true,
+            last_name: true,
+          },
+          where: {
+            id: evaluation.evaluee_id ?? undefined,
+          },
+        })
+        const project = await prisma.projects.findUnique({
+          select: {
+            id: true,
+            name: true,
+          },
+          where: {
+            id: evaluation.project_id ?? undefined,
+          },
+        })
+        const projectRole = await prisma.project_roles.findUnique({
+          select: {
+            id: true,
+            name: true,
+          },
+          where: {
+            id: evaluation.project_members?.project_role_id ?? undefined,
+          },
+        })
+        return {
+          id: evaluation.id,
+          eval_start_date: evaluation.eval_start_date,
+          eval_end_date: evaluation.eval_end_date,
+          percent_involvement: evaluation.percent_involvement,
+          status: evaluation.status,
+          for_evaluation: evaluation.for_evaluation,
+          evaluator,
+          evaluee,
+          project,
+          project_role: projectRole,
+        }
+      })
+    )
+
+    res.json(finalEvaluations)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
  * Submit answer by ID
  * @param req.params.id - The unique ID of the evaluation.
  * @param req.body.evaluation_rating_id - Evaluation rating id.
