@@ -3,6 +3,7 @@ import { differenceInDays, endOfYear, startOfYear } from "date-fns"
 import prisma from "../../utils/prisma"
 import { sendMail } from "../../services/mail_service"
 import { EvaluationStatus } from "../../types/evaluationType"
+import { EvaluationResultStatus } from "../../types/evaluationResultType"
 
 /**
  * List user evaluations based on provided filters.
@@ -308,8 +309,66 @@ export const submitEvaluation = async (req: Request, res: Response) => {
       },
     })
 
-    if (remainingEvaluations === 0) {
-      // TODO: call API to compute for evaluation results for the evaluee
+    if (
+      remainingEvaluations === 0 &&
+      evaluation.evaluation_result_id !== null
+    ) {
+      const evaluationResultDetails =
+        await prisma.evaluation_result_details.findMany({
+          where: {
+            evaluation_result_id: evaluation.evaluation_result_id,
+          },
+        })
+
+      for (const evaluationResultDetail of evaluationResultDetails) {
+        const evaluations = await prisma.evaluations.aggregate({
+          _sum: {
+            weight: true,
+            weighted_score: true,
+          },
+          where: {
+            evaluation_result_id: evaluation.evaluation_result_id,
+            evaluation_template_id:
+              evaluationResultDetail.evaluation_template_id,
+          },
+        })
+
+        const score =
+          Number(evaluations._sum.weighted_score) /
+          Number(evaluations._sum.weight)
+
+        await prisma.evaluation_result_details.update({
+          where: {
+            id: evaluationResultDetail.id,
+          },
+          data: {
+            score,
+            weighted_score: Number(evaluationResultDetail.weight) * score,
+            updated_at: currentDate,
+          },
+        })
+      }
+
+      const evaluationResultDetailsSum =
+        await prisma.evaluation_result_details.aggregate({
+          _sum: {
+            weight: true,
+            weighted_score: true,
+          },
+        })
+
+      await prisma.evaluation_results.update({
+        where: {
+          id: evaluation.evaluation_result_id,
+        },
+        data: {
+          score:
+            Number(evaluationResultDetailsSum._sum.weighted_score) /
+            Number(evaluationResultDetailsSum._sum.weight),
+          status: EvaluationResultStatus.Completed,
+          updated_at: currentDate,
+        },
+      })
     }
 
     res.json({ id })
