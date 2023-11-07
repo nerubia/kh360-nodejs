@@ -110,6 +110,7 @@ export const store = async (req: Request, res: Response) => {
         remarks,
         email_subject,
         email_content,
+        status: EvaluationAdministrationStatus.Draft,
       },
     })
 
