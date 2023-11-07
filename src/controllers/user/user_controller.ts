@@ -358,6 +358,7 @@ export const submitEvaluation = async (req: Request, res: Response) => {
             evaluation_result_id: evaluation.evaluation_result_id,
             evaluation_template_id:
               evaluationResultDetail.evaluation_template_id,
+            status: EvaluationStatus.Submitted,
           },
         })
 
