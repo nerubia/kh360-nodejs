@@ -122,6 +122,15 @@ export const submitAnswer = async (req: Request, res: Response) => {
       })
     }
 
+    if (
+      evaluation.status !== EvaluationStatus.Open &&
+      evaluation.status !== EvaluationStatus.Ongoing
+    ) {
+      return res.status(403).json({
+        message: "Only open and ongoing statuses are allowed.",
+      })
+    }
+
     const evaluationRating = await prisma.evaluation_ratings.findUnique({
       where: {
         id: parseInt(evaluation_rating_id as string),
@@ -201,6 +210,15 @@ export const submitComment = async (req: Request, res: Response) => {
       })
     }
 
+    if (
+      evaluation.status !== EvaluationStatus.Open &&
+      evaluation.status !== EvaluationStatus.Ongoing
+    ) {
+      return res.status(403).json({
+        message: "Only open and ongoing statuses are allowed.",
+      })
+    }
+
     await prisma.evaluations.update({
       where: {
         id: evaluation.id,
@@ -243,6 +261,15 @@ export const submitEvaluation = async (req: Request, res: Response) => {
       })
     }
 
+    if (
+      evaluation.status !== EvaluationStatus.Open &&
+      evaluation.status !== EvaluationStatus.Ongoing
+    ) {
+      return res.status(403).json({
+        message: "Only open and ongoing statuses are allowed.",
+      })
+    }
+
     const evaluationRatings = await prisma.evaluation_ratings.aggregate({
       _sum: {
         score: true,
@@ -253,9 +280,10 @@ export const submitEvaluation = async (req: Request, res: Response) => {
       },
     })
 
-    const score =
+    const score = (
       Number(evaluationRatings._sum.score) /
       Number(evaluationRatings._sum.percentage)
+    ).toFixed(2)
 
     const evalStartDate =
       evaluation.eval_start_date != null
