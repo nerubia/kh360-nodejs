@@ -1,4 +1,5 @@
 import { type Request, type Response } from "express"
+import { differenceInDays, endOfYear, startOfYear } from "date-fns"
 import prisma from "../../utils/prisma"
 import { sendMail } from "../../services/mail_service"
 import { EvaluationStatus } from "../../types/evaluationType"
@@ -209,6 +210,107 @@ export const submitComment = async (req: Request, res: Response) => {
         updated_at: new Date(),
       },
     })
+
+    res.json({ id })
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Submit evaluation by ID
+ * @param req.params.id - The unique ID of the evaluation.
+ */
+export const submitEvaluation = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+    const { id } = req.params
+
+    const evaluation = await prisma.evaluations.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+    })
+
+    if (evaluation === null) {
+      return res.status(400).json({ message: "Invalid id" })
+    }
+
+    if (evaluation.evaluator_id !== user.id) {
+      return res.status(403).json({
+        message: "You do not have permission to answer this.",
+      })
+    }
+
+    const evaluationRatings = await prisma.evaluation_ratings.aggregate({
+      _sum: {
+        score: true,
+        percentage: true,
+      },
+      where: {
+        evaluation_id: evaluation.id,
+      },
+    })
+
+    const score =
+      Number(evaluationRatings._sum.score) /
+      Number(evaluationRatings._sum.percentage)
+
+    const evalStartDate =
+      evaluation.eval_start_date != null
+        ? new Date(evaluation.eval_start_date).getTime()
+        : 0
+    const evalEndDate =
+      evaluation.eval_end_date != null
+        ? new Date(evaluation.eval_end_date).getTime()
+        : 0
+
+    const totalEvaluationDays = Math.ceil(
+      (evalEndDate - evalStartDate) / (1000 * 60 * 60 * 24)
+    )
+
+    const currentDate = new Date()
+    const totalDaysInAYear =
+      differenceInDays(endOfYear(currentDate), startOfYear(currentDate)) + 1
+
+    const weight =
+      (totalEvaluationDays / totalDaysInAYear) *
+      Number(evaluation.percent_involvement)
+
+    const weighted_score = weight * Number(score)
+
+    await prisma.evaluations.update({
+      where: {
+        id: evaluation.id,
+      },
+      data: {
+        score,
+        weight,
+        weighted_score,
+        status: EvaluationStatus.Submitted,
+        submission_method: "Manual",
+        submitted_date: currentDate,
+        updated_at: currentDate,
+      },
+    })
+
+    const remainingEvaluations = await prisma.evaluations.count({
+      where: {
+        evaluation_result_id: evaluation.evaluation_result_id,
+        status: {
+          in: [
+            EvaluationStatus.Draft,
+            EvaluationStatus.Pending,
+            EvaluationStatus.Open,
+            EvaluationStatus.Ongoing,
+          ],
+        },
+      },
+    })
+
+    if (remainingEvaluations === 0) {
+      // TODO: call API to compute for evaluation results for the evaluee
+    }
 
     res.json({ id })
   } catch (error) {
