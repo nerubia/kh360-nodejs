@@ -6,6 +6,7 @@ import {
   sendSampleMail,
   submitAnswer,
   submitComment,
+  submitEvaluation,
 } from "../controllers/user/user_controller"
 
 const router = express.Router()
@@ -13,6 +14,7 @@ const router = express.Router()
 router.get("/evaluations", getEvaluations)
 router.post("/evaluations/:id/submit-answer", submitAnswer)
 router.post("/evaluations/:id/submit-comment", submitComment)
+router.post("/evaluations/:id/submit-evaluation", submitEvaluation)
 
 // TODO: Refactor
 router.get("/profile", getProfile)
