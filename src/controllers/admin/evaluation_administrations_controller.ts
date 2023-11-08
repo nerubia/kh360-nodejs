@@ -172,28 +172,6 @@ export const update = async (req: Request, res: Response) => {
       email_content,
     } = req.body
 
-    const evaluationAdministration =
-      await prisma.evaluation_administrations.findUnique({
-        where: {
-          id: parseInt(id),
-        },
-      })
-
-    if (
-      evaluationAdministration !== null &&
-      (evaluationAdministration.status ===
-        EvaluationAdministrationStatus.Pending ||
-        evaluationAdministration.status ===
-          EvaluationAdministrationStatus.Ongoing) &&
-      (evaluationAdministration.name !== null ||
-        evaluationAdministration.eval_period_start_date !== null ||
-        eval_period_end_date !== null ||
-        evaluationAdministration.email_subject !== null ||
-        evaluationAdministration.email_content !== null)
-    ) {
-      return res.status(400).json({ message: "This action is not allowed" })
-    }
-
     await createEvaluationSchema.validate({
       name,
       eval_period_start_date,
@@ -205,21 +183,51 @@ export const update = async (req: Request, res: Response) => {
       email_content,
     })
 
+    const evaluationAdministration =
+      await prisma.evaluation_administrations.findUnique({
+        where: {
+          id: parseInt(id),
+        },
+      })
+
+    if (evaluationAdministration === null) {
+      return res.status(400).json({ message: "Invalid id." })
+    }
+
+    if (
+      evaluationAdministration.status !==
+        EvaluationAdministrationStatus.Pending &&
+      evaluationAdministration.status !==
+        EvaluationAdministrationStatus.Ongoing &&
+      evaluationAdministration.status !== EvaluationAdministrationStatus.Draft
+    ) {
+      return res.status(400).json({ message: "This action is not allowed." })
+    }
+
+    const data = {
+      eval_schedule_start_date: new Date(eval_schedule_start_date),
+      eval_schedule_end_date: new Date(eval_schedule_end_date),
+      remarks,
+    }
+
+    if (
+      evaluationAdministration.status === EvaluationAdministrationStatus.Draft
+    ) {
+      Object.assign(data, {
+        name,
+        eval_period_start_date: new Date(eval_period_start_date),
+        eval_period_end_date: new Date(eval_period_end_date),
+        email_subject,
+        email_content,
+      })
+    }
+
     const updatedEvaluationAdministration =
       await prisma.evaluation_administrations.update({
         where: {
           id: parseInt(id),
         },
-        data: {
-          name,
-          eval_period_start_date: new Date(eval_period_start_date),
-          eval_period_end_date: new Date(eval_period_end_date),
-          eval_schedule_start_date: new Date(eval_schedule_start_date),
-          eval_schedule_end_date: new Date(eval_schedule_end_date),
-          remarks,
-          email_subject,
-          email_content,
-        },
+        data,
       })
 
     res.json(updatedEvaluationAdministration)
