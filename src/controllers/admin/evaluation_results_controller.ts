@@ -282,8 +282,8 @@ export const store = async (req: Request, res: Response) => {
               project_id: projectId,
               project_member_id: project.id,
               for_evaluation: false,
-              eval_start_date: project.start_date,
-              eval_end_date: project.end_date,
+              eval_start_date: member.start_date,
+              eval_end_date: member.end_date,
               percent_involvement: project.allocation_rate,
               status: EvaluationStatus.Draft,
             })
