@@ -1,7 +1,6 @@
 import express from "express"
 import {
   destroy,
-  getEvaluationTemplates,
   index,
   setStatus,
   show,
@@ -15,8 +14,5 @@ router.post("/", store)
 router.get("/:id", show)
 router.delete("/:id", destroy)
 router.patch("/:id/set-status", setStatus)
-
-// TODO: Refactor
-router.get("/:id/templates", getEvaluationTemplates)
 
 export default router
