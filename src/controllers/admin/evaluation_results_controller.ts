@@ -129,9 +129,27 @@ export const store = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid id" })
     }
 
+    const evaluationResults = await prisma.evaluation_results.findMany({
+      select: {
+        user_id: true,
+      },
+      where: {
+        evaluation_administration_id: parseInt(
+          evaluation_administration_id as string
+        ),
+      },
+    })
+
+    const newEmployeeIds = employeeIds.filter((employeeId) => {
+      const evaluationResult = evaluationResults.find(
+        (evaluationResult) => evaluationResult.user_id === employeeId
+      )
+      return evaluationResult === undefined ? employeeId : null
+    })
+
     const currentDate = new Date()
 
-    const data = employeeIds.map((employeeId) => {
+    const data = newEmployeeIds.map((employeeId) => {
       return {
         evaluation_administration_id: evaluationAdministration.id,
         user_id: employeeId,
@@ -147,7 +165,7 @@ export const store = async (req: Request, res: Response) => {
       data,
     })
 
-    const evaluationResults = await prisma.evaluation_results.findMany({
+    const newEvaluationResults = await prisma.evaluation_results.findMany({
       select: {
         id: true,
         users: {
@@ -158,6 +176,9 @@ export const store = async (req: Request, res: Response) => {
       },
       where: {
         evaluation_administration_id: evaluationAdministration.id,
+        user_id: {
+          in: newEmployeeIds,
+        },
       },
     })
 
@@ -176,7 +197,7 @@ export const store = async (req: Request, res: Response) => {
       },
     })
 
-    evaluationResults.forEach(async (evaluationResult) => {
+    newEvaluationResults.forEach(async (evaluationResult) => {
       const evalueeId = evaluationResult.users?.id
 
       const projects = await prisma.project_members.findMany({
