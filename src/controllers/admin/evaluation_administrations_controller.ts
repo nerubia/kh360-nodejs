@@ -180,8 +180,11 @@ export const update = async (req: Request, res: Response) => {
       })
 
     if (
-      evaluationAdministration?.status ===
-        EvaluationAdministrationStatus.Draft &&
+      evaluationAdministration !== null &&
+      (evaluationAdministration.status ===
+        EvaluationAdministrationStatus.Pending ||
+        evaluationAdministration.status ===
+          EvaluationAdministrationStatus.Ongoing) &&
       (evaluationAdministration.name !== null ||
         evaluationAdministration.eval_period_start_date !== null ||
         eval_period_end_date !== null ||
