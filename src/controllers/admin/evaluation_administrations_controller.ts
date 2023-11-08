@@ -58,6 +58,7 @@ export const index = async (req: Request, res: Response) => {
         hasPreviousPage: currentPage > 1,
         hasNextPage: currentPage < totalPages,
         totalPages,
+        totalItems,
       },
     })
   } catch (error) {
