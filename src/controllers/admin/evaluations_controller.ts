@@ -45,7 +45,7 @@ export const index = async (req: Request, res: Response) => {
             last_name: true,
           },
           where: {
-            id: evaluation.evaluator_id ?? undefined,
+            id: evaluation.evaluator_id ?? 0,
           },
         })
         const evaluee = await prisma.users.findUnique({
@@ -55,7 +55,7 @@ export const index = async (req: Request, res: Response) => {
             last_name: true,
           },
           where: {
-            id: evaluation.evaluee_id ?? undefined,
+            id: evaluation.evaluee_id ?? 0,
           },
         })
         const project = await prisma.projects.findUnique({
@@ -64,7 +64,7 @@ export const index = async (req: Request, res: Response) => {
             name: true,
           },
           where: {
-            id: evaluation.project_id ?? undefined,
+            id: evaluation.project_id ?? 0,
           },
         })
         const projectRole = await prisma.project_roles.findUnique({
@@ -73,10 +73,9 @@ export const index = async (req: Request, res: Response) => {
             name: true,
           },
           where: {
-            id: evaluation.project_members?.project_role_id ?? undefined,
+            id: evaluation.project_members?.project_role_id ?? 0,
           },
         })
-
         return {
           id: evaluation.id,
           eval_start_date: evaluation.eval_start_date,
