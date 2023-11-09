@@ -489,3 +489,32 @@ export const setStatus = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+/**
+ * List evaluation result ids based on provided filters.
+ * @param req.query.evaluation_administration_id - Filter by evaluation administration id.
+ */
+export const all = async (req: Request, res: Response) => {
+  try {
+    const { evaluation_administration_id } = req.query
+
+    const evaluationResults = await prisma.evaluation_results.findMany({
+      select: {
+        users: {
+          select: {
+            id: true,
+          },
+        },
+      },
+      where: {
+        evaluation_administration_id: parseInt(
+          evaluation_administration_id as string
+        ),
+      },
+    })
+
+    res.json(evaluationResults)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}

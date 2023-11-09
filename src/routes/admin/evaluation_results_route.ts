@@ -1,5 +1,6 @@
 import express from "express"
 import {
+  all,
   destroy,
   index,
   setStatus,
@@ -8,6 +9,8 @@ import {
 } from "../../controllers/admin/evaluation_results_controller"
 
 const router = express.Router()
+
+router.get("/all", all) // TODO: Refactor
 
 router.get("/", index)
 router.post("/", store)
