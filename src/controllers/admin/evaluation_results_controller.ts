@@ -322,7 +322,7 @@ export const store = async (req: Request, res: Response) => {
               eval_start_date: project.start_date,
               eval_end_date: project.end_date,
               percent_involvement: project.allocation_rate,
-              status: EvaluationStatus.Draft,
+              status: EvaluationStatus.Excluded,
             })
 
             const evaluationResultDetail = evaluationResultDetails.find(
@@ -368,7 +368,7 @@ export const store = async (req: Request, res: Response) => {
               eval_start_date: evaluationAdministration.eval_period_start_date,
               eval_end_date: evaluationAdministration.eval_period_end_date,
               percent_involvement: new Decimal(100),
-              status: EvaluationStatus.Draft,
+              status: EvaluationStatus.Excluded,
             })
           }
 
@@ -399,7 +399,7 @@ export const store = async (req: Request, res: Response) => {
                   evaluationAdministration.eval_period_start_date,
                 eval_end_date: evaluationAdministration.eval_period_end_date,
                 percent_involvement: new Decimal(100),
-                status: EvaluationStatus.Draft,
+                status: EvaluationStatus.Excluded,
               })
             }
           }
