@@ -33,7 +33,6 @@ export const index = async (req: Request, res: Response) => {
         },
       },
       where,
-      distinct: ["evaluator_id", "project_id"],
     })
 
     const finalEvaluations = await Promise.all(

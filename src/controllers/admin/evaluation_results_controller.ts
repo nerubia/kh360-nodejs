@@ -184,6 +184,12 @@ export const store = async (req: Request, res: Response) => {
 
     const hrTemplate = await prisma.evaluation_templates.findFirst({
       where: {
+        evaluator_role_id: 2,
+      },
+    })
+
+    const employeeTemplate = await prisma.evaluation_templates.findFirst({
+      where: {
         evaluee_role_id: 2,
       },
     })
@@ -194,6 +200,15 @@ export const store = async (req: Request, res: Response) => {
       },
       where: {
         name: "khv2_hr_evaluators",
+      },
+    })
+
+    const employeeEvaluators = await prisma.users.findMany({
+      select: {
+        id: true,
+      },
+      where: {
+        is_active: true,
       },
     })
 
@@ -280,6 +295,7 @@ export const store = async (req: Request, res: Response) => {
               },
             ],
           },
+          distinct: ["project_id", "user_id", "project_role_id"],
         })
 
         for (const member of members) {
@@ -303,8 +319,8 @@ export const store = async (req: Request, res: Response) => {
               project_id: projectId,
               project_member_id: project.id,
               for_evaluation: false,
-              eval_start_date: member.start_date,
-              eval_end_date: member.end_date,
+              eval_start_date: project.start_date,
+              eval_end_date: project.end_date,
               percent_involvement: project.allocation_rate,
               status: EvaluationStatus.Draft,
             })
@@ -330,33 +346,74 @@ export const store = async (req: Request, res: Response) => {
         }
       }
 
-      if (hrTemplate !== null) {
-        for (const hr of hrEvaluators) {
-          evaluations.push({
-            evaluation_template_id: hrTemplate.id,
+      const isHr = await prisma.user_roles.findFirst({
+        where: {
+          name: "khv2_hr_evaluators",
+          user_id: evalueeId,
+        },
+      })
+
+      if (isHr === null) {
+        if (hrTemplate !== null) {
+          for (const hr of hrEvaluators) {
+            evaluations.push({
+              evaluation_template_id: hrTemplate.id,
+              evaluation_administration_id: evaluationAdministration.id,
+              evaluation_result_id: evaluationResult.id,
+              evaluator_id: hr.user_id,
+              evaluee_id: evalueeId,
+              project_id: null,
+              project_member_id: null,
+              for_evaluation: false,
+              eval_start_date: evaluationAdministration.eval_period_start_date,
+              eval_end_date: evaluationAdministration.eval_period_end_date,
+              percent_involvement: new Decimal(100),
+              status: EvaluationStatus.Draft,
+            })
+          }
+
+          evaluationResultDetails.push({
             evaluation_administration_id: evaluationAdministration.id,
+            user_id: evalueeId,
             evaluation_result_id: evaluationResult.id,
-            evaluator_id: hr.user_id,
-            evaluee_id: evalueeId,
-            project_id: null,
-            project_member_id: null,
-            for_evaluation: false,
-            eval_start_date: evaluationAdministration.eval_period_start_date,
-            eval_end_date: evaluationAdministration.eval_period_end_date,
-            percent_involvement: new Decimal(100),
-            status: EvaluationStatus.Draft,
+            evaluation_template_id: hrTemplate.id,
+            weight: hrTemplate.rate,
+            created_at: currentDate,
+            updated_at: currentDate,
           })
         }
+      } else {
+        if (employeeTemplate !== null) {
+          for (const employeeEvaluator of employeeEvaluators) {
+            if (employeeEvaluator.id !== evalueeId) {
+              evaluations.push({
+                evaluation_template_id: employeeTemplate.id,
+                evaluation_administration_id: evaluationAdministration.id,
+                evaluation_result_id: evaluationResult.id,
+                evaluator_id: employeeEvaluator.id,
+                evaluee_id: evalueeId,
+                project_id: null,
+                project_member_id: null,
+                for_evaluation: false,
+                eval_start_date:
+                  evaluationAdministration.eval_period_start_date,
+                eval_end_date: evaluationAdministration.eval_period_end_date,
+                percent_involvement: new Decimal(100),
+                status: EvaluationStatus.Draft,
+              })
+            }
+          }
 
-        evaluationResultDetails.push({
-          evaluation_administration_id: evaluationAdministration.id,
-          user_id: evalueeId,
-          evaluation_result_id: evaluationResult.id,
-          evaluation_template_id: hrTemplate.id,
-          weight: hrTemplate.rate,
-          created_at: currentDate,
-          updated_at: currentDate,
-        })
+          evaluationResultDetails.push({
+            evaluation_administration_id: evaluationAdministration.id,
+            user_id: evalueeId,
+            evaluation_result_id: evaluationResult.id,
+            evaluation_template_id: employeeTemplate.id,
+            weight: employeeTemplate.rate,
+            created_at: currentDate,
+            updated_at: currentDate,
+          })
+        }
       }
 
       await prisma.evaluations.createMany({
