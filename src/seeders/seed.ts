@@ -65,6 +65,22 @@ const createRoles = async () => {
         name: "kh360",
         user_id: 3,
       },
+      {
+        name: "khv2_hr_evaluators",
+        user_id: 15,
+      },
+      {
+        name: "khv2_hr_evaluators",
+        user_id: 86,
+      },
+      {
+        name: "khv2_hr_evaluators",
+        user_id: 20032,
+      },
+      {
+        name: "khv2_hr_evaluators",
+        user_id: 20090,
+      },
     ],
   })
 }
