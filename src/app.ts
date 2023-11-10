@@ -10,11 +10,11 @@ import { adminMiddleware } from "./middlewares/admin_middleware"
 
 import homeRoute from "./routes/home_route"
 import authRoute from "./routes/auth_route"
-import userRoute from "./routes/user_route"
+import userRoute from "./routes/user/user_route"
 
 import evaluationAdministrationsRoute from "./routes/admin/evaluation_administrations_route"
 import evaluationResultsRoute from "./routes/admin/evaluation_results_route"
-import evaluationTemplateContentsRoute from "./routes/admin/evaluation_template_contents_route"
+import evaluationTemplateContentsRoute from "./routes/user/evaluation_template_contents_route"
 import evaluationTemplates from "./routes/admin/evaluation_templates_route"
 import evaluationsRoute from "./routes/admin/evaluations_route"
 
@@ -39,7 +39,16 @@ declare global {
 app.use("/", homeRoute)
 app.use("/auth", authRoute)
 
+/**
+ * User routes
+ */
+
 app.use("/user", authMiddleware, userRoute)
+app.use(
+  "/user/evaluation-template-contents",
+  authMiddleware,
+  evaluationTemplateContentsRoute
+)
 
 /**
  * Admin routes
