@@ -68,7 +68,7 @@ export const index = async (req: Request, res: Response) => {
               sequence_no: true,
             },
             where: {
-              id: evaluationRating?.answer_option_id ,
+              id: evaluationRating?.answer_option_id,
             },
           })
           Object.assign(evaluationRating as Record<string, unknown>, {
