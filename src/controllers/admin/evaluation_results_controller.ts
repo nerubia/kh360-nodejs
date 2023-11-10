@@ -557,6 +557,7 @@ export const all = async (req: Request, res: Response) => {
 
     const evaluationResults = await prisma.evaluation_results.findMany({
       select: {
+        id: true,
         users: {
           select: {
             id: true,
