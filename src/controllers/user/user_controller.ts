@@ -4,6 +4,8 @@ import prisma from "../../utils/prisma"
 import { sendMail } from "../../services/mail_service"
 import { EvaluationStatus } from "../../types/evaluationType"
 import { EvaluationResultStatus } from "../../types/evaluationResultType"
+import { type User } from "../../types/userType"
+import { EvaluationAdministrationStatus } from "../../types/evaluationAdministrationType"
 
 /**
  * List user evaluations based on provided filters.
@@ -28,12 +30,18 @@ export const getEvaluations = async (req: Request, res: Response) => {
           evaluation_administration_id as string
         ),
         evaluator_id: user.id,
-        for_evaluation: Boolean(parseInt(for_evaluation as string)),
+        for_evaluation: Boolean(for_evaluation as string),
+        status: {
+          in: [
+            EvaluationStatus.Open,
+            EvaluationStatus.Ongoing,
+            EvaluationStatus.Submitted,
+          ],
+        },
       },
-      distinct: ["evaluator_id", "project_id"],
     })
 
-    const finalEvaluations = await Promise.all(
+    const evaluationDetails = await Promise.all(
       evaluations.map(async (evaluation) => {
         const evaluator = await prisma.users.findUnique({
           select: {
@@ -48,8 +56,10 @@ export const getEvaluations = async (req: Request, res: Response) => {
         const evaluee = await prisma.users.findUnique({
           select: {
             id: true,
+            slug: true,
             first_name: true,
             last_name: true,
+            picture: true,
           },
           where: {
             id: evaluation.evaluee_id ?? 0,
@@ -68,6 +78,7 @@ export const getEvaluations = async (req: Request, res: Response) => {
           select: {
             id: true,
             name: true,
+            short_name: true,
           },
           where: {
             id: evaluation.project_members?.project_role_id ?? 0,
@@ -75,6 +86,7 @@ export const getEvaluations = async (req: Request, res: Response) => {
         })
         return {
           id: evaluation.id,
+          comments: evaluation.comments,
           eval_start_date: evaluation.eval_start_date,
           eval_end_date: evaluation.eval_end_date,
           percent_involvement: evaluation.percent_involvement,
@@ -88,7 +100,143 @@ export const getEvaluations = async (req: Request, res: Response) => {
       })
     )
 
+    const sortedEvaluations = evaluationDetails.sort((a, b) => {
+      const aEvaluee = a.evaluee as User
+      const bEvaluee = b.evaluee as User
+
+      const lastNameComparison = aEvaluee.last_name.localeCompare(
+        bEvaluee.last_name
+      )
+
+      if (lastNameComparison === 0) {
+        return aEvaluee.first_name.localeCompare(bEvaluee.first_name)
+      }
+      return lastNameComparison
+    })
+
+    const submittedEvaluations = sortedEvaluations.filter(
+      (evaluation) => evaluation.status === EvaluationStatus.Submitted
+    )
+    const otherEvaluations = sortedEvaluations.filter(
+      (evaluation) => evaluation.status !== EvaluationStatus.Submitted
+    )
+
+    const finalEvaluations = [...otherEvaluations, ...submittedEvaluations]
+
     res.json(finalEvaluations)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * List user evaluation administrations
+ * @param req.query.page - Page number for pagination.
+ */
+export const getEvaluationAdministrations = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const user = req.user
+
+    const { page } = req.query
+
+    const itemsPerPage = 20
+    const parsedPage = parseInt(page as string)
+    const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
+
+    const evaluations = await prisma.evaluations.findMany({
+      where: {
+        evaluator_id: user.id,
+        for_evaluation: true,
+      },
+    })
+
+    const evaluationAdministrationIds = evaluations.map(
+      (evaluation) => evaluation.evaluation_administration_id
+    )
+
+    const evaluationAdministrations =
+      await prisma.evaluation_administrations.findMany({
+        skip: (currentPage - 1) * itemsPerPage,
+        take: itemsPerPage,
+        where: {
+          id: {
+            in: evaluationAdministrationIds as number[],
+          },
+          status: EvaluationAdministrationStatus.Ongoing,
+        },
+        orderBy: {
+          id: "desc",
+        },
+      })
+
+    const finalEvaluationAdministrations = await Promise.all(
+      evaluationAdministrations.map(async (evaluationAdministration) => {
+        const totalEvaluations = await prisma.evaluations.count({
+          where: {
+            evaluator_id: user.id,
+            for_evaluation: true,
+            evaluation_administration_id: evaluationAdministration.id,
+          },
+        })
+
+        const totalSubmitted = await prisma.evaluations.count({
+          where: {
+            evaluator_id: user.id,
+            for_evaluation: true,
+            evaluation_administration_id: evaluationAdministration.id,
+            status: EvaluationStatus.Submitted,
+          },
+        })
+
+        const totalPending = await prisma.evaluations.count({
+          where: {
+            evaluator_id: user.id,
+            for_evaluation: true,
+            evaluation_administration_id: evaluationAdministration.id,
+            status: EvaluationStatus.Pending,
+          },
+        })
+
+        return {
+          id: evaluationAdministration.id,
+          name: evaluationAdministration.name,
+          eval_period_start_date:
+            evaluationAdministration.eval_period_start_date,
+          eval_period_end_date: evaluationAdministration.eval_period_end_date,
+          eval_schedule_start_date:
+            evaluationAdministration.eval_schedule_start_date,
+          eval_schedule_end_date:
+            evaluationAdministration.eval_schedule_end_date,
+          totalEvaluations,
+          totalSubmitted,
+          totalPending,
+        }
+      })
+    )
+
+    const totalItems = await prisma.evaluation_administrations.count({
+      where: {
+        id: {
+          in: evaluationAdministrationIds as number[],
+        },
+        status: EvaluationAdministrationStatus.Ongoing,
+      },
+    })
+
+    const totalPages = Math.ceil(totalItems / itemsPerPage)
+
+    res.json({
+      data: finalEvaluationAdministrations,
+      pageInfo: {
+        hasPreviousPage: currentPage > 1,
+        hasNextPage: currentPage < totalPages,
+        totalPages,
+        totalItems,
+      },
+    })
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
@@ -200,6 +348,37 @@ export const submitComment = async (req: Request, res: Response) => {
       },
     })
 
+    const allEvaluationRatings = await prisma.evaluation_ratings.findMany({
+      select: {
+        answer_option_id: true,
+      },
+      where: {
+        evaluation_id: evaluation?.id,
+      },
+    })
+
+    const answerOptionIds = allEvaluationRatings
+      .map((rating) => rating.answer_option_id)
+      .filter((id) => id !== null) as number[]
+
+    const answerOptions = await prisma.answer_options.findMany({
+      select: {
+        sequence_no: true,
+      },
+      where: {
+        id: {
+          in: answerOptionIds ,
+        },
+      },
+    })
+
+    if (
+      answerOptions.every((rating) => rating.sequence_no === 2) &&
+      comment.length === 0
+    ) {
+      return res.status(400).json({ message: "Comment is required." })
+    }
+
     if (evaluation === null) {
       return res.status(400).json({ message: "Invalid id" })
     }
@@ -230,7 +409,7 @@ export const submitComment = async (req: Request, res: Response) => {
       },
     })
 
-    res.json({ id })
+    res.json({ id, comment })
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
@@ -250,6 +429,45 @@ export const submitEvaluation = async (req: Request, res: Response) => {
         id: parseInt(id),
       },
     })
+
+    const allEvaluationRatings = await prisma.evaluation_ratings.findMany({
+      select: {
+        answer_option_id: true,
+      },
+      where: {
+        evaluation_id: evaluation?.id,
+      },
+    })
+
+    const containsNullAnswerOption = allEvaluationRatings.some(
+      (rating) => rating.answer_option_id === null
+    )
+
+    if (containsNullAnswerOption) {
+      return res.status(400).json({ message: "Please set all ratings." })
+    }
+
+    const answerOptionIds = allEvaluationRatings
+      .map((rating) => rating.answer_option_id)
+      .filter((id) => id !== null) as number[]
+
+    const answerOptions = await prisma.answer_options.findMany({
+      select: {
+        sequence_no: true,
+      },
+      where: {
+        id: {
+          in: answerOptionIds ,
+        },
+      },
+    })
+
+    if (
+      answerOptions.every((rating) => rating.sequence_no === 2) &&
+      evaluation?.comments?.length === 0
+    ) {
+      return res.status(400).json({ message: "Comment is required." })
+    }
 
     if (evaluation === null) {
       return res.status(400).json({ message: "Invalid id" })

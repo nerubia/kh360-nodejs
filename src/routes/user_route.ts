@@ -2,6 +2,7 @@ import express from "express"
 import { logout } from "../controllers/user/logout_controller"
 import {
   getEvaluations,
+  getEvaluationAdministrations,
   getProfile,
   sendSampleMail,
   submitAnswer,
@@ -12,6 +13,7 @@ import {
 const router = express.Router()
 
 router.get("/evaluations", getEvaluations)
+router.get("/evaluation-administrations", getEvaluationAdministrations)
 router.post("/evaluations/:id/submit-answer", submitAnswer)
 router.post("/evaluations/:id/submit-comment", submitComment)
 router.post("/evaluations/:id/submit-evaluation", submitEvaluation)
