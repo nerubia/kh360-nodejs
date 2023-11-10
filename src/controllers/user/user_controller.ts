@@ -196,7 +196,9 @@ export const getEvaluationAdministrations = async (
             evaluator_id: user.id,
             for_evaluation: true,
             evaluation_administration_id: evaluationAdministration.id,
-            status: EvaluationStatus.Pending,
+            status: {
+              in: [EvaluationStatus.Open, EvaluationStatus.Ongoing],
+            },
           },
         })
 
@@ -367,7 +369,7 @@ export const submitComment = async (req: Request, res: Response) => {
       },
       where: {
         id: {
-          in: answerOptionIds ,
+          in: answerOptionIds,
         },
       },
     })
@@ -457,7 +459,7 @@ export const submitEvaluation = async (req: Request, res: Response) => {
       },
       where: {
         id: {
-          in: answerOptionIds ,
+          in: answerOptionIds,
         },
       },
     })
