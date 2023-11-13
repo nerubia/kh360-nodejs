@@ -414,7 +414,8 @@ export const submitEvaluation = async (req: Request, res: Response) => {
 
     if (
       answerOptions.every((rating) => rating.sequence_no === 2) &&
-      evaluation?.comments?.length === 0
+      (evaluation?.comments?.trim().length === 0 ||
+        evaluation?.comments === null)
     ) {
       return res.status(400).json({ message: "Comment is required." })
     }
