@@ -182,13 +182,13 @@ export const store = async (req: Request, res: Response) => {
       },
     })
 
-    const hrTemplate = await prisma.evaluation_templates.findFirst({
+    const hrTemplates = await prisma.evaluation_templates.findMany({
       where: {
         evaluator_role_id: 2,
       },
     })
 
-    const employeeTemplate = await prisma.evaluation_templates.findFirst({
+    const employeeTemplates = await prisma.evaluation_templates.findMany({
       where: {
         evaluee_role_id: 2,
       },
@@ -354,7 +354,7 @@ export const store = async (req: Request, res: Response) => {
       })
 
       if (isHr === null) {
-        if (hrTemplate !== null) {
+        for (const hrTemplate of hrTemplates) {
           for (const hr of hrEvaluators) {
             evaluations.push({
               evaluation_template_id: hrTemplate.id,
@@ -383,7 +383,7 @@ export const store = async (req: Request, res: Response) => {
           })
         }
       } else {
-        if (employeeTemplate !== null) {
+        for (const employeeTemplate of employeeTemplates) {
           for (const employeeEvaluator of employeeEvaluators) {
             if (employeeEvaluator.id !== evalueeId) {
               evaluations.push({
