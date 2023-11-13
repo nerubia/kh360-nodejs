@@ -29,7 +29,7 @@ export const getEvaluations = async (req: Request, res: Response) => {
           evaluation_administration_id as string
         ),
         evaluator_id: user.id,
-        for_evaluation: Boolean(for_evaluation as string),
+        for_evaluation: Boolean(parseInt(for_evaluation as string)),
         status: {
           in: [
             EvaluationStatus.Open,
