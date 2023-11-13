@@ -435,6 +435,7 @@ export const generate = async (req: Request, res: Response) => {
             await prisma.evaluation_template_contents.findMany({
               where: {
                 evaluation_template_id: evaluation.evaluation_template_id,
+                is_active: true,
               },
             })
 
