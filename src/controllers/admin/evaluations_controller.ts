@@ -97,28 +97,21 @@ export const index = async (req: Request, res: Response) => {
 }
 
 /**
- * Update for_evaluation by ID
- * @param req.params.id - The unique ID of the evaluation.
+ * Update multiple status and for_evaluation.
+ * @param req.body.evaluation_ids - Evaluation IDs
  * @param req.body.for_evaluation - Evaluation for_evaluation.
  */
-export const setForEvaluation = async (req: Request, res: Response) => {
+export const setForEvaluations = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params
-    const { for_evaluation } = req.body
+    const { evaluation_ids, for_evaluation } = req.body
 
-    const evaluation = await prisma.evaluations.findUnique({
+    const evaluationIds = evaluation_ids as number[]
+
+    await prisma.evaluations.updateMany({
       where: {
-        id: parseInt(id),
-      },
-    })
-
-    if (evaluation === null) {
-      return res.status(400).json({ message: "Invalid id" })
-    }
-
-    await prisma.evaluations.update({
-      where: {
-        id: evaluation.id,
+        id: {
+          in: evaluationIds,
+        },
       },
       data: {
         status:
@@ -129,7 +122,10 @@ export const setForEvaluation = async (req: Request, res: Response) => {
       },
     })
 
-    res.json({ id })
+    res.json({
+      evaluation_ids: evaluationIds,
+      for_evaluation,
+    })
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
