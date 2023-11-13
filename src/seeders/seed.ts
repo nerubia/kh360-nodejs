@@ -123,16 +123,11 @@ export const createEmailTemplates = async () => {
   await prisma.email_templates.createMany({
     data: [
       {
+        name: "Create Evaluation Administration Template",
         template_type: "Create Evaluation",
         is_default: true,
-        subject: "Subject 1",
-        content: "Content 1",
-      },
-      {
-        template_type: "Another Evaluation",
-        is_default: true,
-        subject: "Subject 2",
-        content: "Content 2",
+        subject: "Request for Evaluation",
+        content: `Dear Evaluator,\n\nWe kindly request your participation in the evaluating the following during this period: {{evaluation_period}}. Please follow this {{link}} to access {{evaluation_name}}.\n\nThe deadline for completing these evaluations is on {{eval_schedule_end_date}}. If you encounter any technical issues or have questions regarding the process, please feel free to reach out to any of the HR team members.\n\nThanks and Best Regards,\nKH360 Team`,
       },
     ],
   })
