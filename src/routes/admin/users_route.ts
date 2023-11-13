@@ -6,6 +6,4 @@ const router = express.Router()
 router.get("/", index)
 router.get("/all", getAllUsers)
 
-router.get("/all", getAllUsers)
-
 export default router
