@@ -4,7 +4,6 @@ import prisma from "../../utils/prisma"
 import { sendMail } from "../../services/mail_service"
 import { EvaluationStatus } from "../../types/evaluationType"
 import { EvaluationResultStatus } from "../../types/evaluationResultType"
-import { type User } from "../../types/userType"
 import { EvaluationAdministrationStatus } from "../../types/evaluationAdministrationType"
 
 /**
@@ -41,7 +40,7 @@ export const getEvaluations = async (req: Request, res: Response) => {
       },
     })
 
-    const evaluationDetails = await Promise.all(
+    const finalEvaluations = await Promise.all(
       evaluations.map(async (evaluation) => {
         const evaluator = await prisma.users.findUnique({
           select: {
@@ -99,29 +98,6 @@ export const getEvaluations = async (req: Request, res: Response) => {
         }
       })
     )
-
-    const sortedEvaluations = evaluationDetails.sort((a, b) => {
-      const aEvaluee = a.evaluee as User
-      const bEvaluee = b.evaluee as User
-
-      const lastNameComparison = aEvaluee.last_name.localeCompare(
-        bEvaluee.last_name
-      )
-
-      if (lastNameComparison === 0) {
-        return aEvaluee.first_name.localeCompare(bEvaluee.first_name)
-      }
-      return lastNameComparison
-    })
-
-    const submittedEvaluations = sortedEvaluations.filter(
-      (evaluation) => evaluation.status === EvaluationStatus.Submitted
-    )
-    const otherEvaluations = sortedEvaluations.filter(
-      (evaluation) => evaluation.status !== EvaluationStatus.Submitted
-    )
-
-    const finalEvaluations = [...otherEvaluations, ...submittedEvaluations]
 
     res.json(finalEvaluations)
   } catch (error) {
@@ -310,6 +286,9 @@ export const submitAnswer = async (req: Request, res: Response) => {
           status: EvaluationStatus.Ongoing,
         },
       })
+      Object.assign(evaluation, {
+        status: EvaluationStatus.Ongoing,
+      })
     }
 
     const rate = Number(answerOption.rate ?? 0)
@@ -327,7 +306,7 @@ export const submitAnswer = async (req: Request, res: Response) => {
       },
     })
 
-    res.json({ id })
+    res.json({ id, status: evaluation.status })
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
@@ -349,37 +328,6 @@ export const submitComment = async (req: Request, res: Response) => {
         id: parseInt(id),
       },
     })
-
-    const allEvaluationRatings = await prisma.evaluation_ratings.findMany({
-      select: {
-        answer_option_id: true,
-      },
-      where: {
-        evaluation_id: evaluation?.id,
-      },
-    })
-
-    const answerOptionIds = allEvaluationRatings
-      .map((rating) => rating.answer_option_id)
-      .filter((id) => id !== null) as number[]
-
-    const answerOptions = await prisma.answer_options.findMany({
-      select: {
-        sequence_no: true,
-      },
-      where: {
-        id: {
-          in: answerOptionIds,
-        },
-      },
-    })
-
-    if (
-      answerOptions.every((rating) => rating.sequence_no === 2) &&
-      comment.length === 0
-    ) {
-      return res.status(400).json({ message: "Comment is required." })
-    }
 
     if (evaluation === null) {
       return res.status(400).json({ message: "Invalid id" })
@@ -620,7 +568,7 @@ export const submitEvaluation = async (req: Request, res: Response) => {
       })
     }
 
-    res.json({ id })
+    res.json({ id, status: EvaluationStatus.Submitted })
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
