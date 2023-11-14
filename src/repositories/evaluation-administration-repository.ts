@@ -1,3 +1,4 @@
+import { type EvaluationAdministration } from "../types/evaluation-administration-type"
 import prisma from "../utils/prisma"
 
 export const getAllByStatus = async (status: string, date: Date) => {
@@ -19,6 +20,12 @@ export const getById = async (id: number) => {
     where: {
       id,
     },
+  })
+}
+
+export const create = async (data: EvaluationAdministration) => {
+  return await prisma.evaluation_administrations.create({
+    data,
   })
 }
 
