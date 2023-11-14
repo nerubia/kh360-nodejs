@@ -14,6 +14,14 @@ export const getAllByStatus = async (status: string, date: Date) => {
   })
 }
 
+export const getById = async (id: number) => {
+  return await prisma.evaluation_administrations.findUnique({
+    where: {
+      id,
+    },
+  })
+}
+
 export const updateStatusById = async (id: number, status: string) => {
   await prisma.evaluation_administrations.update({
     where: {

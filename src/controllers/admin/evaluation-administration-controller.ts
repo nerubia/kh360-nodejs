@@ -1,8 +1,11 @@
 import { type Request, type Response } from "express"
+
+import * as EvaluationAdministrationService from "../../services/evaluation-administration-service"
+
 import { createEvaluationSchema } from "../../utils/validation/evaluations/createEvaluationSchema"
 import { ValidationError } from "yup"
 import prisma from "../../utils/prisma"
-import { EvaluationAdministrationStatus } from "../../types/evaluationAdministrationType"
+import { EvaluationAdministrationStatus } from "../../types/evaluation-administration-type"
 import { EvaluationStatus } from "../../types/evaluationType"
 import { EvaluationResultStatus } from "../../types/evaluationResultType"
 import { type Decimal } from "@prisma/client/runtime/library"
@@ -132,12 +135,11 @@ export const show = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
 
-    const evaluationAdministration =
-      await prisma.evaluation_administrations.findUnique({
-        where: {
-          id: parseInt(id),
-        },
-      })
+    const evaluationAdministration = await prisma.evaluation_administrations.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+    })
 
     res.json(evaluationAdministration)
   } catch (error) {
@@ -183,22 +185,19 @@ export const update = async (req: Request, res: Response) => {
       email_content,
     })
 
-    const evaluationAdministration =
-      await prisma.evaluation_administrations.findUnique({
-        where: {
-          id: parseInt(id),
-        },
-      })
+    const evaluationAdministration = await prisma.evaluation_administrations.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+    })
 
     if (evaluationAdministration === null) {
       return res.status(400).json({ message: "Invalid id." })
     }
 
     if (
-      evaluationAdministration.status !==
-        EvaluationAdministrationStatus.Pending &&
-      evaluationAdministration.status !==
-        EvaluationAdministrationStatus.Ongoing &&
+      evaluationAdministration.status !== EvaluationAdministrationStatus.Pending &&
+      evaluationAdministration.status !== EvaluationAdministrationStatus.Ongoing &&
       evaluationAdministration.status !== EvaluationAdministrationStatus.Draft
     ) {
       return res.status(400).json({ message: "This action is not allowed." })
@@ -210,9 +209,7 @@ export const update = async (req: Request, res: Response) => {
       remarks,
     }
 
-    if (
-      evaluationAdministration.status === EvaluationAdministrationStatus.Draft
-    ) {
+    if (evaluationAdministration.status === EvaluationAdministrationStatus.Draft) {
       Object.assign(data, {
         name,
         eval_period_start_date: new Date(eval_period_start_date),
@@ -222,13 +219,12 @@ export const update = async (req: Request, res: Response) => {
       })
     }
 
-    const updatedEvaluationAdministration =
-      await prisma.evaluation_administrations.update({
-        where: {
-          id: parseInt(id),
-        },
-        data,
-      })
+    const updatedEvaluationAdministration = await prisma.evaluation_administrations.update({
+      where: {
+        id: parseInt(id),
+      },
+      data,
+    })
 
     res.json(updatedEvaluationAdministration)
   } catch (error) {
@@ -247,20 +243,17 @@ export const destroy = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
 
-    const evaluationAdministration =
-      await prisma.evaluation_administrations.findUnique({
-        where: {
-          id: parseInt(id),
-        },
-      })
+    const evaluationAdministration = await prisma.evaluation_administrations.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+    })
 
     if (evaluationAdministration === null) {
       return res.status(400).json({ message: "Invalid id" })
     }
 
-    if (
-      evaluationAdministration.status !== EvaluationAdministrationStatus.Draft
-    ) {
+    if (evaluationAdministration.status !== EvaluationAdministrationStatus.Draft) {
       return res.status(403).json({ message: "This action is not allowed" })
     }
 
@@ -308,12 +301,11 @@ export const generateStatus = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
 
-    const evaluationAdministration =
-      await prisma.evaluation_administrations.findUnique({
-        where: {
-          id: parseInt(id),
-        },
-      })
+    const evaluationAdministration = await prisma.evaluation_administrations.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+    })
 
     if (evaluationAdministration === null) {
       return res.status(400).json({ message: "Invalid id" })
@@ -330,8 +322,7 @@ export const generateStatus = async (req: Request, res: Response) => {
     })
 
     const notReadyEvaluationResults = evaluationResults.filter(
-      (evaluationResult) =>
-        evaluationResult.status !== EvaluationResultStatus.Ready
+      (evaluationResult) => evaluationResult.status !== EvaluationResultStatus.Ready
     )
 
     res.json({
@@ -350,12 +341,11 @@ export const generate = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
 
-    const evaluationAdministration =
-      await prisma.evaluation_administrations.findUnique({
-        where: {
-          id: parseInt(id),
-        },
-      })
+    const evaluationAdministration = await prisma.evaluation_administrations.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+    })
 
     if (evaluationAdministration === null) {
       return res.status(400).json({ message: "Invalid id" })
@@ -372,8 +362,7 @@ export const generate = async (req: Request, res: Response) => {
     })
 
     const notReadyEvaluationResults = evaluationResults.filter(
-      (evaluationResult) =>
-        evaluationResult.status !== EvaluationResultStatus.Ready
+      (evaluationResult) => evaluationResult.status !== EvaluationResultStatus.Ready
     )
 
     if (notReadyEvaluationResults.length > 0) {
@@ -382,16 +371,18 @@ export const generate = async (req: Request, res: Response) => {
 
     const currentDate = new Date()
 
+    const status =
+      evaluationAdministration.eval_schedule_start_date != null &&
+      evaluationAdministration.eval_schedule_start_date > currentDate
+        ? EvaluationAdministrationStatus.Pending
+        : EvaluationAdministrationStatus.Ongoing
+
     await prisma.evaluation_administrations.update({
       where: {
         id: parseInt(id),
       },
       data: {
-        status:
-          evaluationAdministration.eval_schedule_start_date != null &&
-          evaluationAdministration.eval_schedule_start_date > currentDate
-            ? EvaluationAdministrationStatus.Pending
-            : EvaluationAdministrationStatus.Ongoing,
+        status,
       },
     })
 
@@ -414,10 +405,7 @@ export const generate = async (req: Request, res: Response) => {
       })
 
       for (const evaluation of evaluations) {
-        if (
-          evaluation.status === EvaluationStatus.Draft &&
-          evaluation.for_evaluation === true
-        ) {
+        if (evaluation.status === EvaluationStatus.Draft && evaluation.for_evaluation === true) {
           await prisma.evaluations.update({
             where: {
               id: evaluation.id,
@@ -431,13 +419,12 @@ export const generate = async (req: Request, res: Response) => {
             },
           })
 
-          const evaluationTemplateContents =
-            await prisma.evaluation_template_contents.findMany({
-              where: {
-                evaluation_template_id: evaluation.evaluation_template_id,
-                is_active: true,
-              },
-            })
+          const evaluationTemplateContents = await prisma.evaluation_template_contents.findMany({
+            where: {
+              evaluation_template_id: evaluation.evaluation_template_id,
+              is_active: true,
+            },
+          })
 
           for (const evaluationTemplateContent of evaluationTemplateContents) {
             evaluationRatings.push({
@@ -457,6 +444,10 @@ export const generate = async (req: Request, res: Response) => {
     await prisma.evaluation_ratings.createMany({
       data: evaluationRatings,
     })
+
+    if (status === EvaluationAdministrationStatus.Ongoing) {
+      await EvaluationAdministrationService.sendEvaluationEmailById(evaluationAdministration.id)
+    }
 
     res.json({ id })
   } catch (error) {

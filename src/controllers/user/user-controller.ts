@@ -3,7 +3,7 @@ import { differenceInDays, endOfYear, startOfYear } from "date-fns"
 import prisma from "../../utils/prisma"
 import { EvaluationStatus } from "../../types/evaluationType"
 import { EvaluationResultStatus } from "../../types/evaluationResultType"
-import { EvaluationAdministrationStatus } from "../../types/evaluationAdministrationType"
+import { EvaluationAdministrationStatus } from "../../types/evaluation-administration-type"
 import { sendMail } from "../../utils/sendgrid"
 
 /**
@@ -25,17 +25,11 @@ export const getEvaluations = async (req: Request, res: Response) => {
         },
       },
       where: {
-        evaluation_administration_id: parseInt(
-          evaluation_administration_id as string
-        ),
+        evaluation_administration_id: parseInt(evaluation_administration_id as string),
         evaluator_id: user.id,
         for_evaluation: Boolean(parseInt(for_evaluation as string)),
         status: {
-          in: [
-            EvaluationStatus.Open,
-            EvaluationStatus.Ongoing,
-            EvaluationStatus.Submitted,
-          ],
+          in: [EvaluationStatus.Open, EvaluationStatus.Ongoing, EvaluationStatus.Submitted],
         },
       },
     })
@@ -109,10 +103,7 @@ export const getEvaluations = async (req: Request, res: Response) => {
  * List user evaluation administrations
  * @param req.query.page - Page number for pagination.
  */
-export const getEvaluationAdministrations = async (
-  req: Request,
-  res: Response
-) => {
+export const getEvaluationAdministrations = async (req: Request, res: Response) => {
   try {
     const user = req.user
 
@@ -133,20 +124,19 @@ export const getEvaluationAdministrations = async (
       (evaluation) => evaluation.evaluation_administration_id
     )
 
-    const evaluationAdministrations =
-      await prisma.evaluation_administrations.findMany({
-        skip: (currentPage - 1) * itemsPerPage,
-        take: itemsPerPage,
-        where: {
-          id: {
-            in: evaluationAdministrationIds as number[],
-          },
-          status: EvaluationAdministrationStatus.Ongoing,
+    const evaluationAdministrations = await prisma.evaluation_administrations.findMany({
+      skip: (currentPage - 1) * itemsPerPage,
+      take: itemsPerPage,
+      where: {
+        id: {
+          in: evaluationAdministrationIds as number[],
         },
-        orderBy: {
-          id: "desc",
-        },
-      })
+        status: EvaluationAdministrationStatus.Ongoing,
+      },
+      orderBy: {
+        id: "desc",
+      },
+    })
 
     const finalEvaluationAdministrations = await Promise.all(
       evaluationAdministrations.map(async (evaluationAdministration) => {
@@ -181,13 +171,10 @@ export const getEvaluationAdministrations = async (
         return {
           id: evaluationAdministration.id,
           name: evaluationAdministration.name,
-          eval_period_start_date:
-            evaluationAdministration.eval_period_start_date,
+          eval_period_start_date: evaluationAdministration.eval_period_start_date,
           eval_period_end_date: evaluationAdministration.eval_period_end_date,
-          eval_schedule_start_date:
-            evaluationAdministration.eval_schedule_start_date,
-          eval_schedule_end_date:
-            evaluationAdministration.eval_schedule_end_date,
+          eval_schedule_start_date: evaluationAdministration.eval_schedule_start_date,
+          eval_schedule_end_date: evaluationAdministration.eval_schedule_end_date,
           totalEvaluations,
           totalSubmitted,
           totalPending,
@@ -414,8 +401,7 @@ export const submitEvaluation = async (req: Request, res: Response) => {
 
     if (
       answerOptions.every((rating) => rating.sequence_no === 2) &&
-      (evaluation?.comments?.trim().length === 0 ||
-        evaluation?.comments === null)
+      (evaluation?.comments?.trim().length === 0 || evaluation?.comments === null)
     ) {
       return res.status(400).json({ message: "Comment is required." })
     }
@@ -450,30 +436,20 @@ export const submitEvaluation = async (req: Request, res: Response) => {
     })
 
     const score = (
-      Number(evaluationRatings._sum.score) /
-      Number(evaluationRatings._sum.percentage)
+      Number(evaluationRatings._sum.score) / Number(evaluationRatings._sum.percentage)
     ).toFixed(2)
 
     const evalStartDate =
-      evaluation.eval_start_date != null
-        ? new Date(evaluation.eval_start_date).getTime()
-        : 0
+      evaluation.eval_start_date != null ? new Date(evaluation.eval_start_date).getTime() : 0
     const evalEndDate =
-      evaluation.eval_end_date != null
-        ? new Date(evaluation.eval_end_date).getTime()
-        : 0
+      evaluation.eval_end_date != null ? new Date(evaluation.eval_end_date).getTime() : 0
 
-    const totalEvaluationDays = Math.ceil(
-      (evalEndDate - evalStartDate) / (1000 * 60 * 60 * 24)
-    )
+    const totalEvaluationDays = Math.ceil((evalEndDate - evalStartDate) / (1000 * 60 * 60 * 24))
 
     const currentDate = new Date()
-    const totalDaysInAYear =
-      differenceInDays(endOfYear(currentDate), startOfYear(currentDate)) + 1
+    const totalDaysInAYear = differenceInDays(endOfYear(currentDate), startOfYear(currentDate)) + 1
 
-    const weight =
-      (totalEvaluationDays / totalDaysInAYear) *
-      Number(evaluation.percent_involvement)
+    const weight = (totalEvaluationDays / totalDaysInAYear) * Number(evaluation.percent_involvement)
 
     const weighted_score = weight * Number(score)
 
@@ -506,16 +482,12 @@ export const submitEvaluation = async (req: Request, res: Response) => {
       },
     })
 
-    if (
-      remainingEvaluations === 0 &&
-      evaluation.evaluation_result_id !== null
-    ) {
-      const evaluationResultDetails =
-        await prisma.evaluation_result_details.findMany({
-          where: {
-            evaluation_result_id: evaluation.evaluation_result_id,
-          },
-        })
+    if (remainingEvaluations === 0 && evaluation.evaluation_result_id !== null) {
+      const evaluationResultDetails = await prisma.evaluation_result_details.findMany({
+        where: {
+          evaluation_result_id: evaluation.evaluation_result_id,
+        },
+      })
 
       for (const evaluationResultDetail of evaluationResultDetails) {
         const evaluations = await prisma.evaluations.aggregate({
@@ -525,15 +497,12 @@ export const submitEvaluation = async (req: Request, res: Response) => {
           },
           where: {
             evaluation_result_id: evaluation.evaluation_result_id,
-            evaluation_template_id:
-              evaluationResultDetail.evaluation_template_id,
+            evaluation_template_id: evaluationResultDetail.evaluation_template_id,
             status: EvaluationStatus.Submitted,
           },
         })
 
-        const score =
-          Number(evaluations._sum.weighted_score) /
-          Number(evaluations._sum.weight)
+        const score = Number(evaluations._sum.weighted_score) / Number(evaluations._sum.weight)
 
         await prisma.evaluation_result_details.update({
           where: {
@@ -547,13 +516,12 @@ export const submitEvaluation = async (req: Request, res: Response) => {
         })
       }
 
-      const evaluationResultDetailsSum =
-        await prisma.evaluation_result_details.aggregate({
-          _sum: {
-            weight: true,
-            weighted_score: true,
-          },
-        })
+      const evaluationResultDetailsSum = await prisma.evaluation_result_details.aggregate({
+        _sum: {
+          weight: true,
+          weighted_score: true,
+        },
+      })
 
       await prisma.evaluation_results.update({
         where: {

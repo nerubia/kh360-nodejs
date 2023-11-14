@@ -39,6 +39,8 @@ npm install
 ### 1. Create a .env file
 
 ```
+APP_URL=http://localhost:3000
+
 PORT=5000
 
 DATABASE_URL=mysql://USER:PASSWORD@HOST:PORT/DATABASE

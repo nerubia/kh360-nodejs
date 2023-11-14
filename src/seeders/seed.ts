@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client"
 import { faker } from "@faker-js/faker"
-import { EvaluationAdministrationStatus } from "../types/evaluationAdministrationType"
+import { EvaluationAdministrationStatus } from "../types/evaluation-administration-type"
 import { EvaluationResultStatus } from "../types/evaluationResultType"
 
 const prisma = new PrismaClient()
