@@ -1,9 +1,11 @@
 import { type Request, type Response } from "express"
 
+import { ValidationError } from "yup"
+
 import * as EvaluationAdministrationService from "../../services/evaluation-administration-service"
+import * as EvaluationResultService from "../../services/evaluation-result-service"
 
 import { createEvaluationSchema } from "../../utils/validation/evaluations/createEvaluationSchema"
-import { ValidationError } from "yup"
 import prisma from "../../utils/prisma"
 import { EvaluationAdministrationStatus } from "../../types/evaluation-administration-type"
 import { EvaluationStatus } from "../../types/evaluationType"
@@ -104,18 +106,16 @@ export const store = async (req: Request, res: Response) => {
       email_content,
     })
 
-    const newEvaluation = await prisma.evaluation_administrations.create({
-      data: {
-        name,
-        eval_period_start_date: new Date(eval_period_start_date),
-        eval_period_end_date: new Date(eval_period_end_date),
-        eval_schedule_start_date: new Date(eval_schedule_start_date),
-        eval_schedule_end_date: new Date(eval_schedule_end_date),
-        remarks,
-        email_subject,
-        email_content,
-        status: EvaluationAdministrationStatus.Draft,
-      },
+    const newEvaluation = await EvaluationAdministrationService.create({
+      name,
+      eval_period_start_date: new Date(eval_period_start_date),
+      eval_period_end_date: new Date(eval_period_end_date),
+      eval_schedule_start_date: new Date(eval_schedule_start_date),
+      eval_schedule_end_date: new Date(eval_schedule_end_date),
+      remarks,
+      email_subject,
+      email_content,
+      status: EvaluationAdministrationStatus.Draft,
     })
 
     res.json(newEvaluation)
@@ -134,13 +134,7 @@ export const store = async (req: Request, res: Response) => {
 export const show = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-
-    const evaluationAdministration = await prisma.evaluation_administrations.findUnique({
-      where: {
-        id: parseInt(id),
-      },
-    })
-
+    const evaluationAdministration = await EvaluationAdministrationService.getById(parseInt(id))
     res.json(evaluationAdministration)
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
@@ -185,11 +179,7 @@ export const update = async (req: Request, res: Response) => {
       email_content,
     })
 
-    const evaluationAdministration = await prisma.evaluation_administrations.findUnique({
-      where: {
-        id: parseInt(id),
-      },
-    })
+    const evaluationAdministration = await EvaluationAdministrationService.getById(parseInt(id))
 
     if (evaluationAdministration === null) {
       return res.status(400).json({ message: "Invalid id." })
@@ -243,11 +233,7 @@ export const destroy = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
 
-    const evaluationAdministration = await prisma.evaluation_administrations.findUnique({
-      where: {
-        id: parseInt(id),
-      },
-    })
+    const evaluationAdministration = await EvaluationAdministrationService.getById(parseInt(id))
 
     if (evaluationAdministration === null) {
       return res.status(400).json({ message: "Invalid id" })
@@ -446,6 +432,17 @@ export const generate = async (req: Request, res: Response) => {
     })
 
     if (status === EvaluationAdministrationStatus.Ongoing) {
+      const evaluationResults = await EvaluationResultService.getAllByEvaluationAdministrationId(
+        evaluationAdministration.id
+      )
+
+      for (const evaluationResult of evaluationResults) {
+        await EvaluationResultService.updateStatusById(
+          evaluationResult.id,
+          EvaluationResultStatus.Ongoing
+        )
+      }
+
       await EvaluationAdministrationService.sendEvaluationEmailById(evaluationAdministration.id)
     }
 

@@ -3,9 +3,18 @@ import * as EvaluationAdministrationRepository from "../repositories/evaluation-
 import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as UserRepository from "../repositories/user-repository"
 import { sendMail } from "../utils/sendgrid"
+import { type EvaluationAdministration } from "../types/evaluation-administration-type"
 
 export const getAllByStatus = async (status: string, date: Date) => {
   return await EvaluationAdministrationRepository.getAllByStatus(status, date)
+}
+
+export const getById = async (id: number) => {
+  return await EvaluationAdministrationRepository.getById(id)
+}
+
+export const create = async (data: EvaluationAdministration) => {
+  return await EvaluationAdministrationRepository.create(data)
 }
 
 export const updateStatusById = async (id: number, status: string) => {
