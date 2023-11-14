@@ -1,5 +1,5 @@
 import express from "express"
-import { getDefaultEmailTemplate } from "../../controllers/admin/email_templates_controller"
+import { getDefaultEmailTemplate } from "../../controllers/admin/email-template-controller"
 
 const router = express.Router()
 
