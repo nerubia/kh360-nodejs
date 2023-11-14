@@ -10,9 +10,9 @@ import { adminMiddleware } from "./middlewares/admin_middleware"
 
 import homeRoute from "./routes/home_route"
 import authRoute from "./routes/auth_route"
-import userRoute from "./routes/user/user_route"
+import userRoute from "./routes/user/user-route"
 
-import evaluationAdministrationsRoute from "./routes/admin/evaluation_administrations_route"
+import evaluationAdministrationRoute from "./routes/admin/evaluation-administration-route"
 import evaluationResultsRoute from "./routes/admin/evaluation_results_route"
 import evaluationTemplateContentsRoute from "./routes/user/evaluation_template_contents_route"
 import evaluationTemplates from "./routes/admin/evaluation_templates_route"
@@ -44,27 +44,15 @@ app.use("/auth", authRoute)
  */
 
 app.use("/user", authMiddleware, userRoute)
-app.use(
-  "/user/evaluation-template-contents",
-  authMiddleware,
-  evaluationTemplateContentsRoute
-)
+app.use("/user/evaluation-template-contents", authMiddleware, evaluationTemplateContentsRoute)
 
 /**
  * Admin routes
  */
 
-app.use(
-  "/admin/evaluation-administrations",
-  adminMiddleware,
-  evaluationAdministrationsRoute
-)
+app.use("/admin/evaluation-administrations", adminMiddleware, evaluationAdministrationRoute)
 app.use("/admin/evaluation-results", adminMiddleware, evaluationResultsRoute)
-app.use(
-  "/admin/evaluation-template-contents",
-  adminMiddleware,
-  evaluationTemplateContentsRoute
-)
+app.use("/admin/evaluation-template-contents", adminMiddleware, evaluationTemplateContentsRoute)
 app.use("/admin/evaluation-templates", adminMiddleware, evaluationTemplates)
 app.use("/admin/evaluations", adminMiddleware, evaluationsRoute)
 app.use("/admin/users", adminMiddleware, usersRoute)
