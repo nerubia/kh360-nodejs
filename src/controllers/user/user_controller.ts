@@ -1,10 +1,10 @@
 import { type Request, type Response } from "express"
 import { differenceInDays, endOfYear, startOfYear } from "date-fns"
 import prisma from "../../utils/prisma"
-import { sendMail } from "../../services/mail_service"
 import { EvaluationStatus } from "../../types/evaluationType"
 import { EvaluationResultStatus } from "../../types/evaluationResultType"
 import { EvaluationAdministrationStatus } from "../../types/evaluationAdministrationType"
+import { sendMail } from "../../utils/sendgrid"
 
 /**
  * List user evaluations based on provided filters.
