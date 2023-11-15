@@ -24,7 +24,7 @@ export const index = async (req: Request, res: Response) => {
 
     const evaluationStatus = status === "all" ? "" : status
 
-    const itemsPerPage = 20
+    const itemsPerPage = 10
     const parsedPage = parseInt(page as string)
     const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
