@@ -524,6 +524,8 @@ model evaluations {
   filename                     String?          @default("") @db.VarChar(255)
   submission_method            String?          @default("Manual") @db.VarChar(20)
   submitted_date               DateTime?        @db.Date
+  is_external                  Boolean?
+  external_evaluator_id        Int?
   created_at                   DateTime?        @db.DateTime(0)
   updated_at                   DateTime?        @db.DateTime(0)
   project_members              project_members? @relation(fields: [project_member_id], references: [id])
@@ -534,6 +536,20 @@ model evaluations {
   @@index([evaluator_id], map: "index_evaluations_on_evaluator_id")
   @@index([evaluee_id], map: "index_evaluations_on_evaluee_id")
   @@index([project_id], map: "index_evaluations_on_project_id")
+}
+
+model external_users {
+  id            Int       @id @default(autoincrement())
+  email         String    @unique(map: "index_external_users_on_email") @default("") @db.VarChar(255)
+  first_name    String    @db.VarChar(100)
+  middle_name   String?   @db.VarChar(75)
+  last_name     String    @db.VarChar(75)
+  role          String?   @db.VarChar(255)
+  company       String?   @db.VarChar(255)
+  created_by_id Int?
+  updated_by_id Int?
+  created_at    DateTime? @db.DateTime(0)
+  updated_at    DateTime? @db.DateTime(0)
 }
 
 model holidays {
