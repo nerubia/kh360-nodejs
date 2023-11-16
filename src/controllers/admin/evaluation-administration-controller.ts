@@ -8,7 +8,7 @@ import * as EvaluationResultService from "../../services/evaluation-result-servi
 import { createEvaluationSchema } from "../../utils/validation/evaluations/createEvaluationSchema"
 import prisma from "../../utils/prisma"
 import { EvaluationAdministrationStatus } from "../../types/evaluation-administration-type"
-import { EvaluationStatus } from "../../types/evaluationType"
+import { EvaluationStatus } from "../../types/evaluation-type"
 import { EvaluationResultStatus } from "../../types/evaluationResultType"
 import { type Decimal } from "@prisma/client/runtime/library"
 
@@ -386,43 +386,42 @@ export const generate = async (req: Request, res: Response) => {
       const evaluations = await prisma.evaluations.findMany({
         where: {
           evaluation_result_id: evaluationResult.id,
+          for_evaluation: true,
+          status: EvaluationStatus.Draft,
         },
-        distinct: ["evaluator_id", "project_id"],
       })
 
       for (const evaluation of evaluations) {
-        if (evaluation.status === EvaluationStatus.Draft && evaluation.for_evaluation === true) {
-          await prisma.evaluations.update({
-            where: {
-              id: evaluation.id,
-            },
-            data: {
-              status:
-                evaluationAdministration.eval_schedule_start_date != null &&
-                evaluationAdministration.eval_schedule_start_date > currentDate
-                  ? EvaluationStatus.Pending
-                  : EvaluationStatus.Open,
-            },
-          })
+        await prisma.evaluations.update({
+          where: {
+            id: evaluation.id,
+          },
+          data: {
+            status:
+              evaluationAdministration.eval_schedule_start_date != null &&
+              evaluationAdministration.eval_schedule_start_date > currentDate
+                ? EvaluationStatus.Pending
+                : EvaluationStatus.Open,
+          },
+        })
 
-          const evaluationTemplateContents = await prisma.evaluation_template_contents.findMany({
-            where: {
-              evaluation_template_id: evaluation.evaluation_template_id,
-              is_active: true,
-            },
-          })
+        const evaluationTemplateContents = await prisma.evaluation_template_contents.findMany({
+          where: {
+            evaluation_template_id: evaluation.evaluation_template_id,
+            is_active: true,
+          },
+        })
 
-          for (const evaluationTemplateContent of evaluationTemplateContents) {
-            evaluationRatings.push({
-              evaluation_administration_id: evaluationAdministration.id,
-              evaluation_id: evaluation.id,
-              evaluation_template_id: evaluation.evaluation_template_id,
-              evaluation_template_content_id: evaluationTemplateContent.id,
-              percentage: evaluationTemplateContent.rate,
-              created_at: currentDate,
-              updated_at: currentDate,
-            })
-          }
+        for (const evaluationTemplateContent of evaluationTemplateContents) {
+          evaluationRatings.push({
+            evaluation_administration_id: evaluationAdministration.id,
+            evaluation_id: evaluation.id,
+            evaluation_template_id: evaluation.evaluation_template_id,
+            evaluation_template_content_id: evaluationTemplateContent.id,
+            percentage: evaluationTemplateContent.rate,
+            created_at: currentDate,
+            updated_at: currentDate,
+          })
         }
       }
     }
@@ -432,18 +431,11 @@ export const generate = async (req: Request, res: Response) => {
     })
 
     if (status === EvaluationAdministrationStatus.Ongoing) {
-      const evaluationResults = await EvaluationResultService.getAllByEvaluationAdministrationId(
-        evaluationAdministration.id
+      void EvaluationResultService.updateStatusByAdministrationId(
+        evaluationAdministration.id,
+        EvaluationResultStatus.Ongoing
       )
-
-      for (const evaluationResult of evaluationResults) {
-        await EvaluationResultService.updateStatusById(
-          evaluationResult.id,
-          EvaluationResultStatus.Ongoing
-        )
-      }
-
-      await EvaluationAdministrationService.sendEvaluationEmailById(evaluationAdministration.id)
+      void EvaluationAdministrationService.sendEvaluationEmailById(evaluationAdministration.id)
     }
 
     res.json({ id })

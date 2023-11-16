@@ -1,7 +1,7 @@
 import { type Request, type Response } from "express"
 import { differenceInDays, endOfYear, startOfYear } from "date-fns"
 import prisma from "../../utils/prisma"
-import { EvaluationStatus } from "../../types/evaluationType"
+import { EvaluationStatus } from "../../types/evaluation-type"
 import { EvaluationResultStatus } from "../../types/evaluationResultType"
 import { EvaluationAdministrationStatus } from "../../types/evaluation-administration-type"
 import { sendMail } from "../../utils/sendgrid"

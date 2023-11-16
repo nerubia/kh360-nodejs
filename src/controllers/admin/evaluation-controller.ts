@@ -1,6 +1,6 @@
 import { type Request, type Response } from "express"
 import prisma from "../../utils/prisma"
-import { EvaluationStatus } from "../../types/evaluationType"
+import { EvaluationStatus } from "../../types/evaluation-type"
 
 /**
  * List evaluations based on provided filters.
@@ -10,8 +10,7 @@ import { EvaluationStatus } from "../../types/evaluationType"
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const { evaluation_template_id, evaluation_result_id, for_evaluation } =
-      req.query
+    const { evaluation_template_id, evaluation_result_id, for_evaluation } = req.query
 
     const where = {
       evaluation_template_id: parseInt(evaluation_template_id as string),
@@ -114,10 +113,7 @@ export const setForEvaluations = async (req: Request, res: Response) => {
         },
       },
       data: {
-        status:
-          for_evaluation === true
-            ? EvaluationStatus.Draft
-            : EvaluationStatus.Excluded,
+        status: for_evaluation === true ? EvaluationStatus.Draft : EvaluationStatus.Excluded,
         for_evaluation,
       },
     })

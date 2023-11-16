@@ -1,12 +1,10 @@
+import { type Prisma } from "@prisma/client"
 import prisma from "../utils/prisma"
 
-export const getAllByAdministrationId = async (
-  evaluation_administration_id: number
-) => {
+export const getAllByFilters = async (where: Prisma.evaluationsWhereInput) => {
   return await prisma.evaluations.findMany({
-    where: {
-      evaluation_administration_id,
-    },
+    where,
+    distinct: ["evaluator_id", "project_id"],
   })
 }
 
@@ -14,6 +12,21 @@ export const updateStatusById = async (id: number, status: string) => {
   await prisma.evaluations.update({
     where: {
       id,
+    },
+    data: {
+      status,
+    },
+  })
+}
+
+export const updateStatusByAdministrationId = async (
+  evaluation_administration_id: number,
+  status: string
+) => {
+  await prisma.evaluations.updateMany({
+    where: {
+      evaluation_administration_id,
+      for_evaluation: true,
     },
     data: {
       status,

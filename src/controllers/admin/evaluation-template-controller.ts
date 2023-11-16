@@ -25,9 +25,7 @@ export const index = async (req: Request, res: Response) => {
       distinct: ["evaluation_template_id"],
     })
 
-    const evaluationTemplateIds = evaluations.map(
-      (evaluation) => evaluation.evaluation_template_id
-    )
+    const evaluationTemplateIds = evaluations.map((evaluation) => evaluation.evaluation_template_id)
 
     const evaluationTemplates = await prisma.evaluation_templates.findMany({
       where: {
