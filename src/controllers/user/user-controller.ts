@@ -399,12 +399,11 @@ export const submitEvaluation = async (req: Request, res: Response) => {
       Number(evaluationRatings._sum.score) / Number(evaluationRatings._sum.percentage)
     ).toFixed(2)
 
-    const evalStartDate =
-      evaluation.eval_start_date != null ? new Date(evaluation.eval_start_date).getTime() : 0
-    const evalEndDate =
-      evaluation.eval_end_date != null ? new Date(evaluation.eval_end_date).getTime() : 0
-
-    const totalEvaluationDays = Math.ceil((evalEndDate - evalStartDate) / (1000 * 60 * 60 * 24))
+    const totalEvaluationDays =
+      differenceInDays(
+        new Date(evaluation.eval_end_date ?? 0),
+        new Date(evaluation.eval_start_date ?? 0)
+      ) + 1
 
     const currentDate = new Date()
     const totalDaysInAYear = differenceInDays(endOfYear(currentDate), startOfYear(currentDate)) + 1
