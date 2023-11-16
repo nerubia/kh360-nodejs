@@ -241,6 +241,10 @@ export const store = async (req: Request, res: Response) => {
         eval_end_date: Date | null
         percent_involvement: Decimal | null
         status: string
+        submission_method: null
+        is_external: boolean
+        created_at: Date
+        updated_at: Date
       }> = []
 
       const evaluationResultDetails: Array<{
@@ -305,6 +309,10 @@ export const store = async (req: Request, res: Response) => {
               eval_end_date: project.end_date,
               percent_involvement: project.allocation_rate,
               status: EvaluationStatus.Excluded,
+              submission_method: null,
+              is_external: false,
+              created_at: currentDate,
+              updated_at: currentDate,
             })
 
             const evaluationResultDetail = evaluationResultDetails.find(
@@ -350,6 +358,10 @@ export const store = async (req: Request, res: Response) => {
               eval_end_date: evaluationAdministration.eval_period_end_date,
               percent_involvement: new Decimal(100),
               status: EvaluationStatus.Excluded,
+              submission_method: null,
+              is_external: false,
+              created_at: currentDate,
+              updated_at: currentDate,
             })
           }
 
@@ -380,6 +392,10 @@ export const store = async (req: Request, res: Response) => {
                 eval_end_date: evaluationAdministration.eval_period_end_date,
                 percent_involvement: new Decimal(100),
                 status: EvaluationStatus.Excluded,
+                submission_method: null,
+                is_external: false,
+                created_at: currentDate,
+                updated_at: currentDate,
               })
             }
           }

@@ -130,6 +130,7 @@ export const setForEvaluations = async (req: Request, res: Response) => {
       data: {
         status: for_evaluation === true ? EvaluationStatus.Draft : EvaluationStatus.Excluded,
         for_evaluation,
+        updated_at: new Date(),
       },
     })
 
