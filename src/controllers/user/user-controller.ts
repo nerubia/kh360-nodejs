@@ -272,9 +272,10 @@ export const saveAnswers = async (req: Request, res: Response) => {
     }
 
     evaluationRatings.forEach(async (rating, index) => {
+      const answerOptionId = answerOptionIds[index]
       const answerOption = await prisma.answer_options.findUnique({
         where: {
-          id: answerOptionIds[index],
+          id: answerOptionId ?? 0,
         },
       })
 
