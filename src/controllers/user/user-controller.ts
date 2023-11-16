@@ -268,6 +268,7 @@ export const submitEvaluation = async (req: Request, res: Response) => {
           updated_at: new Date(),
         },
       })
+
       Object.assign(evaluation, {
         status: EvaluationStatus.Ongoing,
       })
@@ -552,6 +553,7 @@ export const submitAnswer = async (req: Request, res: Response) => {
       await prisma.evaluations.update({
         where: {
           id: evaluation.id,
+          updated_at: new Date(),
         },
         data: {
           status: EvaluationStatus.Ongoing,
