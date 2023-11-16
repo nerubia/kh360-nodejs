@@ -213,13 +213,14 @@ export const getEvaluationAdministrations = async (req: Request, res: Response) 
  * @param req.body.evaluation_rating_ids - Evaluation rating ids.
  * @param req.body.answer_option_ids - Answer option ids.
  * @param req.body.comment - Evaluation comment.
+ * @param req.body.is_submitting - Evaluation comment.
  */
 
-export const saveAnswers = async (req: Request, res: Response) => {
+export const submitEvaluation = async (req: Request, res: Response) => {
   try {
     const user = req.user
     const { id } = req.params
-    const { evaluation_rating_ids, answer_option_ids, comment } = req.body
+    const { evaluation_rating_ids, answer_option_ids, comment, is_submitting } = req.body
 
     const evaluationRatingIds = evaluation_rating_ids as number[]
     const answerOptionIds = answer_option_ids as number[]
@@ -307,6 +308,183 @@ export const saveAnswers = async (req: Request, res: Response) => {
       },
     })
 
+    if (is_submitting === true) {
+      const allEvaluationRatings = await prisma.evaluation_ratings.findMany({
+        select: {
+          answer_option_id: true,
+        },
+        where: {
+          evaluation_id: evaluation?.id,
+        },
+      })
+
+      const containsNullAnswerOption = allEvaluationRatings.some(
+        (rating) => rating.answer_option_id === null
+      )
+
+      if (containsNullAnswerOption) {
+        return res.status(400).json({ message: "Please set all ratings." })
+      }
+
+      const answerOptionIds = allEvaluationRatings
+        .map((rating) => rating.answer_option_id)
+        .filter((id) => id !== null) as number[]
+
+      const answerOptions = await prisma.answer_options.findMany({
+        select: {
+          sequence_no: true,
+        },
+        where: {
+          id: {
+            in: answerOptionIds,
+          },
+        },
+      })
+
+      if (
+        answerOptions.every((rating) => rating.sequence_no === 2) &&
+        (evaluation?.comments?.trim().length === 0 || evaluation?.comments === null)
+      ) {
+        return res.status(400).json({ message: "Comment is required." })
+      }
+
+      if (evaluation === null) {
+        return res.status(400).json({ message: "Invalid id" })
+      }
+
+      if (evaluation.evaluator_id !== user.id) {
+        return res.status(403).json({
+          message: "You do not have permission to answer this.",
+        })
+      }
+
+      if (
+        evaluation.status !== EvaluationStatus.Open &&
+        evaluation.status !== EvaluationStatus.Ongoing
+      ) {
+        return res.status(403).json({
+          message: "Only open and ongoing statuses are allowed.",
+        })
+      }
+
+      const evaluationRatings = await prisma.evaluation_ratings.aggregate({
+        _sum: {
+          score: true,
+          percentage: true,
+        },
+        where: {
+          evaluation_id: evaluation.id,
+        },
+      })
+
+      const score = (
+        Number(evaluationRatings._sum.score) / Number(evaluationRatings._sum.percentage)
+      ).toFixed(2)
+
+      const totalEvaluationDays =
+        differenceInDays(
+          new Date(evaluation.eval_end_date ?? 0),
+          new Date(evaluation.eval_start_date ?? 0)
+        ) + 1
+
+      const currentDate = new Date()
+      const totalDaysInAYear =
+        differenceInDays(endOfYear(currentDate), startOfYear(currentDate)) + 1
+
+      const weight =
+        (totalEvaluationDays / totalDaysInAYear) * Number(evaluation.percent_involvement)
+
+      const weighted_score = weight * Number(score)
+
+      await prisma.evaluations.update({
+        where: {
+          id: evaluation.id,
+        },
+        data: {
+          score,
+          weight,
+          weighted_score,
+          status: EvaluationStatus.Submitted,
+          submission_method: "Manual",
+          submitted_date: currentDate,
+          updated_at: currentDate,
+        },
+      })
+
+      const remainingEvaluations = await prisma.evaluations.count({
+        where: {
+          evaluation_result_id: evaluation.evaluation_result_id,
+          status: {
+            in: [
+              EvaluationStatus.Draft,
+              EvaluationStatus.Pending,
+              EvaluationStatus.Open,
+              EvaluationStatus.Ongoing,
+            ],
+          },
+        },
+      })
+
+      if (remainingEvaluations === 0 && evaluation.evaluation_result_id !== null) {
+        const evaluationResultDetails = await prisma.evaluation_result_details.findMany({
+          where: {
+            evaluation_result_id: evaluation.evaluation_result_id,
+          },
+        })
+
+        for (const evaluationResultDetail of evaluationResultDetails) {
+          const evaluations = await prisma.evaluations.aggregate({
+            _sum: {
+              weight: true,
+              weighted_score: true,
+            },
+            where: {
+              evaluation_result_id: evaluation.evaluation_result_id,
+              evaluation_template_id: evaluationResultDetail.evaluation_template_id,
+              status: EvaluationStatus.Submitted,
+            },
+          })
+
+          const score = Number(evaluations._sum.weighted_score) / Number(evaluations._sum.weight)
+
+          await prisma.evaluation_result_details.update({
+            where: {
+              id: evaluationResultDetail.id,
+            },
+            data: {
+              score,
+              weighted_score: Number(evaluationResultDetail.weight) * score,
+              updated_at: currentDate,
+            },
+          })
+        }
+
+        const evaluationResultDetailsSum = await prisma.evaluation_result_details.aggregate({
+          _sum: {
+            weight: true,
+            weighted_score: true,
+          },
+        })
+
+        await prisma.evaluation_results.update({
+          where: {
+            id: evaluation.evaluation_result_id,
+          },
+          data: {
+            score:
+              Number(evaluationResultDetailsSum._sum.weighted_score) /
+              Number(evaluationResultDetailsSum._sum.weight),
+            status: EvaluationResultStatus.Completed,
+            updated_at: currentDate,
+          },
+        })
+      }
+
+      Object.assign(evaluation, {
+        status: EvaluationStatus.Submitted,
+      })
+    }
+
     res.json({ id, status: evaluation.status, comment })
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
@@ -314,58 +492,22 @@ export const saveAnswers = async (req: Request, res: Response) => {
 }
 
 /**
- * Submit evaluation by ID
+ * Submit answer by ID
  * @param req.params.id - The unique ID of the evaluation.
+ * @param req.body.evaluation_rating_id - Evaluation rating id.
+ * @param req.body.answer_option_id - Answer optioin id.
  */
-export const submitEvaluation = async (req: Request, res: Response) => {
+export const submitAnswer = async (req: Request, res: Response) => {
   try {
     const user = req.user
     const { id } = req.params
+    const { evaluation_rating_id, answer_option_id } = req.body
 
     const evaluation = await prisma.evaluations.findUnique({
       where: {
         id: parseInt(id),
       },
     })
-
-    const allEvaluationRatings = await prisma.evaluation_ratings.findMany({
-      select: {
-        answer_option_id: true,
-      },
-      where: {
-        evaluation_id: evaluation?.id,
-      },
-    })
-
-    const containsNullAnswerOption = allEvaluationRatings.some(
-      (rating) => rating.answer_option_id === null
-    )
-
-    if (containsNullAnswerOption) {
-      return res.status(400).json({ message: "Please set all ratings." })
-    }
-
-    const answerOptionIds = allEvaluationRatings
-      .map((rating) => rating.answer_option_id)
-      .filter((id) => id !== null) as number[]
-
-    const answerOptions = await prisma.answer_options.findMany({
-      select: {
-        sequence_no: true,
-      },
-      where: {
-        id: {
-          in: answerOptionIds,
-        },
-      },
-    })
-
-    if (
-      answerOptions.every((rating) => rating.sequence_no === 2) &&
-      (evaluation?.comments?.trim().length === 0 || evaluation?.comments === null)
-    ) {
-      return res.status(400).json({ message: "Comment is required." })
-    }
 
     if (evaluation === null) {
       return res.status(400).json({ message: "Invalid id" })
@@ -386,118 +528,109 @@ export const submitEvaluation = async (req: Request, res: Response) => {
       })
     }
 
-    const evaluationRatings = await prisma.evaluation_ratings.aggregate({
-      _sum: {
-        score: true,
-        percentage: true,
-      },
+    const evaluationRating = await prisma.evaluation_ratings.findUnique({
       where: {
-        evaluation_id: evaluation.id,
+        id: parseInt(evaluation_rating_id as string),
       },
     })
 
-    const score = (
-      Number(evaluationRatings._sum.score) / Number(evaluationRatings._sum.percentage)
-    ).toFixed(2)
+    if (evaluationRating === null) {
+      return res.status(400).json({ message: "Evaluation rating not found" })
+    }
 
-    const totalEvaluationDays =
-      differenceInDays(
-        new Date(evaluation.eval_end_date ?? 0),
-        new Date(evaluation.eval_start_date ?? 0)
-      ) + 1
+    const answerOption = await prisma.answer_options.findUnique({
+      where: {
+        id: parseInt(answer_option_id as string),
+      },
+    })
 
-    const currentDate = new Date()
-    const totalDaysInAYear = differenceInDays(endOfYear(currentDate), startOfYear(currentDate)) + 1
+    if (answerOption === null) {
+      return res.status(400).json({ message: "Answer option not found" })
+    }
 
-    const weight = (totalEvaluationDays / totalDaysInAYear) * Number(evaluation.percent_involvement)
+    if (evaluation.status === EvaluationStatus.Open) {
+      await prisma.evaluations.update({
+        where: {
+          id: evaluation.id,
+        },
+        data: {
+          status: EvaluationStatus.Ongoing,
+        },
+      })
+      Object.assign(evaluation, {
+        status: EvaluationStatus.Ongoing,
+      })
+    }
 
-    const weighted_score = weight * Number(score)
+    const rate = Number(answerOption.rate ?? 0)
+    const percentage = Number(evaluationRating.percentage ?? 0)
+    const score = rate * percentage
+
+    await prisma.evaluation_ratings.update({
+      where: {
+        id: evaluationRating.id,
+      },
+      data: {
+        answer_option_id: answerOption.id,
+        rate,
+        score,
+      },
+    })
+
+    res.json({ id, status: evaluation.status })
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Submit comment by ID
+ * @param req.params.id - The unique ID of the evaluation.
+ * @param req.body.comment - Evaluation comment.
+ */
+export const submitComment = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+    const { id } = req.params
+    const { comment } = req.body
+
+    const evaluation = await prisma.evaluations.findUnique({
+      where: {
+        id: parseInt(id),
+      },
+    })
+
+    if (evaluation === null) {
+      return res.status(400).json({ message: "Invalid id" })
+    }
+
+    if (evaluation.evaluator_id !== user.id) {
+      return res.status(403).json({
+        message: "You do not have permission to answer this.",
+      })
+    }
+
+    if (
+      evaluation.status !== EvaluationStatus.Open &&
+      evaluation.status !== EvaluationStatus.Ongoing
+    ) {
+      return res.status(403).json({
+        message: "Only open and ongoing statuses are allowed.",
+      })
+    }
 
     await prisma.evaluations.update({
       where: {
         id: evaluation.id,
       },
       data: {
-        score,
-        weight,
-        weighted_score,
-        status: EvaluationStatus.Submitted,
-        submission_method: "Manual",
-        submitted_date: currentDate,
-        updated_at: currentDate,
+        comments: comment,
+        status: EvaluationStatus.Ongoing,
+        updated_at: new Date(),
       },
     })
 
-    const remainingEvaluations = await prisma.evaluations.count({
-      where: {
-        evaluation_result_id: evaluation.evaluation_result_id,
-        status: {
-          in: [
-            EvaluationStatus.Draft,
-            EvaluationStatus.Pending,
-            EvaluationStatus.Open,
-            EvaluationStatus.Ongoing,
-          ],
-        },
-      },
-    })
-
-    if (remainingEvaluations === 0 && evaluation.evaluation_result_id !== null) {
-      const evaluationResultDetails = await prisma.evaluation_result_details.findMany({
-        where: {
-          evaluation_result_id: evaluation.evaluation_result_id,
-        },
-      })
-
-      for (const evaluationResultDetail of evaluationResultDetails) {
-        const evaluations = await prisma.evaluations.aggregate({
-          _sum: {
-            weight: true,
-            weighted_score: true,
-          },
-          where: {
-            evaluation_result_id: evaluation.evaluation_result_id,
-            evaluation_template_id: evaluationResultDetail.evaluation_template_id,
-            status: EvaluationStatus.Submitted,
-          },
-        })
-
-        const score = Number(evaluations._sum.weighted_score) / Number(evaluations._sum.weight)
-
-        await prisma.evaluation_result_details.update({
-          where: {
-            id: evaluationResultDetail.id,
-          },
-          data: {
-            score,
-            weighted_score: Number(evaluationResultDetail.weight) * score,
-            updated_at: currentDate,
-          },
-        })
-      }
-
-      const evaluationResultDetailsSum = await prisma.evaluation_result_details.aggregate({
-        _sum: {
-          weight: true,
-          weighted_score: true,
-        },
-      })
-
-      await prisma.evaluation_results.update({
-        where: {
-          id: evaluation.evaluation_result_id,
-        },
-        data: {
-          score:
-            Number(evaluationResultDetailsSum._sum.weighted_score) /
-            Number(evaluationResultDetailsSum._sum.weight),
-          status: EvaluationResultStatus.Completed,
-          updated_at: currentDate,
-        },
-      })
-    }
-
-    res.json({ id, status: EvaluationStatus.Submitted })
+    res.json({ id, comment })
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
