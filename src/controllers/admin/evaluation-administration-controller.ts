@@ -402,6 +402,7 @@ export const generate = async (req: Request, res: Response) => {
               evaluationAdministration.eval_schedule_start_date > currentDate
                 ? EvaluationStatus.Pending
                 : EvaluationStatus.Open,
+            updated_at: currentDate,
           },
         })
 

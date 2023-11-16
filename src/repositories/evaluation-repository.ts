@@ -15,6 +15,7 @@ export const updateStatusById = async (id: number, status: string) => {
     },
     data: {
       status,
+      updated_at: new Date(),
     },
   })
 }
@@ -30,6 +31,7 @@ export const updateStatusByAdministrationId = async (
     },
     data: {
       status,
+      updated_at: new Date(),
     },
   })
 }

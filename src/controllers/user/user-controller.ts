@@ -264,6 +264,7 @@ export const saveAnswers = async (req: Request, res: Response) => {
         },
         data: {
           status: EvaluationStatus.Ongoing,
+          updated_at: new Date(),
         },
       })
       Object.assign(evaluation, {
