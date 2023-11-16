@@ -36,16 +36,30 @@ export const index = async (req: Request, res: Response) => {
 
     const finalEvaluations = await Promise.all(
       evaluations.map(async (evaluation) => {
-        const evaluator = await prisma.users.findUnique({
-          select: {
-            id: true,
-            first_name: true,
-            last_name: true,
-          },
-          where: {
-            id: evaluation.evaluator_id ?? 0,
-          },
-        })
+        const evaluator =
+          evaluation.is_external === true
+            ? await prisma.external_users.findUnique({
+                select: {
+                  id: true,
+                  email: true,
+                  first_name: true,
+                  last_name: true,
+                  role: true,
+                },
+                where: {
+                  id: evaluation.external_evaluator_id ?? 0,
+                },
+              })
+            : await prisma.users.findUnique({
+                select: {
+                  id: true,
+                  first_name: true,
+                  last_name: true,
+                },
+                where: {
+                  id: evaluation.evaluator_id ?? 0,
+                },
+              })
         const evaluee = await prisma.users.findUnique({
           select: {
             id: true,
@@ -81,6 +95,7 @@ export const index = async (req: Request, res: Response) => {
           percent_involvement: evaluation.percent_involvement,
           status: evaluation.status,
           for_evaluation: evaluation.for_evaluation,
+          is_external: evaluation.is_external,
           evaluator,
           evaluee,
           project,
