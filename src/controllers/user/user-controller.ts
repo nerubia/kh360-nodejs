@@ -213,7 +213,7 @@ export const getEvaluationAdministrations = async (req: Request, res: Response) 
  * @param req.body.evaluation_rating_ids - Evaluation rating ids.
  * @param req.body.answer_option_ids - Answer option ids.
  * @param req.body.comment - Evaluation comment.
- * @param req.body.is_submitting - Evaluation comment.
+ * @param req.body.is_submitting - Flag to check if user is submitting.
  */
 
 export const submitEvaluation = async (req: Request, res: Response) => {
