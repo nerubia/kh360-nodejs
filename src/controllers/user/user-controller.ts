@@ -208,16 +208,21 @@ export const getEvaluationAdministrations = async (req: Request, res: Response) 
 }
 
 /**
- * Submit answer by ID
+ * Save answers and comments by ID
  * @param req.params.id - The unique ID of the evaluation.
- * @param req.body.evaluation_rating_id - Evaluation rating id.
- * @param req.body.answer_option_id - Answer optioin id.
+ * @param req.body.evaluation_rating_ids - Evaluation rating ids.
+ * @param req.body.answer_option_ids - Answer option ids.
+ * @param req.body.comment - Evaluation comment.
  */
-export const submitAnswer = async (req: Request, res: Response) => {
+
+export const saveAnswers = async (req: Request, res: Response) => {
   try {
     const user = req.user
     const { id } = req.params
-    const { evaluation_rating_id, answer_option_id } = req.body
+    const { evaluation_rating_ids, answer_option_ids, comment } = req.body
+
+    const evaluationRatingIds = evaluation_rating_ids as number[]
+    const answerOptionIds = answer_option_ids as number[]
 
     const evaluation = await prisma.evaluations.findUnique({
       where: {
@@ -244,25 +249,13 @@ export const submitAnswer = async (req: Request, res: Response) => {
       })
     }
 
-    const evaluationRating = await prisma.evaluation_ratings.findUnique({
+    const evaluationRatings = await prisma.evaluation_ratings.findMany({
       where: {
-        id: parseInt(evaluation_rating_id as string),
+        id: {
+          in: evaluationRatingIds,
+        },
       },
     })
-
-    if (evaluationRating === null) {
-      return res.status(400).json({ message: "Evaluation rating not found" })
-    }
-
-    const answerOption = await prisma.answer_options.findUnique({
-      where: {
-        id: parseInt(answer_option_id as string),
-      },
-    })
-
-    if (answerOption === null) {
-      return res.status(400).json({ message: "Answer option not found" })
-    }
 
     if (evaluation.status === EvaluationStatus.Open) {
       await prisma.evaluations.update({
@@ -278,62 +271,28 @@ export const submitAnswer = async (req: Request, res: Response) => {
       })
     }
 
-    const rate = Number(answerOption.rate ?? 0)
-    const percentage = Number(evaluationRating.percentage ?? 0)
-    const score = rate * percentage
-
-    await prisma.evaluation_ratings.update({
-      where: {
-        id: evaluationRating.id,
-      },
-      data: {
-        answer_option_id: answerOption.id,
-        rate,
-        score,
-      },
-    })
-
-    res.json({ id, status: evaluation.status })
-  } catch (error) {
-    res.status(500).json({ message: "Something went wrong" })
-  }
-}
-
-/**
- * Submit comment by ID
- * @param req.params.id - The unique ID of the evaluation.
- * @param req.body.comment - Evaluation comment.
- */
-export const submitComment = async (req: Request, res: Response) => {
-  try {
-    const user = req.user
-    const { id } = req.params
-    const { comment } = req.body
-
-    const evaluation = await prisma.evaluations.findUnique({
-      where: {
-        id: parseInt(id),
-      },
-    })
-
-    if (evaluation === null) {
-      return res.status(400).json({ message: "Invalid id" })
-    }
-
-    if (evaluation.evaluator_id !== user.id) {
-      return res.status(403).json({
-        message: "You do not have permission to answer this.",
+    evaluationRatings.forEach(async (rating, index) => {
+      const answerOption = await prisma.answer_options.findUnique({
+        where: {
+          id: answerOptionIds[index],
+        },
       })
-    }
 
-    if (
-      evaluation.status !== EvaluationStatus.Open &&
-      evaluation.status !== EvaluationStatus.Ongoing
-    ) {
-      return res.status(403).json({
-        message: "Only open and ongoing statuses are allowed.",
+      const rate = Number(answerOption?.rate ?? 0)
+      const percentage = Number(rating.percentage ?? 0)
+      const score = rate * percentage
+
+      await prisma.evaluation_ratings.updateMany({
+        where: {
+          id: rating.id,
+        },
+        data: {
+          answer_option_id: answerOption?.id,
+          rate,
+          score,
+        },
       })
-    }
+    })
 
     await prisma.evaluations.update({
       where: {
@@ -346,7 +305,7 @@ export const submitComment = async (req: Request, res: Response) => {
       },
     })
 
-    res.json({ id, comment })
+    res.json({ id, status: evaluation.status, comment })
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
