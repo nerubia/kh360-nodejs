@@ -1,7 +1,7 @@
 import { type Request, type Response } from "express"
 import prisma from "../../utils/prisma"
 import { EvaluationResultStatus } from "../../types/evaluationResultType"
-import { EvaluationStatus } from "../../types/evaluationType"
+import { EvaluationStatus } from "../../types/evaluation-type"
 import { Decimal } from "@prisma/client/runtime/library"
 
 /**
@@ -22,9 +22,7 @@ export const index = async (req: Request, res: Response) => {
     const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
     const where = {
-      evaluation_administration_id: parseInt(
-        evaluation_administration_id as string
-      ),
+      evaluation_administration_id: parseInt(evaluation_administration_id as string),
       status: {
         contains: evaluationResultStatus as string,
       },
@@ -113,17 +111,14 @@ export const store = async (req: Request, res: Response) => {
     const employeeIds = employee_ids as number[]
 
     if (employeeIds.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "Must have at least 1 employee selected" })
+      return res.status(400).json({ message: "Must have at least 1 employee selected" })
     }
 
-    const evaluationAdministration =
-      await prisma.evaluation_administrations.findUnique({
-        where: {
-          id: parseInt(evaluation_administration_id as string),
-        },
-      })
+    const evaluationAdministration = await prisma.evaluation_administrations.findUnique({
+      where: {
+        id: parseInt(evaluation_administration_id as string),
+      },
+    })
 
     if (evaluationAdministration === null) {
       return res.status(400).json({ message: "Invalid id" })
@@ -134,9 +129,7 @@ export const store = async (req: Request, res: Response) => {
         user_id: true,
       },
       where: {
-        evaluation_administration_id: parseInt(
-          evaluation_administration_id as string
-        ),
+        evaluation_administration_id: parseInt(evaluation_administration_id as string),
       },
     })
 
@@ -221,18 +214,14 @@ export const store = async (req: Request, res: Response) => {
           OR: [
             {
               start_date: {
-                gte:
-                  evaluationAdministration.eval_period_start_date ?? new Date(),
-                lte:
-                  evaluationAdministration.eval_period_end_date ?? new Date(),
+                gte: evaluationAdministration.eval_period_start_date ?? new Date(),
+                lte: evaluationAdministration.eval_period_end_date ?? new Date(),
               },
             },
             {
               end_date: {
-                gte:
-                  evaluationAdministration.eval_period_start_date ?? new Date(),
-                lte:
-                  evaluationAdministration.eval_period_end_date ?? new Date(),
+                gte: evaluationAdministration.eval_period_start_date ?? new Date(),
+                lte: evaluationAdministration.eval_period_end_date ?? new Date(),
               },
             },
           ],
@@ -277,20 +266,14 @@ export const store = async (req: Request, res: Response) => {
             OR: [
               {
                 start_date: {
-                  gte:
-                    evaluationAdministration.eval_period_start_date ??
-                    new Date(),
-                  lte:
-                    evaluationAdministration.eval_period_end_date ?? new Date(),
+                  gte: evaluationAdministration.eval_period_start_date ?? new Date(),
+                  lte: evaluationAdministration.eval_period_end_date ?? new Date(),
                 },
               },
               {
                 end_date: {
-                  gte:
-                    evaluationAdministration.eval_period_start_date ??
-                    new Date(),
-                  lte:
-                    evaluationAdministration.eval_period_end_date ?? new Date(),
+                  gte: evaluationAdministration.eval_period_start_date ?? new Date(),
+                  lte: evaluationAdministration.eval_period_end_date ?? new Date(),
                 },
               },
             ],
@@ -301,13 +284,12 @@ export const store = async (req: Request, res: Response) => {
         for (const member of members) {
           const evaluatorRoleId = member.project_role_id
 
-          const evaluationTemplate =
-            await prisma.evaluation_templates.findFirst({
-              where: {
-                evaluee_role_id: roleId,
-                evaluator_role_id: evaluatorRoleId,
-              },
-            })
+          const evaluationTemplate = await prisma.evaluation_templates.findFirst({
+            where: {
+              evaluee_role_id: roleId,
+              evaluator_role_id: evaluatorRoleId,
+            },
+          })
 
           if (evaluationTemplate !== null) {
             evaluations.push({
@@ -327,8 +309,7 @@ export const store = async (req: Request, res: Response) => {
 
             const evaluationResultDetail = evaluationResultDetails.find(
               (evaluationResultDetail) =>
-                evaluationResultDetail.evaluation_template_id ===
-                evaluationTemplate.id
+                evaluationResultDetail.evaluation_template_id === evaluationTemplate.id
             )
 
             if (evaluationResultDetail === undefined) {
@@ -395,8 +376,7 @@ export const store = async (req: Request, res: Response) => {
                 project_id: null,
                 project_member_id: null,
                 for_evaluation: false,
-                eval_start_date:
-                  evaluationAdministration.eval_period_start_date,
+                eval_start_date: evaluationAdministration.eval_period_start_date,
                 eval_end_date: evaluationAdministration.eval_period_end_date,
                 percent_involvement: new Decimal(100),
                 status: EvaluationStatus.Excluded,
@@ -461,8 +441,7 @@ export const show = async (req: Request, res: Response) => {
     const previousEvaluationResult = await prisma.evaluation_results.findFirst({
       where: {
         id: { lt: evaluationResult?.id },
-        evaluation_administration_id:
-          evaluationResult?.evaluation_administration_id,
+        evaluation_administration_id: evaluationResult?.evaluation_administration_id,
       },
       orderBy: { id: "desc" },
     })
@@ -470,8 +449,7 @@ export const show = async (req: Request, res: Response) => {
     const nextEvaluationResult = await prisma.evaluation_results.findFirst({
       where: {
         id: { gt: evaluationResult?.id },
-        evaluation_administration_id:
-          evaluationResult?.evaluation_administration_id,
+        evaluation_administration_id: evaluationResult?.evaluation_administration_id,
       },
       orderBy: { id: "asc" },
     })
@@ -565,9 +543,7 @@ export const all = async (req: Request, res: Response) => {
         },
       },
       where: {
-        evaluation_administration_id: parseInt(
-          evaluation_administration_id as string
-        ),
+        evaluation_administration_id: parseInt(evaluation_administration_id as string),
       },
     })
 

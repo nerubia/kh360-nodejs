@@ -4,7 +4,7 @@ import * as EvaluationService from "../services/evaluation-service"
 
 import { EvaluationAdministrationStatus } from "../types/evaluation-administration-type"
 import { EvaluationResultStatus } from "../types/evaluationResultType"
-import { EvaluationStatus } from "../types/evaluationType"
+import { EvaluationStatus } from "../types/evaluation-type"
 
 export const updateEvaluationAdministrationsJob = async () => {
   const evaluationAdministrations = await EvaluationAdministrationService.getAllByStatus(
@@ -18,24 +18,15 @@ export const updateEvaluationAdministrationsJob = async () => {
       EvaluationAdministrationStatus.Ongoing
     )
 
-    const evaluationResults = await EvaluationResultService.getAllByEvaluationAdministrationId(
-      evaluationAdministration.id
+    await EvaluationResultService.updateStatusByAdministrationId(
+      evaluationAdministration.id,
+      EvaluationResultStatus.Ongoing
     )
 
-    for (const evaluationResult of evaluationResults) {
-      await EvaluationResultService.updateStatusById(
-        evaluationResult.id,
-        EvaluationResultStatus.Ongoing
-      )
-    }
-
-    const evaluations = await EvaluationService.getAllByAdministrationId(
-      evaluationAdministration.id
+    await EvaluationService.updateStatusByAdministrationId(
+      evaluationAdministration.id,
+      EvaluationStatus.Open
     )
-
-    for (const evaluation of evaluations) {
-      await EvaluationService.updateStatusById(evaluation.id, EvaluationStatus.Open)
-    }
 
     await EvaluationAdministrationService.sendEvaluationEmailById(evaluationAdministration.id)
   }
