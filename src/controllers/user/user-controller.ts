@@ -182,8 +182,6 @@ export const submitEvaluation = async (req: Request, res: Response) => {
 
     await submitEvaluationSchema.validate(
       {
-        answerOptionIds,
-        comment,
         evaluation,
       },
       { context: { user } }
@@ -221,6 +219,10 @@ export const submitEvaluation = async (req: Request, res: Response) => {
     })
 
     if (is_submitting === true && evaluation !== null) {
+      await submitEvaluationSchema.validate({
+        answerOptionIds,
+        comment,
+      })
       const evaluationRatings = await EvaluationRatingService.aggregateSumByEvaluationId(
         evaluation.id,
         {
@@ -343,40 +345,21 @@ export const submitAnswer = async (req: Request, res: Response) => {
 
     const evaluation = await EvaluationService.getById(parseInt(id))
 
-    if (evaluation === null) {
-      return res.status(400).json({ message: "Invalid id" })
-    }
-
-    if (evaluation.evaluator_id !== user.id) {
-      return res.status(403).json({
-        message: "You do not have permission to answer this.",
-      })
-    }
-
-    if (
-      evaluation.status !== EvaluationStatus.Open &&
-      evaluation.status !== EvaluationStatus.Ongoing
-    ) {
-      return res.status(403).json({
-        message: "Only open and ongoing statuses are allowed.",
-      })
-    }
-
     const evaluationRating = await EvaluationRatingService.getById(
       parseInt(evaluation_rating_id as string)
     )
 
-    if (evaluationRating === null) {
-      return res.status(400).json({ message: "Evaluation rating not found" })
-    }
+    await submitEvaluationSchema.validate(
+      {
+        answerOptionIds: [answer_option_id],
+        evaluation,
+      },
+      { context: { user } }
+    )
 
     const answerOption = await AnswerOptionService.getById(parseInt(answer_option_id as string))
 
-    if (answerOption === null) {
-      return res.status(400).json({ message: "Answer option not found" })
-    }
-
-    if (evaluation.status === EvaluationStatus.Open) {
+    if (evaluation?.status === EvaluationStatus.Open) {
       await EvaluationService.updateById(evaluation.id, {
         status: EvaluationStatus.Ongoing,
         updated_at: new Date(),
@@ -387,18 +370,23 @@ export const submitAnswer = async (req: Request, res: Response) => {
       })
     }
 
-    const rate = Number(answerOption.rate ?? 0)
-    const percentage = Number(evaluationRating.percentage ?? 0)
+    const rate = Number(answerOption?.rate ?? 0)
+    const percentage = Number(evaluationRating?.percentage ?? 0)
     const score = rate * percentage
 
-    await EvaluationRatingService.updateById(evaluationRating.id, {
-      answer_option_id: answerOption.id,
-      rate,
-      score,
-    })
+    if (evaluationRating !== null) {
+      await EvaluationRatingService.updateById(evaluationRating.id, {
+        answer_option_id: answerOption?.id ?? 0,
+        rate,
+        score,
+      })
+    }
 
-    res.json({ id, status: evaluation.status })
+    res.json({ id, status: evaluation?.status })
   } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -416,33 +404,27 @@ export const submitComment = async (req: Request, res: Response) => {
 
     const evaluation = await EvaluationService.getById(parseInt(id))
 
-    if (evaluation === null) {
-      return res.status(400).json({ message: "Invalid id" })
-    }
+    await submitEvaluationSchema.validate(
+      {
+        evaluation,
+        comment,
+      },
+      { context: { user } }
+    )
 
-    if (evaluation.evaluator_id !== user.id) {
-      return res.status(403).json({
-        message: "You do not have permission to answer this.",
+    if (evaluation !== null) {
+      await EvaluationService.updateById(evaluation.id, {
+        comments: comment,
+        status: EvaluationStatus.Ongoing,
+        updated_at: new Date(),
       })
     }
-
-    if (
-      evaluation.status !== EvaluationStatus.Open &&
-      evaluation.status !== EvaluationStatus.Ongoing
-    ) {
-      return res.status(403).json({
-        message: "Only open and ongoing statuses are allowed.",
-      })
-    }
-
-    await EvaluationService.updateById(evaluation.id, {
-      comments: comment,
-      status: EvaluationStatus.Ongoing,
-      updated_at: new Date(),
-    })
 
     res.json({ id, comment })
   } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
     res.status(500).json({ message: "Something went wrong" })
   }
 }
