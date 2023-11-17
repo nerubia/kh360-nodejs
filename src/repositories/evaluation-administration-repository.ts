@@ -1,3 +1,4 @@
+import { type Prisma } from "@prisma/client"
 import { type EvaluationAdministration } from "../types/evaluation-administration-type"
 import prisma from "../utils/prisma"
 
@@ -46,4 +47,27 @@ export const updateStatusById = async (id: number, status: string) => {
       status,
     },
   })
+}
+
+export const getAllByFilters = async (
+  skip: number,
+  take: number,
+  where: Prisma.evaluation_administrationsWhereInput
+) => {
+  return await prisma.evaluation_administrations.findMany({
+    skip,
+    take,
+    where,
+    orderBy: {
+      id: "desc",
+    },
+  })
+}
+
+export const countAllByFilters = async (where: Prisma.evaluation_administrationsWhereInput) => {
+  const count = await prisma.evaluation_administrations.count({
+    where,
+  })
+
+  return count
 }

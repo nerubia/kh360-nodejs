@@ -1,0 +1,39 @@
+import { type Prisma } from "@prisma/client"
+import prisma from "../utils/prisma"
+import { type EvaluationRating } from "../types/evaluation-rating-type"
+
+export const getById = async (id: number) => {
+  return await prisma.evaluation_ratings.findUnique({
+    where: {
+      id,
+    },
+  })
+}
+
+export const getAllByFilters = async (where: Prisma.evaluation_ratingsWhereInput) => {
+  return await prisma.evaluation_ratings.findMany({
+    where,
+  })
+}
+
+export const updateById = async (rating_id: number, data: EvaluationRating) => {
+  await prisma.evaluation_ratings.update({
+    where: {
+      id: rating_id,
+    },
+    data,
+  })
+}
+
+export const aggregateSumById = async (
+  id: number,
+  _sum: Prisma.Evaluation_ratingsSumAggregateInputType
+) => {
+  const sum = await prisma.evaluation_ratings.aggregate({
+    _sum,
+    where: {
+      evaluation_id: id,
+    },
+  })
+  return sum
+}
