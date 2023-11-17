@@ -1,15 +1,15 @@
 export interface Evaluation {
-  score?: string
-  weight?: number
-  weighted_score?: number
-  submission_method?: string
-  submitted_date?: Date
-  comments?: string
+  for_evaluation?: boolean
   eval_start_date?: string
   eval_end_date?: string
   percent_involvement?: string
+  score?: string
+  weight?: number
+  weighted_score?: number
+  comments?: string
   status?: string
-  for_evaluation?: boolean
+  submission_method?: string
+  submitted_date?: Date
   is_external?: boolean
   updated_at: Date
 }

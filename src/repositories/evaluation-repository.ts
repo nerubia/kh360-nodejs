@@ -83,10 +83,7 @@ export const aggregateSumByFilters = async (
   where: Prisma.evaluationsWhereInput
 ) => {
   const sum = await prisma.evaluations.aggregate({
-    _sum: {
-      weight: true,
-      weighted_score: true,
-    },
+    _sum,
     where,
   })
   return sum

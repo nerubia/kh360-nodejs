@@ -10,7 +10,7 @@ export const getAllByFilters = async (where: Prisma.evaluationsWhereInput) => {
   return await EvaluationRepository.getAllByFilters(where)
 }
 
-export const getAllDistictByFilters = async (
+export const getAllDistinctByFilters = async (
   where: Prisma.evaluationsWhereInput,
   distinct: Prisma.EvaluationsScalarFieldEnum | Prisma.EvaluationsScalarFieldEnum[]
 ) => {

@@ -1,3 +1,9 @@
+export interface EvaluationResult {
+  status?: string
+  score: number
+  updated_at: Date
+}
+
 export enum EvaluationResultStatus {
   ForReview = "For Review",
   Draft = "Draft",
