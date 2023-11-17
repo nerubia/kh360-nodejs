@@ -7,7 +7,7 @@ import { EvaluationResultStatus } from "../types/evaluationResultType"
 import { EvaluationStatus } from "../types/evaluation-type"
 
 export const updateEvaluationAdministrationsJob = async () => {
-  const evaluationAdministrations = await EvaluationAdministrationService.getAllByStatus(
+  const evaluationAdministrations = await EvaluationAdministrationService.getAllByStatusAndDate(
     EvaluationAdministrationStatus.Pending,
     new Date()
   )

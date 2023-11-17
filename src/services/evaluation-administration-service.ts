@@ -2,11 +2,15 @@ import { format } from "date-fns"
 import * as EvaluationAdministrationRepository from "../repositories/evaluation-administration-repository"
 import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as UserRepository from "../repositories/user-repository"
-import { sendMultipleMail } from "../utils/sendgrid"
 import { type EvaluationAdministration } from "../types/evaluation-administration-type"
+import { sendMultipleMail } from "../utils/sendgrid"
 
-export const getAllByStatus = async (status: string, date: Date) => {
-  return await EvaluationAdministrationRepository.getAllByStatus(status, date)
+export const getAllByStatusAndDate = async (status: string, date: Date) => {
+  return await EvaluationAdministrationRepository.getAllByStatusAndDate(status, date)
+}
+
+export const getAllByStatus = async (status: string) => {
+  return await EvaluationAdministrationRepository.getAllByStatus(status)
 }
 
 export const getById = async (id: number) => {
