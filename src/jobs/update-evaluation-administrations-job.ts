@@ -3,7 +3,7 @@ import * as EvaluationResultService from "../services/evaluation-result-service"
 import * as EvaluationService from "../services/evaluation-service"
 
 import { EvaluationAdministrationStatus } from "../types/evaluation-administration-type"
-import { EvaluationResultStatus } from "../types/evaluationResultType"
+import { EvaluationResultStatus } from "../types/evaluation-result-type"
 import { EvaluationStatus } from "../types/evaluation-type"
 
 export const updateEvaluationAdministrationsJob = async () => {

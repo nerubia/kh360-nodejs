@@ -9,8 +9,9 @@ import { createEvaluationSchema } from "../../utils/validation/evaluations/creat
 import prisma from "../../utils/prisma"
 import { EvaluationAdministrationStatus } from "../../types/evaluation-administration-type"
 import { EvaluationStatus } from "../../types/evaluation-type"
-import { EvaluationResultStatus } from "../../types/evaluationResultType"
+import { EvaluationResultStatus } from "../../types/evaluation-result-type"
 import { type Decimal } from "@prisma/client/runtime/library"
+import CustomError from "../../utils/custom-error"
 
 /**
  * List evaluation administrations based on provided filters.
@@ -442,6 +443,23 @@ export const generate = async (req: Request, res: Response) => {
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Cancel a specific evaluation administration by ID.
+ * @param req.params.id - The unique ID of the evaluation administration.
+ */
+export const cancel = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    await EvaluationAdministrationService.cancel(parseInt(id))
+    res.json({ id })
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
     }
     res.status(500).json({ message: "Something went wrong" })
   }

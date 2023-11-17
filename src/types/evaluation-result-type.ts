@@ -4,4 +4,5 @@ export enum EvaluationResultStatus {
   Ready = "Ready",
   Ongoing = "Ongoing",
   Completed = "Completed",
+  Cancelled = "Cancelled",
 }

@@ -1,9 +1,16 @@
 import { format } from "date-fns"
 import * as EvaluationAdministrationRepository from "../repositories/evaluation-administration-repository"
+import * as EvaluationResultRepository from "../repositories/evaluation-result-repository"
 import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as UserRepository from "../repositories/user-repository"
-import { type EvaluationAdministration } from "../types/evaluation-administration-type"
+import {
+  EvaluationAdministrationStatus,
+  type EvaluationAdministration,
+} from "../types/evaluation-administration-type"
 import { sendMultipleMail } from "../utils/sendgrid"
+import CustomError from "../utils/custom-error"
+import { EvaluationResultStatus } from "../types/evaluation-result-type"
+import { EvaluationStatus } from "../types/evaluation-type"
 
 export const getAllByStatusAndDate = async (status: string, date: Date) => {
   return await EvaluationAdministrationRepository.getAllByStatusAndDate(status, date)
@@ -83,4 +90,34 @@ export const sendEvaluationEmailById = async (id: number) => {
 
     await sendMultipleMail(to, evaluationAdministration.email_subject ?? "", modifiedContent)
   }
+}
+
+export const cancel = async (id: number) => {
+  const evaluationAdministration = await EvaluationAdministrationRepository.getById(id)
+
+  if (evaluationAdministration === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
+  if (
+    evaluationAdministration.status !== EvaluationAdministrationStatus.Pending &&
+    evaluationAdministration.status !== EvaluationAdministrationStatus.Ongoing
+  ) {
+    throw new CustomError("Only pending and ongoing statuses are allowed.", 403)
+  }
+
+  await EvaluationAdministrationRepository.updateStatusById(
+    evaluationAdministration.id,
+    EvaluationAdministrationStatus.Cancelled
+  )
+
+  await EvaluationResultRepository.updateStatusByAdministrationId(
+    evaluationAdministration.id,
+    EvaluationResultStatus.Cancelled
+  )
+
+  await EvaluationRepository.updateStatusByAdministrationId(
+    evaluationAdministration.id,
+    EvaluationStatus.Cancelled
+  )
 }
