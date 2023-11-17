@@ -13,6 +13,7 @@ export interface EvaluationAdministration {
 export enum EvaluationAdministrationStatus {
   Draft = "Draft",
   Pending = "Pending",
+  Processing = "Processing",
   Ongoing = "Ongoing",
   Closed = "Closed",
   Cancelled = "Cancelled",

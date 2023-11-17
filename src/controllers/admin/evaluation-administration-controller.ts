@@ -361,7 +361,7 @@ export const generate = async (req: Request, res: Response) => {
       evaluationAdministration.eval_schedule_start_date != null &&
       evaluationAdministration.eval_schedule_start_date > currentDate
         ? EvaluationAdministrationStatus.Pending
-        : EvaluationAdministrationStatus.Ongoing
+        : EvaluationAdministrationStatus.Processing
 
     await prisma.evaluation_administrations.update({
       where: {
@@ -431,12 +431,11 @@ export const generate = async (req: Request, res: Response) => {
       data: evaluationRatings,
     })
 
-    if (status === EvaluationAdministrationStatus.Ongoing) {
+    if (status === EvaluationAdministrationStatus.Processing) {
       void EvaluationResultService.updateStatusByAdministrationId(
         evaluationAdministration.id,
         EvaluationResultStatus.Ongoing
       )
-      void EvaluationAdministrationService.sendEvaluationEmailById(evaluationAdministration.id)
     }
 
     res.json({ id })

@@ -1,7 +1,7 @@
 import { type EvaluationAdministration } from "../types/evaluation-administration-type"
 import prisma from "../utils/prisma"
 
-export const getAllByStatus = async (status: string, date: Date) => {
+export const getAllByStatusAndDate = async (status: string, date: Date) => {
   return await prisma.evaluation_administrations.findMany({
     where: {
       status,
@@ -11,6 +11,14 @@ export const getAllByStatus = async (status: string, date: Date) => {
       eval_schedule_end_date: {
         gte: date,
       },
+    },
+  })
+}
+
+export const getAllByStatus = async (status: string) => {
+  return await prisma.evaluation_administrations.findMany({
+    where: {
+      status,
     },
   })
 }
