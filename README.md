@@ -39,6 +39,7 @@ npm install
 ### 1. Create a .env file
 
 ```
+APP_ENV=local
 APP_URL=http://localhost:3000
 
 PORT=5000
