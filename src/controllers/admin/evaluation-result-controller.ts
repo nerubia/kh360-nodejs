@@ -1,6 +1,6 @@
 import { type Request, type Response } from "express"
 import prisma from "../../utils/prisma"
-import { EvaluationResultStatus } from "../../types/evaluationResultType"
+import { EvaluationResultStatus } from "../../types/evaluation-result-type"
 import { EvaluationStatus } from "../../types/evaluation-type"
 import { Decimal } from "@prisma/client/runtime/library"
 

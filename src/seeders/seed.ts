@@ -2,7 +2,7 @@ import "dotenv/config"
 import { PrismaClient } from "@prisma/client"
 import { faker } from "@faker-js/faker"
 import { EvaluationAdministrationStatus } from "../types/evaluation-administration-type"
-import { EvaluationResultStatus } from "../types/evaluationResultType"
+import { EvaluationResultStatus } from "../types/evaluation-result-type"
 import { Environment } from "../types/environment-type"
 
 const prisma = new PrismaClient()
