@@ -13,3 +13,15 @@ export const sendMail = async (to: string, subject: string, content: string) => 
     await sgMail.send(msg)
   } catch (error) {}
 }
+
+export const sendMultipleMail = async (to: string[], subject: string, content: string) => {
+  try {
+    const msg = {
+      to,
+      from: process.env.SENDGRID_FROM_ADDRESS as string,
+      subject,
+      html: content,
+    }
+    await sgMail.sendMultiple(msg)
+  } catch (error) {}
+}

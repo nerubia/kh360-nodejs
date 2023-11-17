@@ -2,7 +2,7 @@ import { format } from "date-fns"
 import * as EvaluationAdministrationRepository from "../repositories/evaluation-administration-repository"
 import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as UserRepository from "../repositories/user-repository"
-import { sendMail } from "../utils/sendgrid"
+import { sendMultipleMail } from "../utils/sendgrid"
 import { type EvaluationAdministration } from "../types/evaluation-administration-type"
 
 export const getAllByStatus = async (status: string, date: Date) => {
@@ -68,16 +68,15 @@ export const sendEvaluationEmailById = async (id: number) => {
       for_evaluation: true,
     })
 
+    const to: string[] = []
+
     for (const evaluation of evaluations) {
       const evaluator = await UserRepository.getById(evaluation.evaluator_id ?? 0)
-
       if (evaluator !== null) {
-        await sendMail(
-          evaluator.email,
-          evaluationAdministration.email_subject ?? "",
-          modifiedContent
-        )
+        to.push(evaluator.email)
       }
     }
+
+    await sendMultipleMail(to, evaluationAdministration.email_subject ?? "", modifiedContent)
   }
 }

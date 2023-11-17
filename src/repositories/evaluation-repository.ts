@@ -4,7 +4,7 @@ import prisma from "../utils/prisma"
 export const getAllByFilters = async (where: Prisma.evaluationsWhereInput) => {
   return await prisma.evaluations.findMany({
     where,
-    distinct: ["evaluator_id", "project_id"],
+    distinct: ["evaluator_id"],
   })
 }
 
