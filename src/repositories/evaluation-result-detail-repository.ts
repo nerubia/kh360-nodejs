@@ -25,8 +25,14 @@ export const updateById = async (id: number, data: EvaluationResultDetail) => {
   })
 }
 
-export const aggregateSum = async (_sum: Prisma.Evaluation_result_detailsSumAggregateInputType) => {
+export const aggregateSumByEvaluationResultId = async (
+  evaluation_result_id: number,
+  _sum: Prisma.Evaluation_result_detailsSumAggregateInputType
+) => {
   return await prisma.evaluation_result_details.aggregate({
+    where: {
+      evaluation_result_id,
+    },
     _sum,
   })
 }

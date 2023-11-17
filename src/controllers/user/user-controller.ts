@@ -221,10 +221,13 @@ export const submitEvaluation = async (req: Request, res: Response) => {
     })
 
     if (is_submitting === true && evaluation !== null) {
-      const evaluationRatings = await EvaluationRatingService.aggregateSumById(evaluation.id, {
-        score: true,
-        percentage: true,
-      })
+      const evaluationRatings = await EvaluationRatingService.aggregateSumByEvaluationId(
+        evaluation.id,
+        {
+          score: true,
+          percentage: true,
+        }
+      )
 
       const score = (
         Number(evaluationRatings._sum.score) / Number(evaluationRatings._sum.percentage)
@@ -294,10 +297,14 @@ export const submitEvaluation = async (req: Request, res: Response) => {
           })
         }
 
-        const evaluationResultDetailsSum = await EvaluationResultDetailService.aggregateSum({
-          weight: true,
-          weighted_score: true,
-        })
+        const evaluationResultDetailsSum =
+          await EvaluationResultDetailService.aggregateSumByEvaluationResultId(
+            evaluation.evaluation_result_id,
+            {
+              weight: true,
+              weighted_score: true,
+            }
+          )
 
         await EvaluationResultService.updateById(evaluation.evaluation_result_id, {
           score:

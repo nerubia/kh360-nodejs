@@ -10,6 +10,12 @@ export const updateById = async (id: number, data: EvaluationResultDetail) => {
   await EvaluationResultDetailRepository.updateById(id, data)
 }
 
-export const aggregateSum = async (_sum: Prisma.Evaluation_result_detailsSumAggregateInputType) => {
-  return await EvaluationResultDetailRepository.aggregateSum(_sum)
+export const aggregateSumByEvaluationResultId = async (
+  evaluation_result_id: number,
+  _sum: Prisma.Evaluation_result_detailsSumAggregateInputType
+) => {
+  return await EvaluationResultDetailRepository.aggregateSumByEvaluationResultId(
+    evaluation_result_id,
+    _sum
+  )
 }
