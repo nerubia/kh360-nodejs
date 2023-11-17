@@ -1,3 +1,4 @@
+import { type Prisma } from "@prisma/client"
 import { format } from "date-fns"
 import * as EvaluationAdministrationRepository from "../repositories/evaluation-administration-repository"
 import * as EvaluationResultRepository from "../repositories/evaluation-result-repository"
@@ -20,6 +21,14 @@ export const getAllByStatus = async (status: string) => {
   return await EvaluationAdministrationRepository.getAllByStatus(status)
 }
 
+export const getAllByFilters = async (
+  skip: number,
+  take: number,
+  where: Prisma.evaluation_administrationsWhereInput
+) => {
+  return await EvaluationAdministrationRepository.getAllByFilters(skip, take, where)
+}
+
 export const getById = async (id: number) => {
   return await EvaluationAdministrationRepository.getById(id)
 }
@@ -30,6 +39,10 @@ export const create = async (data: EvaluationAdministration) => {
 
 export const updateStatusById = async (id: number, status: string) => {
   await EvaluationAdministrationRepository.updateStatusById(id, status)
+}
+
+export const countAllByFilters = async (where: Prisma.evaluation_administrationsWhereInput) => {
+  return await EvaluationAdministrationRepository.countAllByFilters(where)
 }
 
 export const sendEvaluationEmailById = async (id: number) => {
@@ -74,10 +87,13 @@ export const sendEvaluationEmailById = async (id: number) => {
 
     modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
 
-    const evaluations = await EvaluationRepository.getAllByFilters({
-      evaluation_administration_id: evaluationAdministration.id,
-      for_evaluation: true,
-    })
+    const evaluations = await EvaluationRepository.getAllDistinctByFilters(
+      {
+        evaluation_administration_id: evaluationAdministration.id,
+        for_evaluation: true,
+      },
+      ["evaluator_id"]
+    )
 
     const to: string[] = []
 

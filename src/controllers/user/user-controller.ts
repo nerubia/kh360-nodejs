@@ -1,10 +1,17 @@
 import { type Request, type Response } from "express"
 import { differenceInDays, endOfYear, startOfYear } from "date-fns"
-import prisma from "../../utils/prisma"
 import { EvaluationStatus } from "../../types/evaluation-type"
 import { EvaluationResultStatus } from "../../types/evaluation-result-type"
 import { EvaluationAdministrationStatus } from "../../types/evaluation-administration-type"
 import { sendMail } from "../../utils/sendgrid"
+import * as EvaluationService from "../../services/evaluation-service"
+import * as EvaluationAdministrationService from "../../services/evaluation-administration-service"
+import * as EvaluationRatingService from "../../services/evaluation-rating-service"
+import * as EvaluationResultDetailService from "../../services/evaluation-result-detail-service"
+import * as UserService from "../../services/user-service"
+import * as ProjectService from "../../services/project-service"
+import * as ProjectRoleService from "../../services/project-role-service"
+import * as AnswerOptionService from "../../services/answer-option-service"
 
 /**
  * List user evaluations based on provided filters.
@@ -16,67 +23,24 @@ export const getEvaluations = async (req: Request, res: Response) => {
     const user = req.user
     const { evaluation_administration_id, for_evaluation } = req.query
 
-    const evaluations = await prisma.evaluations.findMany({
-      include: {
-        project_members: {
-          select: {
-            project_role_id: true,
-          },
-        },
-      },
-      where: {
-        evaluation_administration_id: parseInt(evaluation_administration_id as string),
-        evaluator_id: user.id,
-        for_evaluation: Boolean(parseInt(for_evaluation as string)),
-        status: {
-          in: [EvaluationStatus.Open, EvaluationStatus.Ongoing, EvaluationStatus.Submitted],
-        },
+    const evaluations = await EvaluationService.getAllByFilters({
+      evaluation_administration_id: parseInt(evaluation_administration_id as string),
+      evaluator_id: user.id,
+      for_evaluation: Boolean(parseInt(for_evaluation as string)),
+      status: {
+        in: [EvaluationStatus.Open, EvaluationStatus.Ongoing, EvaluationStatus.Submitted],
       },
     })
 
     const finalEvaluations = await Promise.all(
       evaluations.map(async (evaluation) => {
-        const evaluator = await prisma.users.findUnique({
-          select: {
-            id: true,
-            first_name: true,
-            last_name: true,
-          },
-          where: {
-            id: evaluation.evaluator_id ?? 0,
-          },
-        })
-        const evaluee = await prisma.users.findUnique({
-          select: {
-            id: true,
-            slug: true,
-            first_name: true,
-            last_name: true,
-            picture: true,
-          },
-          where: {
-            id: evaluation.evaluee_id ?? 0,
-          },
-        })
-        const project = await prisma.projects.findUnique({
-          select: {
-            id: true,
-            name: true,
-          },
-          where: {
-            id: evaluation.project_id ?? 0,
-          },
-        })
-        const projectRole = await prisma.project_roles.findUnique({
-          select: {
-            id: true,
-            name: true,
-            short_name: true,
-          },
-          where: {
-            id: evaluation.project_members?.project_role_id ?? 0,
-          },
-        })
+        const evaluator = await UserService.getById(evaluation.evaluator_id ?? 0)
+        const evaluee = await UserService.getById(evaluation.evaluee_id ?? 0)
+        const project = await ProjectService.getById(evaluation.project_id ?? 0)
+        const projectRole = await ProjectRoleService.getById(
+          evaluation.project_members?.project_role_id ?? 0
+        )
+
         return {
           id: evaluation.id,
           comments: evaluation.comments,
@@ -106,65 +70,53 @@ export const getEvaluations = async (req: Request, res: Response) => {
 export const getEvaluationAdministrations = async (req: Request, res: Response) => {
   try {
     const user = req.user
-
     const { page } = req.query
 
     const itemsPerPage = 20
     const parsedPage = parseInt(page as string)
     const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
-    const evaluations = await prisma.evaluations.findMany({
-      where: {
-        evaluator_id: user.id,
-        for_evaluation: true,
-      },
+    const evaluations = await EvaluationService.getAllByFilters({
+      evaluator_id: user.id,
+      for_evaluation: true,
     })
 
     const evaluationAdministrationIds = evaluations.map(
       (evaluation) => evaluation.evaluation_administration_id
     )
 
-    const evaluationAdministrations = await prisma.evaluation_administrations.findMany({
-      skip: (currentPage - 1) * itemsPerPage,
-      take: itemsPerPage,
-      where: {
+    const evaluationAdministrations = await EvaluationAdministrationService.getAllByFilters(
+      (currentPage - 1) * itemsPerPage,
+      itemsPerPage,
+      {
         id: {
           in: evaluationAdministrationIds as number[],
         },
         status: EvaluationAdministrationStatus.Ongoing,
-      },
-      orderBy: {
-        id: "desc",
-      },
-    })
+      }
+    )
 
     const finalEvaluationAdministrations = await Promise.all(
       evaluationAdministrations.map(async (evaluationAdministration) => {
-        const totalEvaluations = await prisma.evaluations.count({
-          where: {
-            evaluator_id: user.id,
-            for_evaluation: true,
-            evaluation_administration_id: evaluationAdministration.id,
-          },
+        const totalEvaluations = await EvaluationService.countAllByFilters({
+          evaluator_id: user.id,
+          for_evaluation: true,
+          evaluation_administration_id: evaluationAdministration.id,
         })
 
-        const totalSubmitted = await prisma.evaluations.count({
-          where: {
-            evaluator_id: user.id,
-            for_evaluation: true,
-            evaluation_administration_id: evaluationAdministration.id,
-            status: EvaluationStatus.Submitted,
-          },
+        const totalSubmitted = await EvaluationService.countAllByFilters({
+          evaluator_id: user.id,
+          for_evaluation: true,
+          evaluation_administration_id: evaluationAdministration.id,
+          status: EvaluationStatus.Submitted,
         })
 
-        const totalPending = await prisma.evaluations.count({
-          where: {
-            evaluator_id: user.id,
-            for_evaluation: true,
-            evaluation_administration_id: evaluationAdministration.id,
-            status: {
-              in: [EvaluationStatus.Open, EvaluationStatus.Ongoing],
-            },
+        const totalPending = await EvaluationService.countAllByFilters({
+          evaluator_id: user.id,
+          for_evaluation: true,
+          evaluation_administration_id: evaluationAdministration.id,
+          status: {
+            in: [EvaluationStatus.Open, EvaluationStatus.Ongoing],
           },
         })
 
@@ -182,13 +134,11 @@ export const getEvaluationAdministrations = async (req: Request, res: Response) 
       })
     )
 
-    const totalItems = await prisma.evaluation_administrations.count({
-      where: {
-        id: {
-          in: evaluationAdministrationIds as number[],
-        },
-        status: EvaluationAdministrationStatus.Ongoing,
+    const totalItems = await EvaluationAdministrationService.countAllByFilters({
+      id: {
+        in: evaluationAdministrationIds as number[],
       },
+      status: EvaluationAdministrationStatus.Ongoing,
     })
 
     const totalPages = Math.ceil(totalItems / itemsPerPage)
@@ -225,11 +175,7 @@ export const submitEvaluation = async (req: Request, res: Response) => {
     const evaluationRatingIds = evaluation_rating_ids as number[]
     const answerOptionIds = answer_option_ids as number[]
 
-    const evaluation = await prisma.evaluations.findUnique({
-      where: {
-        id: parseInt(id),
-      },
-    })
+    const evaluation = await EvaluationService.getById(parseInt(id))
 
     if (evaluation === null) {
       return res.status(400).json({ message: "Invalid id" })
@@ -250,24 +196,14 @@ export const submitEvaluation = async (req: Request, res: Response) => {
       })
     }
 
-    const evaluationRatings = await prisma.evaluation_ratings.findMany({
-      where: {
-        id: {
-          in: evaluationRatingIds,
-        },
+    const evaluationRatings = await EvaluationRatingService.getAllByFilters({
+      id: {
+        in: evaluationRatingIds,
       },
     })
 
     if (evaluation.status === EvaluationStatus.Open) {
-      await prisma.evaluations.update({
-        where: {
-          id: evaluation.id,
-        },
-        data: {
-          status: EvaluationStatus.Ongoing,
-          updated_at: new Date(),
-        },
-      })
+      await EvaluationService.updateStatusById(evaluation.id, EvaluationStatus.Ongoing)
 
       Object.assign(evaluation, {
         status: EvaluationStatus.Ongoing,
@@ -276,47 +212,31 @@ export const submitEvaluation = async (req: Request, res: Response) => {
 
     evaluationRatings.forEach(async (rating, index) => {
       const answerOptionId = answerOptionIds[index]
-      const answerOption = await prisma.answer_options.findUnique({
-        where: {
-          id: answerOptionId ?? 0,
-        },
-      })
+      const answerOption = await AnswerOptionService.getById(answerOptionId ?? 0)
 
       const rate = Number(answerOption?.rate ?? 0)
       const percentage = Number(rating.percentage ?? 0)
       const score = rate * percentage
 
-      await prisma.evaluation_ratings.updateMany({
-        where: {
-          id: rating.id,
-        },
-        data: {
+      if (answerOption?.id !== undefined) {
+        await EvaluationRatingService.updateById(rating.id, {
           answer_option_id: answerOption?.id,
           rate,
           score,
-        },
-      })
+        })
+      }
     })
 
-    await prisma.evaluations.update({
-      where: {
-        id: evaluation.id,
-      },
-      data: {
-        comments: comment,
-        status: EvaluationStatus.Ongoing,
-        updated_at: new Date(),
-      },
+    await EvaluationService.updateById(evaluation.id, {
+      comments: comment,
+      status: EvaluationStatus.Ongoing,
+      updated_at: new Date(),
     })
 
     if (is_submitting === true) {
-      const allEvaluationRatings = await prisma.evaluation_ratings.findMany({
-        select: {
-          answer_option_id: true,
-        },
-        where: {
-          evaluation_id: evaluation?.id,
-        },
+      await EvaluationRatingService.getAllByFilters({ evaluation_id: evaluation?.id })
+      const allEvaluationRatings = await EvaluationRatingService.getAllByFilters({
+        evaluation_id: evaluation?.id,
       })
 
       const containsNullAnswerOption = allEvaluationRatings.some(
@@ -331,14 +251,9 @@ export const submitEvaluation = async (req: Request, res: Response) => {
         .map((rating) => rating.answer_option_id)
         .filter((id) => id !== null) as number[]
 
-      const answerOptions = await prisma.answer_options.findMany({
-        select: {
-          sequence_no: true,
-        },
-        where: {
-          id: {
-            in: answerOptionIds,
-          },
+      const answerOptions = await AnswerOptionService.getAllByFilters({
+        id: {
+          in: answerOptionIds,
         },
       })
 
@@ -368,14 +283,9 @@ export const submitEvaluation = async (req: Request, res: Response) => {
         })
       }
 
-      const evaluationRatings = await prisma.evaluation_ratings.aggregate({
-        _sum: {
-          score: true,
-          percentage: true,
-        },
-        where: {
-          evaluation_id: evaluation.id,
-        },
+      const evaluationRatings = await EvaluationRatingService.aggregateSumById(evaluation.id, {
+        score: true,
+        percentage: true,
       })
 
       const score = (
@@ -397,87 +307,66 @@ export const submitEvaluation = async (req: Request, res: Response) => {
 
       const weighted_score = weight * Number(score)
 
-      await prisma.evaluations.update({
-        where: {
-          id: evaluation.id,
-        },
-        data: {
-          score,
-          weight,
-          weighted_score,
-          status: EvaluationStatus.Submitted,
-          submission_method: "Manual",
-          submitted_date: currentDate,
-          updated_at: currentDate,
-        },
+      await EvaluationService.updateById(evaluation.id, {
+        score,
+        weight,
+        weighted_score,
+        status: EvaluationStatus.Submitted,
+        submission_method: "Manual",
+        submitted_date: currentDate,
+        updated_at: currentDate,
       })
 
-      const remainingEvaluations = await prisma.evaluations.count({
-        where: {
-          evaluation_result_id: evaluation.evaluation_result_id,
-          status: {
-            in: [
-              EvaluationStatus.Draft,
-              EvaluationStatus.Pending,
-              EvaluationStatus.Open,
-              EvaluationStatus.Ongoing,
-            ],
-          },
+      const remainingEvaluations = await EvaluationService.countAllByFilters({
+        evaluation_result_id: evaluation.evaluation_result_id,
+        status: {
+          in: [
+            EvaluationStatus.Draft,
+            EvaluationStatus.Pending,
+            EvaluationStatus.Open,
+            EvaluationStatus.Ongoing,
+          ],
         },
       })
 
       if (remainingEvaluations === 0 && evaluation.evaluation_result_id !== null) {
-        const evaluationResultDetails = await prisma.evaluation_result_details.findMany({
-          where: {
-            evaluation_result_id: evaluation.evaluation_result_id,
-          },
+        const evaluationResultDetails = await EvaluationResultDetailService.getAllByFilters({
+          evaluation_result_id: evaluation.evaluation_result_id,
         })
 
         for (const evaluationResultDetail of evaluationResultDetails) {
-          const evaluations = await prisma.evaluations.aggregate({
-            _sum: {
+          const evaluations = await EvaluationService.aggregateSumByFilters(
+            {
               weight: true,
               weighted_score: true,
             },
-            where: {
+            {
               evaluation_result_id: evaluation.evaluation_result_id,
               evaluation_template_id: evaluationResultDetail.evaluation_template_id,
               status: EvaluationStatus.Submitted,
-            },
-          })
+            }
+          )
 
           const score = Number(evaluations._sum.weighted_score) / Number(evaluations._sum.weight)
 
-          await prisma.evaluation_result_details.update({
-            where: {
-              id: evaluationResultDetail.id,
-            },
-            data: {
-              score,
-              weighted_score: Number(evaluationResultDetail.weight) * score,
-              updated_at: currentDate,
-            },
+          await EvaluationResultDetailService.updateById(evaluationResultDetail.id, {
+            score,
+            weighted_score: Number(evaluationResultDetail.weight) * score,
+            updated_at: currentDate,
           })
         }
 
-        const evaluationResultDetailsSum = await prisma.evaluation_result_details.aggregate({
-          _sum: {
-            weight: true,
-            weighted_score: true,
-          },
+        const evaluationResultDetailsSum = await EvaluationResultDetailService.aggregateSum({
+          weight: true,
+          weighted_score: true,
         })
 
-        await prisma.evaluation_results.update({
-          where: {
-            id: evaluation.evaluation_result_id,
-          },
-          data: {
-            score:
-              Number(evaluationResultDetailsSum._sum.weighted_score) /
-              Number(evaluationResultDetailsSum._sum.weight),
-            status: EvaluationResultStatus.Completed,
-            updated_at: currentDate,
-          },
+        await EvaluationResultDetailService.updateById(evaluation.evaluation_result_id, {
+          score:
+            Number(evaluationResultDetailsSum._sum.weighted_score) /
+            Number(evaluationResultDetailsSum._sum.weight),
+          status: EvaluationResultStatus.Completed,
+          updated_at: currentDate,
         })
       }
 
@@ -504,11 +393,7 @@ export const submitAnswer = async (req: Request, res: Response) => {
     const { id } = req.params
     const { evaluation_rating_id, answer_option_id } = req.body
 
-    const evaluation = await prisma.evaluations.findUnique({
-      where: {
-        id: parseInt(id),
-      },
-    })
+    const evaluation = await EvaluationService.getById(parseInt(id))
 
     if (evaluation === null) {
       return res.status(400).json({ message: "Invalid id" })
@@ -529,36 +414,26 @@ export const submitAnswer = async (req: Request, res: Response) => {
       })
     }
 
-    const evaluationRating = await prisma.evaluation_ratings.findUnique({
-      where: {
-        id: parseInt(evaluation_rating_id as string),
-      },
-    })
+    const evaluationRating = await EvaluationRatingService.getById(
+      parseInt(evaluation_rating_id as string)
+    )
 
     if (evaluationRating === null) {
       return res.status(400).json({ message: "Evaluation rating not found" })
     }
 
-    const answerOption = await prisma.answer_options.findUnique({
-      where: {
-        id: parseInt(answer_option_id as string),
-      },
-    })
+    const answerOption = await AnswerOptionService.getById(parseInt(answer_option_id as string))
 
     if (answerOption === null) {
       return res.status(400).json({ message: "Answer option not found" })
     }
 
     if (evaluation.status === EvaluationStatus.Open) {
-      await prisma.evaluations.update({
-        where: {
-          id: evaluation.id,
-          updated_at: new Date(),
-        },
-        data: {
-          status: EvaluationStatus.Ongoing,
-        },
+      await EvaluationService.updateById(evaluation.id, {
+        status: EvaluationStatus.Ongoing,
+        updated_at: new Date(),
       })
+
       Object.assign(evaluation, {
         status: EvaluationStatus.Ongoing,
       })
@@ -568,15 +443,10 @@ export const submitAnswer = async (req: Request, res: Response) => {
     const percentage = Number(evaluationRating.percentage ?? 0)
     const score = rate * percentage
 
-    await prisma.evaluation_ratings.update({
-      where: {
-        id: evaluationRating.id,
-      },
-      data: {
-        answer_option_id: answerOption.id,
-        rate,
-        score,
-      },
+    await EvaluationRatingService.updateById(evaluationRating.id, {
+      answer_option_id: answerOption.id,
+      rate,
+      score,
     })
 
     res.json({ id, status: evaluation.status })
@@ -596,11 +466,7 @@ export const submitComment = async (req: Request, res: Response) => {
     const { id } = req.params
     const { comment } = req.body
 
-    const evaluation = await prisma.evaluations.findUnique({
-      where: {
-        id: parseInt(id),
-      },
-    })
+    const evaluation = await EvaluationService.getById(parseInt(id))
 
     if (evaluation === null) {
       return res.status(400).json({ message: "Invalid id" })
@@ -621,15 +487,10 @@ export const submitComment = async (req: Request, res: Response) => {
       })
     }
 
-    await prisma.evaluations.update({
-      where: {
-        id: evaluation.id,
-      },
-      data: {
-        comments: comment,
-        status: EvaluationStatus.Ongoing,
-        updated_at: new Date(),
-      },
+    await EvaluationService.updateById(evaluation.id, {
+      comments: comment,
+      status: EvaluationStatus.Ongoing,
+      updated_at: new Date(),
     })
 
     res.json({ id, comment })
@@ -642,11 +503,8 @@ export const submitComment = async (req: Request, res: Response) => {
 export const getProfile = async (req: Request, res: Response) => {
   try {
     const user = req.user
-    const userData = await prisma.users.findUnique({
-      where: {
-        email: user.email,
-      },
-    })
+    const userData = await UserService.getById(user.id)
+
     res.json(userData)
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
