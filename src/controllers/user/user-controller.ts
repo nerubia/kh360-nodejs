@@ -1,7 +1,6 @@
 import { type Request, type Response } from "express"
 import { differenceInDays, endOfYear, startOfYear } from "date-fns"
 import { EvaluationStatus } from "../../types/evaluation-type"
-import { EvaluationResultStatus } from "../../types/evaluation-result-type"
 import { EvaluationAdministrationStatus } from "../../types/evaluation-administration-type"
 import { sendMail } from "../../utils/sendgrid"
 import { ValidationError } from "yup"
@@ -273,48 +272,8 @@ export const submitEvaluation = async (req: Request, res: Response) => {
       })
 
       if (remainingEvaluations === 0 && evaluation.evaluation_result_id !== null) {
-        const evaluationResultDetails = await EvaluationResultDetailService.getAllByFilters({
-          evaluation_result_id: evaluation.evaluation_result_id,
-        })
-
-        for (const evaluationResultDetail of evaluationResultDetails) {
-          const evaluations = await EvaluationService.aggregateSumByFilters(
-            {
-              weight: true,
-              weighted_score: true,
-            },
-            {
-              evaluation_result_id: evaluation.evaluation_result_id,
-              evaluation_template_id: evaluationResultDetail.evaluation_template_id,
-              status: EvaluationStatus.Submitted,
-            }
-          )
-
-          const score = Number(evaluations._sum.weighted_score) / Number(evaluations._sum.weight)
-
-          await EvaluationResultDetailService.updateById(evaluationResultDetail.id, {
-            score,
-            weighted_score: Number(evaluationResultDetail.weight) * score,
-            updated_at: currentDate,
-          })
-        }
-
-        const evaluationResultDetailsSum =
-          await EvaluationResultDetailService.aggregateSumByEvaluationResultId(
-            evaluation.evaluation_result_id,
-            {
-              weight: true,
-              weighted_score: true,
-            }
-          )
-
-        await EvaluationResultService.updateById(evaluation.evaluation_result_id, {
-          score:
-            Number(evaluationResultDetailsSum._sum.weighted_score) /
-            Number(evaluationResultDetailsSum._sum.weight),
-          status: EvaluationResultStatus.Completed,
-          updated_at: currentDate,
-        })
+        await EvaluationResultDetailService.calculateScore(evaluation.evaluation_result_id)
+        await EvaluationResultService.calculateScore(evaluation.evaluation_result_id)
       }
 
       Object.assign(evaluation, {
