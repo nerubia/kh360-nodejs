@@ -12,5 +12,6 @@ router.delete("/:id", EvaluationAdministrationController.destroy)
 router.get("/:id/generate-status", EvaluationAdministrationController.generateStatus)
 router.post("/:id/generate", EvaluationAdministrationController.generate)
 router.post("/:id/cancel", EvaluationAdministrationController.cancel)
+router.post("/:id/close", EvaluationAdministrationController.close)
 
 export default router

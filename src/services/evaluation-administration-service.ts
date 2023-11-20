@@ -4,6 +4,8 @@ import * as EvaluationAdministrationRepository from "../repositories/evaluation-
 import * as EvaluationResultRepository from "../repositories/evaluation-result-repository"
 import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as UserRepository from "../repositories/user-repository"
+import * as EvaluationResultDetailService from "../services/evaluation-result-detail-service"
+import * as EvaluationResultService from "../services/evaluation-result-service"
 import {
   EvaluationAdministrationStatus,
   type EvaluationAdministration,
@@ -135,5 +137,36 @@ export const cancel = async (id: number) => {
   await EvaluationRepository.updateStatusByAdministrationId(
     evaluationAdministration.id,
     EvaluationStatus.Cancelled
+  )
+}
+
+export const close = async (id: number) => {
+  const evaluationAdministration = await EvaluationAdministrationRepository.getById(id)
+
+  if (evaluationAdministration === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
+  if (evaluationAdministration.status !== EvaluationAdministrationStatus.Ongoing) {
+    throw new CustomError("Only ongoing status is allowed.", 403)
+  }
+
+  await EvaluationRepository.updateStatusByAdministrationId(
+    evaluationAdministration.id,
+    EvaluationStatus.Expired
+  )
+
+  const evaluationResults = await EvaluationResultRepository.getAllByEvaluationAdministrationId(
+    evaluationAdministration.id
+  )
+
+  for (const evaluationResult of evaluationResults) {
+    await EvaluationResultDetailService.calculateScore(evaluationResult.id)
+    await EvaluationResultService.calculateScore(evaluationResult.id)
+  }
+
+  await EvaluationAdministrationRepository.updateStatusById(
+    evaluationAdministration.id,
+    EvaluationAdministrationStatus.Closed
   )
 }

@@ -464,3 +464,17 @@ export const cancel = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+/**
+ * Close a specific evaluation administration by ID.
+ * @param req.params.id - The unique ID of the evaluation administration.
+ */
+export const close = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    await EvaluationAdministrationService.close(parseInt(id))
+    res.json({ id })
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
