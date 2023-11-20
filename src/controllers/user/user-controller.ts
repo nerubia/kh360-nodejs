@@ -7,6 +7,7 @@ import { ValidationError } from "yup"
 import { submitEvaluationSchema } from "../../utils/validation/evaluations/submit-evaluation-schema"
 import * as EvaluationService from "../../services/evaluation-service"
 import * as EvaluationResultService from "../../services/evaluation-result-service"
+import * as EvaluationTemplateService from "../../services/evaluation-template-service"
 import * as EvaluationAdministrationService from "../../services/evaluation-administration-service"
 import * as EvaluationRatingService from "../../services/evaluation-rating-service"
 import * as EvaluationResultDetailService from "../../services/evaluation-result-detail-service"
@@ -43,6 +44,18 @@ export const getEvaluations = async (req: Request, res: Response) => {
           evaluation.project_members?.project_role_id ?? 0
         )
 
+        let template = null
+
+        if (project === null) {
+          template = await EvaluationTemplateService.getById(evaluation.evaluation_template_id ?? 0)
+          if (template?.evaluee_role_id !== null) {
+            const project_role = await ProjectRoleService.getById(template?.evaluee_role_id ?? 0)
+            Object.assign(template ?? 0, {
+              project_role,
+            })
+          }
+        }
+
         return {
           id: evaluation.id,
           comments: evaluation.comments,
@@ -55,6 +68,7 @@ export const getEvaluations = async (req: Request, res: Response) => {
           evaluee,
           project,
           project_role: projectRole,
+          template,
         }
       })
     )
