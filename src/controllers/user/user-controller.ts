@@ -213,6 +213,7 @@ export const submitEvaluation = async (req: Request, res: Response) => {
           answer_option_id: answerOption?.id,
           rate,
           score,
+          updated_at: new Date(),
         })
       }
     })
@@ -338,6 +339,7 @@ export const submitAnswer = async (req: Request, res: Response) => {
         answer_option_id: answerOption?.id ?? 0,
         rate,
         score,
+        updated_at: new Date(),
       })
     }
 
