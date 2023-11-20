@@ -146,7 +146,7 @@ const createRoles = async () => {
 const createEmailTemplates = async () => {
   const emailTemplate = await prisma.email_templates.findFirst({
     where: {
-      name: "Create Evaluation Administration Template",
+      template_type: "Create Evaluation",
     },
   })
   if (emailTemplate === null) {
