@@ -200,22 +200,22 @@ export const submitEvaluation = async (req: Request, res: Response) => {
       })
     }
 
-    evaluationRatings.forEach(async (rating, index) => {
+    for (const [index, evaluationRating] of evaluationRatings.entries()) {
       const answerOptionId = answerOptionIds[index]
       const answerOption = await AnswerOptionService.getById(answerOptionId ?? 0)
 
       const rate = Number(answerOption?.rate ?? 0)
-      const percentage = Number(rating.percentage ?? 0)
+      const percentage = Number(evaluationRating.percentage ?? 0)
       const score = rate * percentage
 
       if (answerOption?.id !== undefined) {
-        await EvaluationRatingService.updateById(rating.id, {
+        await EvaluationRatingService.updateById(evaluationRating.id, {
           answer_option_id: answerOption?.id,
           rate,
           score,
         })
       }
-    })
+    }
 
     if (is_submitting === true && evaluation !== null) {
       await submitEvaluationSchema.validate({
