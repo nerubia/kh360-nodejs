@@ -14,56 +14,14 @@ export const index = async (req: Request, res: Response) => {
   try {
     const { name, company, role, page } = req.query
 
-    const evaluatorRole = role === "all" ? "" : role
-
-    const itemsPerPage = 10
-    const parsedPage = parseInt(page as string)
-    const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
-
-    const where = {
-      role: {
-        contains: evaluatorRole as string,
-      },
-      company: {
-        contains: company as string,
-      },
-    }
-
-    if (name !== undefined) {
-      Object.assign(where, {
-        OR: [
-          {
-            first_name: {
-              contains: name as string,
-            },
-          },
-          {
-            last_name: {
-              contains: name as string,
-            },
-          },
-        ],
-      })
-    }
-
     const externalUsers = await ExternalUserService.getAllByFilters(
-      (currentPage - 1) * itemsPerPage,
-      itemsPerPage,
-      where
+      name as string,
+      company as string,
+      role as string,
+      page as string
     )
 
-    const totalItems = await ExternalUserService.countByFilters(where)
-    const totalPages = Math.ceil(totalItems / itemsPerPage)
-
-    res.json({
-      data: externalUsers,
-      pageInfo: {
-        hasPreviousPage: currentPage > 1,
-        hasNextPage: currentPage < totalPages,
-        totalPages,
-        totalItems,
-      },
-    })
+    res.json(externalUsers)
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }

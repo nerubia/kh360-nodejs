@@ -7,11 +7,63 @@ export const getAll = async () => {
 }
 
 export const getAllByFilters = async (
-  skip: number,
-  take: number,
-  where: Prisma.external_usersWhereInput
+  name: string,
+  company: string,
+  role: string,
+  page: string
 ) => {
-  return await ExternalUserRepository.getAllByFilters(skip, take, where)
+  const evaluatorRole = role === "all" ? "" : role
+
+  const itemsPerPage = 10
+  const parsedPage = parseInt(page)
+  const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
+
+  const where = {
+    role: {
+      contains: evaluatorRole,
+    },
+    company: {
+      contains: company,
+    },
+  }
+
+  if (name !== undefined) {
+    Object.assign(where, {
+      OR: [
+        {
+          first_name: {
+            contains: name,
+          },
+        },
+        {
+          last_name: {
+            contains: name,
+          },
+        },
+      ],
+    })
+  }
+
+  const totalItems = await ExternalUserRepository.countByFilters(where)
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+
+  const externalUsers = await ExternalUserRepository.getAllByFilters(
+    (currentPage - 1) * itemsPerPage,
+    itemsPerPage,
+    where
+  )
+
+  const pageInfo = {
+    hasPreviousPage: currentPage > 1,
+    hasNextPage: currentPage < totalPages,
+    totalPages,
+    totalItems,
+  }
+
+  return {
+    data: externalUsers,
+    pageInfo,
+  }
 }
 
 export const countByFilters = async (where: Prisma.external_usersWhereInput) => {
