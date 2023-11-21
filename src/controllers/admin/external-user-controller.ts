@@ -4,12 +4,66 @@ import { createExternalUserSchema } from "../../utils/validation/external-user-s
 import * as ExternalUserService from "../../services/external-user-service"
 
 /**
- * List external users.
+ * List external users based on provided filters.
+ * @param req.query.name - Filter by name.
+ * @param req.query.company - Filter by company.
+ * @param req.query.role - Filter by role.
+ * @param req.query.page - Page number for pagination.
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const externalUsers = await ExternalUserService.getAll()
-    res.json(externalUsers)
+    const { name, company, role, page } = req.query
+
+    const evaluatorRole = role === "all" ? "" : role
+
+    const itemsPerPage = 10
+    const parsedPage = parseInt(page as string)
+    const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
+
+    const where = {
+      role: {
+        contains: evaluatorRole as string,
+      },
+      company: {
+        contains: company as string,
+      },
+    }
+
+    if (name !== undefined) {
+      Object.assign(where, {
+        OR: [
+          {
+            first_name: {
+              contains: name as string,
+            },
+          },
+          {
+            last_name: {
+              contains: name as string,
+            },
+          },
+        ],
+      })
+    }
+
+    const externalUsers = await ExternalUserService.getAllByFilters(
+      (currentPage - 1) * itemsPerPage,
+      itemsPerPage,
+      where
+    )
+
+    const totalItems = await ExternalUserService.countByFilters(where)
+    const totalPages = Math.ceil(totalItems / itemsPerPage)
+
+    res.json({
+      data: externalUsers,
+      pageInfo: {
+        hasPreviousPage: currentPage > 1,
+        hasNextPage: currentPage < totalPages,
+        totalPages,
+        totalItems,
+      },
+    })
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
