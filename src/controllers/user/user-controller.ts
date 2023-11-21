@@ -129,6 +129,7 @@ export const getEvaluationAdministrations = async (req: Request, res: Response) 
           eval_period_end_date: evaluationAdministration.eval_period_end_date,
           eval_schedule_start_date: evaluationAdministration.eval_schedule_start_date,
           eval_schedule_end_date: evaluationAdministration.eval_schedule_end_date,
+          remarks: evaluationAdministration.remarks,
           totalEvaluations,
           totalSubmitted,
           totalPending,
