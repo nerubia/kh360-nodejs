@@ -5,6 +5,6 @@ export const createExternalUserSchema = object().shape({
   first_name: string().required("First name is required"),
   middle_name: string().optional(),
   last_name: string().required("Last name is required"),
-  role: string().optional(),
-  company: string().optional(),
+  role: string().required("Role is required"),
+  company: string().required("Company is required"),
 })
