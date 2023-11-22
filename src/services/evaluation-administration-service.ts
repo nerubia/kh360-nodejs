@@ -210,7 +210,13 @@ export const addExternalEvaluators = async (
 
   for (const externalId of external_user_ids) {
     const externalUser = await ExternalUserRepository.getById(parseInt(externalId))
-    if (externalUser !== null) {
+    const existingEvaluationCount = await EvaluationRepository.countAllByFilters({
+      evaluation_administration_id: evaluationAdministration.id,
+      evaluation_result_id: evaluationResult.id,
+      evaluation_template_id: evaluationTemplate.id,
+      external_evaluator_id: externalUser?.id,
+    })
+    if (externalUser !== null && existingEvaluationCount === 0) {
       await EvaluationRepository.create({
         evaluation_template_id: evaluationTemplate.id,
         evaluation_administration_id: evaluationAdministration.id,
