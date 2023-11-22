@@ -100,6 +100,7 @@ export const index = async (req: Request, res: Response) => {
           evaluee,
           project,
           project_role: projectRole,
+          external_evaluator_id: evaluation.external_evaluator_id,
         }
       })
     )
