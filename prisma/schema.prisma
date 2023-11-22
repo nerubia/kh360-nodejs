@@ -539,17 +539,21 @@ model evaluations {
 }
 
 model external_users {
-  id            Int       @id @default(autoincrement())
-  email         String    @unique(map: "index_external_users_on_email") @default("") @db.VarChar(255)
-  first_name    String    @db.VarChar(100)
-  middle_name   String?   @db.VarChar(75)
-  last_name     String    @db.VarChar(75)
-  role          String?   @db.VarChar(255)
-  company       String?   @db.VarChar(255)
-  created_by_id Int?
-  updated_by_id Int?
-  created_at    DateTime? @db.DateTime(0)
-  updated_at    DateTime? @db.DateTime(0)
+  id              Int       @id @default(autoincrement())
+  email           String    @unique(map: "index_external_users_on_email") @default("") @db.VarChar(255)
+  first_name      String    @db.VarChar(100)
+  middle_name     String?   @db.VarChar(75)
+  last_name       String    @db.VarChar(75)
+  role            String?   @db.VarChar(255)
+  company         String?   @db.VarChar(255)
+  access_token    String?   @db.VarChar(255)
+  code            String?   @db.VarChar(255)
+  failed_attempts Int?
+  locked_at       DateTime? @db.DateTime(0)
+  created_by_id   Int?
+  updated_by_id   Int?
+  created_at      DateTime? @db.DateTime(0)
+  updated_at      DateTime? @db.DateTime(0)
 }
 
 model holidays {
