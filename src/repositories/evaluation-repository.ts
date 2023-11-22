@@ -33,6 +33,10 @@ export const getAllDistinctByFilters = async (
   })
 }
 
+export const create = async (data: Prisma.evaluationsCreateInput) => {
+  return await prisma.evaluations.create({ data })
+}
+
 export const updateById = async (id: number, data: Evaluation) => {
   await prisma.evaluations.update({
     where: {

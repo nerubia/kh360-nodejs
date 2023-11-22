@@ -1,6 +1,14 @@
 import prisma from "../utils/prisma"
 import { type EvaluationResult } from "../types/evaluation-result-type"
 
+export const getById = async (id: number) => {
+  return await prisma.evaluation_results.findUnique({
+    where: {
+      id,
+    },
+  })
+}
+
 export const updateById = async (id: number, data: EvaluationResult) => {
   await prisma.evaluation_results.update({
     where: {

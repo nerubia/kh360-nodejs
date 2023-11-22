@@ -14,4 +14,9 @@ router.post("/:id/generate", EvaluationAdministrationController.generate)
 router.post("/:id/cancel", EvaluationAdministrationController.cancel)
 router.post("/:id/close", EvaluationAdministrationController.close)
 
+router.post(
+  "/:id/add-external-evaluators",
+  EvaluationAdministrationController.addExternalEvaluators
+)
+
 export default router
