@@ -165,6 +165,7 @@ export const getEvaluationAdministrations = async (req: Request, res: Response) 
       pageInfo: {
         hasPreviousPage: currentPage > 1,
         hasNextPage: currentPage < totalPages,
+        currentPage,
         totalPages,
         totalItems,
       },
