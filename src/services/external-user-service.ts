@@ -36,6 +36,11 @@ export const getAllByFilters = async (
           },
         },
         {
+          middle_name: {
+            contains: name,
+          },
+        },
+        {
           last_name: {
             contains: name,
           },
