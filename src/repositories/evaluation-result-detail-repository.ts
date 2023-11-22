@@ -16,6 +16,10 @@ export const getAllByFilters = async (where: Prisma.evaluation_result_detailsWhe
   })
 }
 
+export const create = async (data: Prisma.evaluation_result_detailsCreateInput) => {
+  return await prisma.evaluation_result_details.create({ data })
+}
+
 export const updateById = async (id: number, data: EvaluationResultDetail) => {
   await prisma.evaluation_result_details.update({
     where: {

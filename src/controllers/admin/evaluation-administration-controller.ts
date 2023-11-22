@@ -12,6 +12,7 @@ import { EvaluationStatus } from "../../types/evaluation-type"
 import { EvaluationResultStatus } from "../../types/evaluation-result-type"
 import { type Decimal } from "@prisma/client/runtime/library"
 import CustomError from "../../utils/custom-error"
+import { addExternalEvaluatorsSchema } from "../../utils/validation/evaluation-administration-schema"
 
 /**
  * List evaluation administrations based on provided filters.
@@ -475,6 +476,47 @@ export const close = async (req: Request, res: Response) => {
     await EvaluationAdministrationService.close(parseInt(id))
     res.json({ id })
   } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Add external evaluators by ID.
+ * @param req.params.id - The unique ID of the evaluation administration.
+ * @param req.body.evaluation_administration_id - Evaluation administration id.
+ * @param req.body.evaluation_template_id - Evaluation template id.
+ * @param req.body.evaluation_result_id - Evaluation result id.
+ * @param req.body.evaluee_id - User id.
+ * @param req.body.external_user_ids - External user ids.
+ */
+export const addExternalEvaluators = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const { evaluation_template_id, evaluation_result_id, evaluee_id, external_user_ids } = req.body
+
+    await addExternalEvaluatorsSchema.validate({
+      evaluation_template_id,
+      evaluation_result_id,
+      evaluee_id,
+      external_user_ids,
+    })
+
+    await EvaluationAdministrationService.addExternalEvaluators(
+      parseInt(id),
+      parseInt(evaluation_template_id),
+      parseInt(evaluation_result_id),
+      parseInt(evaluee_id),
+      external_user_ids
+    )
+
+    res.json({ id })
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
     res.status(500).json({ message: "Something went wrong" })
   }
 }
