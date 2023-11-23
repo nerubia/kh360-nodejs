@@ -405,6 +405,7 @@ model evaluation_ratings {
   rate                           Decimal?  @default(0.00) @db.Decimal(5, 2)
   percentage                     Decimal?  @default(0.00) @db.Decimal(8, 2)
   score                          Decimal?  @default(0.00) @db.Decimal(8, 2)
+  comments                       String?   @default("") @db.VarChar(20)
   created_at                     DateTime? @db.DateTime(0)
   updated_at                     DateTime? @db.DateTime(0)
 
