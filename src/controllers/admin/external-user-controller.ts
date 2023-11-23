@@ -88,6 +88,9 @@ export const show = async (req: Request, res: Response) => {
     const externalUser = await ExternalUserService.getById(parseInt(id))
     res.json(externalUser)
   } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -141,6 +144,9 @@ export const update = async (req: Request, res: Response) => {
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
+    }
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
     }
     res.status(500).json({ message: "Something went wrong" })
   }

@@ -172,10 +172,30 @@ export const create = async (data: ExternalUser) => {
 }
 
 export const getById = async (id: number) => {
-  return await ExternalUserRepository.getById(id)
+  const externalUser = await ExternalUserRepository.getById(id)
+
+  if (externalUser === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
+  return externalUser
 }
 
 export const updateById = async (id: number, data: ExternalUser) => {
+  const externalUser = await ExternalUserRepository.getById(id)
+
+  if (externalUser === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
+  if (data.email !== externalUser.email) {
+    const existingUser = await ExternalUserRepository.getByEmail(data.email)
+
+    if (existingUser !== null) {
+      throw new CustomError("Email already exist.", 400)
+    }
+  }
+
   return await ExternalUserRepository.updateById(id, data)
 }
 
