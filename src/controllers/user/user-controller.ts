@@ -7,13 +7,10 @@ import { ValidationError } from "yup"
 import { submitEvaluationSchema } from "../../utils/validation/evaluations/submit-evaluation-schema"
 import * as EvaluationService from "../../services/evaluation-service"
 import * as EvaluationResultService from "../../services/evaluation-result-service"
-import * as EvaluationTemplateService from "../../services/evaluation-template-service"
 import * as EvaluationAdministrationService from "../../services/evaluation-administration-service"
 import * as EvaluationRatingService from "../../services/evaluation-rating-service"
 import * as EvaluationResultDetailService from "../../services/evaluation-result-detail-service"
 import * as UserService from "../../services/user-service"
-import * as ProjectService from "../../services/project-service"
-import * as ProjectRoleService from "../../services/project-role-service"
 import * as AnswerOptionService from "../../services/answer-option-service"
 
 /**
@@ -26,54 +23,13 @@ export const getEvaluations = async (req: Request, res: Response) => {
     const user = req.user
     const { evaluation_administration_id, for_evaluation } = req.query
 
-    const evaluations = await EvaluationService.getAllByFilters({
-      evaluation_administration_id: parseInt(evaluation_administration_id as string),
-      evaluator_id: user.id,
-      for_evaluation: Boolean(parseInt(for_evaluation as string)),
-      status: {
-        in: [EvaluationStatus.Open, EvaluationStatus.Ongoing, EvaluationStatus.Submitted],
-      },
-    })
-
-    const finalEvaluations = await Promise.all(
-      evaluations.map(async (evaluation) => {
-        const evaluator = await UserService.getById(evaluation.evaluator_id ?? 0)
-        const evaluee = await UserService.getById(evaluation.evaluee_id ?? 0)
-        const project = await ProjectService.getById(evaluation.project_id ?? 0)
-        const projectRole = await ProjectRoleService.getById(
-          evaluation.project_members?.project_role_id ?? 0
-        )
-
-        let template = null
-
-        if (project === null) {
-          template = await EvaluationTemplateService.getById(evaluation.evaluation_template_id ?? 0)
-          if (template?.evaluee_role_id !== null) {
-            const project_role = await ProjectRoleService.getById(template?.evaluee_role_id ?? 0)
-            Object.assign(template ?? 0, {
-              project_role,
-            })
-          }
-        }
-
-        return {
-          id: evaluation.id,
-          comments: evaluation.comments,
-          eval_start_date: evaluation.eval_start_date,
-          eval_end_date: evaluation.eval_end_date,
-          percent_involvement: evaluation.percent_involvement,
-          status: evaluation.status,
-          for_evaluation: evaluation.for_evaluation,
-          evaluator,
-          evaluee,
-          project,
-          project_role: projectRole,
-          template,
-        }
-      })
+    const result = await EvaluationService.getEvaluations(
+      user,
+      parseInt(evaluation_administration_id as string),
+      Boolean(parseInt(for_evaluation as string))
     )
 
-    res.json(finalEvaluations)
+    res.json(result)
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }

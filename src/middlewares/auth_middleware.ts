@@ -16,9 +16,6 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         return res.status(403).json({ message: "Forbidden" })
       }
       const decodedToken = decoded as UserToken
-      if (decodedToken.is_external) {
-        return res.status(403).json({ message: "Forbidden" })
-      }
       req.user = decodedToken
       next()
     }
