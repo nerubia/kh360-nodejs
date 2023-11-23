@@ -4,6 +4,7 @@ import { faker } from "@faker-js/faker"
 import { EvaluationAdministrationStatus } from "../types/evaluation-administration-type"
 import { EvaluationResultStatus } from "../types/evaluation-result-type"
 import { Environment } from "../types/environment-type"
+import { AnswerType } from "../types/answer-type"
 
 const prisma = new PrismaClient()
 
@@ -162,7 +163,43 @@ const createEmailTemplates = async () => {
   }
 }
 
+const setAnswerTypes = async () => {
+  const answerOptions = await prisma.answer_options.findMany()
+
+  for (const answerOption of answerOptions) {
+    if (answerOption.id === 1) {
+      await prisma.answer_options.update({
+        where: {
+          id: answerOption.id,
+        },
+        data: {
+          answer_type: AnswerType.NA,
+        },
+      })
+    } else if (answerOption.id === 2) {
+      await prisma.answer_options.update({
+        where: {
+          id: answerOption.id,
+        },
+        data: {
+          answer_type: AnswerType.Lowest,
+        },
+      })
+    } else if (answerOption.id === 6) {
+      await prisma.answer_options.update({
+        where: {
+          id: answerOption.id,
+        },
+        data: {
+          answer_type: AnswerType.Lowest,
+        },
+      })
+    }
+  }
+}
+
 async function main() {
+  await setAnswerTypes()
   if (process.env.APP_ENV === Environment.Production) {
     await createRoles()
     await createEmailTemplates()
