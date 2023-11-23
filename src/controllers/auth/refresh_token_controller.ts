@@ -21,8 +21,7 @@ export const refreshToken = async (req: Request, res: Response) => {
         },
       })
 
-      if (existingUser === null)
-        return res.status(403).json({ message: "Forbidden" })
+      if (existingUser === null) return res.status(403).json({ message: "Forbidden" })
 
       const userRoles = await prisma.user_roles.findMany({
         where: {
@@ -39,6 +38,7 @@ export const refreshToken = async (req: Request, res: Response) => {
           first_name: existingUser.first_name,
           last_name: existingUser.last_name,
           roles,
+          is_external: false,
         },
         process.env.ACCESS_TOKEN_SECRET as string,
         {

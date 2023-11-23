@@ -2,6 +2,7 @@ import { type Request, type Response } from "express"
 import { ValidationError } from "yup"
 import { createExternalUserSchema } from "../../utils/validation/external-user-schema"
 import * as ExternalUserService from "../../services/external-user-service"
+import CustomError from "../../utils/custom-error"
 
 /**
  * List external users based on provided filters.
@@ -69,6 +70,9 @@ export const store = async (req: Request, res: Response) => {
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
+    }
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
     }
     res.status(500).json({ message: "Something went wrong" })
   }
