@@ -1,5 +1,7 @@
 import { type Request, type Response } from "express"
 import jwt from "jsonwebtoken"
+import * as ExternalUserRepository from "../../repositories/external-user-repository"
+import * as UserRepository from "../../repositories/user-repository"
 import { type UserToken } from "../../types/userTokenType"
 import prisma from "../../utils/prisma"
 
@@ -15,21 +17,22 @@ export const refreshToken = async (req: Request, res: Response) => {
       if (error != null) return res.status(403).json({ message: "Forbidden" })
       const decodedToken = decoded as UserToken
 
-      const existingUser = await prisma.users.findUnique({
-        where: {
-          email: decodedToken.email,
-        },
-      })
+      const existingUser = decodedToken.is_external
+        ? await ExternalUserRepository.getByEmail(decodedToken.email)
+        : await UserRepository.getByEmail(decodedToken.email)
 
       if (existingUser === null) return res.status(403).json({ message: "Forbidden" })
 
-      const userRoles = await prisma.user_roles.findMany({
-        where: {
-          user_id: existingUser.id,
-        },
-      })
+      let roles
 
-      const roles = userRoles.map((role) => role.name)
+      if (!decodedToken.is_external) {
+        const userRoles = await prisma.user_roles.findMany({
+          where: {
+            user_id: existingUser.id,
+          },
+        })
+        roles = userRoles.map((role) => role.name)
+      }
 
       const access_token = jwt.sign(
         {
@@ -38,7 +41,7 @@ export const refreshToken = async (req: Request, res: Response) => {
           first_name: existingUser.first_name,
           last_name: existingUser.last_name,
           roles,
-          is_external: false,
+          is_external: decodedToken.is_external,
         },
         process.env.ACCESS_TOKEN_SECRET as string,
         {

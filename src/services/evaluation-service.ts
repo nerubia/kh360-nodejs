@@ -1,6 +1,12 @@
 import { type Prisma } from "@prisma/client"
 import * as EvaluationRepository from "../repositories/evaluation-repository"
-import { type Evaluation } from "../types/evaluation-type"
+import * as EvaluationTemplateRepository from "../repositories/evaluation-template-repository"
+import * as ExternalUserRepository from "../repositories/external-user-repository"
+import * as UserRepository from "../repositories/user-repository"
+import * as ProjectRepository from "../repositories/project-repository"
+import * as ProjectRoleRepository from "../repositories/project-role-repository"
+import { EvaluationStatus, type Evaluation } from "../types/evaluation-type"
+import { type UserToken } from "../types/userTokenType"
 
 export const getById = async (id: number) => {
   return await EvaluationRepository.getById(id)
@@ -8,6 +14,76 @@ export const getById = async (id: number) => {
 
 export const getAllByFilters = async (where: Prisma.evaluationsWhereInput) => {
   return await EvaluationRepository.getAllByFilters(where)
+}
+
+export const getEvaluations = async (
+  user: UserToken,
+  evaluation_administration_id: number,
+  for_evaluation: boolean
+) => {
+  const filter = {
+    evaluation_administration_id,
+    for_evaluation,
+    status: {
+      in: [EvaluationStatus.Open, EvaluationStatus.Ongoing, EvaluationStatus.Submitted],
+    },
+  }
+
+  if (user.is_external) {
+    Object.assign(filter, {
+      external_evaluator_id: user.id,
+    })
+  } else {
+    Object.assign(filter, {
+      evaluator_id: user.id,
+    })
+  }
+
+  const evaluations = await EvaluationRepository.getAllByFilters(filter)
+
+  const finalEvaluations = await Promise.all(
+    evaluations.map(async (evaluation) => {
+      const evaluator = user.is_external
+        ? await ExternalUserRepository.getById(evaluation.external_evaluator_id ?? 0)
+        : await UserRepository.getById(evaluation.evaluator_id ?? 0)
+      const evaluee = await UserRepository.getById(evaluation.evaluee_id ?? 0)
+      const project = await ProjectRepository.getById(evaluation.project_id ?? 0)
+      const projectRole = await ProjectRoleRepository.getById(
+        evaluation.project_members?.project_role_id ?? 0
+      )
+
+      let template = null
+
+      if (project === null) {
+        template = await EvaluationTemplateRepository.getById(
+          evaluation.evaluation_template_id ?? 0
+        )
+        if (template?.evaluee_role_id !== null) {
+          const project_role = await ProjectRoleRepository.getById(template?.evaluee_role_id ?? 0)
+          Object.assign(template ?? 0, {
+            project_role,
+          })
+        }
+      }
+
+      return {
+        id: evaluation.id,
+        comments: evaluation.comments,
+        eval_start_date: evaluation.eval_start_date,
+        eval_end_date: evaluation.eval_end_date,
+        percent_involvement: evaluation.percent_involvement,
+        status: evaluation.status,
+        for_evaluation: evaluation.for_evaluation,
+        evaluator,
+        evaluee,
+        project,
+        project_role: projectRole,
+        template,
+      }
+    })
+  )
+
+  return finalEvaluations
 }
 
 export const getAllDistinctByFilters = async (
