@@ -30,8 +30,7 @@ export const login = async (req: Request, res: Response) => {
       },
     })
 
-    if (existingUser === null)
-      return res.status(400).json({ message: "Invalid credentials" })
+    if (existingUser === null) return res.status(400).json({ message: "Invalid credentials" })
 
     const userRoles = await prisma.user_roles.findMany({
       where: {
@@ -48,6 +47,7 @@ export const login = async (req: Request, res: Response) => {
         first_name: existingUser.first_name,
         last_name: existingUser.last_name,
         roles,
+        is_external: false,
       },
       process.env.ACCESS_TOKEN_SECRET as string,
       {

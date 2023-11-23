@@ -5,6 +5,9 @@ export interface ExternalUser {
   last_name: string
   role?: string
   company?: string
+  access_token?: string
+  code?: string
+  failed_attempts?: number
   created_by_id?: number
   updated_by_id?: number
   created_at?: Date

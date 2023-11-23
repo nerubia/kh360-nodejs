@@ -16,10 +16,7 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
 
     const tokenResponse = await client.getToken(code)
 
-    if (
-      tokenResponse.tokens.id_token === undefined ||
-      tokenResponse.tokens.id_token === null
-    ) {
+    if (tokenResponse.tokens.id_token === undefined || tokenResponse.tokens.id_token === null) {
       return res.status(400).json({ message: "Invalid credentials" })
     }
 
@@ -58,6 +55,7 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
         first_name: existingUser.first_name,
         last_name: existingUser.last_name,
         roles,
+        is_external: false,
       },
       process.env.ACCESS_TOKEN_SECRET as string,
       {

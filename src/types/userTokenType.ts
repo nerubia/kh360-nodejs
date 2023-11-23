@@ -4,4 +4,5 @@ export interface UserToken {
   first_name: string
   last_name: string
   roles: string[]
+  is_external: boolean
 }
