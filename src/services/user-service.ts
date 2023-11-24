@@ -10,6 +10,7 @@ import { submitEvaluationSchema } from "../utils/validation/evaluations/submit-e
 import { type UserToken } from "../types/userTokenType"
 import { differenceInDays, endOfYear, startOfYear } from "date-fns"
 import { EvaluationAdministrationStatus } from "../types/evaluation-administration-type"
+import CustomError from "../utils/custom-error"
 
 export const getById = async (id: number) => {
   return await UserRepository.getById(id)
@@ -26,12 +27,24 @@ export const submitEvaluation = async (
 ) => {
   const evaluation = await EvaluationRepository.getById(id)
 
-  await submitEvaluationSchema.validate(
-    {
-      evaluation,
-    },
-    { context: { user } }
-  )
+  if (evaluation === null) {
+    throw new CustomError("Invalid evaluation id.", 400)
+  }
+
+  if (user.is_external && user.id !== evaluation.external_evaluator_id) {
+    throw new CustomError("You do not have permission to answer this.", 400)
+  }
+
+  if (!user.is_external && user.id !== evaluation.evaluator_id) {
+    throw new CustomError("You do not have permission to answer this.", 400)
+  }
+
+  if (
+    evaluation.status !== EvaluationStatus.Open &&
+    evaluation.status !== EvaluationAdministrationStatus.Ongoing
+  ) {
+    throw new CustomError("Only open and ongoing statuses are allowed.", 400)
+  }
 
   const evaluationRatings = await EvaluationRatingRepository.getAllByFilters({
     id: {
@@ -144,10 +157,12 @@ export const getEvaluationAdministrations = async (user: UserToken, page: number
   const itemsPerPage = 20
   const currentPage = isNaN(page) || page < 0 ? 1 : page
 
-  const evaluations = await EvaluationRepository.getAllByFilters({
-    evaluator_id: user.id,
+  const filter = {
     for_evaluation: true,
-  })
+    ...(user.is_external ? { external_evaluator_id: user.id } : { evaluator_id: user.id }),
+  }
+
+  const evaluations = await EvaluationRepository.getAllByFilters(filter)
 
   const evaluationAdministrationIds = evaluations.map(
     (evaluation) => evaluation.evaluation_administration_id
@@ -167,25 +182,25 @@ export const getEvaluationAdministrations = async (user: UserToken, page: number
   const finalEvaluationAdministrations = await Promise.all(
     evaluationAdministrations.map(async (evaluationAdministration) => {
       const totalEvaluations = await EvaluationRepository.countAllByFilters({
-        evaluator_id: user.id,
-        for_evaluation: true,
         evaluation_administration_id: evaluationAdministration.id,
+        for_evaluation: true,
+        ...(user.is_external ? { external_evaluator_id: user.id } : { evaluator_id: user.id }),
       })
 
       const totalSubmitted = await EvaluationRepository.countAllByFilters({
-        evaluator_id: user.id,
         for_evaluation: true,
         evaluation_administration_id: evaluationAdministration.id,
         status: EvaluationStatus.Submitted,
+        ...(user.is_external ? { external_evaluator_id: user.id } : { evaluator_id: user.id }),
       })
 
       const totalPending = await EvaluationRepository.countAllByFilters({
-        evaluator_id: user.id,
         for_evaluation: true,
         evaluation_administration_id: evaluationAdministration.id,
         status: {
           in: [EvaluationStatus.Open, EvaluationStatus.Ongoing],
         },
+        ...(user.is_external ? { external_evaluator_id: user.id } : { evaluator_id: user.id }),
       })
 
       return {
