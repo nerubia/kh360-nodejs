@@ -81,15 +81,15 @@ export const sendEvaluationEmailById = async (id: number) => {
       })
     }
 
-    const evaluations = await EvaluationRepository.getAllDistinctByFilters(
+    const internalEvaluations = await EvaluationRepository.getAllDistinctByFilters(
       {
         evaluation_administration_id: evaluationAdministration.id,
         for_evaluation: true,
       },
-      ["evaluator_id", "external_evaluator_id"]
+      ["evaluator_id"]
     )
 
-    for (const evaluation of evaluations) {
+    for (const evaluation of internalEvaluations) {
       let modifiedContent: string = emailContent.replace(
         /{{(.*?)}}/g,
         (match: string, p1: string) => {
@@ -97,25 +97,46 @@ export const sendEvaluationEmailById = async (id: number) => {
         }
       )
       modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
-      let evaluator
-      if (evaluation.is_external === true) {
-        evaluator = await ExternalUserRepository.getById(evaluation.external_evaluator_id ?? 0)
-        modifiedContent = modifiedContent.replace(
-          "{{link}}",
-          `${process.env.APP_URL}/external-evaluations/${evaluationAdministration.id}/evaluations/all?token=${evaluator?.access_token}`
+      const evaluator = await UserRepository.getById(evaluation.evaluator_id ?? 0)
+      modifiedContent = modifiedContent.replace(
+        "{{link}}",
+        `${process.env.APP_URL}/evaluation-administrations/${evaluationAdministration.id}/evaluations/all`
+      )
+      modifiedContent = modifiedContent.replace("{{passcode}}", "")
+      if (evaluator !== null) {
+        await sendMail(
+          evaluator.email,
+          evaluationAdministration.email_subject ?? "",
+          modifiedContent
         )
-        modifiedContent = modifiedContent.replace(
-          "{{passcode}}",
-          `The password to access the evaluation form is <b>${evaluator?.code}</b>`
-        )
-      } else {
-        evaluator = await UserRepository.getById(evaluation.evaluator_id ?? 0)
-        modifiedContent = modifiedContent.replace(
-          "{{link}}",
-          `${process.env.APP_URL}/evaluation-administrations/${evaluationAdministration.id}/evaluations/all`
-        )
-        modifiedContent = modifiedContent.replace("{{passcode}}", "")
       }
+    }
+
+    const externalEvaluations = await EvaluationRepository.getAllDistinctByFilters(
+      {
+        evaluation_administration_id: evaluationAdministration.id,
+        for_evaluation: true,
+      },
+      ["external_evaluator_id"]
+    )
+
+    for (const evaluation of externalEvaluations) {
+      let modifiedContent: string = emailContent.replace(
+        /{{(.*?)}}/g,
+        (match: string, p1: string) => {
+          return replacements[p1] ?? match
+        }
+      )
+      modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
+      const evaluator = await ExternalUserRepository.getById(evaluation.external_evaluator_id ?? 0)
+      modifiedContent = modifiedContent.replace(
+        "{{link}}",
+        `${process.env.APP_URL}/external-evaluations/${evaluationAdministration.id}/evaluations/all?token=${evaluator?.access_token}`
+      )
+      modifiedContent = modifiedContent.replace(
+        "{{passcode}}",
+        `The password to access the evaluation form is <b>${evaluator?.code}</b>`
+      )
       if (evaluator !== null) {
         await sendMail(
           evaluator.email,
