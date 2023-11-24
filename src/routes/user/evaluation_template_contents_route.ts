@@ -1,5 +1,5 @@
 import express from "express"
-import { index } from "../../controllers/user/evaluation_template_contents_controller"
+import { index } from "../../controllers/user/evaluation-template-contents-controller"
 
 const router = express.Router()
 

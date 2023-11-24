@@ -5,4 +5,5 @@ export interface EvaluationRating {
   updated_at: Date
   comments?: string
   answer_type?: string
+  percentage?: number
 }
