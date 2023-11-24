@@ -16,6 +16,12 @@ export const getAllByFilters = async (where: Prisma.evaluation_ratingsWhereInput
   })
 }
 
+export const getByFilters = async (where: Prisma.evaluation_ratingsWhereInput) => {
+  return await prisma.evaluation_ratings.findFirst({
+    where,
+  })
+}
+
 export const updateById = async (rating_id: number, data: EvaluationRating) => {
   await prisma.evaluation_ratings.update({
     where: {

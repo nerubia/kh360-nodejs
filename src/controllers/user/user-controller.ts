@@ -1,15 +1,10 @@
 import { type Request, type Response } from "express"
-import { differenceInDays, endOfYear, startOfYear } from "date-fns"
 import { EvaluationStatus } from "../../types/evaluation-type"
-import { EvaluationAdministrationStatus } from "../../types/evaluation-administration-type"
 import { sendMail } from "../../utils/sendgrid"
 import { ValidationError } from "yup"
 import { submitEvaluationSchema } from "../../utils/validation/evaluations/submit-evaluation-schema"
 import * as EvaluationService from "../../services/evaluation-service"
-import * as EvaluationResultService from "../../services/evaluation-result-service"
-import * as EvaluationAdministrationService from "../../services/evaluation-administration-service"
 import * as EvaluationRatingService from "../../services/evaluation-rating-service"
-import * as EvaluationResultDetailService from "../../services/evaluation-result-detail-service"
 import * as UserService from "../../services/user-service"
 import * as AnswerOptionService from "../../services/answer-option-service"
 
@@ -44,88 +39,12 @@ export const getEvaluationAdministrations = async (req: Request, res: Response) 
     const user = req.user
     const { page } = req.query
 
-    const itemsPerPage = 20
-    const parsedPage = parseInt(page as string)
-    const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
-
-    const evaluations = await EvaluationService.getAllByFilters({
-      evaluator_id: user.id,
-      for_evaluation: true,
-    })
-
-    const evaluationAdministrationIds = evaluations.map(
-      (evaluation) => evaluation.evaluation_administration_id
+    const evaluationAdministrations = await UserService.getEvaluationAdministrations(
+      user,
+      parseInt(page as string)
     )
 
-    const evaluationAdministrations = await EvaluationAdministrationService.getAllByFilters(
-      (currentPage - 1) * itemsPerPage,
-      itemsPerPage,
-      {
-        id: {
-          in: evaluationAdministrationIds as number[],
-        },
-        status: EvaluationAdministrationStatus.Ongoing,
-      }
-    )
-
-    const finalEvaluationAdministrations = await Promise.all(
-      evaluationAdministrations.map(async (evaluationAdministration) => {
-        const totalEvaluations = await EvaluationService.countAllByFilters({
-          evaluator_id: user.id,
-          for_evaluation: true,
-          evaluation_administration_id: evaluationAdministration.id,
-        })
-
-        const totalSubmitted = await EvaluationService.countAllByFilters({
-          evaluator_id: user.id,
-          for_evaluation: true,
-          evaluation_administration_id: evaluationAdministration.id,
-          status: EvaluationStatus.Submitted,
-        })
-
-        const totalPending = await EvaluationService.countAllByFilters({
-          evaluator_id: user.id,
-          for_evaluation: true,
-          evaluation_administration_id: evaluationAdministration.id,
-          status: {
-            in: [EvaluationStatus.Open, EvaluationStatus.Ongoing],
-          },
-        })
-
-        return {
-          id: evaluationAdministration.id,
-          name: evaluationAdministration.name,
-          eval_period_start_date: evaluationAdministration.eval_period_start_date,
-          eval_period_end_date: evaluationAdministration.eval_period_end_date,
-          eval_schedule_start_date: evaluationAdministration.eval_schedule_start_date,
-          eval_schedule_end_date: evaluationAdministration.eval_schedule_end_date,
-          remarks: evaluationAdministration.remarks,
-          totalEvaluations,
-          totalSubmitted,
-          totalPending,
-        }
-      })
-    )
-
-    const totalItems = await EvaluationAdministrationService.countAllByFilters({
-      id: {
-        in: evaluationAdministrationIds as number[],
-      },
-      status: EvaluationAdministrationStatus.Ongoing,
-    })
-
-    const totalPages = Math.ceil(totalItems / itemsPerPage)
-
-    res.json({
-      data: finalEvaluationAdministrations,
-      pageInfo: {
-        hasPreviousPage: currentPage > 1,
-        hasNextPage: currentPage < totalPages,
-        currentPage,
-        totalPages,
-        totalItems,
-      },
-    })
+    res.json(evaluationAdministrations)
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
@@ -153,123 +72,15 @@ export const submitEvaluation = async (req: Request, res: Response) => {
       is_submitting,
     } = req.body
 
-    const evaluationRatingIds = evaluation_rating_ids as number[]
-    const answerOptionIds = answer_option_ids as number[]
-    const evaluationRatingComments = evaluation_rating_comments as string[]
-
-    const evaluation = await EvaluationService.getById(parseInt(id))
-
-    await submitEvaluationSchema.validate(
-      {
-        evaluation,
-      },
-      { context: { user } }
+    const evaluation = await UserService.submitEvaluation(
+      parseInt(id),
+      user,
+      answer_option_ids as number[],
+      evaluation_rating_ids as number[],
+      comment,
+      evaluation_rating_comments as string[],
+      is_submitting
     )
-
-    const evaluationRatings = await EvaluationRatingService.getAllByFilters({
-      id: {
-        in: evaluationRatingIds,
-      },
-    })
-
-    if (evaluation !== null) {
-      await EvaluationService.updateById(evaluation.id, {
-        comments: comment,
-        status: EvaluationStatus.Ongoing,
-        updated_at: new Date(),
-      })
-      Object.assign(evaluation, {
-        status: EvaluationStatus.Ongoing,
-      })
-    }
-
-    for (const [index, evaluationRating] of evaluationRatings.entries()) {
-      const answerOptionId = answerOptionIds[index]
-      const answerOption = await AnswerOptionService.getById(answerOptionId ?? 0)
-      const comments = evaluationRatingComments[index] ?? ""
-
-      const rate = Number(answerOption?.rate ?? 0)
-      const percentage = Number(evaluationRating.percentage ?? 0)
-      const score = rate * percentage
-
-      if (answerOption?.id !== undefined) {
-        await submitEvaluationSchema.validate({
-          answerOption,
-          comments,
-        })
-        await EvaluationRatingService.updateById(evaluationRating.id, {
-          answer_option_id: answerOption?.id,
-          rate,
-          score,
-          comments,
-          updated_at: new Date(),
-        })
-      }
-    }
-
-    if (is_submitting === true && evaluation !== null) {
-      await submitEvaluationSchema.validate({
-        answerOptionIds,
-        comment,
-      })
-      const evaluationRatings = await EvaluationRatingService.aggregateSumByEvaluationId(
-        evaluation.id,
-        {
-          score: true,
-          percentage: true,
-        }
-      )
-
-      const score = (
-        Number(evaluationRatings._sum.score) / Number(evaluationRatings._sum.percentage)
-      ).toFixed(2)
-
-      const totalEvaluationDays =
-        differenceInDays(
-          new Date(evaluation.eval_end_date ?? 0),
-          new Date(evaluation.eval_start_date ?? 0)
-        ) + 1
-
-      const currentDate = new Date()
-      const totalDaysInAYear =
-        differenceInDays(endOfYear(currentDate), startOfYear(currentDate)) + 1
-
-      const weight =
-        (totalEvaluationDays / totalDaysInAYear) * Number(evaluation.percent_involvement)
-
-      const weighted_score = weight * Number(score)
-
-      await EvaluationService.updateById(evaluation.id, {
-        score,
-        weight,
-        weighted_score,
-        status: EvaluationStatus.Submitted,
-        submission_method: "Manual",
-        submitted_date: currentDate,
-        updated_at: currentDate,
-      })
-
-      const remainingEvaluations = await EvaluationService.countAllByFilters({
-        evaluation_result_id: evaluation.evaluation_result_id,
-        status: {
-          in: [
-            EvaluationStatus.Draft,
-            EvaluationStatus.Pending,
-            EvaluationStatus.Open,
-            EvaluationStatus.Ongoing,
-          ],
-        },
-      })
-
-      if (remainingEvaluations === 0 && evaluation.evaluation_result_id !== null) {
-        await EvaluationResultDetailService.calculateScore(evaluation.evaluation_result_id)
-        await EvaluationResultService.calculateScore(evaluation.evaluation_result_id)
-      }
-
-      Object.assign(evaluation, {
-        status: EvaluationStatus.Submitted,
-      })
-    }
 
     res.json({ id, status: evaluation?.status, comment })
   } catch (error) {
