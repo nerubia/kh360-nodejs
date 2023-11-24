@@ -7,6 +7,7 @@ import * as EvaluationService from "../../services/evaluation-service"
 import * as EvaluationRatingService from "../../services/evaluation-rating-service"
 import * as UserService from "../../services/user-service"
 import * as AnswerOptionService from "../../services/answer-option-service"
+import CustomError from "../../utils/custom-error"
 
 /**
  * List user evaluations based on provided filters.
@@ -86,6 +87,9 @@ export const submitEvaluation = async (req: Request, res: Response) => {
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
+    }
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
     }
     res.status(500).json({ message: "Something went wrong" })
   }

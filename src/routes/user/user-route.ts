@@ -9,7 +9,6 @@ router.get("/evaluation-administrations", UserController.getEvaluationAdministra
 router.post("/evaluations/:id/submit-answer", UserController.submitAnswer)
 router.post("/evaluations/:id/submit-comment", UserController.submitComment)
 router.post("/evaluations/:id/submit-evaluation", UserController.submitEvaluation)
-router.post("/evaluations/:id/submit-evaluation", UserController.submitEvaluation)
 
 // TODO: Refactor
 router.get("/profile", UserController.getProfile)
