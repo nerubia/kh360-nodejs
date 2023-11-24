@@ -161,6 +161,13 @@ const createEmailTemplates = async () => {
       content: `We recently received a request for a new verification code.\nYour verification code is: {{verification_code}}\n\nPlease use this code to complete the Performance Evaluation Form. If you didn't request this code or are experiencing any issues, feel free to contact our HR Team at hr@nerubia.com.\n\nThank you.`,
     },
     {
+      name: "Performance Evaluation Reminder Email",
+      template_type: "Performance Evaluation Reminder",
+      is_default: true,
+      subject: "Friendly Reminder: Complete Your Performance Evaluation",
+      content: `Dear {{evaluator_first_name}},\n\nI hope this email finds you well. We appreciate your valuable contribution to our performance evaluation process. However, it seems that your feedback is still pending for the following:\n\n{{evaluee_list}}\n\nCompleting the evaluation is crucial for fostering growth and continuous improvement within our team. Your insights are instrumental in shaping a well-rounded assessment.\n\nCould you please take a few moments to finalize and submit your performance evaluation? Your input is highly valued and plays a significant role in recognizing achievements and identifying areas for development.\n\nDeadline for Completion: {{evaluation_end_date}}\n\nIf you have already completed the evaluation, please disregard this message, and we extend our heartfelt gratitude for your prompt response.\n\nThank you for your commitment to our shared success. If you encounter any issues or have questions, feel free to reach out to hr@nerubia.com.\n\nBest regards,\n\nKH360 Team`,
+    },
+    {
       name: "Performance Evaluation NA Rating - Ninja",
       template_type: "Performance Evaluation NA Rating",
       is_default: false,
