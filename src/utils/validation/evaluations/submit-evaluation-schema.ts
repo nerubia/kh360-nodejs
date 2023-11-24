@@ -1,9 +1,10 @@
 import { object, array, number, string } from "yup"
 import * as AnswerOptionService from "../../../services/answer-option-service"
 import { EvaluationStatus } from "../../../types/evaluation-type"
+import { AnswerType } from "../../../types/answer-type"
 
 export const submitEvaluationSchema = object().shape({
-  answerOptionIds: array()
+  answer_option_ids: array()
     .of(number().required("Please set all ratings."))
     .test("all-ratings-set", "Please set all ratings.", function (value) {
       if (value !== undefined) {
@@ -13,18 +14,30 @@ export const submitEvaluationSchema = object().shape({
     }),
   comment: string().test("comment-required", "Comment is required.", async function (value) {
     if (value !== undefined) {
-      const { answerOptionIds } = this.parent
+      const { answer_option_ids } = this.parent
 
-      const finalAnswerOptionIds = answerOptionIds?.filter((id: number) => id !== null)
-      const answerOptions = await AnswerOptionService.getAllByFilters({
-        id: {
-          in: finalAnswerOptionIds,
-        },
-      })
+      const finalAnswerOptionIds = answer_option_ids?.filter((id: number) => id !== null)
+      const answerOptions = []
+      for (const id of finalAnswerOptionIds) {
+        const answerOption = await AnswerOptionService.getById(id)
+        if (answerOption !== null) {
+          answerOptions.push(answerOption)
+        }
+      }
+
+      const highestCount = answerOptions.filter(
+        (rating) => rating.answer_type === AnswerType.Highest
+      ).length
+      const lowestCount = answerOptions.filter(
+        (rating) => rating.answer_type === AnswerType.Lowest
+      ).length
+
+      const highestCountPercentage = (highestCount / answer_option_ids.length) * 100
+      const lowestCountPercentage = (lowestCount / answer_option_ids.length) * 100
 
       const isCommentRequired =
         answerOptions.length > 0 &&
-        answerOptions?.every((answer) => answer.sequence_no === 2) &&
+        (highestCountPercentage >= 75 || lowestCountPercentage >= 75) &&
         (value?.trim().length === 0 || value === null)
       return !isCommentRequired
     }

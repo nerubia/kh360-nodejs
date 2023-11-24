@@ -16,6 +16,7 @@ import emailTemplateRoute from "./routes/admin/email-template-route"
 import evaluationAdministrationRoute from "./routes/admin/evaluation-administration-route"
 import evaluationResultRoute from "./routes/admin/evaluation-result-route"
 import evaluationTemplateContentsRoute from "./routes/user/evaluation_template_contents_route"
+import ratingTemplateRoute from "./routes/user/rating-template-route"
 import evaluationTemplateRoute from "./routes/admin/evaluation-template-route"
 import evaluationRoute from "./routes/admin/evaluation-route"
 import externalUserRoute from "./routes/admin/external-user-route"
@@ -44,6 +45,7 @@ app.use("/auth", authRoute)
  */
 
 app.use("/user", authMiddleware, userRoute)
+app.use("/user/rating-templates", authMiddleware, ratingTemplateRoute)
 app.use("/user/evaluation-template-contents", authMiddleware, evaluationTemplateContentsRoute)
 
 /**
