@@ -14,6 +14,8 @@ router.post("/:id/generate", EvaluationAdministrationController.generate)
 router.post("/:id/cancel", EvaluationAdministrationController.cancel)
 router.post("/:id/close", EvaluationAdministrationController.close)
 
+router.post("/:id/send-reminder", EvaluationAdministrationController.sendReminder)
+
 router.post(
   "/:id/add-external-evaluators",
   EvaluationAdministrationController.addExternalEvaluators

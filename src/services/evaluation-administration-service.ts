@@ -1,6 +1,7 @@
 import { type Prisma } from "@prisma/client"
 import { format } from "date-fns"
 import bcrypt from "bcrypt"
+import * as EmailTemplateRepository from "../repositories/email-template-repository"
 import * as EvaluationAdministrationRepository from "../repositories/evaluation-administration-repository"
 import * as EvaluationResultRepository from "../repositories/evaluation-result-repository"
 import * as EvaluationResultDetailsRepository from "../repositories/evaluation-result-detail-repository"
@@ -215,6 +216,125 @@ export const close = async (id: number) => {
     evaluationAdministration.id,
     EvaluationAdministrationStatus.Closed
   )
+}
+
+export const sendReminder = async (id: number) => {
+  const evaluationAdministration = await EvaluationAdministrationRepository.getById(id)
+
+  if (evaluationAdministration === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
+  const emailTemplate = await EmailTemplateRepository.getByTemplateType(
+    "Performance Evaluation Reminder"
+  )
+
+  if (emailTemplate === null) {
+    throw new CustomError("Template not found", 400)
+  }
+
+  const scheduleEndDate = format(
+    evaluationAdministration.eval_schedule_end_date ?? new Date(),
+    "EEEE, MMMM d, yyyy"
+  )
+
+  const internalEvaluations = await EvaluationRepository.getAllDistinctByFilters(
+    {
+      evaluation_administration_id: evaluationAdministration.id,
+      for_evaluation: true,
+      status: {
+        in: [EvaluationStatus.Open, EvaluationStatus.Ongoing],
+      },
+    },
+    ["evaluator_id"]
+  )
+
+  for (const evaluation of internalEvaluations) {
+    const evaluator = await UserRepository.getById(evaluation.evaluator_id ?? 0)
+    if (evaluator !== null) {
+      const evaluations = await EvaluationRepository.getAllByFilters({
+        evaluation_administration_id: evaluationAdministration.id,
+        evaluator_id: evaluator.id,
+        for_evaluation: true,
+        status: {
+          in: [EvaluationStatus.Open, EvaluationStatus.Ongoing],
+        },
+      })
+
+      const evalueeList = []
+
+      for (const e of evaluations) {
+        const evaluee = await UserRepository.getById(e.evaluee_id ?? 0)
+        if (evaluee !== null) {
+          evalueeList.push(`- ${evaluee.last_name}, ${evaluee.first_name}`)
+        }
+      }
+
+      let modifiedContent = emailTemplate.content ?? ""
+
+      modifiedContent = modifiedContent.replace(
+        "{{evaluator_first_name}}",
+        `${evaluator.first_name}`
+      )
+
+      modifiedContent = modifiedContent.replace("{{evaluee_list}}", evalueeList.join("\n"))
+
+      modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
+
+      modifiedContent = modifiedContent.replace("{{evaluation_end_date}}", scheduleEndDate)
+
+      await sendMail(evaluator.email, emailTemplate.subject ?? "", modifiedContent)
+    }
+  }
+
+  const externalEvaluations = await EvaluationRepository.getAllDistinctByFilters(
+    {
+      evaluation_administration_id: evaluationAdministration.id,
+      for_evaluation: true,
+      status: {
+        in: [EvaluationStatus.Open, EvaluationStatus.Ongoing],
+      },
+    },
+    ["external_evaluator_id"]
+  )
+
+  for (const evaluation of externalEvaluations) {
+    const evaluator = await ExternalUserRepository.getById(evaluation.external_evaluator_id ?? 0)
+    if (evaluator !== null) {
+      const evaluations = await EvaluationRepository.getAllByFilters({
+        evaluation_administration_id: evaluationAdministration.id,
+        for_evaluation: true,
+        status: {
+          in: [EvaluationStatus.Open, EvaluationStatus.Ongoing],
+        },
+        external_evaluator_id: evaluator.id,
+      })
+
+      const evalueeList = []
+
+      for (const e of evaluations) {
+        const evaluee = await UserRepository.getById(e.evaluee_id ?? 0)
+        if (evaluee !== null) {
+          evalueeList.push(`- ${evaluee.last_name}, ${evaluee.first_name}`)
+        }
+      }
+
+      let modifiedContent = emailTemplate.content ?? ""
+
+      modifiedContent = modifiedContent.replace(
+        "{{evaluator_first_name}}",
+        `${evaluator.first_name}`
+      )
+
+      modifiedContent = modifiedContent.replace("{{evaluee_list}}", evalueeList.join("\n"))
+
+      modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
+
+      modifiedContent = modifiedContent.replace("{{evaluation_end_date}}", scheduleEndDate)
+
+      await sendMail(evaluator.email, emailTemplate.subject ?? "", modifiedContent)
+    }
+  }
 }
 
 export const addExternalEvaluators = async (
