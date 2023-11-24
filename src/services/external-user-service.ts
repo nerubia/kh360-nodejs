@@ -1,7 +1,9 @@
 import jwt from "jsonwebtoken"
 import { v4 as uuidv4 } from "uuid"
 import { nanoid } from "nanoid"
+import bcrypt from "bcrypt"
 import { type Prisma } from "@prisma/client"
+import * as EmailTemplateRepository from "../repositories/email-template-repository"
 import * as ExternalUserRepository from "../repositories/external-user-repository"
 import { type ExternalUser } from "../types/external-user-type"
 import CustomError from "../utils/custom-error"
@@ -14,7 +16,13 @@ export const login = async (token: string, code: string) => {
     throw new CustomError("Invalid credentials", 400)
   }
 
-  if (externalUser.code !== code) {
+  if (externalUser.code === null) {
+    throw new CustomError("Invalid credentials", 400)
+  }
+
+  const isCodeMatch: boolean = await bcrypt.compare(code, externalUser.code)
+
+  if (!isCodeMatch) {
     await ExternalUserRepository.updateFailedAttemptsById(
       externalUser.id,
       (externalUser.failed_attempts ?? 0) + 1
@@ -58,10 +66,18 @@ export const resendCodeByAccessToken = async (token: string) => {
   }
 
   const code = await generateCode()
+  const encryptedCode = await bcrypt.hash(code, 12)
 
-  await ExternalUserRepository.updateCodeById(externalUser.id, code)
+  await ExternalUserRepository.updateCodeById(externalUser.id, encryptedCode)
 
-  await sendMail(externalUser.email, "Verification code", `Your new code is <b>${code}</b>`)
+  const emailTemplate = await EmailTemplateRepository.getByTemplateType("Reset Verification Code")
+
+  if (emailTemplate !== null) {
+    let modifiedContent =
+      emailTemplate.content?.replace("{{verification_code}}", `<b>${code}</b>`) ?? ""
+    modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
+    await sendMail(externalUser.email, emailTemplate.subject ?? "", modifiedContent)
+  }
 }
 
 export const getLockedAtByAccessToken = async (token: string) => {
@@ -154,6 +170,9 @@ export const create = async (data: ExternalUser) => {
     throw new CustomError("Email already exist.", 400)
   }
 
+  const code = await generateCode()
+  const encryptedCode = await bcrypt.hash(code, 12)
+
   return await ExternalUserRepository.create({
     email: data.email,
     first_name: data.first_name,
@@ -162,7 +181,7 @@ export const create = async (data: ExternalUser) => {
     role: data.role,
     company: data.company,
     access_token: await generateToken(),
-    code: await generateCode(),
+    code: encryptedCode,
     failed_attempts: 0,
     created_by_id: data.created_by_id,
     updated_by_id: data.updated_by_id,
