@@ -253,7 +253,7 @@ const setAnswerTypes = async () => {
           id: answerOption.id,
         },
         data: {
-          answer_type: AnswerType.Lowest,
+          answer_type: AnswerType.Highest,
         },
       })
     }

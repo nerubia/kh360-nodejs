@@ -15,17 +15,16 @@ export const index = async (req: Request, res: Response) => {
       },
     })
 
-    const evaluationTemplateContents =
-      await prisma.evaluation_template_contents.findMany({
-        select: {
-          id: true,
-          name: true,
-          description: true,
-        },
-        where: {
-          evaluation_template_id: evaluation?.evaluation_template_id,
-        },
-      })
+    const evaluationTemplateContents = await prisma.evaluation_template_contents.findMany({
+      select: {
+        id: true,
+        name: true,
+        description: true,
+      },
+      where: {
+        evaluation_template_id: evaluation?.evaluation_template_id,
+      },
+    })
 
     const finalEvaluationTemplateContents = await Promise.all(
       evaluationTemplateContents.map(async (templateContent) => {
@@ -41,6 +40,7 @@ export const index = async (req: Request, res: Response) => {
           select: {
             id: true,
             sequence_no: true,
+            answer_type: true,
           },
           where: {
             answer_id: answerOptionsType?.answer_id,
@@ -52,6 +52,7 @@ export const index = async (req: Request, res: Response) => {
           select: {
             id: true,
             answer_option_id: true,
+            comments: true,
           },
           where: {
             evaluation_id: evaluation?.id,
@@ -63,16 +64,18 @@ export const index = async (req: Request, res: Response) => {
           evaluationRating?.answer_option_id !== null &&
           evaluationRating?.answer_option_id !== undefined
         ) {
-          const ratingSequenceNumber = await prisma.answer_options.findUnique({
+          const ratingAnswerOption = await prisma.answer_options.findUnique({
             select: {
               sequence_no: true,
+              answer_type: true,
             },
             where: {
               id: evaluationRating?.answer_option_id,
             },
           })
           Object.assign(evaluationRating as Record<string, unknown>, {
-            ratingSequenceNumber: ratingSequenceNumber?.sequence_no,
+            ratingSequenceNumber: ratingAnswerOption?.sequence_no,
+            ratingAnswerType: ratingAnswerOption?.answer_type,
           })
         }
 
