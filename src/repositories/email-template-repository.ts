@@ -18,10 +18,12 @@ export const getByTemplateType = async (template_type: string) => {
   })
 }
 
-export const getNARatingTemplates = async () => {
+export const getRatingTemplates = async () => {
   return await prisma.email_templates.findMany({
     where: {
-      template_type: TemplateType.NARating,
+      template_type: {
+        in: [TemplateType.NARating, TemplateType.HighRating, TemplateType.LowRating],
+      },
     },
   })
 }

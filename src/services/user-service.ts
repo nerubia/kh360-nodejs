@@ -79,6 +79,7 @@ export const submitEvaluation = async (
       answer_option_ids,
       comment,
     })
+
     const evaluationRatings = await EvaluationRatingRepository.aggregateSumByEvaluationId(
       evaluation.id,
       {
