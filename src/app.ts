@@ -6,7 +6,7 @@ import cors from "cors"
 import { type UserToken } from "./types/userTokenType"
 
 import { authMiddleware } from "./middlewares/auth_middleware"
-import { adminMiddleware } from "./middlewares/admin_middleware"
+import { adminMiddleware } from "./middlewares/admin-middleware"
 
 import homeRoute from "./routes/home_route"
 import authRoute from "./routes/auth_route"
