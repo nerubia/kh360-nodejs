@@ -1,5 +1,6 @@
 import { type Prisma } from "@prisma/client"
 import { format } from "date-fns"
+import bcrypt from "bcrypt"
 import * as EvaluationAdministrationRepository from "../repositories/evaluation-administration-repository"
 import * as EvaluationResultRepository from "../repositories/evaluation-result-repository"
 import * as EvaluationResultDetailsRepository from "../repositories/evaluation-result-detail-repository"
@@ -9,6 +10,7 @@ import * as ExternalUserRepository from "../repositories/external-user-repositor
 import * as UserRepository from "../repositories/user-repository"
 import * as EvaluationResultDetailService from "../services/evaluation-result-detail-service"
 import * as EvaluationResultService from "../services/evaluation-result-service"
+import * as ExternalUserService from "../services/external-user-service"
 import {
   EvaluationAdministrationStatus,
   type EvaluationAdministration,
@@ -133,11 +135,17 @@ export const sendEvaluationEmailById = async (id: number) => {
         "{{link}}",
         `${process.env.APP_URL}/external-evaluations/${evaluationAdministration.id}/evaluations/all?token=${evaluator?.access_token}`
       )
-      modifiedContent = modifiedContent.replace(
-        "{{passcode}}",
-        `The password to access the evaluation form is <b>${evaluator?.code}</b>`
-      )
+
       if (evaluator !== null) {
+        const code = await ExternalUserService.generateCode()
+        const encryptedCode = await bcrypt.hash(code, 12)
+
+        await ExternalUserRepository.updateCodeById(evaluator.id, encryptedCode)
+
+        modifiedContent = modifiedContent.replace(
+          "{{passcode}}",
+          `The password to access the evaluation form is <b>${code}</b>`
+        )
         await sendMail(
           evaluator.email,
           evaluationAdministration.email_subject ?? "",
