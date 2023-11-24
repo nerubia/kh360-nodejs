@@ -3,4 +3,6 @@ export interface EvaluationRating {
   rate: number
   score: number
   updated_at: Date
+  comments?: string
+  answer_type?: string
 }

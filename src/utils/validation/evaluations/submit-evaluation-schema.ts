@@ -4,8 +4,8 @@ import { EvaluationStatus } from "../../../types/evaluation-type"
 
 export const submitEvaluationSchema = object().shape({
   answerOptionIds: array()
-    .of(number().required("Please set all ratings"))
-    .test("all-ratings-set", "Please set all ratings", function (value) {
+    .of(number().required("Please set all ratings."))
+    .test("all-ratings-set", "Please set all ratings.", function (value) {
       if (value !== undefined) {
         return value?.every((id) => id !== null)
       }
@@ -46,8 +46,22 @@ export const submitEvaluationSchema = object().shape({
       ),
       status: string().oneOf(
         [EvaluationStatus.Open, EvaluationStatus.Ongoing],
-        "Only open and ongoing statuses are allowed"
+        "Only open and ongoing statuses are allowed."
       ),
     })
     .required("Invalid id"),
+  comments: string().test(
+    "rating-comment-required",
+    "Comment is required on N/A ratings.",
+    function (value) {
+      if (value !== undefined) {
+        const { answerOption } = this.parent
+
+        if (answerOption?.answer_type === "na") {
+          return value.length > 0
+        }
+      }
+      return true
+    }
+  ),
 })

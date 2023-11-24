@@ -10,3 +10,12 @@ export const getDefaultEmailTemplate = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+export const getNARatingTemplates = async (req: Request, res: Response) => {
+  try {
+    const emailTemplate = await EmailTemplateService.getNARatingTemplates()
+    res.json(emailTemplate)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}

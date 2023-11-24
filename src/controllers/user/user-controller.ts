@@ -135,6 +135,7 @@ export const getEvaluationAdministrations = async (req: Request, res: Response) 
  * Save answers and comments by ID
  * @param req.params.id - The unique ID of the evaluation.
  * @param req.body.evaluation_rating_ids - Evaluation rating ids.
+ * @param req.body.evaluation_rating_comments - Evaluation rating comments.
  * @param req.body.answer_option_ids - Answer option ids.
  * @param req.body.comment - Evaluation comment.
  * @param req.body.is_submitting - Flag to check if user is submitting.
@@ -144,10 +145,17 @@ export const submitEvaluation = async (req: Request, res: Response) => {
   try {
     const user = req.user
     const { id } = req.params
-    const { evaluation_rating_ids, answer_option_ids, comment, is_submitting } = req.body
+    const {
+      evaluation_rating_ids,
+      evaluation_rating_comments,
+      answer_option_ids,
+      comment,
+      is_submitting,
+    } = req.body
 
     const evaluationRatingIds = evaluation_rating_ids as number[]
     const answerOptionIds = answer_option_ids as number[]
+    const evaluationRatingComments = evaluation_rating_comments as string[]
 
     const evaluation = await EvaluationService.getById(parseInt(id))
 
@@ -170,21 +178,30 @@ export const submitEvaluation = async (req: Request, res: Response) => {
         status: EvaluationStatus.Ongoing,
         updated_at: new Date(),
       })
+      Object.assign(evaluation, {
+        status: EvaluationStatus.Ongoing,
+      })
     }
 
     for (const [index, evaluationRating] of evaluationRatings.entries()) {
       const answerOptionId = answerOptionIds[index]
       const answerOption = await AnswerOptionService.getById(answerOptionId ?? 0)
+      const comments = evaluationRatingComments[index] ?? ""
 
       const rate = Number(answerOption?.rate ?? 0)
       const percentage = Number(evaluationRating.percentage ?? 0)
       const score = rate * percentage
 
       if (answerOption?.id !== undefined) {
+        await submitEvaluationSchema.validate({
+          answerOption,
+          comments,
+        })
         await EvaluationRatingService.updateById(evaluationRating.id, {
           answer_option_id: answerOption?.id,
           rate,
           score,
+          comments,
           updated_at: new Date(),
         })
       }

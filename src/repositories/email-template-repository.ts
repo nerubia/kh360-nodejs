@@ -1,10 +1,19 @@
 import prisma from "../utils/prisma"
+import { TemplateType } from "../types/email-template-type"
 
 export const getDefault = async () => {
   return await prisma.email_templates.findFirst({
     where: {
-      template_type: "Create Evaluation",
+      template_type: TemplateType.CreateEvaluation,
       is_default: true,
+    },
+  })
+}
+
+export const getNARatingTemplates = async () => {
+  return await prisma.email_templates.findMany({
+    where: {
+      template_type: TemplateType.NARating,
     },
   })
 }
