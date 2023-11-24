@@ -10,18 +10,18 @@ export const getDefault = async () => {
   })
 }
 
-export const getNARatingTemplates = async () => {
-  return await prisma.email_templates.findMany({
-    where: {
-      template_type: TemplateType.NARating,
-    },
-  })
-}
-
 export const getByTemplateType = async (template_type: string) => {
   return await prisma.email_templates.findFirst({
     where: {
       template_type,
+    },
+  })
+}
+
+export const getNARatingTemplates = async () => {
+  return await prisma.email_templates.findMany({
+    where: {
+      template_type: TemplateType.NARating,
     },
   })
 }
