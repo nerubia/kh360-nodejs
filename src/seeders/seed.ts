@@ -145,21 +145,76 @@ const createRoles = async () => {
 }
 
 const createEmailTemplates = async () => {
-  const emailTemplate = await prisma.email_templates.findFirst({
-    where: {
+  const emailTemplates = [
+    {
+      name: "Create Evaluation Administration Template",
       template_type: "Create Evaluation",
+      is_default: true,
+      subject: "Request for Evaluation",
+      content: `Dear Evaluator,\n\nGood day!\n\nAs part of our commitment to professional development and fostering a culture of feedback, we are reaching out to request for you to evaluate the performance your respective colleagues during this period: {{evaluation_period}}.\n\nPlease click this {{link}} to access {{evaluation_name}}. {{passcode}}\n\nFeel free to add any additional comments or insights you believe are relevant. Your insights are invaluable in providing an understanding of each persons's contributions and areas for growth to help enhance their performance and contribute effectively to the overall success of the team.\n\nThe deadline for completing these evaluations is on {{eval_schedule_end_date}}. If you encounter any technical issues or have questions regarding the process, please feel free to reach out to any of the HR team members at hr@nerubia.com.\n\nThank you for your dedication to fostering a culture of continuous improvement within our company.`,
     },
-  })
-  if (emailTemplate === null) {
-    await prisma.email_templates.create({
-      data: {
-        name: "Create Evaluation Administration Template",
-        template_type: "Create Evaluation",
-        is_default: true,
-        subject: "Request for Evaluation",
-        content: `Dear Evaluator,\n\nGood day!\n\nAs part of our commitment to professional development and fostering a culture of feedback, we are reaching out to request for you to evaluate the performance your respective colleagues during this period: {{evaluation_period}}.\n\nPlease click this {{link}} to access {{evaluation_name}}. {{passcode}}\n\nFeel free to add any additional comments or insights you believe are relevant. Your insights are invaluable in providing an understanding of each persons's contributions and areas for growth to help enhance their performance and contribute effectively to the overall success of the team.\n\nThe deadline for completing these evaluations is on {{eval_schedule_end_date}}. If you encounter any technical issues or have questions regarding the process, please feel free to reach out to any of the HR team members at hr@nerubia.com.\n\nThank you for your dedication to fostering a culture of continuous improvement within our company.`,
+    {
+      name: "Performance Evaluation NA Rating - Ninja",
+      template_type: "Performance Evaluation NA Rating",
+      is_default: false,
+      subject: "🤷‍♂️ Whoa, N.A. Ninja! 🤷‍♀️",
+      content: `Looks like we've hit the Not Applicable zone! 🚀 No worries, we're all about turning every experience into a win.\n\n🌈 Drop a comment below and let us in on the mystery – why the N.A.? 🕵️‍♂️ Your insights could be the missing puzzle piece! 🧩\n✨ Share a laugh, a thought, or your favorite emoji – the comment section is your playground! 🎉💬\n\n#CommentForClarity`,
+    },
+    {
+      name: "Performance Evaluation NA Rating - Magician",
+      template_type: "Performance Evaluation NA Rating",
+      is_default: false,
+      subject: `🎩✨ Magician of the Mysterious "N.A."! ✨🔍`,
+      content: `Well, well, well, looks like we've stumbled upon the enigmatic realm of Not Applicable! 🌌\n\n✨ But fear not, oh keeper of secrets! Your comment is the golden key to unlocking the mysteries of this rating. 🗝️\n🤔 What's the tale behind the N.A.? Share your wizardry in the comment cauldron below! 🧙‍♂️💬 Let the magic unfold! ✨🚀\n\n#UnveilTheNAMagic`,
+    },
+    {
+      name: "Performance Evaluation NA Rating - Cosmic Universe",
+      template_type: "Performance Evaluation NA Rating",
+      is_default: false,
+      subject: `🌟 Aloha, Trailblazer of the "N.A." Universe! 🚀🌈`,
+      content: `Guess what? We've embarked on a cosmic journey into the realm of Not Applicable! 🌌\n\n✨ But fret not, cosmic traveler! Your comment is the stardust we need to illuminate this uncharted territory. 🌠\n✍️ What's the untold story behind the N.A.? Unleash your creativity in the comment constellation below! 🎇💬 Let's turn this unknown into an epic adventure! 🚀🌠\n\n#DecodeTheCosmicN.A.`,
+    },
+    {
+      name: "Performance Evaluation NA Rating - Sailor Captain",
+      template_type: "Performance Evaluation NA Rating",
+      is_default: false,
+      subject: `🎉 Greetings, Captain of the Not-So-Applicable Ship! 🚢✨`,
+      content: `Ahoy there! We've spotted the mystical "N.A." on our rating radar! 🌌\n\n🤔 But fear not, intrepid explorer! Your comment is the treasure map we need to navigate this uncharted territory. 🗺️\n🧭 What's the story behind the Not Applicable rating? Share your seafaring wisdom in the comment seas below! 🌊💬 Let's turn this unknown into a legendary tale on the high seas of feedback! 🏴‍☠️🚀\n\n#SailIntoTheNAMystery`,
+    },
+    {
+      name: "Performance Evaluation NA Rating - Galactic Explorer",
+      template_type: "Performance Evaluation NA Rating",
+      is_default: false,
+      subject: `🚀 Greetings, Galactic Explorer of the Not-So-Applicable Cosmos! 🌌🌠`,
+      content: `Hold tight, space traveler! We've just entered the mysterious realm of "N.A." on our cosmic feedback journey! 🛸\n\n🤔 But don't let the unknown scare you – your comment is the warp drive we need to navigate this interstellar puzzle. 🌐\n💬 What's the cosmic story behind the Not Applicable rating? Unleash your celestial musings in the comment nebula below! 🌌✨ Let's turn this cosmic conundrum into an epic saga of intergalactic feedback! 🌠🚀\n\n#ExploreTheNAGalaxy`,
+    },
+    {
+      name: "Performance Evaluation High Rating - Superstar",
+      template_type: "Performance Evaluation High Rating",
+      is_default: false,
+      subject: `🌟 Hey Superstar! 🌟`,
+      content: `We noticed that you gave a stellar rating. 🌠✨\n\nCan you please comment down below why you think this person is a 🌟Superstar🌟? Share your experience, and let's keep the positivity flowing! 🌈✨\n\n😃 #CommentToCelebrate`,
+    },
+    {
+      name: "Performance Evaluation Low Rating - Maverick",
+      template_type: "Performance Evaluation Low Rating",
+      is_default: false,
+      subject: `🚨 Whoa there, Maverick! 🚨`,
+      content: `We just noticed that the ratings are a bit shy on the stars. 🌟\n\nWe're all about turning frowns upside down, so please drop a comment below because we believe your input can work wonders! 🧙‍♂️✨ We're all ears (and emojis)! 🗨️💬\n\n😃 #CommentToElevate`,
+    },
+  ]
+  for (const data of emailTemplates) {
+    const emailTemplate = await prisma.email_templates.findFirst({
+      where: {
+        name: data.name,
+        template_type: data.template_type,
       },
     })
+    if (emailTemplate === null) {
+      await prisma.email_templates.create({
+        data,
+      })
+    }
   }
 }
 
@@ -199,7 +254,6 @@ const setAnswerTypes = async () => {
 }
 
 async function main() {
-  await setAnswerTypes()
   if (process.env.APP_ENV === Environment.Production) {
     await createRoles()
     await createEmailTemplates()
@@ -210,6 +264,7 @@ async function main() {
     await createUserDetails()
     await createEvaluationResults()
   }
+  await setAnswerTypes()
 }
 
 main()
