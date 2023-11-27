@@ -167,7 +167,7 @@ export const create = async (data: ExternalUser) => {
   const existingUser = await ExternalUserRepository.getByEmail(data.email)
 
   if (existingUser !== null) {
-    throw new CustomError("Email already exist.", 400)
+    throw new CustomError("Email already exists.", 400)
   }
 
   const code = await generateCode()
@@ -211,7 +211,7 @@ export const updateById = async (id: number, data: ExternalUser) => {
     const existingUser = await ExternalUserRepository.getByEmail(data.email)
 
     if (existingUser !== null) {
-      throw new CustomError("Email already exist.", 400)
+      throw new CustomError("Email already exists.", 400)
     }
   }
 
