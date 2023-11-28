@@ -4,10 +4,13 @@ import { nanoid } from "nanoid"
 import bcrypt from "bcrypt"
 import { type Prisma } from "@prisma/client"
 import * as EmailTemplateRepository from "../repositories/email-template-repository"
+import * as EvaluationRatingRepository from "../repositories/evaluation-rating-repository"
+import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as ExternalUserRepository from "../repositories/external-user-repository"
 import { type ExternalUser } from "../types/external-user-type"
 import CustomError from "../utils/custom-error"
 import { sendMail } from "../utils/sendgrid"
+import { EvaluationStatus } from "../types/evaluation-type"
 
 export const login = async (token: string, code: string) => {
   const externalUser = await ExternalUserRepository.getByAccessToken(token)
@@ -219,7 +222,51 @@ export const updateById = async (id: number, data: ExternalUser) => {
 }
 
 export const deleteById = async (id: number) => {
-  await ExternalUserRepository.deleteById(id)
+  const externalUser = await ExternalUserRepository.getById(id)
+
+  if (externalUser === null) {
+    throw new CustomError("External user not found", 400)
+  }
+
+  if (externalUser.deleted_at !== null) {
+    throw new CustomError("External user has already been deleted.", 400)
+  }
+
+  const remainingEvaluations = await EvaluationRepository.countAllByFilters({
+    external_evaluator_id: id,
+    status: {
+      in: [
+        EvaluationStatus.Pending,
+        EvaluationStatus.Open,
+        EvaluationStatus.Ongoing,
+        EvaluationStatus.Submitted,
+        EvaluationStatus.Reviewed,
+      ],
+    },
+  })
+
+  if (remainingEvaluations > 0) {
+    await ExternalUserRepository.softDeleteById(id)
+  } else {
+    await ExternalUserRepository.deleteById(id)
+  }
+
+  const evaluations = await EvaluationRepository.getAllByFilters({
+    external_evaluator_id: id,
+    status: {
+      in: [
+        EvaluationStatus.Draft,
+        EvaluationStatus.Excluded,
+        EvaluationStatus.Cancelled,
+        EvaluationStatus.Expired,
+      ],
+    },
+  })
+
+  for (const evaluation of evaluations) {
+    await EvaluationRepository.deleteById(evaluation.id)
+    await EvaluationRatingRepository.deleteByEvaluationId(evaluation.id)
+  }
 }
 
 export const generateToken = async () => {

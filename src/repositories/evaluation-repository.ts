@@ -74,6 +74,14 @@ export const updateStatusByAdministrationId = async (
   })
 }
 
+export const deleteById = async (id: number) => {
+  await prisma.evaluations.deleteMany({
+    where: {
+      id,
+    },
+  })
+}
+
 export const countAllByFilters = async (where: Prisma.evaluationsWhereInput) => {
   const count = await prisma.evaluations.count({
     where,

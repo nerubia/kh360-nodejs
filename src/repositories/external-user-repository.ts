@@ -112,3 +112,16 @@ export const deleteById = async (id: number) => {
     },
   })
 }
+
+export const softDeleteById = async (id: number) => {
+  const currentDate = new Date()
+  return await prisma.external_users.update({
+    where: {
+      id,
+    },
+    data: {
+      updated_at: currentDate,
+      deleted_at: currentDate,
+    },
+  })
+}

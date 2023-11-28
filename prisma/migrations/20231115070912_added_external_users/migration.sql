@@ -15,6 +15,7 @@ CREATE TABLE `external_users` (
     `updated_by_id` INTEGER NULL,
     `created_at` DATETIME(0) NULL,
     `updated_at` DATETIME(0) NULL,
+    `deleted_at` DATETIME(0) NULL,
 
     UNIQUE INDEX `index_external_users_on_email`(`email`),
     PRIMARY KEY (`id`)
