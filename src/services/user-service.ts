@@ -11,6 +11,7 @@ import { type UserToken } from "../types/userTokenType"
 import { differenceInDays, endOfYear, startOfYear } from "date-fns"
 import { EvaluationAdministrationStatus } from "../types/evaluation-administration-type"
 import CustomError from "../utils/custom-error"
+import { AnswerType } from "../types/answer-type"
 
 export const getById = async (id: number) => {
   return await UserRepository.getById(id)
@@ -69,7 +70,10 @@ export const submitEvaluation = async (
     const comments = evaluation_rating_comments[index] ?? ""
 
     const rate = Number(answerOption?.rate ?? 0)
-    const percentage = Number(evaluationRating.percentage ?? 0)
+    const percentage =
+      answerOption?.answer_type === AnswerType.NA && is_submitting
+        ? 0
+        : Number(evaluationRating.percentage ?? 0)
     const score = rate * percentage
 
     if (answerOption?.id !== undefined) {
