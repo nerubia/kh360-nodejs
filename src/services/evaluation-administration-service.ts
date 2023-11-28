@@ -389,7 +389,7 @@ export const addExternalEvaluators = async (
         eval_start_date: evaluationAdministration.eval_period_start_date,
         eval_end_date: evaluationAdministration.eval_period_end_date,
         percent_involvement: new Decimal(100),
-        status: EvaluationStatus.Excluded,
+        status: EvaluationStatus.Draft,
         submission_method: null,
         is_external: true,
         external_evaluator_id: externalUser.id,
