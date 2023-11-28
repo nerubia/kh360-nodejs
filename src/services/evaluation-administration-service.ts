@@ -234,7 +234,73 @@ export const close = async (id: number) => {
   )
 }
 
-export const sendReminder = async (id: number) => {
+export const sendReminderByEvaluator = async (id: number, evaluator_id: number) => {
+  const evaluationAdministration = await EvaluationAdministrationRepository.getById(id)
+
+  if (evaluationAdministration === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
+  const emailTemplate = await EmailTemplateRepository.getByTemplateType(
+    "Performance Evaluation Reminder"
+  )
+
+  if (emailTemplate === null) {
+    throw new CustomError("Template not found", 400)
+  }
+
+  const scheduleEndDate = format(
+    evaluationAdministration.eval_schedule_end_date ?? new Date(),
+    "EEEE, MMMM d, yyyy"
+  )
+
+  const evaluation = await EvaluationRepository.getByFilters({
+    evaluation_administration_id: evaluationAdministration.id,
+    evaluator_id,
+    for_evaluation: true,
+    status: {
+      in: [EvaluationStatus.Open, EvaluationStatus.Ongoing],
+    },
+  })
+
+  const evaluator =
+    evaluation?.is_external === true
+      ? await ExternalUserRepository.getById(evaluation.external_evaluator_id ?? 0)
+      : await UserRepository.getById(evaluation?.evaluator_id ?? 0)
+  if (evaluator !== null) {
+    const evaluations = await EvaluationRepository.getAllByFilters({
+      evaluation_administration_id: evaluationAdministration.id,
+      evaluator_id: evaluator.id,
+      for_evaluation: true,
+      status: {
+        in: [EvaluationStatus.Open, EvaluationStatus.Ongoing],
+      },
+    })
+
+    const evalueeList = []
+
+    for (const e of evaluations) {
+      const evaluee = await UserRepository.getById(e.evaluee_id ?? 0)
+      if (evaluee !== null) {
+        evalueeList.push(`- ${evaluee.last_name}, ${evaluee.first_name}`)
+      }
+    }
+
+    let modifiedContent = emailTemplate.content ?? ""
+
+    modifiedContent = modifiedContent.replace("{{evaluator_first_name}}", `${evaluator.first_name}`)
+
+    modifiedContent = modifiedContent.replace("{{evaluee_list}}", evalueeList.join("\n"))
+
+    modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
+
+    modifiedContent = modifiedContent.replace("{{evaluation_end_date}}", scheduleEndDate)
+
+    await sendMail(evaluator.email, emailTemplate.subject ?? "", modifiedContent)
+  }
+}
+
+export const sendReminders = async (id: number) => {
   const evaluationAdministration = await EvaluationAdministrationRepository.getById(id)
 
   if (evaluationAdministration === null) {

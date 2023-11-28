@@ -19,7 +19,7 @@ export const getEvaluations = async (req: Request, res: Response) => {
     const user = req.user
     const { evaluation_administration_id, for_evaluation } = req.query
 
-    const result = await EvaluationService.getEvaluations(
+    const result = await EvaluationService.getUserEvaluations(
       user,
       parseInt(evaluation_administration_id as string),
       Boolean(parseInt(for_evaluation as string))
