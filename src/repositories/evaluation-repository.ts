@@ -10,6 +10,19 @@ export const getById = async (id: number) => {
   })
 }
 
+export const getByFilters = async (where: Prisma.evaluationsWhereInput) => {
+  return await prisma.evaluations.findFirst({
+    include: {
+      project_members: {
+        select: {
+          project_role_id: true,
+        },
+      },
+    },
+    where,
+  })
+}
+
 export const getAllByFilters = async (where: Prisma.evaluationsWhereInput) => {
   return await prisma.evaluations.findMany({
     include: {

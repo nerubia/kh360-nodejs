@@ -17,6 +17,68 @@ export const getAllByFilters = async (where: Prisma.evaluationsWhereInput) => {
 }
 
 export const getEvaluations = async (
+  evaluation_administration_id: number,
+  evaluator_id: number,
+  evaluation_template_id: number,
+  evaluation_result_id: number,
+  for_evaluation: boolean
+) => {
+  let where = {}
+
+  if (!isNaN(evaluator_id)) {
+    where = {
+      evaluator_id,
+      evaluation_administration_id,
+    }
+  } else {
+    where = {
+      evaluation_template_id,
+      evaluation_result_id,
+    }
+  }
+
+  if (for_evaluation) {
+    Object.assign(where, {
+      for_evaluation,
+    })
+  }
+
+  const evaluations = await EvaluationRepository.getAllByFilters(where)
+
+  const finalEvaluations = await Promise.all(
+    evaluations.map(async (evaluation) => {
+      const evaluator =
+        evaluation.is_external === true
+          ? await ExternalUserRepository.getById(evaluation.external_evaluator_id ?? 0)
+          : await UserRepository.getById(evaluation.evaluator_id ?? 0)
+
+      const evaluee = await UserRepository.getById(evaluation.evaluee_id ?? 0)
+      const project = await ProjectRepository.getById(evaluation.project_id ?? 0)
+      const projectRole = await ProjectRoleRepository.getById(
+        evaluation.project_members?.project_role_id ?? 0
+      )
+
+      return {
+        id: evaluation.id,
+        eval_start_date: evaluation.eval_start_date,
+        eval_end_date: evaluation.eval_end_date,
+        percent_involvement: evaluation.percent_involvement,
+        status: evaluation.status,
+        for_evaluation: evaluation.for_evaluation,
+        is_external: evaluation.is_external,
+        evaluator,
+        evaluee,
+        project,
+        project_role: projectRole,
+        external_evaluator_id: evaluation.external_evaluator_id,
+      }
+    })
+  )
+
+  return finalEvaluations
+}
+
+export const getUserEvaluations = async (
   user: UserToken,
   evaluation_administration_id: number,
   for_evaluation: boolean
