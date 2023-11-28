@@ -1,12 +1,12 @@
 import express from "express"
-import { login } from "../controllers/auth/login_controller"
-import { loginWithGoogle } from "../controllers/auth/login_with_google"
+import { login } from "../controllers/auth/login-controller"
+import { loginWithGoogle } from "../controllers/auth/login-with-google"
 import {
   getExternalUserStatus,
   loginAsExternalUser,
   resendCode,
 } from "../controllers/auth/login-as-external-user-controller"
-import { refreshToken } from "../controllers/auth/refresh_token_controller"
+import { refreshToken } from "../controllers/auth/refresh-token-controller"
 
 const router = express.Router()
 

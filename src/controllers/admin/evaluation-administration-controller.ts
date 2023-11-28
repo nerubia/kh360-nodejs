@@ -5,7 +5,7 @@ import { ValidationError } from "yup"
 import * as EvaluationAdministrationService from "../../services/evaluation-administration-service"
 import * as EvaluationResultService from "../../services/evaluation-result-service"
 
-import { createEvaluationSchema } from "../../utils/validation/evaluations/createEvaluationSchema"
+import { createEvaluationSchema } from "../../utils/validation/evaluations/create-evaluation-schema"
 import prisma from "../../utils/prisma"
 import { EvaluationAdministrationStatus } from "../../types/evaluation-administration-type"
 import { EvaluationStatus } from "../../types/evaluation-type"
