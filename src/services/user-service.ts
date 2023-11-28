@@ -86,6 +86,7 @@ export const submitEvaluation = async (
         rate,
         score,
         comments,
+        percentage,
         updated_at: new Date(),
       })
     }
