@@ -16,6 +16,8 @@ router.post("/:id/close", EvaluationAdministrationController.close)
 
 router.post("/:id/send-reminder", EvaluationAdministrationController.sendReminder)
 
+router.get("/:id/evaluators", EvaluationAdministrationController.getEvaluators)
+
 router.post(
   "/:id/add-external-evaluators",
   EvaluationAdministrationController.addExternalEvaluators
