@@ -7,7 +7,7 @@ import * as EvaluationResultDetailService from "../services/evaluation-result-de
 import * as EvaluationResultService from "../services/evaluation-result-service"
 import { EvaluationStatus } from "../types/evaluation-type"
 import { submitEvaluationSchema } from "../utils/validation/evaluations/submit-evaluation-schema"
-import { type UserToken } from "../types/userTokenType"
+import { type UserToken } from "../types/user-token-type"
 import { differenceInDays, endOfYear, startOfYear } from "date-fns"
 import { EvaluationAdministrationStatus } from "../types/evaluation-administration-type"
 import CustomError from "../utils/custom-error"

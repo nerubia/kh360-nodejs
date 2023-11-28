@@ -2,7 +2,7 @@ import { type Request, type Response } from "express"
 import jwt from "jsonwebtoken"
 import * as ExternalUserRepository from "../../repositories/external-user-repository"
 import * as UserRepository from "../../repositories/user-repository"
-import { type UserToken } from "../../types/userTokenType"
+import { type UserToken } from "../../types/user-token-type"
 import prisma from "../../utils/prisma"
 
 export const refreshToken = async (req: Request, res: Response) => {

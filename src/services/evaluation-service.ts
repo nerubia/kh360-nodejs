@@ -6,7 +6,7 @@ import * as UserRepository from "../repositories/user-repository"
 import * as ProjectRepository from "../repositories/project-repository"
 import * as ProjectRoleRepository from "../repositories/project-role-repository"
 import { EvaluationStatus, type Evaluation } from "../types/evaluation-type"
-import { type UserToken } from "../types/userTokenType"
+import { type UserToken } from "../types/user-token-type"
 
 export const getById = async (id: number) => {
   return await EvaluationRepository.getById(id)

@@ -3,13 +3,13 @@ import bodyParser from "body-parser"
 import cookieParser from "cookie-parser"
 import cors from "cors"
 
-import { type UserToken } from "./types/userTokenType"
+import { type UserToken } from "./types/user-token-type"
 
-import { authMiddleware } from "./middlewares/auth_middleware"
+import { authMiddleware } from "./middlewares/auth-middleware"
 import { adminMiddleware } from "./middlewares/admin-middleware"
 
-import homeRoute from "./routes/home_route"
-import authRoute from "./routes/auth_route"
+import homeRoute from "./routes/home-route"
+import authRoute from "./routes/auth-route"
 import userRoute from "./routes/user/user-route"
 
 import emailTemplateRoute from "./routes/admin/email-template-route"
@@ -20,7 +20,7 @@ import ratingTemplateRoute from "./routes/user/rating-template-route"
 import evaluationTemplateRoute from "./routes/admin/evaluation-template-route"
 import evaluationRoute from "./routes/admin/evaluation-route"
 import externalUserRoute from "./routes/admin/external-user-route"
-import usersRoute from "./routes/admin/users_route"
+import usersRoute from "./routes/admin/users-route"
 
 const app: Application = express()
 
