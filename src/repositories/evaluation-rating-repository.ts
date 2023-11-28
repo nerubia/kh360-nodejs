@@ -31,6 +31,14 @@ export const updateById = async (rating_id: number, data: EvaluationRating) => {
   })
 }
 
+export const deleteByEvaluationId = async (evaluation_id: number) => {
+  await prisma.evaluation_ratings.deleteMany({
+    where: {
+      evaluation_id,
+    },
+  })
+}
+
 export const aggregateSumByEvaluationId = async (
   id: number,
   _sum: Prisma.Evaluation_ratingsSumAggregateInputType
