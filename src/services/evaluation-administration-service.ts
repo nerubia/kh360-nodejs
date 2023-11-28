@@ -185,6 +185,11 @@ export const cancel = async (id: number) => {
     evaluationAdministration.id,
     EvaluationStatus.Cancelled
   )
+
+  await EvaluationRepository.deleteByAdministrationIdAndStatus(
+    evaluationAdministration.id,
+    EvaluationStatus.Excluded
+  )
 }
 
 export const close = async (id: number) => {
@@ -201,6 +206,11 @@ export const close = async (id: number) => {
   await EvaluationRepository.updateStatusByAdministrationId(
     evaluationAdministration.id,
     EvaluationStatus.Expired
+  )
+
+  await EvaluationRepository.deleteByAdministrationIdAndStatus(
+    evaluationAdministration.id,
+    EvaluationStatus.Excluded
   )
 
   const evaluationResults = await EvaluationResultRepository.getAllByEvaluationAdministrationId(
