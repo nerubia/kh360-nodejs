@@ -203,10 +203,16 @@ export const close = async (id: number) => {
     throw new CustomError("Only ongoing status is allowed.", 403)
   }
 
-  await EvaluationRepository.updateStatusByAdministrationId(
-    evaluationAdministration.id,
-    EvaluationStatus.Expired
-  )
+  const evaluations = await EvaluationRepository.getAllByFilters({
+    evaluation_administration_id: evaluationAdministration.id,
+    status: {
+      in: [EvaluationStatus.Pending, EvaluationStatus.Open, EvaluationStatus.Ongoing],
+    },
+  })
+
+  for (const evaluation of evaluations) {
+    await EvaluationRepository.updateStatusById(evaluation.id, EvaluationStatus.Expired)
+  }
 
   await EvaluationRepository.deleteByAdministrationIdAndStatus(
     evaluationAdministration.id,
