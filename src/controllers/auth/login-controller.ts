@@ -6,23 +6,31 @@ import prisma from "../../utils/prisma"
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body
+    const { email } = req.body
 
-    // Send data to KH api
-    const response = await axios.post(
-      "https://kaishahero.com/users/sign_in.json",
-      {
-        "user[email]": email,
-        "user[password]": password,
-      },
-      {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+    let data = {
+      email,
+    }
+
+    if (process.env.BYPASS_PWD !== "1") {
+      const { password } = req.body
+
+      // Send data to KH api
+      const response = await axios.post(
+        "https://kaishahero.com/users/sign_in.json",
+        {
+          "user[email]": email,
+          "user[password]": password,
         },
-      }
-    )
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      )
 
-    const data = response.data
+      data = response.data
+    }
 
     const existingUser = await prisma.users.findUnique({
       where: {
