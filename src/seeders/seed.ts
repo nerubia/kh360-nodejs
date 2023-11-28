@@ -243,6 +243,7 @@ const setAnswerTypes = async () => {
         },
         data: {
           answer_type: AnswerType.NA,
+          rate: 0,
         },
       })
     } else if (answerOption.id === 2) {
