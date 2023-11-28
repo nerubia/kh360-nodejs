@@ -65,7 +65,7 @@ export const submitEvaluationSchema = object().shape({
     .required("Invalid id"),
   comments: string().test(
     "rating-comment-required",
-    "Comment is required on N/A ratings.",
+    "Comment on N/A is required.",
     function (value) {
       if (value !== undefined) {
         const { answerOption } = this.parent

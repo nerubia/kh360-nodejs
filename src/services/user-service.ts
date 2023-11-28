@@ -77,10 +77,13 @@ export const submitEvaluation = async (
     const score = rate * percentage
 
     if (answerOption?.id !== undefined) {
-      await submitEvaluationSchema.validate({
-        answerOption,
-        comments,
-      })
+      if (is_submitting) {
+        await submitEvaluationSchema.validate({
+          answerOption,
+          comments,
+        })
+      }
+
       await EvaluationRatingRepository.updateById(evaluationRating.id, {
         answer_option_id: answerOption?.id,
         rate,
