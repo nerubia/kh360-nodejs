@@ -495,6 +495,23 @@ export const sendReminder = async (req: Request, res: Response) => {
 }
 
 /**
+ * List evaluators by ID.
+ * @param req.params.id - The unique ID of the evaluation administration.
+ */
+export const getEvaluators = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const results = await EvaluationAdministrationService.getEvaluators(parseInt(id))
+    res.json(results)
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
  * Add external evaluators by ID.
  * @param req.params.id - The unique ID of the evaluation administration.
  * @param req.body.evaluation_administration_id - Evaluation administration id.

@@ -32,6 +32,15 @@ export const create = async (data: ExternalUser) => {
 
 export const getById = async (id: number) => {
   return await prisma.external_users.findUnique({
+    select: {
+      id: true,
+      email: true,
+      first_name: true,
+      middle_name: true,
+      last_name: true,
+      access_token: true,
+      deleted_at: true,
+    },
     where: {
       id,
     },

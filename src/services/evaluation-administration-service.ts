@@ -347,6 +347,84 @@ export const sendReminder = async (id: number) => {
   }
 }
 
+export const getEvaluators = async (id: number) => {
+  const evaluationAdministration = await EvaluationAdministrationRepository.getById(id)
+
+  if (evaluationAdministration === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
+  const evaluators = []
+
+  const internalEvaluations = await EvaluationRepository.getAllDistinctByFilters(
+    {
+      evaluation_administration_id: evaluationAdministration.id,
+      for_evaluation: true,
+    },
+    ["evaluator_id"]
+  )
+
+  for (const evaluation of internalEvaluations) {
+    const evaluator = await UserRepository.getById(evaluation.evaluator_id ?? 0)
+
+    if (evaluator !== null) {
+      const totalSubmitted = await EvaluationRepository.countAllByFilters({
+        for_evaluation: true,
+        evaluation_administration_id: evaluationAdministration.id,
+        status: EvaluationStatus.Submitted,
+        evaluator_id: evaluator.id,
+      })
+
+      const totalEvaluations = await EvaluationRepository.countAllByFilters({
+        evaluation_administration_id: evaluationAdministration.id,
+        for_evaluation: true,
+        evaluator_id: evaluator.id,
+      })
+
+      evaluators.push({
+        ...evaluator,
+        totalSubmitted,
+        totalEvaluations,
+      })
+    }
+  }
+
+  const externalEvaluations = await EvaluationRepository.getAllDistinctByFilters(
+    {
+      evaluation_administration_id: evaluationAdministration.id,
+      for_evaluation: true,
+    },
+    ["external_evaluator_id"]
+  )
+
+  for (const evaluation of externalEvaluations) {
+    const evaluator = await ExternalUserRepository.getById(evaluation.external_evaluator_id ?? 0)
+
+    if (evaluator !== null) {
+      const totalSubmitted = await EvaluationRepository.countAllByFilters({
+        for_evaluation: true,
+        evaluation_administration_id: evaluationAdministration.id,
+        status: EvaluationStatus.Submitted,
+        external_evaluator_id: evaluator.id,
+      })
+
+      const totalEvaluations = await EvaluationRepository.countAllByFilters({
+        evaluation_administration_id: evaluationAdministration.id,
+        for_evaluation: true,
+        external_evaluator_id: evaluator.id,
+      })
+
+      evaluators.push({
+        ...evaluator,
+        totalSubmitted,
+        totalEvaluations,
+      })
+    }
+  }
+
+  return evaluators
+}
+
 export const addExternalEvaluators = async (
   id: number,
   evaluation_template_id: number,
