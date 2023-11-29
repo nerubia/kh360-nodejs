@@ -2,6 +2,12 @@ import { type ExternalUser } from "../types/external-user-type"
 import { type Prisma } from "@prisma/client"
 import prisma from "../utils/prisma"
 
+export const getByFilters = async (where: Prisma.external_usersWhereInput) => {
+  return await prisma.external_users.findFirst({
+    where,
+  })
+}
+
 export const getAll = async () => {
   return await prisma.external_users.findMany({})
 }

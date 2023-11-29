@@ -234,7 +234,11 @@ export const close = async (id: number) => {
   )
 }
 
-export const sendReminderByEvaluator = async (id: number, evaluator_id: number) => {
+export const sendReminderByEvaluator = async (
+  id: number,
+  user_id: number,
+  is_external: boolean
+) => {
   const evaluationAdministration = await EvaluationAdministrationRepository.getById(id)
 
   if (evaluationAdministration === null) {
@@ -254,28 +258,23 @@ export const sendReminderByEvaluator = async (id: number, evaluator_id: number) 
     "EEEE, MMMM d, yyyy"
   )
 
-  const evaluation = await EvaluationRepository.getByFilters({
+  const filter = {
     evaluation_administration_id: evaluationAdministration.id,
-    evaluator_id,
     for_evaluation: true,
     status: {
       in: [EvaluationStatus.Open, EvaluationStatus.Ongoing],
     },
-  })
+    ...(is_external ? { external_evaluator_id: user_id } : { evaluator_id: user_id }),
+  }
+
+  const evaluation = await EvaluationRepository.getByFilters(filter)
 
   const evaluator =
     evaluation?.is_external === true
       ? await ExternalUserRepository.getById(evaluation.external_evaluator_id ?? 0)
       : await UserRepository.getById(evaluation?.evaluator_id ?? 0)
   if (evaluator !== null) {
-    const evaluations = await EvaluationRepository.getAllByFilters({
-      evaluation_administration_id: evaluationAdministration.id,
-      evaluator_id: evaluator.id,
-      for_evaluation: true,
-      status: {
-        in: [EvaluationStatus.Open, EvaluationStatus.Ongoing],
-      },
-    })
+    const evaluations = await EvaluationRepository.getAllByFilters(filter)
 
     const evalueeList = []
 
@@ -457,6 +456,7 @@ export const getEvaluators = async (id: number) => {
         ...evaluator,
         totalSubmitted,
         totalEvaluations,
+        is_external: evaluation.is_external,
       })
     }
   }
@@ -490,6 +490,7 @@ export const getEvaluators = async (id: number) => {
         ...evaluator,
         totalSubmitted,
         totalEvaluations,
+        is_external: evaluation.is_external,
       })
     }
   }
