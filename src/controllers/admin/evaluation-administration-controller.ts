@@ -483,16 +483,18 @@ export const close = async (req: Request, res: Response) => {
 /**
  * Send reminder for evaluator by ID.
  * @param req.params.id - The unique ID of the evaluation administration.
- * @param req.body.evaluator_id - Evaluator id
+ * @param req.body.user_id - Evaluator id
+ * @param req.body.is_external - Check if user is an external evaluator
  */
 export const sendReminder = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const { evaluator_id } = req.body
+    const { user_id, is_external } = req.body
 
     await EvaluationAdministrationService.sendReminderByEvaluator(
       parseInt(id),
-      parseInt(evaluator_id as string)
+      parseInt(user_id as string),
+      Boolean(is_external)
     )
     res.json({ id })
   } catch (error) {
