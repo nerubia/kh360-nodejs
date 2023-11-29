@@ -46,6 +46,22 @@ export const updateById = async (id: number, data: Evaluation) => {
   })
 }
 
+export const updateProjectById = async (
+  id: number,
+  project_id: number,
+  project_member_id: number
+) => {
+  return await prisma.evaluations.update({
+    where: {
+      id,
+    },
+    data: {
+      project_id,
+      project_member_id,
+    },
+  })
+}
+
 export const updateStatusById = async (id: number, status: string) => {
   await prisma.evaluations.update({
     where: {

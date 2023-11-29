@@ -3,6 +3,8 @@ import prisma from "../../utils/prisma"
 import { EvaluationResultStatus } from "../../types/evaluation-result-type"
 import { EvaluationStatus } from "../../types/evaluation-type"
 import { Decimal } from "@prisma/client/runtime/library"
+import CustomError from "../../utils/custom-error"
+import * as EvaluationResultService from "../../services/evaluation-result-service"
 
 /**
  * List evaluation results based on provided filters.
@@ -513,30 +515,16 @@ export const setStatus = async (req: Request, res: Response) => {
     const { id } = req.params
     const { status } = req.body
 
-    const evaluationResult = await prisma.evaluation_results.findUnique({
-      where: {
-        id: parseInt(id),
-      },
-    })
+    const updateEvaluationResult = await EvaluationResultService.updateStatusById(
+      parseInt(id),
+      status as string
+    )
 
-    if (evaluationResult === null) {
-      return res.status(400).json({ message: "Invalid id" })
-    }
-
-    await prisma.evaluation_results.update({
-      where: {
-        id: evaluationResult.id,
-      },
-      data: {
-        status,
-      },
-    })
-
-    res.json({
-      id,
-      status,
-    })
+    res.json(updateEvaluationResult)
   } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
     res.status(500).json({ message: "Something went wrong" })
   }
 }

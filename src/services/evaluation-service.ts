@@ -3,10 +3,12 @@ import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as EvaluationTemplateRepository from "../repositories/evaluation-template-repository"
 import * as ExternalUserRepository from "../repositories/external-user-repository"
 import * as UserRepository from "../repositories/user-repository"
+import * as ProjectMemberRepository from "../repositories/project-member-repository"
 import * as ProjectRepository from "../repositories/project-repository"
 import * as ProjectRoleRepository from "../repositories/project-role-repository"
 import { EvaluationStatus, type Evaluation } from "../types/evaluation-type"
 import { type UserToken } from "../types/user-token-type"
+import CustomError from "../utils/custom-error"
 
 export const getById = async (id: number) => {
   return await EvaluationRepository.getById(id)
@@ -91,6 +93,37 @@ export const getAllDistinctByFilters = async (
   distinct: Prisma.EvaluationsScalarFieldEnum | Prisma.EvaluationsScalarFieldEnum[]
 ) => {
   return await EvaluationRepository.getAllDistinctByFilters(where, distinct)
+}
+
+export const updateProjectById = async (
+  id: number,
+  project_id: number,
+  project_member_id: number
+) => {
+  const evaluation = await EvaluationRepository.getById(id)
+
+  if (evaluation === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
+  const project = await ProjectRepository.getById(project_id)
+
+  if (project === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
+  const projectMember = await ProjectMemberRepository.getById(project_member_id)
+
+  if (projectMember === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
+  await EvaluationRepository.updateProjectById(evaluation.id, project.id, projectMember.id)
+
+  return {
+    id: evaluation.id,
+    project,
+  }
 }
 
 export const updateById = async (id: number, data: Evaluation) => {

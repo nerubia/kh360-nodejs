@@ -1,6 +1,7 @@
 import { type Request, type Response } from "express"
 import prisma from "../../utils/prisma"
 import { EvaluationStatus } from "../../types/evaluation-type"
+import * as EvaluationService from "../../services/evaluation-service"
 
 /**
  * List evaluations based on provided filters.
@@ -106,6 +107,27 @@ export const index = async (req: Request, res: Response) => {
     )
 
     res.json(finalEvaluations)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Update an existing evaluation by ID.
+ * @param req.params.id - The unique ID of the evaluation.
+ * @param req.body.project_id - Project ID.
+ * @param req.body.project_member_id - Project member ID.
+ */
+export const update = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const { project_id, project_member_id } = req.body
+    const updateEvaluation = await EvaluationService.updateProjectById(
+      parseInt(id),
+      parseInt(project_id as string),
+      parseInt(project_member_id as string)
+    )
+    res.json(updateEvaluation)
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
