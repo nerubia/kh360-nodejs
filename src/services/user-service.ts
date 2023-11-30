@@ -2,6 +2,7 @@ import * as UserRepository from "../repositories/user-repository"
 import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as EvaluationAdministrationRepository from "../repositories/evaluation-administration-repository"
 import * as EvaluationRatingRepository from "../repositories/evaluation-rating-repository"
+import * as EvaluationResultRepository from "../repositories/evaluation-result-repository"
 import * as AnswerOptionRepository from "../repositories/answer-option-repository"
 import * as EvaluationResultDetailService from "../services/evaluation-result-detail-service"
 import * as EvaluationResultService from "../services/evaluation-result-service"
@@ -174,6 +175,97 @@ export const submitEvaluation = async (
   }
 
   return evaluation
+}
+
+export const getEvaluationAdministrationsAsEvaluee = async (user: UserToken, page: number) => {
+  const itemsPerPage = 20
+  const currentPage = isNaN(page) || page < 0 ? 1 : page
+
+  const evaluations = await EvaluationRepository.getAllByFilters({
+    for_evaluation: true,
+    evaluee_id: user.id,
+  })
+
+  const evaluationAdministrationIds = evaluations.map(
+    (evaluation) => evaluation.evaluation_administration_id
+  )
+
+  const evaluationAdministrations = await EvaluationAdministrationRepository.getAllByFilters(
+    (currentPage - 1) * itemsPerPage,
+    itemsPerPage,
+    {
+      id: {
+        in: evaluationAdministrationIds as number[],
+      },
+      status: EvaluationAdministrationStatus.Closed,
+    }
+  )
+
+  const finalEvaluationAdministrations = await Promise.all(
+    evaluationAdministrations.map(async (evaluationAdministration) => {
+      const totalEvaluations = await EvaluationRepository.countAllByFilters({
+        evaluation_administration_id: evaluationAdministration.id,
+        for_evaluation: true,
+        evaluee_id: user.id,
+      })
+
+      const totalSubmitted = await EvaluationRepository.countAllByFilters({
+        for_evaluation: true,
+        evaluation_administration_id: evaluationAdministration.id,
+        status: EvaluationStatus.Submitted,
+        evaluee_id: user.id,
+      })
+
+      const totalPending = await EvaluationRepository.countAllByFilters({
+        for_evaluation: true,
+        evaluation_administration_id: evaluationAdministration.id,
+        status: {
+          in: [EvaluationStatus.Open, EvaluationStatus.Ongoing],
+        },
+        evaluee_id: user.id,
+      })
+
+      const evaluationResult =
+        await EvaluationResultRepository.getByEvaluationAdministrationIdAndUserId(
+          evaluationAdministration.id,
+          user.id
+        )
+
+      return {
+        id: evaluationAdministration.id,
+        name: evaluationAdministration.name,
+        eval_period_start_date: evaluationAdministration.eval_period_start_date,
+        eval_period_end_date: evaluationAdministration.eval_period_end_date,
+        eval_schedule_start_date: evaluationAdministration.eval_schedule_start_date,
+        eval_schedule_end_date: evaluationAdministration.eval_schedule_end_date,
+        remarks: evaluationAdministration.remarks,
+        totalEvaluations,
+        totalSubmitted,
+        totalPending,
+        banding: evaluationResult?.banding,
+      }
+    })
+  )
+
+  const totalItems = await EvaluationAdministrationRepository.countAllByFilters({
+    id: {
+      in: evaluationAdministrationIds as number[],
+    },
+    status: EvaluationAdministrationStatus.Closed,
+  })
+
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+
+  return {
+    data: finalEvaluationAdministrations,
+    pageInfo: {
+      hasPreviousPage: currentPage > 1,
+      hasNextPage: currentPage < totalPages,
+      currentPage,
+      totalPages,
+      totalItems,
+    },
+  }
 }
 
 export const getEvaluationAdministrations = async (user: UserToken, page: number) => {

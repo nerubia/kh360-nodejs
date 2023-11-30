@@ -4,6 +4,8 @@ import * as LogoutController from "../../controllers/user/logout-controller"
 
 const router = express.Router()
 
+router.get("/my-evaluations", UserController.getEvaluationAdministrationsAsEvaluee)
+
 router.get("/evaluations", UserController.getEvaluations)
 router.get("/evaluation-administrations", UserController.getEvaluationAdministrations)
 router.post("/evaluations/:id/submit-answer", UserController.submitAnswer)

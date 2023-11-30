@@ -32,6 +32,26 @@ export const getEvaluations = async (req: Request, res: Response) => {
 }
 
 /**
+ * List user evaluation administrations (as evaluee)
+ * @param req.query.page - Page number for pagination.
+ */
+export const getEvaluationAdministrationsAsEvaluee = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+    const { page } = req.query
+
+    const evaluationAdministrations = await UserService.getEvaluationAdministrationsAsEvaluee(
+      user,
+      parseInt(page as string)
+    )
+
+    res.json(evaluationAdministrations)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
  * List user evaluation administrations
  * @param req.query.page - Page number for pagination.
  */
