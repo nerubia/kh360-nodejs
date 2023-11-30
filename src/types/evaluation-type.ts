@@ -3,7 +3,7 @@ export interface Evaluation {
   eval_start_date?: string
   eval_end_date?: string
   percent_involvement?: string
-  score?: string
+  score?: number
   weight?: number
   weighted_score?: number
   comments?: string

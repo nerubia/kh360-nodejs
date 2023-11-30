@@ -109,7 +109,7 @@ export const submitEvaluation = async (
 
     const isAllNa = answerOptions.every((answer) => answer.answer_type === AnswerType.NA)
 
-    let score = "0"
+    let score = 0
     let weight = 0
     let weighted_score = 0
     const currentDate = new Date()
@@ -124,9 +124,11 @@ export const submitEvaluation = async (
         }
       )
 
-      score = (
+      const computed_score = (
         Number(evaluationRatings._sum.score) / Number(evaluationRatings._sum.percentage)
       ).toFixed(2)
+
+      score = Number(computed_score)
 
       const totalEvaluationDays =
         differenceInDays(
