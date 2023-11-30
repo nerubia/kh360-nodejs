@@ -9,6 +9,18 @@ export const getById = async (id: number) => {
   })
 }
 
+export const getByEvaluationAdministrationIdAndUserId = async (
+  evaluation_administration_id: number,
+  user_id: number
+) => {
+  return await prisma.evaluation_results.findFirst({
+    where: {
+      evaluation_administration_id,
+      user_id,
+    },
+  })
+}
+
 export const updateById = async (id: number, data: EvaluationResult) => {
   await prisma.evaluation_results.update({
     where: {
