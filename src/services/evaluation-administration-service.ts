@@ -11,6 +11,7 @@ import * as ExternalUserRepository from "../repositories/external-user-repositor
 import * as UserRepository from "../repositories/user-repository"
 import * as EvaluationResultDetailService from "../services/evaluation-result-detail-service"
 import * as EvaluationResultService from "../services/evaluation-result-service"
+import * as EvaluationService from "../services/evaluation-service"
 import * as ExternalUserService from "../services/external-user-service"
 import {
   EvaluationAdministrationStatus,
@@ -226,6 +227,13 @@ export const close = async (id: number) => {
   for (const evaluationResult of evaluationResults) {
     await EvaluationResultDetailService.calculateScore(evaluationResult.id)
     await EvaluationResultService.calculateScore(evaluationResult.id)
+  }
+
+  await EvaluationService.calculateZscore(evaluationAdministration.id)
+
+  for (const evaluationResult of evaluationResults) {
+    await EvaluationResultDetailService.calculateZscore(evaluationResult.id)
+    await EvaluationResultService.calculateZScore(evaluationResult.id)
   }
 
   await EvaluationAdministrationRepository.updateStatusById(

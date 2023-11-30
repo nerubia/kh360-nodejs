@@ -9,6 +9,7 @@ import * as ProjectRoleRepository from "../repositories/project-role-repository"
 import { EvaluationStatus, type Evaluation } from "../types/evaluation-type"
 import { type UserToken } from "../types/user-token-type"
 import CustomError from "../utils/custom-error"
+import { calculateNorms } from "../utils/calculate-norms"
 
 export const getById = async (id: number) => {
   return await EvaluationRepository.getById(id)
@@ -212,4 +213,34 @@ export const aggregateSumByFilters = async (
   where: Prisma.evaluationsWhereInput
 ) => {
   return await EvaluationRepository.aggregateSumByFilters(_sum, where)
+}
+
+export const calculateZscore = async (evaluation_administration_id: number) => {
+  const uniqueEvaluations = await EvaluationRepository.getAllDistinctByFilters(
+    {
+      evaluation_administration_id,
+    },
+    ["evaluator_id"]
+  )
+
+  for (const uniqueEvaluation of uniqueEvaluations) {
+    const evaluations = await EvaluationRepository.getAllByFilters({
+      evaluation_administration_id,
+      evaluator_id: uniqueEvaluation.evaluator_id,
+    })
+
+    const scores = evaluations.map((evaluation) => Number(evaluation.score))
+    const norms = await calculateNorms(scores)
+
+    for (const evaluation of evaluations) {
+      const zscore = (Number(evaluation.score) - norms.mean) / norms.stdDev
+      const weighted_zscore = zscore * Number(evaluation.weight)
+
+      await EvaluationRepository.updateZScoreById(
+        evaluation.id,
+        isNaN(zscore) ? 0 : zscore,
+        isNaN(weighted_zscore) ? 0 : weighted_zscore
+      )
+    }
+  }
 }
