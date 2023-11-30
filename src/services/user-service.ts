@@ -5,6 +5,7 @@ import * as EvaluationRatingRepository from "../repositories/evaluation-rating-r
 import * as EvaluationResultRepository from "../repositories/evaluation-result-repository"
 import * as AnswerOptionRepository from "../repositories/answer-option-repository"
 import * as EvaluationResultDetailService from "../services/evaluation-result-detail-service"
+import * as EvaluationResultDetailRepository from "../repositories/evaluation-result-detail-repository"
 import * as EvaluationResultService from "../services/evaluation-result-service"
 import { EvaluationStatus } from "../types/evaluation-type"
 import { submitEvaluationSchema } from "../utils/validation/evaluations/submit-evaluation-schema"
@@ -165,6 +166,17 @@ export const submitEvaluation = async (
     })
 
     if (remainingEvaluations === 0 && evaluation.evaluation_result_id !== null) {
+      if (
+        isAllNa &&
+        evaluation.evaluation_result_id !== null &&
+        evaluation.evaluation_template_id !== null
+      ) {
+        await EvaluationResultDetailRepository.updateWeight(
+          evaluation.evaluation_result_id,
+          evaluation.evaluation_template_id,
+          0
+        )
+      }
       await EvaluationResultDetailService.calculateScore(evaluation.evaluation_result_id)
       await EvaluationResultService.calculateScore(evaluation.evaluation_result_id)
     }

@@ -29,6 +29,22 @@ export const updateById = async (id: number, data: EvaluationResultDetail) => {
   })
 }
 
+export const updateWeight = async (
+  evaluation_result_id: number,
+  evaluation_template_id: number,
+  weight: number
+) => {
+  await prisma.evaluation_result_details.updateMany({
+    where: {
+      evaluation_result_id,
+      evaluation_template_id,
+    },
+    data: {
+      weight,
+    },
+  })
+}
+
 export const updateZScoreById = async (
   id: number,
   zscore: number,
