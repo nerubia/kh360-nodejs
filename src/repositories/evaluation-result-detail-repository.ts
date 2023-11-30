@@ -29,6 +29,24 @@ export const updateById = async (id: number, data: EvaluationResultDetail) => {
   })
 }
 
+export const updateZScoreById = async (
+  id: number,
+  zscore: number,
+  weighted_zscore: number,
+  banding: string
+) => {
+  return await prisma.evaluation_result_details.update({
+    where: {
+      id,
+    },
+    data: {
+      zscore,
+      weighted_zscore,
+      banding,
+    },
+  })
+}
+
 export const aggregateSumByEvaluationResultId = async (
   evaluation_result_id: number,
   _sum: Prisma.Evaluation_result_detailsSumAggregateInputType

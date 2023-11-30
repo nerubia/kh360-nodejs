@@ -4,6 +4,7 @@ import * as EvaluationResultDetailsRepository from "../repositories/evaluation-r
 import * as EvaluationTemplateRepository from "../repositories/evaluation-template-repository"
 import { EvaluationResultStatus, type EvaluationResult } from "../types/evaluation-result-type"
 import CustomError from "../utils/custom-error"
+import { getBanding } from "../utils/calculate-norms"
 
 export const updateById = async (id: number, data: EvaluationResult) => {
   await EvaluationResultRepository.updateById(id, data)
@@ -73,4 +74,22 @@ export const calculateScore = async (evaluation_result_id: number) => {
     status: EvaluationResultStatus.Completed,
     updated_at: currentDate,
   })
+}
+
+export const calculateZScore = async (evaluation_result_id: number) => {
+  const evaluationResultDetailsSum =
+    await EvaluationResultDetailsRepository.aggregateSumByEvaluationResultId(evaluation_result_id, {
+      weight: true,
+      weighted_zscore: true,
+    })
+
+  const zscore =
+    Number(evaluationResultDetailsSum._sum.weighted_zscore) /
+    Number(evaluationResultDetailsSum._sum.weight)
+
+  await EvaluationResultRepository.updateZScoreById(
+    evaluation_result_id,
+    zscore,
+    getBanding(zscore)
+  )
 }
