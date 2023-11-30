@@ -101,30 +101,43 @@ export const submitEvaluation = async (
       comment,
     })
 
-    const evaluationRatings = await EvaluationRatingRepository.aggregateSumByEvaluationId(
-      evaluation.id,
-      {
-        score: true,
-        percentage: true,
-      }
-    )
+    const answerOptions = await AnswerOptionRepository.getAllByFilters({
+      id: {
+        in: answer_option_ids,
+      },
+    })
 
-    const score = (
-      Number(evaluationRatings._sum.score) / Number(evaluationRatings._sum.percentage)
-    ).toFixed(2)
+    const isAllNa = answerOptions.every((answer) => answer.answer_type === AnswerType.NA)
 
-    const totalEvaluationDays =
-      differenceInDays(
-        new Date(evaluation.eval_end_date ?? 0),
-        new Date(evaluation.eval_start_date ?? 0)
-      ) + 1
-
+    let score = "0"
+    let weight = 0
+    let weighted_score = 0
     const currentDate = new Date()
     const totalDaysInAYear = differenceInDays(endOfYear(currentDate), startOfYear(currentDate)) + 1
 
-    const weight = (totalEvaluationDays / totalDaysInAYear) * Number(evaluation.percent_involvement)
+    if (!isAllNa) {
+      const evaluationRatings = await EvaluationRatingRepository.aggregateSumByEvaluationId(
+        evaluation.id,
+        {
+          score: true,
+          percentage: true,
+        }
+      )
 
-    const weighted_score = weight * Number(score)
+      score = (
+        Number(evaluationRatings._sum.score) / Number(evaluationRatings._sum.percentage)
+      ).toFixed(2)
+
+      const totalEvaluationDays =
+        differenceInDays(
+          new Date(evaluation.eval_end_date ?? 0),
+          new Date(evaluation.eval_start_date ?? 0)
+        ) + 1
+
+      weight = (totalEvaluationDays / totalDaysInAYear) * Number(evaluation.percent_involvement)
+
+      weighted_score = weight * Number(score)
+    }
 
     await EvaluationRepository.updateById(evaluation.id, {
       score,
