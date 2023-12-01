@@ -4,6 +4,8 @@ import * as EvaluationTemplateRepository from "../repositories/evaluation-templa
 import * as AnswerOptionRepository from "../repositories/answer-option-repository"
 import * as EvaluationRatingRepository from "../repositories/evaluation-rating-repository"
 import { type Prisma } from "@prisma/client"
+import { type UserToken } from "../types/user-token-type"
+import CustomError from "../utils/custom-error"
 
 export const getById = async (id: number) => {
   return await EvaluationTemplateContentRepository.getById(id)
@@ -13,8 +15,16 @@ export const getAllByFilters = async (where: Prisma.evaluation_template_contents
   return await EvaluationTemplateContentRepository.getAllByFilters(where)
 }
 
-export const getEvaluationTemplateContents = async (evaluation_id: number) => {
-  const evaluation = await EvaluationRepository.getById(evaluation_id)
+export const getEvaluationTemplateContents = async (user: UserToken, evaluation_id: number) => {
+  const evaluation = await EvaluationRepository.getByFilters({
+    id: evaluation_id,
+    evaluator_id: user.id,
+  })
+
+  if (evaluation === null) {
+    throw new CustomError("Invalid evaluation id", 400)
+  }
+
   const evaluationTemplateContents = await EvaluationTemplateContentRepository.getAllByFilters({
     evaluation_template_id: evaluation?.evaluation_template_id,
   })
