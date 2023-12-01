@@ -1,5 +1,6 @@
 import { type Request, type Response } from "express"
 import * as EvaluationTemplateContentService from "../../services/evaluation-template-content-service"
+import CustomError from "../../utils/custom-error"
 
 /**
  * List evaluation template contents based on provided filters.
@@ -7,15 +8,20 @@ import * as EvaluationTemplateContentService from "../../services/evaluation-tem
  */
 export const index = async (req: Request, res: Response) => {
   try {
+    const user = req.user
     const { evaluation_id } = req.query
 
     const evaluationTemplateContents =
       await EvaluationTemplateContentService.getEvaluationTemplateContents(
+        user,
         parseInt(evaluation_id as string)
       )
 
     res.json(evaluationTemplateContents)
   } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
     res.status(500).json({ message: "Something went wrong" })
   }
 }
