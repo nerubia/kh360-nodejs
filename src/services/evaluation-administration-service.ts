@@ -8,6 +8,7 @@ import * as EvaluationResultDetailsRepository from "../repositories/evaluation-r
 import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as EvaluationTemplateRepository from "../repositories/evaluation-template-repository"
 import * as ExternalUserRepository from "../repositories/external-user-repository"
+import * as ProjectRepository from "../repositories/project-repository"
 import * as UserRepository from "../repositories/user-repository"
 import * as EvaluationResultDetailService from "../services/evaluation-result-detail-service"
 import * as EvaluationResultService from "../services/evaluation-result-service"
@@ -288,8 +289,30 @@ export const sendReminderByEvaluator = async (
 
     for (const e of evaluations) {
       const evaluee = await UserRepository.getById(e.evaluee_id ?? 0)
+
+      const evaluationTemplate = await EvaluationTemplateRepository.getById(
+        e.evaluation_template_id ?? 0
+      )
+
+      const project = await ProjectRepository.getById(evaluation?.project_id ?? 0)
+      let projectName = ""
+      if (project !== null) {
+        projectName = ` for ${project.name}`
+      }
+
+      const existingRecords = evaluations.filter((ev) => ev.evaluee_id === e.evaluee_id)
+      let fromDate = ""
+      if (existingRecords.length >= 2) {
+        fromDate = ` from ${format(e.eval_start_date ?? new Date(), "MMMM d")} - ${format(
+          e.eval_start_date ?? new Date(),
+          "MMMM d, yyyy"
+        )}`
+      }
+
       if (evaluee !== null) {
-        evalueeList.push(`- ${evaluee.last_name}, ${evaluee.first_name}`)
+        evalueeList.push(
+          `- ${evaluee.last_name}, ${evaluee.first_name} (${evaluationTemplate?.display_name}${projectName}${fromDate})`
+        )
       }
     }
 
@@ -297,7 +320,10 @@ export const sendReminderByEvaluator = async (
 
     modifiedContent = modifiedContent.replace("{{evaluator_first_name}}", `${evaluator.first_name}`)
 
-    modifiedContent = modifiedContent.replace("{{evaluee_list}}", evalueeList.join("\n"))
+    modifiedContent = modifiedContent.replace(
+      "{{evaluee_list}}",
+      `<div style="margin-left: 20px">${evalueeList.join("\n")}</div>`
+    )
 
     modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
 
