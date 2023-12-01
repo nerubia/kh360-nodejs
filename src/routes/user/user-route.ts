@@ -1,8 +1,11 @@
 import express from "express"
+import * as EmailTemplateController from "../../controllers/user/email-template-controller"
 import * as UserController from "../../controllers/user/user-controller"
 import * as LogoutController from "../../controllers/user/logout-controller"
 
 const router = express.Router()
+
+router.get("/email-templates", EmailTemplateController.index)
 
 router.get("/my-evaluations", UserController.getEvaluationAdministrationsAsEvaluee)
 
