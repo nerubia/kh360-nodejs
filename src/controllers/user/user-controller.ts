@@ -52,6 +52,23 @@ export const getEvaluationAdministrationsAsEvaluee = async (req: Request, res: R
 }
 
 /**
+ * Get a specific user evaluation result by evaluation administration ID.
+ * @param req.params.id - The unique ID of the evaluation result.
+ */
+export const getUserEvaluationResult = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+    const { id } = req.params
+
+    const evaluationResult = await UserService.getEvaluationResult(user, parseInt(id))
+
+    res.json(evaluationResult)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
  * List user evaluation administrations
  * @param req.query.page - Page number for pagination.
  */

@@ -3,6 +3,7 @@ import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as EvaluationAdministrationRepository from "../repositories/evaluation-administration-repository"
 import * as EvaluationRatingRepository from "../repositories/evaluation-rating-repository"
 import * as EvaluationResultRepository from "../repositories/evaluation-result-repository"
+import * as EvaluationTemplateRepository from "../repositories/evaluation-template-repository"
 import * as AnswerOptionRepository from "../repositories/answer-option-repository"
 import * as EvaluationResultDetailService from "../services/evaluation-result-detail-service"
 import * as EvaluationResultDetailRepository from "../repositories/evaluation-result-detail-repository"
@@ -187,6 +188,73 @@ export const submitEvaluation = async (
   }
 
   return evaluation
+}
+
+export const getEvaluationResult = async (user: UserToken, id: number) => {
+  const evaluationResult =
+    await EvaluationResultRepository.getByEvaluationAdministrationIdAndUserId(id, user.id)
+
+  if (evaluationResult === null) {
+    throw new CustomError("Invalid evaluation id.", 400)
+  }
+
+  const evaluee = await UserRepository.getById(evaluationResult.user_id ?? 0)
+  const evaluationAdministration = await EvaluationAdministrationRepository.getById(id)
+  const evaluations = await EvaluationRepository.getAllByFilters({
+    evaluation_result_id: evaluationResult.id,
+    for_evaluation: true,
+  })
+  const evaluationTemplateIds = evaluations.map((evaluation) => evaluation.evaluation_template_id)
+  const evaluationResultDetails = await EvaluationResultDetailRepository.getAllByFilters({
+    evaluation_result_id: evaluationResult.id,
+    evaluation_template_id: {
+      in: evaluationTemplateIds as number[],
+    },
+  })
+
+  const finalEvaluationResultDetails = await Promise.all(
+    evaluationResultDetails.map(async (detail) => {
+      const evaluation_template = await EvaluationTemplateRepository.getById(
+        detail.evaluation_template_id ?? 0
+      )
+      return {
+        id: detail.id,
+        score: detail.score,
+        zscore: detail.zscore,
+        banding: detail.banding,
+        template_name: evaluation_template?.display_name,
+      }
+    })
+  )
+
+  if (evaluee === null) {
+    throw new CustomError("Evaluee not found", 400)
+  }
+
+  if (evaluationAdministration === null) {
+    throw new CustomError("Evaluation administration not found", 400)
+  }
+
+  if (evaluations === null) {
+    throw new CustomError("Evaluations not found", 400)
+  }
+
+  if (evaluationResultDetails === null) {
+    throw new CustomError("Evaluation result details not found", 400)
+  }
+
+  const comments = evaluations.map((evaluation) => evaluation.comments)
+
+  Object.assign(evaluationResult, {
+    users: evaluee,
+    eval_period_start_date: evaluationAdministration.eval_period_start_date,
+    eval_period_end_date: evaluationAdministration.eval_period_end_date,
+    comments,
+    evaluation_result_details: finalEvaluationResultDetails,
+    status: evaluationAdministration.status,
+  })
+
+  return evaluationResult
 }
 
 export const getEvaluationAdministrationsAsEvaluee = async (user: UserToken, page: number) => {

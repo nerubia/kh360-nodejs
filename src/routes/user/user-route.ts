@@ -8,6 +8,7 @@ const router = express.Router()
 router.get("/email-templates", EmailTemplateController.index)
 
 router.get("/my-evaluations", UserController.getEvaluationAdministrationsAsEvaluee)
+router.get("/my-evaluations/:id", UserController.getUserEvaluationResult)
 
 router.get("/evaluations", UserController.getEvaluations)
 router.get("/evaluation-administrations", UserController.getEvaluationAdministrations)
