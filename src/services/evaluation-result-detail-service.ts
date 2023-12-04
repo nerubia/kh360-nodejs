@@ -1,9 +1,12 @@
 import { type Prisma } from "@prisma/client"
 import * as EvaluationResultDetailRepository from "../repositories/evaluation-result-detail-repository"
 import * as EvaluationRepository from "../repositories/evaluation-repository"
+import * as EvaluationRatingRepository from "../repositories/evaluation-rating-repository"
+import * as AnswerOptionRepository from "../repositories/answer-option-repository"
 import { type EvaluationResultDetail } from "../types/evaluation-result-detail-type"
 import { EvaluationStatus } from "../types/evaluation-type"
 import { getBanding } from "../utils/calculate-norms"
+import { AnswerType } from "../types/answer-type"
 
 export const getAllByFilters = async (where: Prisma.evaluation_result_detailsWhereInput) => {
   return await EvaluationResultDetailRepository.getAllByFilters(where)
@@ -29,7 +32,35 @@ export const calculateScore = async (evaluation_result_id: number) => {
     evaluation_result_id,
   })
   for (const evaluationResultDetail of evaluationResultDetails) {
-    const evaluations = await EvaluationRepository.aggregateSumByFilters(
+    const allAnswerTypes = []
+    const evaluations = await EvaluationRepository.getAllByFilters({
+      evaluation_result_id,
+      evaluation_template_id: evaluationResultDetail.evaluation_template_id,
+      status: EvaluationStatus.Submitted,
+    })
+
+    for (const evaluation of evaluations) {
+      const evaluationRatings = await EvaluationRatingRepository.getAllByFilters({
+        evaluation_id: evaluation.id,
+      })
+      const answerOptionIds = evaluationRatings.map((answer) => answer.answer_option_id)
+      const answerOptions = await AnswerOptionRepository.getAllByFilters({
+        id: {
+          in: answerOptionIds as number[],
+        },
+      })
+      const answerTypes = answerOptions.map((answerOption) => answerOption.answer_type)
+      allAnswerTypes.push(...answerTypes)
+    }
+
+    const isAllNa =
+      allAnswerTypes.length > 0 ? allAnswerTypes.every((answer) => answer === AnswerType.NA) : false
+
+    if (isAllNa) {
+      await EvaluationResultDetailRepository.updateWeightById(evaluationResultDetail.id, 0)
+    }
+
+    const evaluationsSum = await EvaluationRepository.aggregateSumByFilters(
       {
         weight: true,
         weighted_score: true,
@@ -42,7 +73,7 @@ export const calculateScore = async (evaluation_result_id: number) => {
     )
 
     const calculated_score =
-      Number(evaluations._sum.weighted_score) / Number(evaluations._sum.weight)
+      Number(evaluationsSum._sum.weighted_score) / Number(evaluationsSum._sum.weight)
     const score = isNaN(calculated_score) ? 0 : calculated_score
 
     await EvaluationResultDetailRepository.updateById(evaluationResultDetail.id, {
