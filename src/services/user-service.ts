@@ -11,7 +11,7 @@ import * as EvaluationResultService from "../services/evaluation-result-service"
 import { EvaluationStatus } from "../types/evaluation-type"
 import { submitEvaluationSchema } from "../utils/validation/evaluations/submit-evaluation-schema"
 import { type UserToken } from "../types/user-token-type"
-import { differenceInDays, endOfYear, startOfYear } from "date-fns"
+import { differenceInDays } from "date-fns"
 import { EvaluationAdministrationStatus } from "../types/evaluation-administration-type"
 import CustomError from "../utils/custom-error"
 import { AnswerType } from "../types/answer-type"
@@ -118,7 +118,6 @@ export const submitEvaluation = async (
     let weight = 0
     let weighted_score = 0
     const currentDate = new Date()
-    const totalDaysInAYear = differenceInDays(endOfYear(currentDate), startOfYear(currentDate)) + 1
 
     if (!isAllNa) {
       const evaluationRatings = await EvaluationRatingRepository.aggregateSumByEvaluationId(
@@ -135,13 +134,29 @@ export const submitEvaluation = async (
 
       score = Number(computed_score)
 
+      const evaluationAdministration = await EvaluationAdministrationRepository.getById(
+        evaluation.evaluation_administration_id ?? 0
+      )
+
+      if (evaluationAdministration === null) {
+        throw new CustomError("Invalid id.", 400)
+      }
+
+      const totalEvaluationAdministrationDays =
+        differenceInDays(
+          new Date(evaluationAdministration.eval_period_start_date ?? 0),
+          new Date(evaluationAdministration.eval_period_end_date ?? 0)
+        ) + 1
+
       const totalEvaluationDays =
         differenceInDays(
           new Date(evaluation.eval_end_date ?? 0),
           new Date(evaluation.eval_start_date ?? 0)
         ) + 1
 
-      weight = (totalEvaluationDays / totalDaysInAYear) * Number(evaluation.percent_involvement)
+      weight =
+        (totalEvaluationDays / totalEvaluationAdministrationDays) *
+        Number(evaluation.percent_involvement)
 
       weighted_score = weight * Number(score)
     }
