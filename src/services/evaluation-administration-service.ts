@@ -287,14 +287,48 @@ export const sendReminderByEvaluator = async (
 
     const evalueeList = []
 
-    for (const e of evaluations) {
+    const newEvaluations = await Promise.all(
+      evaluations.map(async (evaluation) => {
+        const evaluee = await UserRepository.getById(evaluation.evaluee_id ?? 0)
+        const project = await ProjectRepository.getById(evaluation.project_id ?? 0)
+        return {
+          ...evaluation,
+          evaluee,
+          project,
+        }
+      })
+    )
+
+    newEvaluations.sort((a, b) => {
+      const lastNameComparison = (a.evaluee?.last_name ?? "").localeCompare(
+        b.evaluee?.last_name ?? ""
+      )
+      if (lastNameComparison !== 0) {
+        return lastNameComparison
+      }
+      const firstNameComparison = (a.evaluee?.first_name ?? "").localeCompare(
+        b.evaluee?.first_name ?? ""
+      )
+      if (firstNameComparison !== 0) {
+        return firstNameComparison
+      }
+      const projectComparison = (a.project?.name ?? "").localeCompare(b.project?.name ?? "")
+      if (projectComparison !== 0) {
+        return projectComparison
+      }
+      const dateA = a.eval_start_date ?? new Date(0)
+      const dateB = b.eval_start_date ?? new Date(0)
+      return dateA.getTime() - dateB.getTime()
+    })
+
+    for (const e of newEvaluations) {
       const evaluee = await UserRepository.getById(e.evaluee_id ?? 0)
 
       const evaluationTemplate = await EvaluationTemplateRepository.getById(
         e.evaluation_template_id ?? 0
       )
 
-      const project = await ProjectRepository.getById(evaluation?.project_id ?? 0)
+      const project = await ProjectRepository.getById(e?.project_id ?? 0)
       let projectName = ""
       if (project !== null) {
         projectName = ` for ${project.name}`
@@ -304,7 +338,7 @@ export const sendReminderByEvaluator = async (
       let fromDate = ""
       if (existingRecords.length >= 2) {
         fromDate = ` from ${format(e.eval_start_date ?? new Date(), "MMMM d")} - ${format(
-          e.eval_start_date ?? new Date(),
+          e.eval_end_date ?? new Date(),
           "MMMM d, yyyy"
         )}`
       }
