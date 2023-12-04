@@ -307,8 +307,14 @@ export const store = async (req: Request, res: Response) => {
               project_id: projectId,
               project_member_id: project.id,
               for_evaluation: false,
-              eval_start_date: project.start_date,
-              eval_end_date: project.end_date,
+              eval_start_date:
+                (project.start_date ?? 0) < (evaluationAdministration.eval_period_start_date ?? 0)
+                  ? evaluationAdministration.eval_period_start_date
+                  : project.start_date,
+              eval_end_date:
+                (project.end_date ?? 0) > (evaluationAdministration.eval_period_end_date ?? 0)
+                  ? evaluationAdministration.eval_period_start_date
+                  : project.start_date,
               percent_involvement: project.allocation_rate,
               status: EvaluationStatus.Excluded,
               submission_method: null,
