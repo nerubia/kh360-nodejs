@@ -175,6 +175,20 @@ const createEmailTemplates = async () => {
       content: `Thank you for completing the evaluation form! Your feedback is invaluable to us. 🌟`,
     },
     {
+      name: "No Available Evaluation Results",
+      template_type: "No Available Evaluation Results",
+      is_default: true,
+      subject: "",
+      content: `Uh-oh! 🤷‍♂️\n\nLooks like our magical elves are still working their charm behind the scenes, and your results haven't arrived just yet. Don't worry, though – good things come to those who wait!\n\nIn the meantime, why not grab a cup of coffee or practice your superhero pose? 🦸‍♀️ We'll have those results ready for you in no time.\n\nStay tuned and keep the positive vibes flowing! ✨`,
+    },
+    {
+      name: "No Pending Evaluation Forms",
+      template_type: "No Pending Evaluation Forms",
+      is_default: true,
+      subject: "",
+      content: `Howdy, Awesome User! 🌟\n\nGuess what? Our evaluation forms are currently on vacation, sipping virtual coconut water on a pixelated beach. 🏝️ So, no forms to fill up just yet. Your enthusiasm for productivity is unmatched!\n\nBut hey, if you're seeing this and you've completed all the forms already, give yourself a pat on the back! 🙌 You're officially the Form-Filling Maestro! 🎉\n\nWhile you wait for new forms to conquer, why not take a digital stroll, practice your dance moves or perfect the art of high-fiving yourself? 🕺🤚\n\nCheers to your patience and positive vibes! 🎉✨`,
+    },
+    {
       name: "Performance Evaluation NA Rating - Ninja",
       template_type: "Performance Evaluation NA Rating",
       is_default: false,
