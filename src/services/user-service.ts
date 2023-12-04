@@ -50,6 +50,13 @@ export const submitEvaluation = async (
     throw new CustomError("Only open and ongoing statuses are allowed.", 400)
   }
 
+  if (is_submitting) {
+    await submitEvaluationSchema.validate({
+      answer_option_ids,
+      comment,
+    })
+  }
+
   const evaluationRatings = await EvaluationRatingRepository.getAllByFilters({
     id: {
       in: evaluation_rating_ids,
@@ -72,6 +79,13 @@ export const submitEvaluation = async (
     const answerOption = await AnswerOptionRepository.getById(answerOptionId ?? 0)
     const comments = evaluation_rating_comments[index] ?? ""
 
+    if (is_submitting) {
+      await submitEvaluationSchema.validate({
+        answerOption,
+        comments,
+      })
+    }
+
     const rate = Number(answerOption?.rate ?? 0)
     const percentage =
       answerOption?.answer_type === AnswerType.NA && is_submitting
@@ -80,13 +94,6 @@ export const submitEvaluation = async (
     const score = rate * percentage
 
     if (answerOption?.id !== undefined) {
-      if (is_submitting) {
-        await submitEvaluationSchema.validate({
-          answerOption,
-          comments,
-        })
-      }
-
       await EvaluationRatingRepository.updateById(evaluationRating.id, {
         answer_option_id: answerOption?.id,
         rate,
@@ -99,11 +106,6 @@ export const submitEvaluation = async (
   }
 
   if (is_submitting && evaluation !== null) {
-    await submitEvaluationSchema.validate({
-      answer_option_ids,
-      comment,
-    })
-
     const answerOptions = await AnswerOptionRepository.getAllByFilters({
       id: {
         in: answer_option_ids,
