@@ -61,6 +61,10 @@ export const getEvaluations = async (
         evaluation.project_members?.project_role_id ?? 0
       )
 
+      const template = await EvaluationTemplateRepository.getById(
+        evaluation.evaluation_template_id ?? 0
+      )
+
       return {
         id: evaluation.id,
         eval_start_date: evaluation.eval_start_date,
@@ -74,6 +78,7 @@ export const getEvaluations = async (
         project,
         project_role: projectRole,
         external_evaluator_id: evaluation.external_evaluator_id,
+        template,
       }
     })
   )
