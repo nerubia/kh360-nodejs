@@ -117,18 +117,14 @@ export const getUserEvaluations = async (
         evaluation.project_members?.project_role_id ?? 0
       )
 
-      let template = null
-
-      if (project === null) {
-        template = await EvaluationTemplateRepository.getById(
-          evaluation.evaluation_template_id ?? 0
-        )
-        if (template?.evaluee_role_id !== null) {
-          const project_role = await ProjectRoleRepository.getById(template?.evaluee_role_id ?? 0)
-          Object.assign(template ?? 0, {
-            project_role,
-          })
-        }
+      const template = await EvaluationTemplateRepository.getById(
+        evaluation.evaluation_template_id ?? 0
+      )
+      if (template?.evaluee_role_id !== null) {
+        const project_role = await ProjectRoleRepository.getById(template?.evaluee_role_id ?? 0)
+        Object.assign(template ?? 0, {
+          project_role,
+        })
       }
 
       return {
