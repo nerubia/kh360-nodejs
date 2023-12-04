@@ -32,8 +32,12 @@ export const submitEvaluationSchema = object().shape({
         (rating) => rating.answer_type === AnswerType.Lowest
       ).length
 
-      const highestCountPercentage = (highestCount / answer_option_ids.length) * 100
-      const lowestCountPercentage = (lowestCount / answer_option_ids.length) * 100
+      const allRatingsWithoutNA = answerOptions.filter(
+        (option) => option.answer_type !== AnswerType.NA
+      )
+
+      const highestCountPercentage = (highestCount / allRatingsWithoutNA.length) * 100
+      const lowestCountPercentage = (lowestCount / allRatingsWithoutNA.length) * 100
 
       const isCommentRequired =
         answerOptions.length > 0 &&
