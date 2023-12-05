@@ -89,6 +89,27 @@ export const getEvaluationAdministrations = async (req: Request, res: Response) 
 }
 
 /**
+ * Send email to request for removal of evaluation
+ * @param req.params.id - The unique id of the evaluation.
+ * @param req.body.comment - Evaluation comment.
+ */
+export const sendRequestToRemove = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const { comment } = req.body
+
+    await UserService.sendRequestToRemove(parseInt(id), comment as string)
+
+    res.json({ id, status: EvaluationStatus.ForRemoval })
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
  * Save answers and comments by ID
  * @param req.params.id - The unique ID of the evaluation.
  * @param req.body.evaluation_rating_ids - Evaluation rating ids.

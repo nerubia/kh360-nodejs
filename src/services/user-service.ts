@@ -7,7 +7,11 @@ import * as EvaluationTemplateRepository from "../repositories/evaluation-templa
 import * as AnswerOptionRepository from "../repositories/answer-option-repository"
 import * as EvaluationResultDetailService from "../services/evaluation-result-detail-service"
 import * as EvaluationResultDetailRepository from "../repositories/evaluation-result-detail-repository"
+import * as EmailTemplateRepository from "../repositories/email-template-repository"
 import * as EvaluationResultService from "../services/evaluation-result-service"
+import * as ExternalUserRepository from "../repositories/external-user-repository"
+import * as ProjectRepository from "../repositories/project-repository"
+import * as EmailRecipientRepository from "../repositories/email-recipient-repository"
 import { EvaluationStatus } from "../types/evaluation-type"
 import { submitEvaluationSchema } from "../utils/validation/evaluations/submit-evaluation-schema"
 import { type UserToken } from "../types/user-token-type"
@@ -15,6 +19,8 @@ import { differenceInDays } from "date-fns"
 import { EvaluationAdministrationStatus } from "../types/evaluation-administration-type"
 import CustomError from "../utils/custom-error"
 import { AnswerType } from "../types/answer-type"
+import { sendMail } from "../utils/sendgrid"
+import { formatDateRange } from "../utils/format-date"
 
 export const getById = async (id: number) => {
   return await UserRepository.getById(id)
@@ -245,7 +251,7 @@ export const getEvaluationResult = async (user: UserToken, id: number) => {
     throw new CustomError("Evaluations not found", 400)
   }
 
-  if (evaluationResultDetails === null) {
+  if (evaluationResultDetails.length === 0) {
     throw new CustomError("Evaluation result details not found", 400)
   }
 
@@ -439,5 +445,84 @@ export const getEvaluationAdministrations = async (user: UserToken, page: number
       totalPages,
       totalItems,
     },
+  }
+}
+
+export const sendRequestToRemove = async (evaluation_id: number, comment: string) => {
+  const evaluation = await EvaluationRepository.getById(evaluation_id)
+
+  if (evaluation === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
+  await EvaluationRepository.updateById(evaluation_id, {
+    comments: comment,
+    updated_at: new Date(),
+    status: EvaluationStatus.ForRemoval,
+  })
+
+  const project = await ProjectRepository.getById(evaluation.project_id ?? 0)
+  const evaluationTemplate = await EvaluationTemplateRepository.getById(
+    evaluation.evaluation_template_id ?? 0
+  )
+  const emailTemplate = await EmailTemplateRepository.getByTemplateType(
+    "Request to Remove Evaluation"
+  )
+
+  if (evaluationTemplate === null) {
+    throw new CustomError("Evaluation template not found", 400)
+  }
+
+  if (emailTemplate === null) {
+    throw new CustomError("Email template not found", 400)
+  }
+
+  const evaluator =
+    evaluation?.is_external === true
+      ? await ExternalUserRepository.getById(evaluation.external_evaluator_id ?? 0)
+      : await UserRepository.getById(evaluation?.evaluator_id ?? 0)
+  const evaluee = await UserRepository.getById(evaluation?.evaluee_id ?? 0)
+
+  if (evaluator === null) {
+    throw new CustomError("Evaluator not found", 400)
+  }
+
+  if (evaluee === null) {
+    throw new CustomError("Evaluee not found", 400)
+  }
+
+  const emailContent = emailTemplate.content ?? ""
+
+  const dateRange = formatDateRange(
+    evaluation.eval_start_date ?? new Date(),
+    evaluation.eval_end_date ?? new Date()
+  )
+
+  const replacements: Record<string, string> = {
+    evaluee_first_name: evaluee.first_name ?? "",
+    evaluee_last_name: evaluee.last_name ?? "",
+    template_display_name: evaluationTemplate.display_name ?? "",
+    "project name information": project?.name !== undefined ? `Project Name: ${project.name}` : "",
+    "project duration information": `Project Duration: ${dateRange}`,
+    comments: comment,
+    link: `${process.env.APP_URL}/admin/evaluation-administrations/${evaluation.evaluation_administration_id}/progress`,
+    "evaluator first name": evaluator.first_name ?? "",
+    evaluator_last_name: evaluator.last_name ?? "",
+  }
+
+  let modifiedContent: string = emailContent.replace(/{{(.*?)}}/g, (match: string, p1: string) => {
+    return replacements[p1] ?? match
+  })
+
+  modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
+
+  const emailRecipients = await EmailRecipientRepository.getAllByEmailType("KH360 Admin")
+
+  if (emailRecipients.length === 0) {
+    throw new CustomError("Recipients not found", 400)
+  }
+
+  for (const emailRecipient of emailRecipients) {
+    await sendMail(emailRecipient.email, emailTemplate.subject ?? "", modifiedContent)
   }
 }
