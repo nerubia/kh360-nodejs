@@ -18,7 +18,7 @@ export const getAllByFilters = async (where: Prisma.evaluation_template_contents
 export const getEvaluationTemplateContents = async (user: UserToken, evaluation_id: number) => {
   const evaluation = await EvaluationRepository.getByFilters({
     id: evaluation_id,
-    evaluator_id: user.id,
+    ...(user.is_external ? { external_evaluator_id: user.id } : { evaluator_id: user.id }),
   })
 
   if (evaluation === null) {
