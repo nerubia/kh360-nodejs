@@ -11,6 +11,7 @@ import { type ExternalUser } from "../types/external-user-type"
 import CustomError from "../utils/custom-error"
 import { sendMail } from "../utils/sendgrid"
 import { EvaluationStatus } from "../types/evaluation-type"
+import { addHours } from "date-fns"
 
 export const login = async (token: string, code: string) => {
   const externalUser = await ExternalUserRepository.getByAccessToken(token)
@@ -88,6 +89,15 @@ export const getLockedAtByAccessToken = async (token: string) => {
 
   if (externalUser === null) {
     throw new CustomError("Invalid credentials", 400)
+  }
+
+  if (externalUser.locked_at !== null) {
+    const currentTime = new Date()
+    const lockedAt = addHours(new Date(externalUser.locked_at), 1)
+    if (currentTime > lockedAt) {
+      await ExternalUserRepository.updateFailedAttemptsById(externalUser.id, 0)
+      return null
+    }
   }
 
   return externalUser.locked_at
