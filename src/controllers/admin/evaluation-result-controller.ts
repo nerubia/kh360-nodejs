@@ -313,8 +313,8 @@ export const store = async (req: Request, res: Response) => {
                   : project.start_date,
               eval_end_date:
                 (project.end_date ?? 0) > (evaluationAdministration.eval_period_end_date ?? 0)
-                  ? evaluationAdministration.eval_period_start_date
-                  : project.start_date,
+                  ? evaluationAdministration.eval_period_end_date
+                  : project.end_date,
               percent_involvement: project.allocation_rate,
               status: EvaluationStatus.Excluded,
               submission_method: null,
