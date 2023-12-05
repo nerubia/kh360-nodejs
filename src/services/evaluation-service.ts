@@ -99,7 +99,12 @@ export const getUserEvaluations = async (
     evaluation_administration_id,
     for_evaluation,
     status: {
-      in: [EvaluationStatus.Open, EvaluationStatus.Ongoing, EvaluationStatus.Submitted],
+      in: [
+        EvaluationStatus.Open,
+        EvaluationStatus.Ongoing,
+        EvaluationStatus.Submitted,
+        EvaluationStatus.ForRemoval,
+      ],
     },
   }
 
@@ -300,8 +305,8 @@ export const approve = async (id: number) => {
   let project_details = ""
   if (project !== null) {
     const projectDuration = formatDateRange(
-      evaluation.eval_start_date?.toLocaleString(),
-      evaluation.eval_end_date?.toLocaleString()
+      new Date(evaluation.eval_start_date ?? ""),
+      new Date(evaluation.eval_end_date ?? ""),
     )
     project_details = `for ${project.name} during ${projectDuration}`
   }
@@ -382,8 +387,8 @@ export const decline = async (id: number) => {
   let project_details = ""
   if (project !== null) {
     const projectDuration = formatDateRange(
-      evaluation.eval_start_date?.toLocaleString(),
-      evaluation.eval_end_date?.toLocaleString()
+      new Date(evaluation.eval_start_date ?? ""),
+      new Date(evaluation.eval_end_date ?? ""),
     )
     project_details = `for ${project.name} during ${projectDuration}`
   }

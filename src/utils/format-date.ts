@@ -1,4 +1,4 @@
-export const formatDateRange = (start_date?: string, end_date?: string) => {
+export const formatDateRange = (startDate: Date, endDate: Date) => {
   const options: Intl.DateTimeFormatOptions = {
     month: "short",
     day: "numeric",
@@ -11,19 +11,9 @@ export const formatDateRange = (start_date?: string, end_date?: string) => {
     timeZone: "UTC",
   }
 
-  if (
-    start_date === undefined ||
-    end_date === undefined ||
-    start_date === null ||
-    end_date === null ||
-    start_date === "" ||
-    end_date === ""
-  ) {
+  if (startDate === undefined || endDate === undefined || startDate === null || endDate === null) {
     return ""
   }
-
-  const startDate = new Date(start_date)
-  const endDate = new Date(end_date)
 
   let formattedDate = startDate.toLocaleDateString("en-US", monthAndDateOnly)
 
