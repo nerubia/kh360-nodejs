@@ -249,7 +249,9 @@ export const getEvaluationResult = async (user: UserToken, id: number) => {
     throw new CustomError("Evaluation result details not found", 400)
   }
 
-  const comments = evaluations.map((evaluation) => evaluation.comments)
+  const comments = evaluations
+    .map((evaluation) => evaluation.comments)
+    .filter((comment) => comment !== null && comment.length > 0)
 
   Object.assign(evaluationResult, {
     users: evaluee,
