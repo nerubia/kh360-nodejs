@@ -175,6 +175,20 @@ const createEmailTemplates = async () => {
       content: `Dear KH360 Admin,\n\nI would like to request to remove {{evaluee_first_name}} {{evaluee_last_name}} with details below from my list of evaluees:\nEvaluation Type: {{template_display_name}}\n{{project name information}}\n{{project duration information}}\n\nComments: {{comments}}\n\nClick on this {{link}} to approve or reject this request.\n\nThanks and Best Regards,\nKH360 Team on behalf of {{evaluator first name}} {{evaluator_last_name}}`,
     },
     {
+      name: "Approved Request to Remove Evaluee",
+      template_type: "Approved Request to Remove Evaluee",
+      is_default: true,
+      subject: `Approved Request to Remove {{template_name}} of {{evaluee_first_name}} {{evaluee_last_name}}`,
+      content: `Hi {{evaluator_first_name}},\n\nHope this note adds a little sunshine to your day! 🌞 Just wanted to drop you a quick line to say your request to remove your {{template_display_name}} of {{evaluee_first_name}}  {{evaluee_last_name}} {{project_details}} has been given the green light and is now removed from your list. \n\nIf you have any further questions or if there is anything else we can assist you with, please feel free to reach out. Your cooperation in this matter is highly valued, and we want to ensure that the evaluation process is as effective and meaningful as possible.\n\nThanks for making the workplace vibe even better!\n\nCheers,\nKH360 Team`,
+    },
+    {
+      name: "Declined Request to Remove Evaluee",
+      template_type: "Declined Request to Remove Evaluee",
+      is_default: true,
+      subject: `Declined Request to Remove {{template_name}} of {{evaluee_first_name}} {{evaluee_last_name}}`,
+      content: `Hi {{evaluator_first_name}},\n\nHope you're doing well. Quick update on your request to remove your {{template_display_name}} of {{evaluee_first_name}}  {{evaluee_last_name}} {{project_details}} from your list: after giving it a thorough look, we're unable to proceed with the removal at this time.\n\nWe totally get that evaluations are a bit like trying to fit a square peg in a round hole sometimes, but in this case, we still think your inputs on {{evaluee_first_name}}'s performance is very important. If there's any way we can make it more efficient or if you have further concerns, please let us know so we can assist you.\n\nThanks for your understanding, and let's keep the lines of communication open!\n\nBest Regards,\nKH360 Admin`,
+    },
+    {
       name: "Evaluation Completed 🎉",
       template_type: "Evaluation Complete Thank You Message",
       is_default: true,
