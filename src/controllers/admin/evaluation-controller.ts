@@ -2,6 +2,7 @@ import { type Request, type Response } from "express"
 import prisma from "../../utils/prisma"
 import { EvaluationStatus } from "../../types/evaluation-type"
 import * as EvaluationService from "../../services/evaluation-service"
+import CustomError from "../../utils/custom-error"
 
 /**
  * List evaluations based on provided filters.
@@ -85,6 +86,40 @@ export const setForEvaluations = async (req: Request, res: Response) => {
       for_evaluation,
     })
   } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Approve an existing evaluation by ID.
+ * @param req.params.id - The unique ID of the evaluation.
+ */
+export const approve = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    await EvaluationService.approve(parseInt(id))
+    res.json({ id })
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Decline an existing evaluation by ID.
+ * @param req.params.id - The unique ID of the evaluation.
+ */
+export const decline = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    await EvaluationService.decline(parseInt(id))
+    res.json({ id })
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
     res.status(500).json({ message: "Something went wrong" })
   }
 }

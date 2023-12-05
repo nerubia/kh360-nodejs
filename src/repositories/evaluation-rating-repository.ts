@@ -51,3 +51,17 @@ export const aggregateSumByEvaluationId = async (
   })
   return sum
 }
+
+export const resetByEvaluationId = async (evaluation_id: number) => {
+  await prisma.evaluation_ratings.updateMany({
+    where: {
+      evaluation_id,
+    },
+    data: {
+      answer_option_id: null,
+      rate: 0,
+      score: 0,
+      comments: "",
+    },
+  })
+}
