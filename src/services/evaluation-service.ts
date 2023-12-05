@@ -1,4 +1,6 @@
 import { type Prisma } from "@prisma/client"
+import * as EmailTemplateRepository from "../repositories/email-template-repository"
+import * as EvaluationRatingRepository from "../repositories/evaluation-rating-repository"
 import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as EvaluationTemplateRepository from "../repositories/evaluation-template-repository"
 import * as ExternalUserRepository from "../repositories/external-user-repository"
@@ -10,6 +12,8 @@ import { EvaluationStatus, type Evaluation } from "../types/evaluation-type"
 import { type UserToken } from "../types/user-token-type"
 import CustomError from "../utils/custom-error"
 import { calculateNorms } from "../utils/calculate-norms"
+import { formatDateRange } from "../utils/format-date"
+import { sendMail } from "../utils/sendgrid"
 
 export const getById = async (id: number) => {
   return await EvaluationRepository.getById(id)
@@ -244,4 +248,167 @@ export const calculateZscore = async (evaluation_administration_id: number) => {
       )
     }
   }
+}
+
+export const approve = async (id: number) => {
+  const evaluation = await EvaluationRepository.getById(id)
+
+  if (evaluation === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
+  if (evaluation.status !== EvaluationStatus.ForRemoval) {
+    throw new CustomError("Invalid status", 400)
+  }
+
+  const evaluationTemplate = await EvaluationTemplateRepository.getById(
+    evaluation.evaluation_template_id ?? 0
+  )
+
+  if (evaluationTemplate === null) {
+    throw new CustomError("Template not found", 400)
+  }
+
+  const evaluee = await UserRepository.getById(evaluation.evaluee_id ?? 0)
+
+  if (evaluee === null) {
+    throw new CustomError("Evaluee not found", 400)
+  }
+
+  const evaluator =
+    evaluation.is_external === true
+      ? await ExternalUserRepository.getById(evaluation.external_evaluator_id ?? 0)
+      : await UserRepository.getById(evaluation.evaluator_id ?? 0)
+
+  if (evaluator === null) {
+    throw new CustomError("Evaluator not found", 400)
+  }
+
+  const emailTemplate = await EmailTemplateRepository.getByTemplateType(
+    "Approved Request to Remove Evaluee"
+  )
+
+  if (emailTemplate === null) {
+    throw new CustomError("Email template not found", 400)
+  }
+
+  const project = await ProjectRepository.getById(evaluation.project_id ?? 0)
+
+  const emailSubject = emailTemplate.subject ?? ""
+  const emailContent = emailTemplate.content ?? ""
+
+  let project_details = ""
+  if (project !== null) {
+    const projectDuration = formatDateRange(
+      evaluation.eval_start_date?.toLocaleString(),
+      evaluation.eval_end_date?.toLocaleString()
+    )
+    project_details = `for ${project.name} during ${projectDuration}`
+  }
+
+  const replacements: Record<string, string> = {
+    template_name: evaluationTemplate.display_name ?? "",
+    evaluee_first_name: evaluee.first_name ?? "",
+    evaluee_last_name: evaluee.last_name ?? "",
+    evaluator_first_name: evaluator.first_name ?? "",
+    template_display_name: evaluationTemplate.display_name ?? "",
+    project_details,
+  }
+
+  const modifiedSubject: string = emailSubject.replace(
+    /{{(.*?)}}/g,
+    (match: string, p1: string) => {
+      return replacements[p1] ?? match
+    }
+  )
+  let modifiedContent: string = emailContent.replace(/{{(.*?)}}/g, (match: string, p1: string) => {
+    return replacements[p1] ?? match
+  })
+  modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
+
+  await sendMail(evaluator.email, modifiedSubject, modifiedContent)
+
+  await EvaluationRepository.updateStatusById(evaluation.id, EvaluationStatus.Removed)
+  await EvaluationRatingRepository.resetByEvaluationId(evaluation.id)
+}
+
+export const decline = async (id: number) => {
+  const evaluation = await EvaluationRepository.getById(id)
+
+  if (evaluation === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
+  if (evaluation.status !== EvaluationStatus.ForRemoval) {
+    throw new CustomError("Invalid status", 400)
+  }
+
+  const evaluationTemplate = await EvaluationTemplateRepository.getById(
+    evaluation.evaluation_template_id ?? 0
+  )
+
+  if (evaluationTemplate === null) {
+    throw new CustomError("Template not found", 400)
+  }
+
+  const evaluee = await UserRepository.getById(evaluation.evaluee_id ?? 0)
+
+  if (evaluee === null) {
+    throw new CustomError("Evaluee not found", 400)
+  }
+
+  const evaluator =
+    evaluation.is_external === true
+      ? await ExternalUserRepository.getById(evaluation.external_evaluator_id ?? 0)
+      : await UserRepository.getById(evaluation.evaluator_id ?? 0)
+
+  if (evaluator === null) {
+    throw new CustomError("Evaluator not found", 400)
+  }
+
+  const emailTemplate = await EmailTemplateRepository.getByTemplateType(
+    "Declined Request to Remove Evaluee"
+  )
+
+  if (emailTemplate === null) {
+    throw new CustomError("Email template not found", 400)
+  }
+
+  const project = await ProjectRepository.getById(evaluation.project_id ?? 0)
+
+  const emailSubject = emailTemplate.subject ?? ""
+  const emailContent = emailTemplate.content ?? ""
+
+  let project_details = ""
+  if (project !== null) {
+    const projectDuration = formatDateRange(
+      evaluation.eval_start_date?.toLocaleString(),
+      evaluation.eval_end_date?.toLocaleString()
+    )
+    project_details = `for ${project.name} during ${projectDuration}`
+  }
+
+  const replacements: Record<string, string> = {
+    template_name: evaluationTemplate.display_name ?? "",
+    evaluee_first_name: evaluee.first_name ?? "",
+    evaluee_last_name: evaluee.last_name ?? "",
+    evaluator_first_name: evaluator.first_name ?? "",
+    template_display_name: evaluationTemplate.display_name ?? "",
+    project_details,
+  }
+
+  const modifiedSubject: string = emailSubject.replace(
+    /{{(.*?)}}/g,
+    (match: string, p1: string) => {
+      return replacements[p1] ?? match
+    }
+  )
+  let modifiedContent: string = emailContent.replace(/{{(.*?)}}/g, (match: string, p1: string) => {
+    return replacements[p1] ?? match
+  })
+  modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
+
+  await sendMail(evaluator.email, modifiedSubject, modifiedContent)
+
+  await EvaluationRepository.updateStatusById(evaluation.id, EvaluationStatus.Ongoing)
 }
