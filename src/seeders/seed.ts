@@ -168,6 +168,13 @@ const createEmailTemplates = async () => {
       content: `Dear {{evaluator_first_name}},\n\nI hope this email finds you well. We appreciate your valuable contribution to our performance evaluation process. However, it seems that your feedback is still pending for the following:\n\n{{evaluee_list}}\nCompleting the evaluation is crucial for fostering growth and continuous improvement within our team. Your insights are instrumental in shaping a well-rounded assessment.\n\nCould you please take a few moments to finalize and submit your performance evaluation? Your input is highly valued and plays a significant role in recognizing achievements and identifying areas for development.\n\nDeadline for Completion: {{evaluation_end_date}}\n\nIf you have already completed the evaluation, please disregard this message, and we extend our heartfelt gratitude for your prompt response.\n\nThank you for your commitment to our shared success. If you encounter any issues or have questions, feel free to reach out to hr@nerubia.com.\n\nBest regards,\nKH360 Team`,
     },
     {
+      name: "Request to Remove Evaluation",
+      template_type: "Request to Remove Evaluation",
+      is_default: true,
+      subject: "Request to Remove Evaluation",
+      content: `Dear KH360 Admin,\n\nI would like to request to remove {{evaluee_first_name}} {{evaluee_last_name}} with details below from my list of evaluees:\nEvaluation Type: {{template_display_name}}\n{{project name information}}\n{{project duration information}}\n\nComments: {{comments}}\n\nClick on this {{link}} to approve or reject this request.\n\nThanks and Best Regards,\nKH360 Team on behalf of {{evaluator first name}} {{evaluator_last_name}}`,
+    },
+    {
       name: "Evaluation Completed 🎉",
       template_type: "Evaluation Complete Thank You Message",
       is_default: true,
@@ -253,6 +260,28 @@ const createEmailTemplates = async () => {
   }
 }
 
+const createEmailRecipients = async () => {
+  const emailRecipients = [
+    {
+      email_type: "KH360 Admin",
+      email: "kh360admin@nerubia.com",
+      status: true,
+    },
+  ]
+  for (const data of emailRecipients) {
+    const emailRecipient = await prisma.email_recipients.findFirst({
+      where: {
+        email_type: data.email_type,
+      },
+    })
+    if (emailRecipient === null) {
+      await prisma.email_recipients.create({
+        data,
+      })
+    }
+  }
+}
+
 const setAnswerTypes = async () => {
   const answerOptions = await prisma.answer_options.findMany()
 
@@ -293,6 +322,7 @@ async function main() {
   if (process.env.APP_ENV === Environment.Production) {
     await createRoles()
     await createEmailTemplates()
+    await createEmailRecipients()
   }
   if (process.env.APP_ENV === Environment.Local) {
     await createUsers()
