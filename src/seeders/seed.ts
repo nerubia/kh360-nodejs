@@ -209,6 +209,13 @@ const createEmailTemplates = async () => {
       content: `Thank you for completing the evaluation form! Your feedback is invaluable to us. 🌟`,
     },
     {
+      name: "Evaluation Results Now Available",
+      template_type: "Publish Evaluation Results",
+      is_default: true,
+      subject: "Performance Evaluation Results Now Available",
+      content: `Hi {{evaluee_first_name}},\n\nI hope this message finds you well. We wanted to inform you that the results of your recent performance evaluation are now available for your review.\n\nTo access your evaluation, please click on this {{link}} or you can log in to KH360 and navigate to the "My Evaluations" section.\n\nWe encourage you to take the time to carefully review the feedback provided. This is an opportunity to reflect on your accomplishments and areas for improvement, and to discuss any questions or concerns you may have with your Career Manager during your upcoming performance review meeting.\n\nIf you encounter any technical difficulties or have questions regarding the content of your evaluation, please don't hesitate to reach out to our HR department at hr@nerubia.com.\n\nThank you for your hard work and dedication to the company. We value your contributions and look forward to supporting your continued success.\n\nCheers,\nKH360 Team`,
+    },
+    {
       name: "No Available Evaluation Results",
       template_type: "No Available Evaluation Results",
       is_default: true,
