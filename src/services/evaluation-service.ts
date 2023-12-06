@@ -26,6 +26,7 @@ export const getAllByFilters = async (where: Prisma.evaluationsWhereInput) => {
 export const getEvaluations = async (
   evaluation_administration_id: number,
   evaluator_id: number,
+  external_evaluator_id: number,
   evaluation_template_id: number,
   evaluation_result_id: number,
   for_evaluation: boolean
@@ -35,6 +36,11 @@ export const getEvaluations = async (
   if (!isNaN(evaluator_id)) {
     where = {
       evaluator_id,
+      evaluation_administration_id,
+    }
+  } else if (!isNaN(external_evaluator_id)) {
+    where = {
+      external_evaluator_id,
       evaluation_administration_id,
     }
   } else {
@@ -306,7 +312,7 @@ export const approve = async (id: number) => {
   if (project !== null) {
     const projectDuration = formatDateRange(
       new Date(evaluation.eval_start_date ?? ""),
-      new Date(evaluation.eval_end_date ?? ""),
+      new Date(evaluation.eval_end_date ?? "")
     )
     project_details = `for ${project.name} during ${projectDuration}`
   }
@@ -388,7 +394,7 @@ export const decline = async (id: number) => {
   if (project !== null) {
     const projectDuration = formatDateRange(
       new Date(evaluation.eval_start_date ?? ""),
-      new Date(evaluation.eval_end_date ?? ""),
+      new Date(evaluation.eval_end_date ?? "")
     )
     project_details = `for ${project.name} during ${projectDuration}`
   }
