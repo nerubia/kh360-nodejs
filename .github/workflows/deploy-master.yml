@@ -1,11 +1,11 @@
-name: Deploy
+name: Deploy master
 
 on:
   workflow_run:
     workflows: ["CI"]
     types:
       - completed
-    branches: ["main"]
+    branches: ["master"]
 
 jobs:
   deploy:
@@ -17,9 +17,9 @@ jobs:
       - uses: actions/checkout@v3
       - name: Build & Deploy
         env:
-          PRIVATE_KEY: ${{ secrets.SSH_KEY }}
-          HOSTNAME: ${{ secrets.HOST }}
-          USER_NAME: ${{ secrets.USERNAME }}
+          PRIVATE_KEY: ${{ secrets.LIVE_SSH_KEY }}
+          HOSTNAME: ${{ secrets.LIVE_HOST }}
+          USER_NAME: ${{ secrets.LIVE_USERNAME }}
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
