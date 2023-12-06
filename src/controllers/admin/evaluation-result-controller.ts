@@ -585,7 +585,7 @@ export const setStatus = async (req: Request, res: Response) => {
     res.json(updateEvaluationResult)
   } catch (error) {
     if (error instanceof CustomError) {
-      return res.status(error.status).json({ message: error.message })
+      return res.status(error.status).json({ message: error.message, data: error.data })
     }
     res.status(500).json({ message: "Something went wrong" })
   }
