@@ -150,6 +150,7 @@ export const getUserEvaluations = async (
       return {
         id: evaluation.id,
         comments: evaluation.comments,
+        recommendations: evaluation.recommendations,
         eval_start_date: evaluation.eval_start_date,
         eval_end_date: evaluation.eval_end_date,
         percent_involvement: evaluation.percent_involvement,

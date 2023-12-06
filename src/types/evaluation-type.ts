@@ -7,6 +7,7 @@ export interface Evaluation {
   weight?: number
   weighted_score?: number
   comments?: string
+  recommendations?: string
   status?: string
   submission_method?: string
   submitted_date?: Date

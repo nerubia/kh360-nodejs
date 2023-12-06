@@ -32,6 +32,7 @@ export const submitEvaluation = async (
   answer_option_ids: number[],
   evaluation_rating_ids: number[],
   comment: string,
+  recommendation: string,
   evaluation_rating_comments: string[],
   is_submitting: boolean
 ) => {
@@ -72,6 +73,7 @@ export const submitEvaluation = async (
   if (evaluation?.id !== undefined) {
     await EvaluationRepository.updateById(evaluation.id, {
       comments: comment,
+      recommendations: recommendation,
       status: EvaluationStatus.Ongoing,
       updated_at: new Date(),
     })
