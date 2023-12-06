@@ -5,10 +5,11 @@ on:
     workflows: ["CI"]
     types:
       - completed
-    branches: ["main"]
+    branches: ["main", "master"]
 
 jobs:
   deploy:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -20,6 +21,34 @@ jobs:
           PRIVATE_KEY: ${{ secrets.SSH_KEY }}
           HOSTNAME: ${{ secrets.HOST }}
           USER_NAME: ${{ secrets.USERNAME }}
+        run: |
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+              export NVM_DIR=~/.nvm
+              source ~/.nvm/nvm.sh &&
+              cd /home/jlerit/kh360-nodejs &&
+              pm2 kill &&
+              git pull &&
+              npm install &&
+              npx prisma migrate deploy &&
+              npx prisma generate &&
+              npx prisma db seed &&
+              npm run build &&
+              pm2 start npm -- start
+              '
+  deploy-master:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build & Deploy
+        env:
+          PRIVATE_KEY: ${{ secrets.LIVE_SSH_KEY }}
+          HOSTNAME: ${{ secrets.LIVE_HOST }}
+          USER_NAME: ${{ secrets.LIVE_USERNAME }}
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
