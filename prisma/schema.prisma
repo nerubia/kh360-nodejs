@@ -487,19 +487,20 @@ model evaluation_template_contents {
 }
 
 model evaluation_templates {
-  id                Int       @id @default(autoincrement())
-  name              String?   @db.VarChar(100)
-  display_name      String?   @default("") @db.VarChar(100)
-  template_type     String?   @db.VarChar(100)
-  template_class    String?   @db.VarChar(100)
-  evaluator_role_id Int?
-  evaluee_role_id   Int?
-  rate              Decimal?  @default(0.00) @db.Decimal(5, 2)
-  answer_id         Int?
-  description       String?   @db.VarChar(255)
-  is_active         Boolean?
-  created_at        DateTime? @db.DateTime(0)
-  updated_at        DateTime? @db.DateTime(0)
+  id                  Int       @id @default(autoincrement())
+  name                String?   @db.VarChar(100)
+  display_name        String?   @default("") @db.VarChar(100)
+  template_type       String?   @db.VarChar(100)
+  template_class      String?   @db.VarChar(100)
+  with_recommendation Boolean?  @default(false)
+  evaluator_role_id   Int?
+  evaluee_role_id     Int?
+  rate                Decimal?  @default(0.00) @db.Decimal(5, 2)
+  answer_id           Int?
+  description         String?   @db.VarChar(255)
+  is_active           Boolean?
+  created_at          DateTime? @db.DateTime(0)
+  updated_at          DateTime? @db.DateTime(0)
 }
 
 model evaluations {
@@ -521,6 +522,7 @@ model evaluations {
   zscore                       Decimal?         @default(0.0000) @db.Decimal(10, 4)
   weighted_zscore              Decimal?         @default(0.0000) @db.Decimal(10, 4)
   comments                     String?          @db.Text
+  recommendations              String?          @db.Text
   status                       String?          @default("") @db.VarChar(20)
   batch_name                   String?          @default("") @db.VarChar(255)
   filename                     String?          @default("") @db.VarChar(255)
