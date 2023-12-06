@@ -89,6 +89,7 @@ export const getEvaluations = async (
         project_role: projectRole,
         external_evaluator_id: evaluation.external_evaluator_id,
         template,
+        comments: evaluation.comments,
       }
     })
   )

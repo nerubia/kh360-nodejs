@@ -518,6 +518,9 @@ export const getEvaluators = async (id: number) => {
         evaluation_administration_id: evaluationAdministration.id,
         for_evaluation: true,
         evaluator_id: evaluator.id,
+        status: {
+          notIn: [EvaluationStatus.Removed],
+        },
       })
 
       evaluators.push({
