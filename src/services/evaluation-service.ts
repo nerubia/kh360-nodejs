@@ -198,10 +198,24 @@ export const updateProjectById = async (
     throw new CustomError("Id not found", 400)
   }
 
-  await EvaluationRepository.updateProjectById(evaluation.id, project.id, projectMember.id)
+  const eval_start_date = projectMember.start_date
+  const eval_end_date = projectMember.end_date
+  const percent_involvement = Number(projectMember.allocation_rate) ?? 100
+
+  await EvaluationRepository.updateProjectById(
+    evaluation.id,
+    project.id,
+    projectMember.id,
+    eval_start_date,
+    eval_end_date,
+    percent_involvement
+  )
 
   return {
     id: evaluation.id,
+    eval_start_date,
+    eval_end_date,
+    percent_involvement,
     project,
   }
 }

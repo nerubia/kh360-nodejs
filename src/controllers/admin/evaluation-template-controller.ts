@@ -1,5 +1,6 @@
 import { type Request, type Response } from "express"
 import prisma from "../../utils/prisma"
+import * as ProjectRoleRepository from "../../repositories/project-role-repository"
 
 /**
  * List evaluation templates based on provided filters.
@@ -35,7 +36,17 @@ export const index = async (req: Request, res: Response) => {
       },
     })
 
-    res.json(evaluationTemplates)
+    const final = await Promise.all(
+      evaluationTemplates.map(async (template) => {
+        const project_role = await ProjectRoleRepository.getById(template.evaluee_role_id ?? 0)
+        return {
+          ...template,
+          project_role,
+        }
+      })
+    )
+
+    res.json(final)
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
