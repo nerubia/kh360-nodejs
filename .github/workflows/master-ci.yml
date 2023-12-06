@@ -1,9 +1,9 @@
-name: CI
+name: CI Master
 
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   lint:
