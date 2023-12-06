@@ -144,6 +144,7 @@ export const getUserEvaluations = async (
       return {
         id: evaluation.id,
         comments: evaluation.comments,
+        recommendations: evaluation.recommendations,
         eval_start_date: evaluation.eval_start_date,
         eval_end_date: evaluation.eval_end_date,
         percent_involvement: evaluation.percent_involvement,
@@ -306,7 +307,7 @@ export const approve = async (id: number) => {
   if (project !== null) {
     const projectDuration = formatDateRange(
       new Date(evaluation.eval_start_date ?? ""),
-      new Date(evaluation.eval_end_date ?? ""),
+      new Date(evaluation.eval_end_date ?? "")
     )
     project_details = `for ${project.name} during ${projectDuration}`
   }
@@ -388,7 +389,7 @@ export const decline = async (id: number) => {
   if (project !== null) {
     const projectDuration = formatDateRange(
       new Date(evaluation.eval_start_date ?? ""),
-      new Date(evaluation.eval_end_date ?? ""),
+      new Date(evaluation.eval_end_date ?? "")
     )
     project_details = `for ${project.name} during ${projectDuration}`
   }

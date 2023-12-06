@@ -128,6 +128,7 @@ export const submitEvaluation = async (req: Request, res: Response) => {
       evaluation_rating_comments,
       answer_option_ids,
       comment,
+      recommendation,
       is_submitting,
     } = req.body
 
@@ -137,6 +138,7 @@ export const submitEvaluation = async (req: Request, res: Response) => {
       answer_option_ids as number[],
       evaluation_rating_ids as number[],
       comment,
+      recommendation,
       evaluation_rating_comments as string[],
       is_submitting
     )
