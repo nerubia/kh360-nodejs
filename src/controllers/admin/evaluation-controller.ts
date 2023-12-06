@@ -8,6 +8,7 @@ import CustomError from "../../utils/custom-error"
  * List evaluations based on provided filters.
  * @param req.query.evaluation_administration_id - Filter by evaluation administration id.
  * @param req.query.evaluator_id - Filter by evaluator id.
+ * @param req.query.external_evaluator_id - Filter by external evaluator id.
  * @param req.query.evaluation_template_id - Filter by evaluation template id.
  * @param req.query.evaluation_result_id - Filter by evaluation result id.
  * @param req.query.for_evaluation - Filter by for_evaluation.
@@ -17,6 +18,7 @@ export const index = async (req: Request, res: Response) => {
     const {
       evaluation_administration_id,
       evaluator_id,
+      external_evaluator_id,
       evaluation_template_id,
       evaluation_result_id,
       for_evaluation,
@@ -25,6 +27,7 @@ export const index = async (req: Request, res: Response) => {
     const evaluations = await EvaluationService.getEvaluations(
       parseInt(evaluation_administration_id as string),
       parseInt(evaluator_id as string),
+      parseInt(external_evaluator_id as string),
       parseInt(evaluation_template_id as string),
       parseInt(evaluation_result_id as string),
       Boolean(for_evaluation)
