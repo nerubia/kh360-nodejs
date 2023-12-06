@@ -106,6 +106,19 @@ const createEvaluationResults = async () => {
   })
 }
 
+const updateEvaluationTemplates = async () => {
+  await prisma.evaluation_templates.updateMany({
+    where: {
+      id: {
+        in: [1, 4, 6, 8],
+      },
+    },
+    data: {
+      with_recommendation: true,
+    },
+  })
+}
+
 /**
  * Production
  */
@@ -337,6 +350,7 @@ async function main() {
     await createRoles()
     await createEmailTemplates()
     await createEmailRecipients()
+    await updateEvaluationTemplates()
   }
   if (process.env.APP_ENV === Environment.Local) {
     await createUsers()
