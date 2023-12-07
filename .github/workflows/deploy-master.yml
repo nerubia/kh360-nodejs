@@ -42,6 +42,27 @@ jobs:
       matrix:
         node-version: [18.x]
     steps:
+      - name: Get public IP
+        id: get-ip
+        run: echo "::set-output name=ip_address::$(curl -s https://api64.ipify.org?format=text)"
+      - name: Print IP address
+        run: echo "Public IP Address ${{ steps.get-ip.outputs.ip_address }}"
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Authorize Security Group Ingress
+        run: |
+          aws ec2 authorize-security-group-ingress \
+            --region ${{ secrets.AWS_REGION }} \
+            --group-id ${{ secrets.LIVE_AWS_SEC_GROUP_ID }} \
+            --protocol tcp \
+            --port 22 \
+            --cidr ${{ steps.get-ip.outputs.ip_address }}/32
+            --tags Key=Description,Value="added by github action to allow access"
+
       - uses: actions/checkout@v3
       - name: Build & Deploy
         env:
@@ -63,3 +84,12 @@ jobs:
               npm run build &&
               pm2 start npm -- start
               '
+
+      - name: Revoke Security Group Ingress
+        run: |
+          aws ec2 revoke-security-group-ingress \
+            --region ${{ secrets.AWS_REGION }} \
+            --group-id ${{ secrets.LIVE_AWS_SEC_GROUP_ID }} \
+            --protocol tcp \
+            --port 22 \
+            --cidr ${{ steps.get-ip.outputs.ip_address }}/32
