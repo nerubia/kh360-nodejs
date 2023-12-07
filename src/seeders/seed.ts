@@ -185,7 +185,7 @@ const createEmailTemplates = async () => {
       template_type: "Request to Remove Evaluation",
       is_default: true,
       subject: "Request to Remove Evaluation",
-      content: `Dear KH360 Admin,\n\nI would like to request to remove {{evaluee_first_name}} {{evaluee_last_name}} with details below from my list of evaluees:\nEvaluation Type: {{template_display_name}}\n{{project name information}}\n{{project duration information}}\n\nComments: {{comments}}\n\nClick on this {{link}} to approve or reject this request.\n\nThanks and Best Regards,\nKH360 Team on behalf of {{evaluator first name}} {{evaluator_last_name}}`,
+      content: `Dear KH360 Admin,\n\nI would like to request to remove {{evaluee_first_name}} {{evaluee_last_name}} with details below from my list of evaluees:\n\nEvaluation Type: {{template_display_name}}\n{{project name information}}\n{{project duration information}}\nComments: {{comments}}\n\nClick on this {{link}} to approve or reject this request.\n\nThanks and Best Regards,\nKH360 Team on behalf of {{evaluator first name}} {{evaluator_last_name}}`,
     },
     {
       name: "Approved Request to Remove Evaluee",
