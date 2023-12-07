@@ -1,9 +1,9 @@
-name: Deploy main
+name: Deploy beta
 
 on:
   push:
     branches:
-      - main
+      - beta
 
 jobs:
   lint:
