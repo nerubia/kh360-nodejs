@@ -46,6 +46,14 @@ export const getProjectMembers = async (
           lte: evaluationAdministration.eval_period_end_date ?? new Date(),
         },
       },
+      {
+        start_date: { lte: evaluationAdministration.eval_period_start_date ?? new Date() },
+        end_date: { gte: evaluationAdministration.eval_period_end_date ?? new Date() },
+      },
+      {
+        start_date: { gte: evaluationAdministration.eval_period_start_date ?? new Date() },
+        end_date: { lte: evaluationAdministration.eval_period_end_date ?? new Date() },
+      },
     ],
   })
 
