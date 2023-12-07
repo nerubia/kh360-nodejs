@@ -243,6 +243,49 @@ export const close = async (id: number) => {
   )
 }
 
+export const publish = async (id: number) => {
+  const evaluationAdministration = await EvaluationAdministrationRepository.getById(id)
+
+  if (evaluationAdministration === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
+  if (evaluationAdministration.status !== EvaluationAdministrationStatus.Closed) {
+    throw new CustomError("Only close status is allowed.", 403)
+  }
+
+  const emailTemplate = await EmailTemplateRepository.getByTemplateType(
+    "Publish Evaluation Results"
+  )
+
+  if (emailTemplate === null) {
+    throw new CustomError("Email template not found", 400)
+  }
+
+  const evaluationResults = await EvaluationResultRepository.getAllByEvaluationAdministrationId(
+    evaluationAdministration.id
+  )
+
+  for (const evaluationResult of evaluationResults) {
+    const evaluee = await UserRepository.getById(evaluationResult.user_id ?? 0)
+    if (evaluee !== null) {
+      let modifiedContent = emailTemplate.content ?? ""
+      modifiedContent = modifiedContent.replace("{{evaluee_first_name}}", `${evaluee.first_name}`)
+      modifiedContent = modifiedContent.replace(
+        "{{link}}",
+        `<a href='${process.env.APP_URL}/my-evaluations/${evaluationResult.id}'>link</a>`
+      )
+      modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
+      await sendMail(evaluee.email, emailTemplate.subject ?? "", modifiedContent)
+    }
+  }
+
+  await EvaluationAdministrationRepository.updateStatusById(
+    evaluationAdministration.id,
+    EvaluationAdministrationStatus.Published
+  )
+}
+
 export const sendReminderByEvaluator = async (
   id: number,
   user_id: number,

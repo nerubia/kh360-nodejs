@@ -13,6 +13,7 @@ router.get("/:id/generate-status", EvaluationAdministrationController.generateSt
 router.post("/:id/generate", EvaluationAdministrationController.generate)
 router.post("/:id/cancel", EvaluationAdministrationController.cancel)
 router.post("/:id/close", EvaluationAdministrationController.close)
+router.post("/:id/publish", EvaluationAdministrationController.publish)
 
 router.post("/:id/send-reminder", EvaluationAdministrationController.sendReminder)
 

@@ -476,6 +476,26 @@ export const close = async (req: Request, res: Response) => {
     await EvaluationAdministrationService.close(parseInt(id))
     res.json({ id })
   } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Publish a specific evaluation administration by ID.
+ * @param req.params.id - The unique ID of the evaluation administration.
+ */
+export const publish = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    await EvaluationAdministrationService.publish(parseInt(id))
+    res.json({ id })
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
     res.status(500).json({ message: "Something went wrong" })
   }
 }
