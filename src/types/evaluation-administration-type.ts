@@ -17,4 +17,5 @@ export enum EvaluationAdministrationStatus {
   Ongoing = "Ongoing",
   Closed = "Closed",
   Cancelled = "Cancelled",
+  Published = "Published",
 }
