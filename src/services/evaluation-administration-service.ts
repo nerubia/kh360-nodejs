@@ -22,7 +22,6 @@ import { sendMail } from "../utils/sendgrid"
 import CustomError from "../utils/custom-error"
 import { EvaluationResultStatus } from "../types/evaluation-result-type"
 import { EvaluationStatus } from "../types/evaluation-type"
-import { Decimal } from "@prisma/client/runtime/library"
 
 export const getAllByStatusAndDate = async (status: string, date: Date) => {
   return await EvaluationAdministrationRepository.getAllByStatusAndDate(status, date)
@@ -661,9 +660,9 @@ export const addExternalEvaluators = async (
         evaluee_id: evaluee.id,
         project_id: null,
         for_evaluation: true,
-        eval_start_date: evaluationAdministration.eval_period_start_date,
-        eval_end_date: evaluationAdministration.eval_period_end_date,
-        percent_involvement: new Decimal(100),
+        eval_start_date: null,
+        eval_end_date: null,
+        percent_involvement: null,
         status: EvaluationStatus.Draft,
         submission_method: null,
         is_external: true,
