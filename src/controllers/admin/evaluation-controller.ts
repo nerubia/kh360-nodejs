@@ -101,7 +101,7 @@ export const approve = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     await EvaluationService.approve(parseInt(id))
-    res.json({ id })
+    res.json({ id, status: EvaluationStatus.Removed })
   } catch (error) {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
@@ -118,7 +118,7 @@ export const decline = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     await EvaluationService.decline(parseInt(id))
-    res.json({ id })
+    res.json({ id, status: EvaluationStatus.Ongoing })
   } catch (error) {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })

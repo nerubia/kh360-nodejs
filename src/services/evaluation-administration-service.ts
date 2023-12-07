@@ -22,7 +22,6 @@ import { sendMail } from "../utils/sendgrid"
 import CustomError from "../utils/custom-error"
 import { EvaluationResultStatus } from "../types/evaluation-result-type"
 import { EvaluationStatus } from "../types/evaluation-type"
-import { Decimal } from "@prisma/client/runtime/library"
 
 export const getAllByStatusAndDate = async (status: string, date: Date) => {
   return await EvaluationAdministrationRepository.getAllByStatusAndDate(status, date)
@@ -105,7 +104,7 @@ export const sendEvaluationEmailById = async (id: number) => {
       const evaluator = await UserRepository.getById(evaluation.evaluator_id ?? 0)
       modifiedContent = modifiedContent.replace(
         "{{link}}",
-        `${process.env.APP_URL}/evaluation-administrations/${evaluationAdministration.id}/evaluations/all`
+        `<a href='${process.env.APP_URL}/evaluation-administrations/${evaluationAdministration.id}/evaluations/all'>link</a>`
       )
       modifiedContent = modifiedContent.replace("{{passcode}}", "")
       if (evaluator !== null) {
@@ -240,6 +239,49 @@ export const close = async (id: number) => {
   await EvaluationAdministrationRepository.updateStatusById(
     evaluationAdministration.id,
     EvaluationAdministrationStatus.Closed
+  )
+}
+
+export const publish = async (id: number) => {
+  const evaluationAdministration = await EvaluationAdministrationRepository.getById(id)
+
+  if (evaluationAdministration === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
+  if (evaluationAdministration.status !== EvaluationAdministrationStatus.Closed) {
+    throw new CustomError("Only close status is allowed.", 403)
+  }
+
+  const emailTemplate = await EmailTemplateRepository.getByTemplateType(
+    "Publish Evaluation Results"
+  )
+
+  if (emailTemplate === null) {
+    throw new CustomError("Email template not found", 400)
+  }
+
+  const evaluationResults = await EvaluationResultRepository.getAllByEvaluationAdministrationId(
+    evaluationAdministration.id
+  )
+
+  for (const evaluationResult of evaluationResults) {
+    const evaluee = await UserRepository.getById(evaluationResult.user_id ?? 0)
+    if (evaluee !== null) {
+      let modifiedContent = emailTemplate.content ?? ""
+      modifiedContent = modifiedContent.replace("{{evaluee_first_name}}", `${evaluee.first_name}`)
+      modifiedContent = modifiedContent.replace(
+        "{{link}}",
+        `<a href='${process.env.APP_URL}/my-evaluations/${evaluationResult.id}'>link</a>`
+      )
+      modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
+      await sendMail(evaluee.email, emailTemplate.subject ?? "", modifiedContent)
+    }
+  }
+
+  await EvaluationAdministrationRepository.updateStatusById(
+    evaluationAdministration.id,
+    EvaluationAdministrationStatus.Published
   )
 }
 
@@ -518,6 +560,9 @@ export const getEvaluators = async (id: number) => {
         evaluation_administration_id: evaluationAdministration.id,
         for_evaluation: true,
         evaluator_id: evaluator.id,
+        status: {
+          notIn: [EvaluationStatus.Removed],
+        },
       })
 
       evaluators.push({
@@ -615,9 +660,9 @@ export const addExternalEvaluators = async (
         evaluee_id: evaluee.id,
         project_id: null,
         for_evaluation: true,
-        eval_start_date: evaluationAdministration.eval_period_start_date,
-        eval_end_date: evaluationAdministration.eval_period_end_date,
-        percent_involvement: new Decimal(100),
+        eval_start_date: null,
+        eval_end_date: null,
+        percent_involvement: null,
         status: EvaluationStatus.Draft,
         submission_method: null,
         is_external: true,

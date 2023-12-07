@@ -164,7 +164,7 @@ const createEmailTemplates = async () => {
       template_type: "Create Evaluation",
       is_default: true,
       subject: "Request for Evaluation",
-      content: `Dear Evaluator,\n\nGood day!\n\nAs part of our commitment to professional development and fostering a culture of feedback, we are reaching out to request for you to evaluate the performance your respective colleagues during this period: {{evaluation_period}}.\n\nPlease click this {{link}} to access {{evaluation_name}}. {{passcode}}\n\nFeel free to add any additional comments or insights you believe are relevant. Your insights are invaluable in providing an understanding of each persons's contributions and areas for growth to help enhance their performance and contribute effectively to the overall success of the team.\n\nThe deadline for completing these evaluations is on {{eval_schedule_end_date}}. If you encounter any technical issues or have questions regarding the process, please feel free to reach out to any of the HR team members at hr@nerubia.com.\n\nThank you for your dedication to fostering a culture of continuous improvement within our company.`,
+      content: `Dear Evaluator,\n\nGood day!\n\nAs part of our commitment to professional development and fostering a culture of feedback, we are reaching out to request for you to evaluate the performance your respective colleagues during this period: {{evaluation_period}}.\n\nPlease click this {{link}} to access {{evaluation_name}}. {{passcode}}\n\nFeel free to add any additional comments or insights you believe are relevant. Your insights are invaluable in providing an understanding of each persons's contributions and areas for growth to help enhance their performance and contribute effectively to the overall success of the team.\n\nThe deadline for completing these evaluations is on {{eval_schedule_end_date}}. If you encounter any technical issues or have questions regarding the process, please feel free to reach out to any of the HR team members at hr@nerubia.com.\n\nThank you for your dedication to fostering a culture of continuous improvement within our company.\n\nBest Regards,\nKH360 Team`,
     },
     {
       name: "Reset Verification Code Email",
@@ -185,7 +185,7 @@ const createEmailTemplates = async () => {
       template_type: "Request to Remove Evaluation",
       is_default: true,
       subject: "Request to Remove Evaluation",
-      content: `Dear KH360 Admin,\n\nI would like to request to remove {{evaluee_first_name}} {{evaluee_last_name}} with details below from my list of evaluees:\nEvaluation Type: {{template_display_name}}\n{{project name information}}\n{{project duration information}}\n\nComments: {{comments}}\n\nClick on this {{link}} to approve or reject this request.\n\nThanks and Best Regards,\nKH360 Team on behalf of {{evaluator first name}} {{evaluator_last_name}}`,
+      content: `Dear KH360 Admin,\n\nI would like to request to remove {{evaluee_first_name}} {{evaluee_last_name}} with details below from my list of evaluees:\n\nEvaluation Type: {{template_display_name}}\n{{project name information}}\n{{project duration information}}\nComments: {{comments}}\n\nClick on this {{link}} to approve or reject this request.\n\nThanks and Best Regards,\nKH360 Team on behalf of {{evaluator first name}} {{evaluator_last_name}}`,
     },
     {
       name: "Approved Request to Remove Evaluee",
@@ -207,6 +207,13 @@ const createEmailTemplates = async () => {
       is_default: true,
       subject: "Evaluation Completed 🎉",
       content: `Thank you for completing the evaluation form! Your feedback is invaluable to us. 🌟`,
+    },
+    {
+      name: "Evaluation Results Now Available",
+      template_type: "Publish Evaluation Results",
+      is_default: true,
+      subject: "Performance Evaluation Results Now Available",
+      content: `Hi {{evaluee_first_name}},\n\nI hope this message finds you well. We wanted to inform you that the results of your recent performance evaluation are now available for your review.\n\nTo access your evaluation, please click on this {{link}} or you can log in to KH360 and navigate to the "My Evaluations" section.\n\nWe encourage you to take the time to carefully review the feedback provided. This is an opportunity to reflect on your accomplishments and areas for improvement, and to discuss any questions or concerns you may have with your Career Manager during your upcoming performance review meeting.\n\nIf you encounter any technical difficulties or have questions regarding the content of your evaluation, please don't hesitate to reach out to our HR department at hr@nerubia.com.\n\nThank you for your hard work and dedication to the company. We value your contributions and look forward to supporting your continued success.\n\nCheers,\nKH360 Team`,
     },
     {
       name: "No Available Evaluation Results",
@@ -281,6 +288,13 @@ const createEmailTemplates = async () => {
     })
     if (emailTemplate === null) {
       await prisma.email_templates.create({
+        data,
+      })
+    } else {
+      await prisma.email_templates.update({
+        where: {
+          id: emailTemplate.id,
+        },
         data,
       })
     }

@@ -241,6 +241,14 @@ export const store = async (req: Request, res: Response) => {
                 lte: evaluationAdministration.eval_period_end_date ?? new Date(),
               },
             },
+            {
+              start_date: { lte: evaluationAdministration.eval_period_start_date ?? new Date() },
+              end_date: { gte: evaluationAdministration.eval_period_end_date ?? new Date() },
+            },
+            {
+              start_date: { gte: evaluationAdministration.eval_period_start_date ?? new Date() },
+              end_date: { lte: evaluationAdministration.eval_period_end_date ?? new Date() },
+            },
           ],
         },
       })
@@ -296,6 +304,14 @@ export const store = async (req: Request, res: Response) => {
                   gte: evaluationAdministration.eval_period_start_date ?? new Date(),
                   lte: evaluationAdministration.eval_period_end_date ?? new Date(),
                 },
+              },
+              {
+                start_date: { lte: evaluationAdministration.eval_period_start_date ?? new Date() },
+                end_date: { gte: evaluationAdministration.eval_period_end_date ?? new Date() },
+              },
+              {
+                start_date: { gte: evaluationAdministration.eval_period_start_date ?? new Date() },
+                end_date: { lte: evaluationAdministration.eval_period_end_date ?? new Date() },
               },
             ],
           },
@@ -585,7 +601,7 @@ export const setStatus = async (req: Request, res: Response) => {
     res.json(updateEvaluationResult)
   } catch (error) {
     if (error instanceof CustomError) {
-      return res.status(error.status).json({ message: error.message })
+      return res.status(error.status).json({ message: error.message, data: error.data })
     }
     res.status(500).json({ message: "Something went wrong" })
   }

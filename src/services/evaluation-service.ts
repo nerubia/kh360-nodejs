@@ -1,5 +1,6 @@
 import { type Prisma } from "@prisma/client"
 import * as EmailTemplateRepository from "../repositories/email-template-repository"
+import * as EvaluationAdministrationRepository from "../repositories/evaluation-administration-repository"
 import * as EvaluationRatingRepository from "../repositories/evaluation-rating-repository"
 import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as EvaluationTemplateRepository from "../repositories/evaluation-template-repository"
@@ -89,6 +90,7 @@ export const getEvaluations = async (
         project_role: projectRole,
         external_evaluator_id: evaluation.external_evaluator_id,
         template,
+        comments: evaluation.comments,
       }
     })
   )
@@ -186,6 +188,14 @@ export const updateProjectById = async (
     throw new CustomError("Id not found", 400)
   }
 
+  const evaluationAdministration = await EvaluationAdministrationRepository.getById(
+    evaluation.evaluation_administration_id ?? 0
+  )
+
+  if (evaluationAdministration === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
   const project = await ProjectRepository.getById(project_id)
 
   if (project === null) {
@@ -198,10 +208,30 @@ export const updateProjectById = async (
     throw new CustomError("Id not found", 400)
   }
 
-  await EvaluationRepository.updateProjectById(evaluation.id, project.id, projectMember.id)
+  const eval_start_date =
+    (projectMember.start_date ?? 0) < (evaluationAdministration.eval_period_start_date ?? 0)
+      ? evaluationAdministration.eval_period_start_date
+      : projectMember.start_date
+  const eval_end_date =
+    (projectMember.end_date ?? 0) > (evaluationAdministration.eval_period_end_date ?? 0)
+      ? evaluationAdministration.eval_period_end_date
+      : projectMember.end_date
+  const percent_involvement = Number(projectMember.allocation_rate) ?? 100
+
+  await EvaluationRepository.updateProjectById(
+    evaluation.id,
+    project.id,
+    projectMember.id,
+    eval_start_date,
+    eval_end_date,
+    percent_involvement
+  )
 
   return {
     id: evaluation.id,
+    eval_start_date,
+    eval_end_date,
+    percent_involvement,
     project,
   }
 }
