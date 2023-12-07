@@ -104,7 +104,7 @@ export const sendEvaluationEmailById = async (id: number) => {
       const evaluator = await UserRepository.getById(evaluation.evaluator_id ?? 0)
       modifiedContent = modifiedContent.replace(
         "{{link}}",
-        `${process.env.APP_URL}/evaluation-administrations/${evaluationAdministration.id}/evaluations/all`
+        `<a href='${process.env.APP_URL}/evaluation-administrations/${evaluationAdministration.id}/evaluations/all'>link</a>`
       )
       modifiedContent = modifiedContent.replace("{{passcode}}", "")
       if (evaluator !== null) {

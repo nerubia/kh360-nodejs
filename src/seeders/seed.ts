@@ -164,7 +164,7 @@ const createEmailTemplates = async () => {
       template_type: "Create Evaluation",
       is_default: true,
       subject: "Request for Evaluation",
-      content: `Dear Evaluator,\n\nGood day!\n\nAs part of our commitment to professional development and fostering a culture of feedback, we are reaching out to request for you to evaluate the performance your respective colleagues during this period: {{evaluation_period}}.\n\nPlease click this {{link}} to access {{evaluation_name}}. {{passcode}}\n\nFeel free to add any additional comments or insights you believe are relevant. Your insights are invaluable in providing an understanding of each persons's contributions and areas for growth to help enhance their performance and contribute effectively to the overall success of the team.\n\nThe deadline for completing these evaluations is on {{eval_schedule_end_date}}. If you encounter any technical issues or have questions regarding the process, please feel free to reach out to any of the HR team members at hr@nerubia.com.\n\nThank you for your dedication to fostering a culture of continuous improvement within our company.`,
+      content: `Dear Evaluator,\n\nGood day!\n\nAs part of our commitment to professional development and fostering a culture of feedback, we are reaching out to request for you to evaluate the performance your respective colleagues during this period: {{evaluation_period}}.\n\nPlease click this {{link}} to access {{evaluation_name}}. {{passcode}}\n\nFeel free to add any additional comments or insights you believe are relevant. Your insights are invaluable in providing an understanding of each persons's contributions and areas for growth to help enhance their performance and contribute effectively to the overall success of the team.\n\nThe deadline for completing these evaluations is on {{eval_schedule_end_date}}. If you encounter any technical issues or have questions regarding the process, please feel free to reach out to any of the HR team members at hr@nerubia.com.\n\nThank you for your dedication to fostering a culture of continuous improvement within our company.\n\nBest Regards,\nKH360 Team`,
     },
     {
       name: "Reset Verification Code Email",
@@ -288,6 +288,13 @@ const createEmailTemplates = async () => {
     })
     if (emailTemplate === null) {
       await prisma.email_templates.create({
+        data,
+      })
+    } else {
+      await prisma.email_templates.update({
+        where: {
+          id: emailTemplate.id,
+        },
         data,
       })
     }
