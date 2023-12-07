@@ -396,6 +396,9 @@ export const getEvaluationAdministrations = async (user: UserToken, page: number
         evaluation_administration_id: evaluationAdministration.id,
         for_evaluation: true,
         ...(user.is_external ? { external_evaluator_id: user.id } : { evaluator_id: user.id }),
+        status: {
+          notIn: [EvaluationStatus.Removed],
+        },
       })
 
       const totalSubmitted = await EvaluationRepository.countAllByFilters({
