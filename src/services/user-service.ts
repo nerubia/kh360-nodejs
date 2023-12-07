@@ -504,10 +504,9 @@ export const sendRequestToRemove = async (evaluation_id: number, comment: string
     evaluee_first_name: evaluee.first_name ?? "",
     evaluee_last_name: evaluee.last_name ?? "",
     template_display_name: evaluationTemplate.display_name ?? "",
-    "project name information": project?.name !== undefined ? `Project Name: ${project.name}` : "",
     "project duration information": `Project Duration: ${dateRange}`,
     comments: comment,
-    link: `${process.env.APP_URL}/admin/evaluation-administrations/${evaluation.evaluation_administration_id}/progress`,
+    link: `<a href='${process.env.APP_URL}/admin/evaluation-administrations/${evaluation.evaluation_administration_id}/progress'>link</a>`,
     "evaluator first name": evaluator.first_name ?? "",
     evaluator_last_name: evaluator.last_name ?? "",
   }
@@ -515,6 +514,11 @@ export const sendRequestToRemove = async (evaluation_id: number, comment: string
   let modifiedContent: string = emailContent.replace(/{{(.*?)}}/g, (match: string, p1: string) => {
     return replacements[p1] ?? match
   })
+
+  modifiedContent = modifiedContent.replace(
+    "{{project name information}}\n",
+    project?.name !== undefined ? `Project Name: ${project.name}\n` : ""
+  )
 
   modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
 
