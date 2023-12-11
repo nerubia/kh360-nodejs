@@ -208,7 +208,12 @@ export const close = async (id: number) => {
   const evaluations = await EvaluationRepository.getAllByFilters({
     evaluation_administration_id: evaluationAdministration.id,
     status: {
-      in: [EvaluationStatus.Pending, EvaluationStatus.Open, EvaluationStatus.Ongoing],
+      in: [
+        EvaluationStatus.Pending,
+        EvaluationStatus.Open,
+        EvaluationStatus.Ongoing,
+        EvaluationStatus.ForRemoval,
+      ],
     },
   })
 
