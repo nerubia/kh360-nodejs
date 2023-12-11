@@ -3,3 +3,7 @@ import * as EvaluationTemplateRepository from "../repositories/evaluation-templa
 export const getById = async (id: number) => {
   return await EvaluationTemplateRepository.getById(id)
 }
+
+export const getActiveTemplates = async () => {
+  return await EvaluationTemplateRepository.list(true)
+}

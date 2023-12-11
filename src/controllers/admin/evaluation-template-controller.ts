@@ -1,6 +1,7 @@
 import { type Request, type Response } from "express"
 import prisma from "../../utils/prisma"
 import * as ProjectRoleRepository from "../../repositories/project-role-repository"
+import * as EvaluationTemplateService from "../../services/evaluation-template-service"
 
 /**
  * List evaluation templates based on provided filters.
@@ -47,6 +48,18 @@ export const index = async (req: Request, res: Response) => {
     )
 
     res.json(final)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * List active evaluation templates.
+ */
+export const active = async (req: Request, res: Response) => {
+  try {
+    const evaluationTemplates = await EvaluationTemplateService.getActiveTemplates()
+    res.json(evaluationTemplates)
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
