@@ -152,8 +152,8 @@ export const submitEvaluation = async (
 
       const totalEvaluationAdministrationDays =
         differenceInDays(
-          new Date(evaluationAdministration.eval_period_start_date ?? 0),
-          new Date(evaluationAdministration.eval_period_end_date ?? 0)
+          new Date(evaluationAdministration.eval_period_end_date ?? 0),
+          new Date(evaluationAdministration.eval_period_start_date ?? 0)
         ) + 1
 
       const totalEvaluationDays =
