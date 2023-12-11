@@ -18,6 +18,7 @@ router.post("/:id/publish", EvaluationAdministrationController.publish)
 router.post("/:id/send-reminder", EvaluationAdministrationController.sendReminder)
 
 router.get("/:id/evaluators", EvaluationAdministrationController.getEvaluators)
+router.post("/:id/evaluators", EvaluationAdministrationController.addEvaluator)
 
 router.post(
   "/:id/add-external-evaluators",
