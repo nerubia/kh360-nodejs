@@ -209,6 +209,13 @@ const createEmailTemplates = async () => {
       content: `Thank you for completing the evaluation form! Your feedback is invaluable to us. 🌟`,
     },
     {
+      name: "Evaluation Completed by Evaluator",
+      template_type: "Evaluation Completed by Evaluator",
+      is_default: true,
+      subject: `Evaluation Completed by {{evaluator_last_name}}, {{evaluator_first_name}}`,
+      content: `Dear KH360 Admin,\n\nPlease be informed that {{evaluator_last_name}}, {{evaluator_first_name}} has successfully completed the Evaluation Forms for {{evaluation_administration_name}} on {{submitted_date}}.\n\nThe completed evaluation forms are now available for your review. Kindly access the system to view and analyze the data at your convenience.\n\nThanks and Best Regards,\nKH360 Team`,
+    },
+    {
       name: "Evaluation Results Now Available",
       template_type: "Publish Evaluation Results",
       is_default: true,
