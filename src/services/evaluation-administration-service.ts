@@ -10,6 +10,7 @@ import * as EvaluationTemplateRepository from "../repositories/evaluation-templa
 import * as ExternalUserRepository from "../repositories/external-user-repository"
 import * as ProjectMemberRepository from "../repositories/project-member-repository"
 import * as ProjectRepository from "../repositories/project-repository"
+import * as ProjectMemberRepository from "../repositories/project-member-repository"
 import * as UserRepository from "../repositories/user-repository"
 import * as EvaluationResultDetailService from "../services/evaluation-result-detail-service"
 import * as EvaluationResultService from "../services/evaluation-result-service"
