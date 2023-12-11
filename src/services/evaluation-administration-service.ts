@@ -135,7 +135,7 @@ export const sendEvaluationEmailById = async (id: number) => {
       const evaluator = await ExternalUserRepository.getById(evaluation.external_evaluator_id ?? 0)
       modifiedContent = modifiedContent.replace(
         "{{link}}",
-        `${process.env.APP_URL}/external-evaluations/${evaluationAdministration.id}/evaluations/all?token=${evaluator?.access_token}`
+        `<a href='${process.env.APP_URL}/external-evaluations/${evaluationAdministration.id}/evaluations/all?token=${evaluator?.access_token}'>link</a>`
       )
 
       if (evaluator !== null) {
