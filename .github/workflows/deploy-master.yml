@@ -84,11 +84,11 @@ jobs:
               pm2 start npm -- start
               '
 
-      - name: Revoke Security Group Ingress
-        run: |
-          aws ec2 revoke-security-group-ingress \
-            --region ${{ secrets.AWS_REGION }} \
-            --group-id ${{ secrets.LIVE_AWS_SEC_GROUP_ID }} \
-            --protocol tcp \
-            --port 22 \
-            --cidr ${{ steps.get-ip.outputs.ip_address }}/32
+      # - name: Revoke Security Group Ingress
+      #   run: |
+      #     aws ec2 revoke-security-group-ingress \
+      #       --region ${{ secrets.AWS_REGION }} \
+      #       --group-id ${{ secrets.LIVE_AWS_SEC_GROUP_ID }} \
+      #       --protocol tcp \
+      #       --port 22 \
+      #       --cidr ${{ steps.get-ip.outputs.ip_address }}/32
