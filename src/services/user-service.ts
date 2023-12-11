@@ -293,7 +293,7 @@ export const getEvaluationAdministrationsAsEvaluee = async (user: UserToken, pag
       id: {
         in: evaluationAdministrationIds as number[],
       },
-      status: EvaluationAdministrationStatus.Closed,
+      status: EvaluationAdministrationStatus.Published,
     }
   )
 
@@ -347,7 +347,7 @@ export const getEvaluationAdministrationsAsEvaluee = async (user: UserToken, pag
     id: {
       in: evaluationAdministrationIds as number[],
     },
-    status: EvaluationAdministrationStatus.Closed,
+    status: EvaluationAdministrationStatus.Published,
   })
 
   const totalPages = Math.ceil(totalItems / itemsPerPage)
