@@ -14,3 +14,9 @@ export const getAllByFilters = async (where: Prisma.project_membersWhereInput) =
     where,
   })
 }
+
+export const countByFilters = async (where: Prisma.project_membersWhereInput) => {
+  return await prisma.project_members.count({
+    where,
+  })
+}

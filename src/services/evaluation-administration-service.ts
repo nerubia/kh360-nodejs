@@ -10,6 +10,7 @@ import * as EvaluationTemplateRepository from "../repositories/evaluation-templa
 import * as ExternalUserRepository from "../repositories/external-user-repository"
 import * as ProjectMemberRepository from "../repositories/project-member-repository"
 import * as ProjectRepository from "../repositories/project-repository"
+import * as ProjectMemberRepository from "../repositories/project-member-repository"
 import * as UserRepository from "../repositories/user-repository"
 import * as EvaluationResultDetailService from "../services/evaluation-result-detail-service"
 import * as EvaluationResultService from "../services/evaluation-result-service"
@@ -736,7 +737,36 @@ export const addExternalEvaluators = async (
       evaluation_template_id: evaluationTemplate.id,
       external_evaluator_id: externalUser?.id,
     })
-    if (externalUser !== null && existingEvaluationCount === 0) {
+    const projectsCount = await ProjectMemberRepository.countByFilters({
+      user_id: evaluationResult.user_id,
+      project_role_id: evaluationTemplate.evaluee_role_id,
+      OR: [
+        {
+          start_date: {
+            gte: evaluationAdministration.eval_period_start_date ?? new Date(),
+            lte: evaluationAdministration.eval_period_end_date ?? new Date(),
+          },
+        },
+        {
+          end_date: {
+            gte: evaluationAdministration.eval_period_start_date ?? new Date(),
+            lte: evaluationAdministration.eval_period_end_date ?? new Date(),
+          },
+        },
+        {
+          start_date: { lte: evaluationAdministration.eval_period_start_date ?? new Date() },
+          end_date: { gte: evaluationAdministration.eval_period_end_date ?? new Date() },
+        },
+        {
+          start_date: { gte: evaluationAdministration.eval_period_start_date ?? new Date() },
+          end_date: { lte: evaluationAdministration.eval_period_end_date ?? new Date() },
+        },
+      ],
+    })
+    if (
+      externalUser !== null &&
+      (projectsCount === 0 || existingEvaluationCount !== projectsCount)
+    ) {
       await EvaluationRepository.create({
         evaluation_template_id: evaluationTemplate.id,
         evaluation_administration_id: evaluationAdministration.id,
