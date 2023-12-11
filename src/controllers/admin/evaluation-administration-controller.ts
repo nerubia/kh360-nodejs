@@ -12,7 +12,10 @@ import { EvaluationStatus } from "../../types/evaluation-type"
 import { EvaluationResultStatus } from "../../types/evaluation-result-type"
 import { type Decimal } from "@prisma/client/runtime/library"
 import CustomError from "../../utils/custom-error"
-import { addExternalEvaluatorsSchema } from "../../utils/validation/evaluation-administration-schema"
+import {
+  addEvaluatorSchema,
+  addExternalEvaluatorsSchema,
+} from "../../utils/validation/evaluation-administration-schema"
 
 /**
  * List evaluation administrations based on provided filters.
@@ -540,9 +543,65 @@ export const getEvaluators = async (req: Request, res: Response) => {
 }
 
 /**
+ * Add evaluator by ID
+ * @param req.params.id - The unique ID of the evaluation administration.
+ * @param req.body.evaluation_template_id - Evaluation template id.
+ * @param req.body.evaluation_result_id - Evaluation result id.
+ * @param req.body.evaluee_id - User id.
+ * @param req.body.project_id - Project id.
+ * @param req.body.project_member_id - Project member id.
+ * @param req.body.user_id - User id.
+ * @param req.body.is_external - Is external.
+ */
+export const addEvaluator = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const {
+      evaluation_template_id,
+      evaluation_result_id,
+      evaluee_id,
+      project_id,
+      project_member_id,
+      user_id,
+      is_external,
+    } = req.body
+
+    await addEvaluatorSchema.validate({
+      evaluation_template_id,
+      evaluation_result_id,
+      evaluee_id,
+      project_id,
+      project_member_id,
+      user_id,
+      is_external,
+    })
+
+    await EvaluationAdministrationService.addEvaluator(
+      parseInt(id),
+      parseInt(evaluation_template_id),
+      parseInt(evaluation_result_id),
+      parseInt(evaluee_id),
+      project_id !== undefined ? parseInt(project_id) : null,
+      project_member_id !== undefined ? parseInt(project_member_id) : null,
+      parseInt(user_id),
+      Boolean(parseInt(is_external))
+    )
+
+    res.json({ id })
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
  * Add external evaluators by ID.
  * @param req.params.id - The unique ID of the evaluation administration.
- * @param req.body.evaluation_administration_id - Evaluation administration id.
  * @param req.body.evaluation_template_id - Evaluation template id.
  * @param req.body.evaluation_result_id - Evaluation result id.
  * @param req.body.evaluee_id - User id.

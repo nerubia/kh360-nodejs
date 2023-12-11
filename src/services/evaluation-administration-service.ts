@@ -8,6 +8,7 @@ import * as EvaluationResultDetailsRepository from "../repositories/evaluation-r
 import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as EvaluationTemplateRepository from "../repositories/evaluation-template-repository"
 import * as ExternalUserRepository from "../repositories/external-user-repository"
+import * as ProjectMemberRepository from "../repositories/project-member-repository"
 import * as ProjectRepository from "../repositories/project-repository"
 import * as UserRepository from "../repositories/user-repository"
 import * as EvaluationResultDetailService from "../services/evaluation-result-detail-service"
@@ -609,6 +610,84 @@ export const getEvaluators = async (id: number) => {
   }
 
   return evaluators
+}
+
+export const addEvaluator = async (
+  id: number,
+  evaluation_template_id: number,
+  evaluation_result_id: number,
+  evaluee_id: number,
+  project_id: number | null,
+  project_member_id: number | null,
+  user_id: number,
+  is_external: boolean
+) => {
+  const evaluationAdministration = await EvaluationAdministrationRepository.getById(id)
+
+  if (evaluationAdministration === null) {
+    throw new CustomError("Evaluation administration not found", 400)
+  }
+
+  const evaluationTemplate = await EvaluationTemplateRepository.getById(evaluation_template_id)
+
+  if (evaluationTemplate === null) {
+    throw new CustomError("Evaluation template not found", 400)
+  }
+
+  const evaluationResult = await EvaluationResultRepository.getById(evaluation_result_id)
+
+  if (evaluationResult === null) {
+    throw new CustomError("Evaluation result not found", 400)
+  }
+
+  const evaluee = await UserRepository.getById(evaluee_id)
+
+  if (evaluee === null) {
+    throw new CustomError("Evaluee not found", 400)
+  }
+
+  const user = is_external
+    ? await UserRepository.getById(user_id)
+    : await ExternalUserRepository.getById(user_id)
+
+  if (user === null) {
+    throw new CustomError("User not found", 400)
+  }
+
+  const project = await ProjectRepository.getById(project_id ?? 0)
+  const projectMember = await ProjectMemberRepository.getById(project_member_id ?? 0)
+
+  const currentDate = new Date()
+
+  await EvaluationRepository.create({
+    evaluation_template_id: evaluationTemplate.id,
+    evaluation_administration_id: evaluationAdministration.id,
+    evaluation_result_id: evaluationResult.id,
+    evaluator_id: !is_external ? user.id : null,
+    evaluee_id: evaluee.id,
+    project_id: project !== null ? project.id : null,
+    project_member_id: projectMember !== null ? projectMember.id : null,
+    for_evaluation: true,
+    eval_start_date:
+      projectMember !== null
+        ? (projectMember.start_date ?? 0) < (evaluationAdministration.eval_period_start_date ?? 0)
+          ? evaluationAdministration.eval_period_start_date
+          : projectMember.start_date
+        : evaluationAdministration.eval_period_start_date,
+    eval_end_date:
+      projectMember !== null
+        ? (projectMember.end_date ?? 0) > (evaluationAdministration.eval_period_end_date ?? 0)
+          ? evaluationAdministration.eval_period_end_date
+          : projectMember.end_date
+        : evaluationAdministration.eval_period_end_date,
+    percent_involvement: projectMember !== null ? projectMember.allocation_rate : null,
+    status: EvaluationStatus.Excluded,
+    submission_method: null,
+    is_external,
+    external_evaluator_id: is_external ? user.id : null,
+    created_at: currentDate,
+    updated_at: currentDate,
+  })
 }
 
 export const addExternalEvaluators = async (
