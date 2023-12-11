@@ -46,7 +46,7 @@ export const getAllDistinctByFilters = async (
   })
 }
 
-export const create = async (data: Prisma.evaluationsCreateInput) => {
+export const create = async (data: Prisma.evaluationsUncheckedCreateInput) => {
   return await prisma.evaluations.create({ data })
 }
 
