@@ -12,6 +12,8 @@ import * as EvaluationResultService from "../services/evaluation-result-service"
 import * as ExternalUserRepository from "../repositories/external-user-repository"
 import * as ProjectRepository from "../repositories/project-repository"
 import * as EmailRecipientRepository from "../repositories/email-recipient-repository"
+import * as UserRoleRepository from "../repositories/user-role-repository"
+import * as UserSettingsRepository from "../repositories/user-settings-repository"
 import { EvaluationStatus } from "../types/evaluation-type"
 import { submitEvaluationSchema } from "../utils/validation/evaluations/submit-evaluation-schema"
 import { type UserToken } from "../types/user-token-type"
@@ -21,6 +23,7 @@ import CustomError from "../utils/custom-error"
 import { AnswerType } from "../types/answer-type"
 import { sendMail } from "../utils/sendgrid"
 import { formatDateRange } from "../utils/format-date"
+import { format, utcToZonedTime } from "date-fns-tz"
 
 export const getById = async (id: number) => {
   return await UserRepository.getById(id)
@@ -52,7 +55,7 @@ export const submitEvaluation = async (
 
   if (
     evaluation.status !== EvaluationStatus.Open &&
-    evaluation.status !== EvaluationAdministrationStatus.Ongoing
+    evaluation.status !== EvaluationStatus.Ongoing
   ) {
     throw new CustomError("Only open and ongoing statuses are allowed.", 400)
   }
@@ -194,6 +197,80 @@ export const submitEvaluation = async (
     if (remainingEvaluations === 0 && evaluation.evaluation_result_id !== null) {
       await EvaluationResultDetailService.calculateScore(evaluation.evaluation_result_id)
       await EvaluationResultService.calculateScore(evaluation.evaluation_result_id)
+    }
+
+    const filter = {
+      evaluation_result_id: evaluation.evaluation_result_id,
+      for_evaluation: true,
+      status: {
+        in: [EvaluationStatus.Open, EvaluationStatus.Ongoing, EvaluationStatus.ForRemoval],
+      },
+    }
+
+    if (user.is_external) {
+      Object.assign(filter, {
+        external_evaluator_id: user.id,
+      })
+    } else {
+      Object.assign(filter, {
+        evaluator_id: user.id,
+      })
+    }
+
+    const userRemainingEvaluations = await EvaluationRepository.countAllByFilters(filter)
+
+    if (userRemainingEvaluations === 0) {
+      const evaluationAdministration = await EvaluationAdministrationRepository.getById(
+        evaluation.evaluation_administration_id ?? 0
+      )
+
+      const emailTemplate = await EmailTemplateRepository.getByTemplateType(
+        "Evaluation Completed by Evaluator"
+      )
+
+      if (evaluationAdministration !== null && emailTemplate !== null) {
+        const emailSubject = emailTemplate.subject ?? ""
+        const emailContent = emailTemplate.content ?? ""
+
+        const userSettings = await UserSettingsRepository.getByUserId(user.id)
+
+        const targetTimeZone = userSettings?.setting ?? "+08:00"
+
+        const convertedDate = utcToZonedTime(currentDate, targetTimeZone)
+
+        const replacements: Record<string, string> = {
+          evaluator_last_name: user.last_name,
+          evaluator_first_name: user.first_name,
+          evaluation_administration_name: evaluationAdministration.name ?? "",
+          submitted_date: format(convertedDate, "yyyy-MM-dd hh:mm:ss a", {
+            timeZone: targetTimeZone,
+          }),
+        }
+
+        const modifiedSubject: string = emailSubject.replace(
+          /{{(.*?)}}/g,
+          (match: string, p1: string) => {
+            return replacements[p1] ?? match
+          }
+        )
+        let modifiedContent: string = emailContent.replace(
+          /{{(.*?)}}/g,
+          (match: string, p1: string) => {
+            return replacements[p1] ?? match
+          }
+        )
+
+        modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
+
+        const userRoles = await UserRoleRepository.getAllByName("kh360")
+
+        userRoles.forEach(async (userRole) => {
+          const user = await UserRepository.getById(userRole.user_id ?? 0)
+          if (user !== null) {
+            await sendMail(user.email, modifiedSubject, modifiedContent)
+          }
+        })
+      }
     }
 
     Object.assign(evaluation, {
