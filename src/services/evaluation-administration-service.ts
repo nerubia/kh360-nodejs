@@ -218,7 +218,10 @@ export const close = async (id: number) => {
   })
 
   for (const evaluation of evaluations) {
-    await EvaluationRepository.updateStatusById(evaluation.id, EvaluationStatus.Expired)
+    await EvaluationRepository.updateById(evaluation.id, {
+      zscore: 0,
+      status: EvaluationStatus.Expired,
+    })
   }
 
   await EvaluationRepository.deleteByAdministrationIdAndStatus(
