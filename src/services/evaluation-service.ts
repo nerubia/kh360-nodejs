@@ -266,6 +266,7 @@ export const calculateZscore = async (evaluation_administration_id: number) => {
   const uniqueEvaluations = await EvaluationRepository.getAllDistinctByFilters(
     {
       evaluation_administration_id,
+      status: EvaluationStatus.Submitted,
     },
     ["evaluator_id"]
   )
@@ -274,6 +275,7 @@ export const calculateZscore = async (evaluation_administration_id: number) => {
     const evaluations = await EvaluationRepository.getAllByFilters({
       evaluation_administration_id,
       evaluator_id: uniqueEvaluation.evaluator_id,
+      status: EvaluationStatus.Submitted,
     })
 
     const scores = evaluations.map((evaluation) => Number(evaluation.score))
