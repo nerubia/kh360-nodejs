@@ -548,7 +548,6 @@ export const getEvaluators = async (req: Request, res: Response) => {
  * @param req.body.evaluation_template_id - Evaluation template id.
  * @param req.body.evaluation_result_id - Evaluation result id.
  * @param req.body.evaluee_id - User id.
- * @param req.body.project_id - Project id.
  * @param req.body.project_member_id - Project member id.
  * @param req.body.user_id - User id.
  * @param req.body.is_external - Is external.
@@ -560,7 +559,6 @@ export const addEvaluator = async (req: Request, res: Response) => {
       evaluation_template_id,
       evaluation_result_id,
       evaluee_id,
-      project_id,
       project_member_id,
       user_id,
       is_external,
@@ -570,7 +568,6 @@ export const addEvaluator = async (req: Request, res: Response) => {
       evaluation_template_id,
       evaluation_result_id,
       evaluee_id,
-      project_id,
       project_member_id,
       user_id,
       is_external,
@@ -581,7 +578,6 @@ export const addEvaluator = async (req: Request, res: Response) => {
       parseInt(evaluation_template_id),
       parseInt(evaluation_result_id),
       parseInt(evaluee_id),
-      project_id !== undefined ? parseInt(project_id) : null,
       project_member_id !== undefined ? parseInt(project_member_id) : null,
       parseInt(user_id),
       Boolean(parseInt(is_external))
