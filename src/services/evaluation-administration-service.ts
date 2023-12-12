@@ -622,7 +622,6 @@ export const addEvaluator = async (
   evaluation_template_id: number,
   evaluation_result_id: number,
   evaluee_id: number,
-  project_id: number | null,
   project_member_id: number | null,
   user_id: number,
   is_external: boolean
@@ -652,14 +651,13 @@ export const addEvaluator = async (
   }
 
   const user = is_external
-    ? await UserRepository.getById(user_id)
-    : await ExternalUserRepository.getById(user_id)
+    ? await ExternalUserRepository.getById(user_id)
+    : await UserRepository.getById(user_id)
 
   if (user === null) {
     throw new CustomError("User not found", 400)
   }
 
-  const project = await ProjectRepository.getById(project_id ?? 0)
   const projectMember = await ProjectMemberRepository.getById(project_member_id ?? 0)
 
   const currentDate = new Date()
@@ -670,7 +668,7 @@ export const addEvaluator = async (
     evaluation_result_id: evaluationResult.id,
     evaluator_id: !is_external ? user.id : null,
     evaluee_id: evaluee.id,
-    project_id: project !== null ? project.id : null,
+    project_id: projectMember !== null ? projectMember.project_id : null,
     project_member_id: projectMember !== null ? projectMember.id : null,
     for_evaluation: true,
     eval_start_date:
@@ -686,7 +684,7 @@ export const addEvaluator = async (
           : projectMember.end_date
         : evaluationAdministration.eval_period_end_date,
     percent_involvement: projectMember !== null ? projectMember.allocation_rate : null,
-    status: EvaluationStatus.Excluded,
+    status: EvaluationStatus.Draft,
     submission_method: null,
     is_external,
     external_evaluator_id: is_external ? user.id : null,
