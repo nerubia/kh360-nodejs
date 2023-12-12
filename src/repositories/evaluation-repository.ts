@@ -1,6 +1,5 @@
 import { type Prisma } from "@prisma/client"
 import prisma from "../utils/prisma"
-import { type Evaluation } from "../types/evaluation-type"
 
 export const getById = async (id: number) => {
   return await prisma.evaluations.findUnique({
@@ -50,12 +49,15 @@ export const create = async (data: Prisma.evaluationsUncheckedCreateInput) => {
   return await prisma.evaluations.create({ data })
 }
 
-export const updateById = async (id: number, data: Evaluation) => {
+export const updateById = async (id: number, data: Prisma.evaluationsUpdateInput) => {
   await prisma.evaluations.update({
     where: {
       id,
     },
-    data,
+    data: {
+      ...data,
+      updated_at: new Date(),
+    },
   })
 }
 
@@ -77,6 +79,7 @@ export const updateProjectById = async (
       eval_start_date,
       eval_end_date,
       percent_involvement,
+      updated_at: new Date(),
     },
   })
 }
@@ -89,6 +92,7 @@ export const updateZScoreById = async (id: number, zscore: number, weighted_zsco
     data: {
       zscore,
       weighted_zscore,
+      updated_at: new Date(),
     },
   })
 }
