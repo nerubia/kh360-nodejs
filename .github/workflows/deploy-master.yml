@@ -61,7 +61,6 @@ jobs:
             --protocol tcp \
             --port 22 \
             --cidr ${{ steps.get-ip.outputs.ip_address }}/32
-            --tags Key=Description,Value="added by github action to allow access"
 
       - uses: actions/checkout@v3
       - name: Build & Deploy
