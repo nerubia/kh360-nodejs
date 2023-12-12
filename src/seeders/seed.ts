@@ -209,6 +209,13 @@ const createEmailTemplates = async () => {
       content: `Thank you for completing the evaluation form! Your feedback is invaluable to us. 🌟`,
     },
     {
+      name: "Evaluation Completed 🎉",
+      template_type: "Evaluation Complete Thank You Message External",
+      is_default: true,
+      subject: "Evaluation Completed 🎉",
+      content: `Thank you for completing the evaluation form! Your feedback is invaluable to us. 🌟`,
+    },
+    {
       name: "Evaluation Completed by Evaluator",
       template_type: "Evaluation Completed by Evaluator",
       is_default: true,
