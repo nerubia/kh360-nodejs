@@ -9,10 +9,11 @@ import CustomError from "../../utils/custom-error"
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const { evaluation_administration_id, evaluation_result_id } = req.query
+    const { evaluation_administration_id, evaluation_result_id, evaluation_template_id } = req.query
     const results = await ProjectMemberService.getProjectMembers(
       parseInt(evaluation_administration_id as string),
-      parseInt(evaluation_result_id as string)
+      parseInt(evaluation_result_id as string),
+      parseInt(evaluation_template_id as string)
     )
     res.json(results)
   } catch (error) {
