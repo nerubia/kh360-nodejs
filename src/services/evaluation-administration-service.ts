@@ -777,6 +777,13 @@ export const addExternalEvaluators = async (
         },
       ],
     })
+    const existingEvaluationResultDetailsCount =
+      await EvaluationResultDetailsRepository.countByFilters({
+        evaluation_administration_id: evaluationAdministration.id,
+        user_id: evaluee.id,
+        evaluation_result_id: evaluationResult.id,
+        evaluation_template_id: evaluationTemplate.id,
+      })
     if (
       externalUser !== null &&
       (projectsCount === 0 || existingEvaluationCount !== projectsCount)
@@ -799,15 +806,17 @@ export const addExternalEvaluators = async (
         updated_at: currentDate,
       })
 
-      await EvaluationResultDetailsRepository.create({
-        evaluation_administration_id: evaluationAdministration.id,
-        user_id: evaluee.id,
-        evaluation_result_id: evaluationResult.id,
-        evaluation_template_id: evaluationTemplate.id,
-        weight: evaluationTemplate.rate,
-        created_at: currentDate,
-        updated_at: currentDate,
-      })
+      if (existingEvaluationResultDetailsCount === 0) {
+        await EvaluationResultDetailsRepository.create({
+          evaluation_administration_id: evaluationAdministration.id,
+          user_id: evaluee.id,
+          evaluation_result_id: evaluationResult.id,
+          evaluation_template_id: evaluationTemplate.id,
+          weight: evaluationTemplate.rate,
+          created_at: currentDate,
+          updated_at: currentDate,
+        })
+      }
     }
   }
 }
