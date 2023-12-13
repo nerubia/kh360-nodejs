@@ -126,6 +126,7 @@ export const getAllByFilters = async (
     company: {
       contains: company,
     },
+    deleted_at: null,
   }
 
   if (name !== undefined) {
