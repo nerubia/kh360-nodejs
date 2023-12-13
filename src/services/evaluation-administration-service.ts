@@ -561,7 +561,9 @@ export const getEvaluators = async (id: number) => {
       const totalSubmitted = await EvaluationRepository.countAllByFilters({
         for_evaluation: true,
         evaluation_administration_id: evaluationAdministration.id,
-        status: EvaluationStatus.Submitted,
+        status: {
+          in: [EvaluationStatus.Submitted, EvaluationStatus.Reviewed],
+        },
         evaluator_id: evaluator.id,
       })
 
@@ -598,7 +600,9 @@ export const getEvaluators = async (id: number) => {
       const totalSubmitted = await EvaluationRepository.countAllByFilters({
         for_evaluation: true,
         evaluation_administration_id: evaluationAdministration.id,
-        status: EvaluationStatus.Submitted,
+        status: {
+          in: [EvaluationStatus.Submitted, EvaluationStatus.Reviewed],
+        },
         external_evaluator_id: evaluator.id,
       })
 
