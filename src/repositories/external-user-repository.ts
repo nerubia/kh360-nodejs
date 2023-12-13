@@ -54,9 +54,10 @@ export const getById = async (id: number) => {
 }
 
 export const getByEmail = async (email: string) => {
-  return await prisma.external_users.findUnique({
+  return await prisma.external_users.findFirst({
     where: {
       email,
+      deleted_at: null,
     },
   })
 }
