@@ -12,8 +12,7 @@ import * as EvaluationResultService from "../services/evaluation-result-service"
 import * as ExternalUserRepository from "../repositories/external-user-repository"
 import * as ProjectRepository from "../repositories/project-repository"
 import * as EmailRecipientRepository from "../repositories/email-recipient-repository"
-import * as UserRoleRepository from "../repositories/user-role-repository"
-import * as UserSettingsRepository from "../repositories/user-settings-repository"
+import * as SystemSettingsRepository from "../repositories/system-settings-repository"
 import { EvaluationStatus } from "../types/evaluation-type"
 import { submitEvaluationSchema } from "../utils/validation/evaluations/submit-evaluation-schema"
 import { type UserToken } from "../types/user-token-type"
@@ -232,9 +231,9 @@ export const submitEvaluation = async (
         const emailSubject = emailTemplate.subject ?? ""
         const emailContent = emailTemplate.content ?? ""
 
-        const userSettings = await UserSettingsRepository.getByUserId(user.id)
+        const systemSettings = await SystemSettingsRepository.getByName("default_timezone")
 
-        const targetTimeZone = userSettings?.setting ?? "+08:00"
+        const targetTimeZone = systemSettings?.value ?? "+08:00"
 
         const convertedDate = utcToZonedTime(currentDate, targetTimeZone)
 
@@ -262,14 +261,11 @@ export const submitEvaluation = async (
 
         modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
 
-        const userRoles = await UserRoleRepository.getAllByName("kh360")
+        const emailRecipients = await EmailRecipientRepository.getAllByEmailType("KH360 Admin")
 
-        userRoles.forEach(async (userRole) => {
-          const user = await UserRepository.getById(userRole.user_id ?? 0)
-          if (user !== null) {
-            await sendMail(user.email, modifiedSubject, modifiedContent)
-          }
-        })
+        for (const emailRecipient of emailRecipients) {
+          await sendMail(emailRecipient.email, modifiedSubject, modifiedContent)
+        }
       }
     }
 
