@@ -209,6 +209,13 @@ const createEmailTemplates = async () => {
       content: `Thank you for completing the evaluation form! Your feedback is invaluable to us. 🌟`,
     },
     {
+      name: "Evaluation Completed 🎉",
+      template_type: "Evaluation Complete Thank You Message External",
+      is_default: true,
+      subject: "Evaluation Completed 🎉",
+      content: `Thank you for completing the evaluation form! Your feedback is invaluable to us. 🌟`,
+    },
+    {
       name: "Evaluation Completed by Evaluator",
       template_type: "Evaluation Completed by Evaluator",
       is_default: true,
@@ -366,12 +373,42 @@ const setAnswerTypes = async () => {
   }
 }
 
+const createSystemSettings = async () => {
+  const systemSettings = [
+    {
+      name: "default_timezone",
+      value: "+08:00",
+      created_at: new Date(),
+      updated_at: new Date(),
+    },
+    {
+      name: "default_timezone_country",
+      value: "Singapore",
+      created_at: new Date(),
+      updated_at: new Date(),
+    },
+  ]
+  for (const data of systemSettings) {
+    const settings = await prisma.system_settings.findFirst({
+      where: {
+        name: data.name,
+      },
+    })
+    if (settings === null) {
+      await prisma.system_settings.create({
+        data,
+      })
+    }
+  }
+}
+
 async function main() {
   if (process.env.APP_ENV === Environment.Production) {
     await createRoles()
     await createEmailTemplates()
     await createEmailRecipients()
     await updateEvaluationTemplates()
+    await createSystemSettings()
   }
   if (process.env.APP_ENV === Environment.Local) {
     await createUsers()

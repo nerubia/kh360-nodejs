@@ -56,7 +56,7 @@ export const calculateScore = async (evaluation_result_id: number) => {
     const isAllNa =
       allAnswerTypes.length > 0 ? allAnswerTypes.every((answer) => answer === AnswerType.NA) : false
 
-    if (isAllNa) {
+    if (isAllNa || evaluations.length === 0) {
       await EvaluationResultDetailRepository.updateWeightById(evaluationResultDetail.id, 0)
     }
 

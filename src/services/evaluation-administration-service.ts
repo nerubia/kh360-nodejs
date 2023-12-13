@@ -665,6 +665,20 @@ export const addEvaluator = async (
 
   const currentDate = new Date()
 
+  const existingEvaluation = await EvaluationRepository.getByFilters({
+    evaluation_template_id: evaluationTemplate.id,
+    evaluation_administration_id: evaluationAdministration.id,
+    evaluation_result_id: evaluationResult.id,
+    evaluator_id: !is_external ? user.id : null,
+    evaluee_id: evaluee.id,
+    project_id: projectMember !== null ? projectMember.project_id : null,
+    project_member_id: projectMember !== null ? projectMember.id : null,
+  })
+
+  if (existingEvaluation !== null) {
+    throw new CustomError("This evaluator already exists.", 400)
+  }
+
   await EvaluationRepository.create({
     evaluation_template_id: evaluationTemplate.id,
     evaluation_administration_id: evaluationAdministration.id,
