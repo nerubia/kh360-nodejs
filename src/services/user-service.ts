@@ -199,7 +199,7 @@ export const submitEvaluation = async (
     }
 
     const filter = {
-      evaluation_result_id: evaluation.evaluation_result_id,
+      evaluation_administration_id: evaluation.evaluation_administration_id,
       for_evaluation: true,
       status: {
         in: [EvaluationStatus.Open, EvaluationStatus.Ongoing, EvaluationStatus.ForRemoval],
