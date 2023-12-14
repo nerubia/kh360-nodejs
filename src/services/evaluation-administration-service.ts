@@ -661,7 +661,14 @@ export const addEvaluator = async (
     throw new CustomError("User not found", 400)
   }
 
-  const projectMember = await ProjectMemberRepository.getById(project_member_id ?? 0)
+  let projectMember = null
+
+  if (evaluationTemplate.id !== 11 && evaluationTemplate.id !== 12) {
+    projectMember = await ProjectMemberRepository.getById(project_member_id ?? 0)
+    if (projectMember === null) {
+      throw new CustomError("Please select a project.", 400)
+    }
+  }
 
   const currentDate = new Date()
 
