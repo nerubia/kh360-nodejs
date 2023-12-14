@@ -1,6 +1,7 @@
 import { type Request, type Response } from "express"
 import * as EvaluationTemplateContentService from "../../services/evaluation-template-content-service"
 import CustomError from "../../utils/custom-error"
+import logger from "../../utils/logger"
 
 /**
  * List evaluation template contents based on provided filters.
@@ -22,6 +23,7 @@ export const index = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }

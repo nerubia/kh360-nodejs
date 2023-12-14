@@ -1,4 +1,5 @@
 import { type Request, type Response } from "express"
+import logger from "../../utils/logger"
 
 export const logout = async (req: Request, res: Response) => {
   try {
@@ -12,6 +13,7 @@ export const logout = async (req: Request, res: Response) => {
       message: "Logged out successfully",
     })
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }

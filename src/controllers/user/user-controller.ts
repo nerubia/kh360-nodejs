@@ -8,6 +8,7 @@ import * as EvaluationRatingService from "../../services/evaluation-rating-servi
 import * as UserService from "../../services/user-service"
 import * as AnswerOptionService from "../../services/answer-option-service"
 import CustomError from "../../utils/custom-error"
+import logger from "../../utils/logger"
 
 /**
  * List user evaluations based on provided filters.
@@ -27,6 +28,7 @@ export const getEvaluations = async (req: Request, res: Response) => {
 
     res.json(result)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -47,6 +49,7 @@ export const getEvaluationAdministrationsAsEvaluee = async (req: Request, res: R
 
     res.json(evaluationAdministrations)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -64,6 +67,7 @@ export const getUserEvaluationResult = async (req: Request, res: Response) => {
 
     res.json(evaluationResult)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -84,6 +88,7 @@ export const getEvaluationAdministrations = async (req: Request, res: Response) 
 
     res.json(evaluationAdministrations)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -105,6 +110,7 @@ export const sendRequestToRemove = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -151,6 +157,7 @@ export const submitEvaluation = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -212,6 +219,7 @@ export const submitAnswer = async (req: Request, res: Response) => {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -250,6 +258,7 @@ export const submitComment = async (req: Request, res: Response) => {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
