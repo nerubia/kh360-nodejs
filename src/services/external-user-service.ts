@@ -270,6 +270,8 @@ export const deleteById = async (id: number) => {
         EvaluationStatus.Excluded,
         EvaluationStatus.Cancelled,
         EvaluationStatus.Expired,
+        EvaluationStatus.ForRemoval,
+        EvaluationStatus.Removed,
       ],
     },
   })

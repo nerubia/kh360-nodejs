@@ -561,7 +561,9 @@ export const getEvaluators = async (id: number) => {
       const totalSubmitted = await EvaluationRepository.countAllByFilters({
         for_evaluation: true,
         evaluation_administration_id: evaluationAdministration.id,
-        status: EvaluationStatus.Submitted,
+        status: {
+          in: [EvaluationStatus.Submitted, EvaluationStatus.Reviewed],
+        },
         evaluator_id: evaluator.id,
       })
 
@@ -598,7 +600,9 @@ export const getEvaluators = async (id: number) => {
       const totalSubmitted = await EvaluationRepository.countAllByFilters({
         for_evaluation: true,
         evaluation_administration_id: evaluationAdministration.id,
-        status: EvaluationStatus.Submitted,
+        status: {
+          in: [EvaluationStatus.Submitted, EvaluationStatus.Reviewed],
+        },
         external_evaluator_id: evaluator.id,
       })
 
@@ -661,7 +665,14 @@ export const addEvaluator = async (
     throw new CustomError("User not found", 400)
   }
 
-  const projectMember = await ProjectMemberRepository.getById(project_member_id ?? 0)
+  let projectMember = null
+
+  if (evaluationTemplate.id !== 11 && evaluationTemplate.id !== 12) {
+    projectMember = await ProjectMemberRepository.getById(project_member_id ?? 0)
+    if (projectMember === null) {
+      throw new CustomError("Please select a project.", 400)
+    }
+  }
 
   const currentDate = new Date()
 
@@ -777,6 +788,13 @@ export const addExternalEvaluators = async (
         },
       ],
     })
+    const existingEvaluationResultDetailsCount =
+      await EvaluationResultDetailsRepository.countByFilters({
+        evaluation_administration_id: evaluationAdministration.id,
+        user_id: evaluee.id,
+        evaluation_result_id: evaluationResult.id,
+        evaluation_template_id: evaluationTemplate.id,
+      })
     if (
       externalUser !== null &&
       (projectsCount === 0 || existingEvaluationCount !== projectsCount)
@@ -799,15 +817,17 @@ export const addExternalEvaluators = async (
         updated_at: currentDate,
       })
 
-      await EvaluationResultDetailsRepository.create({
-        evaluation_administration_id: evaluationAdministration.id,
-        user_id: evaluee.id,
-        evaluation_result_id: evaluationResult.id,
-        evaluation_template_id: evaluationTemplate.id,
-        weight: evaluationTemplate.rate,
-        created_at: currentDate,
-        updated_at: currentDate,
-      })
+      if (existingEvaluationResultDetailsCount === 0) {
+        await EvaluationResultDetailsRepository.create({
+          evaluation_administration_id: evaluationAdministration.id,
+          user_id: evaluee.id,
+          evaluation_result_id: evaluationResult.id,
+          evaluation_template_id: evaluationTemplate.id,
+          weight: evaluationTemplate.rate,
+          created_at: currentDate,
+          updated_at: currentDate,
+        })
+      }
     }
   }
 }
