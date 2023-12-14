@@ -9,3 +9,6 @@
 
 # prisma
 migration_lock.toml
+
+#
+app.log

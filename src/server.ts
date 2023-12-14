@@ -1,10 +1,10 @@
 import "dotenv/config"
 import app from "./app"
 import "./utils/scheduler"
+import logger from "./utils/logger"
 
 const PORT = process.env.PORT ?? 5000
 
 app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`Server running on port ${PORT}`)
+  logger.info(`Server running on port ${PORT}`)
 })
