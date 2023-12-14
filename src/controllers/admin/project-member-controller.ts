@@ -23,3 +23,27 @@ export const index = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+/**
+ * Search project members based on provided filters.
+ * @param req.query.start_date - Filter start_date.
+ * @param req.query.end_date - Filter end_date.
+ * @param req.query.name - Filter by name.
+ * @param req.query.project_name - Filter by project_name.
+ * @param req.query.role - Filter by role.
+ */
+export const search = async (req: Request, res: Response) => {
+  try {
+    const { start_date, end_date, name, project_name, role } = req.query
+    const results = await ProjectMemberService.getAllByFilters(
+      start_date as string,
+      end_date as string,
+      name as string,
+      project_name as string,
+      role as string
+    )
+    res.json(results)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}

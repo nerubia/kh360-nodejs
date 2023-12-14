@@ -1,3 +1,4 @@
+import { type Prisma } from "@prisma/client"
 import prisma from "../utils/prisma"
 
 export const getById = async (id: number) => {
@@ -21,5 +22,11 @@ export const getByEmail = async (email: string) => {
     where: {
       email,
     },
+  })
+}
+
+export const getAllByFilters = async (where: Prisma.usersWhereInput) => {
+  return await prisma.users.findMany({
+    where,
   })
 }

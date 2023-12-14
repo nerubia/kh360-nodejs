@@ -4,6 +4,7 @@ import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as EvaluationTemplateRepository from "../repositories/evaluation-template-repository"
 import * as ProjectMemberRepository from "../repositories/project-member-repository"
 import * as ProjectRepository from "../repositories/project-repository"
+import * as UserRepository from "../repositories/user-repository"
 import CustomError from "../utils/custom-error"
 
 export const getProjectMembers = async (
@@ -74,4 +75,81 @@ export const getProjectMembers = async (
   )
 
   return existingEvaluation?.project_id === null ? [] : finalProjects
+}
+
+export const getAllByFilters = async (
+  start_date: string,
+  end_date: string,
+  name: string,
+  project_name: string,
+  role: string
+) => {
+  let userIds: number[] = []
+  let projectIds: number[] = []
+
+  if (name !== undefined) {
+    const users = await UserRepository.getAllByFilters({
+      OR: [
+        {
+          first_name: {
+            contains: name,
+          },
+        },
+        {
+          last_name: {
+            contains: name,
+          },
+        },
+      ],
+    })
+    userIds = users.map((user) => user.id)
+  }
+
+  if (project_name !== undefined) {
+    const projects = await ProjectRepository.getAllByName(project_name)
+    projectIds = projects.map((project) => project.id)
+  }
+
+  const filter = {
+    start_date,
+    end_date,
+  }
+
+  if (userIds.length > 0) {
+    Object.assign(filter, {
+      user_id: {
+        in: userIds,
+      },
+    })
+  }
+
+  if (projectIds.length > 0) {
+    Object.assign(filter, {
+      project_id: {
+        in: projectIds,
+      },
+    })
+  }
+
+  if (role !== undefined) {
+    Object.assign(filter, {
+      project_role_id: parseInt(role),
+    })
+  }
+
+  const projectMembers = await ProjectMemberRepository.getAllByFilters(filter)
+
+  const finalProjects = await Promise.all(
+    projectMembers.map(async (projectMember) => {
+      const user = await UserRepository.getById(projectMember.user_id ?? 0)
+      const project = await ProjectRepository.getById(projectMember.project_id ?? 0)
+      return {
+        ...projectMember,
+        user,
+        project,
+      }
+    })
+  )
+
+  return finalProjects
 }
