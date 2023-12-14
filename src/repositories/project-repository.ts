@@ -11,3 +11,17 @@ export const getById = async (id: number) => {
     },
   })
 }
+
+export const getAllByName = async (name: string) => {
+  return await prisma.projects.findMany({
+    select: {
+      id: true,
+      name: true,
+    },
+    where: {
+      name: {
+        contains: name,
+      },
+    },
+  })
+}
