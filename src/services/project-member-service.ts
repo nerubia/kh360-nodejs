@@ -4,8 +4,10 @@ import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as EvaluationTemplateRepository from "../repositories/evaluation-template-repository"
 import * as ProjectMemberRepository from "../repositories/project-member-repository"
 import * as ProjectRepository from "../repositories/project-repository"
+import * as ProjectRoleRepository from "../repositories/project-role-repository"
 import * as UserRepository from "../repositories/user-repository"
 import CustomError from "../utils/custom-error"
+import { type ProjectMember } from "../types/project-member-type"
 
 export const getProjectMembers = async (
   evaluation_administration_id: number,
@@ -152,4 +154,81 @@ export const getAllByFilters = async (
   )
 
   return finalProjects
+}
+
+export const create = async (data: ProjectMember) => {
+  const project = await ProjectRepository.getById(data.project_id ?? 0)
+
+  if (project === null) {
+    throw new CustomError("Project not found", 400)
+  }
+
+  const user = await UserRepository.getById(data.user_id ?? 0)
+
+  if (user === null) {
+    throw new CustomError("User not found", 400)
+  }
+
+  const projectRole = await ProjectRoleRepository.getById(data.project_role_id ?? 0)
+
+  if (projectRole === null) {
+    throw new CustomError("Project role not found", 400)
+  }
+
+  return await ProjectMemberRepository.create(data)
+}
+
+export const getById = async (id: number) => {
+  const projectMember = await ProjectMemberRepository.getById(id)
+
+  if (projectMember === null) {
+    throw new CustomError("Project member not found", 400)
+  }
+
+  const user = await UserRepository.getById(projectMember.user_id ?? 0)
+  const project = await ProjectRepository.getById(projectMember.project_id ?? 0)
+
+  return {
+    ...projectMember,
+    user,
+    project,
+  }
+}
+
+export const update = async (id: number, data: ProjectMember) => {
+  const projectMember = await ProjectMemberRepository.getById(id)
+
+  if (projectMember === null) {
+    throw new CustomError("Project member not found", 400)
+  }
+
+  const project = await ProjectRepository.getById(data.project_id ?? 0)
+
+  if (project === null) {
+    throw new CustomError("Project not found", 400)
+  }
+
+  const user = await UserRepository.getById(data.user_id ?? 0)
+
+  if (user === null) {
+    throw new CustomError("User not found", 400)
+  }
+
+  const projectRole = await ProjectRoleRepository.getById(data.project_role_id ?? 0)
+
+  if (projectRole === null) {
+    throw new CustomError("Project role not found", 400)
+  }
+
+  return await ProjectMemberRepository.update(id, data)
+}
+
+export const deleteById = async (id: number) => {
+  const projectMember = await ProjectMemberRepository.getById(id)
+
+  if (projectMember === null) {
+    throw new CustomError("Project member not found", 400)
+  }
+
+  await ProjectMemberRepository.deleteById(id)
 }
