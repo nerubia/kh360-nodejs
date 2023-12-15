@@ -1,27 +1,14 @@
-import prisma from "../utils/prisma"
+import express from "express"
+import * as ProjectMemberController from "../../controllers/admin/project-member-controller"
 
-export const getById = async (id: number) => {
-  return await prisma.projects.findUnique({
-    select: {
-      id: true,
-      name: true,
-    },
-    where: {
-      id,
-    },
-  })
-}
+const router = express.Router()
 
-export const getAllByName = async (name: string) => {
-  return await prisma.projects.findMany({
-    select: {
-      id: true,
-      name: true,
-    },
-    where: {
-      name: {
-        contains: name,
-      },
-    },
-  })
-}
+router.get("/search", ProjectMemberController.search)
+
+router.get("/", ProjectMemberController.index)
+router.post("/", ProjectMemberController.store)
+router.get("/:id", ProjectMemberController.show)
+router.patch("/:id", ProjectMemberController.update)
+router.delete("/:id", ProjectMemberController.destroy)
+
+export default router
