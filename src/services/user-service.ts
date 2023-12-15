@@ -381,9 +381,7 @@ export const getEvaluationAdministrationsAsEvaluee = async (user: UserToken, pag
       const totalSubmitted = await EvaluationRepository.countAllByFilters({
         for_evaluation: true,
         evaluation_administration_id: evaluationAdministration.id,
-        status: {
-          in: [EvaluationStatus.Submitted, EvaluationStatus.Reviewed],
-        },
+        status: EvaluationStatus.Submitted,
         evaluee_id: user.id,
       })
 
@@ -488,9 +486,7 @@ export const getEvaluationAdministrations = async (user: UserToken, page: number
       const totalPending = await EvaluationRepository.countAllByFilters({
         for_evaluation: true,
         evaluation_administration_id: evaluationAdministration.id,
-        status: {
-          in: [EvaluationStatus.Open, EvaluationStatus.Ongoing],
-        },
+        status: EvaluationStatus.Submitted,
         ...(user.is_external ? { external_evaluator_id: user.id } : { evaluator_id: user.id }),
       })
 
