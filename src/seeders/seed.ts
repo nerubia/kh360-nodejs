@@ -304,6 +304,13 @@ const createEmailTemplates = async () => {
       await prisma.email_templates.create({
         data,
       })
+    } else {
+      await prisma.email_templates.update({
+        where: {
+          id: emailTemplate.id,
+        },
+        data,
+      })
     }
   }
 }
@@ -422,63 +429,6 @@ const updateProjectRoles = async () => {
   }
 }
 
-const createScoreRatings = async () => {
-  const scoreRatings = [
-    {
-      name: "Needs Improvement",
-      display_name: "Navigational Challenge",
-      min_score: 0,
-      max_score: 1.99,
-      result_description: `Employee faces occasional difficulty in navigating job responsibilities.\nPerformance consistently falls below expectations and significant improvement is needed in various aspects of job responsibilities.\nGoals and objectives are not met consistently.`,
-      evaluee_description: `You face occasional difficulty in navigating job responsibilities.\nYour performance consistently falls below expectations and significant improvement is needed in various aspects of job responsibilities.\nYour goals and objectives are not met consistently.`,
-    },
-    {
-      name: "Fair",
-      display_name: "Needs a GPS",
-      min_score: 2,
-      max_score: 3.99,
-      result_description: `Employee is on the right track but occasionally takes detours.\nPerformance meets some basic expectations but falls short in key areas.\nLike a GPS signal with occasional hiccups, improvement is required to meet all performance expectations.\nGoals and objectives are partially achieved occasionally taking the scenic route.`,
-      evaluee_description: `You are on the right track but occasionally takes detours.\nYour performance meets some basic expectations but falls short in key areas.\nLike a GPS signal with occasional hiccups, improvement is required to meet all performance expectations.\nGoals and objectives are partially achieved occasionally taking the scenic route.`,
-    },
-    {
-      name: "Satisfactory",
-      display_name: "Smooth Sailing",
-      min_score: 4,
-      max_score: 5.99,
-      result_description: `Employee navigates job responsibilities with ease, performing consistently and meeting the established expectations.\nLike a well-oiled machine, goals and objectives are typically reached.\nEmployee fulfills job responsibilities adequately.\nGoals and objectives are generally met.`,
-      evaluee_description: `You navigate job responsibilities with ease, performing consistently and meeting the established expectations.\nLike a well-oiled machine, goals and objectives are typically reached.\nYou fulfill job responsibilities adequately.\nGoals and objectives are generally met.`,
-    },
-    {
-      name: "Good",
-      display_name: "Rocket Booster",
-      min_score: 6,
-      max_score: 7.99,
-      result_description: `Employee's performance is out of this world, reaching new heights.\nLike a rocket with booster engines, employee demonstrates exceptional skills and achievements in various aspects of the job.\nGoals and objectives are consistently surpassed on a trajectory toward the stars.`,
-      evaluee_description: `Your performance is out of this world, reaching new heights.\nLike a rocket with booster engines, you demonstrate exceptional skills and achievements in various aspects of the job.\nGoals and objectives are consistently surpassed on a trajectory toward the stars.`,
-    },
-    {
-      name: "Excellent",
-      display_name: "Unicorn Status",
-      min_score: 8,
-      max_score: 10,
-      result_description: `Employee is as rare and magical as a unicorn, consistently exceeding expectations.\nLike finding a four-leaf clover, outstanding achievements are consistently realized.\nEmployee consistently demonstrates exceptional skills, innovation, and leadership.\nGoals and objectives are consistently exceeded with outstanding results.`,
-      evaluee_description: `You are as rare and magical as a unicorn, consistently exceeding expectations.\nLike finding a four-leaf clover, outstanding achievements are consistently realized.\nYou consistently demonstrate exceptional skills, innovation, and leadership.\nGoals and objectives are consistently exceeded with outstanding results.`,
-    },
-  ]
-  for (const data of scoreRatings) {
-    const scoreRating = await prisma.score_ratings.findFirst({
-      where: {
-        name: data.name,
-      },
-    })
-    if (scoreRating === null) {
-      await prisma.score_ratings.create({
-        data,
-      })
-    }
-  }
-}
-
 async function main() {
   if (process.env.APP_ENV === Environment.Production) {
     await createRoles()
@@ -487,7 +437,6 @@ async function main() {
     await updateEvaluationTemplates()
     await createSystemSettings()
     await updateProjectRoles()
-    await createScoreRatings()
   }
   if (process.env.APP_ENV === Environment.Local) {
     await createUsers()
