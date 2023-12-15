@@ -949,6 +949,7 @@ model project_roles {
   short_name  String?   @db.VarChar(10)
   description String?   @db.Text
   is_evaluee  Boolean?  @default(false)
+  for_project Boolean?  @default(false)
   created_at  DateTime? @db.DateTime(0)
   updated_at  DateTime? @db.DateTime(0)
 }
