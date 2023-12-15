@@ -3,7 +3,6 @@ import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as EvaluationAdministrationRepository from "../repositories/evaluation-administration-repository"
 import * as EvaluationRatingRepository from "../repositories/evaluation-rating-repository"
 import * as EvaluationResultRepository from "../repositories/evaluation-result-repository"
-import * as EvaluationTemplateContentRepository from "../repositories/evaluation-template-content-repository"
 import * as EvaluationTemplateRepository from "../repositories/evaluation-template-repository"
 import * as AnswerOptionRepository from "../repositories/answer-option-repository"
 import * as EvaluationResultDetailService from "../services/evaluation-result-detail-service"
@@ -13,7 +12,6 @@ import * as EvaluationResultService from "../services/evaluation-result-service"
 import * as ExternalUserRepository from "../repositories/external-user-repository"
 import * as ProjectRepository from "../repositories/project-repository"
 import * as EmailRecipientRepository from "../repositories/email-recipient-repository"
-import * as ScoreRatingRepository from "../repositories/score-rating-repository"
 import * as SystemSettingsRepository from "../repositories/system-settings-repository"
 import { EvaluationStatus } from "../types/evaluation-type"
 import { submitEvaluationSchema } from "../utils/validation/evaluations/submit-evaluation-schema"
@@ -140,10 +138,11 @@ export const submitEvaluation = async (
         }
       )
 
-      const computed_score =
+      const computed_score = (
         Number(evaluationRatings._sum.score) / Number(evaluationRatings._sum.percentage)
+      ).toFixed(2)
 
-      score = Math.round(computed_score * 100) / 100
+      score = Number(computed_score)
 
       const evaluationAdministration = await EvaluationAdministrationRepository.getById(
         evaluation.evaluation_administration_id ?? 0
@@ -305,60 +304,12 @@ export const getEvaluationResult = async (user: UserToken, id: number) => {
       const evaluation_template = await EvaluationTemplateRepository.getById(
         detail.evaluation_template_id ?? 0
       )
-      const evaluation_template_contents =
-        await EvaluationTemplateContentRepository.getByEvaluationTemplateId(
-          evaluation_template?.id ?? 0
-        )
-
-      const finalEvaluationTemplateContents = await Promise.all(
-        evaluation_template_contents.map(async (content) => {
-          const evaluationRatingIds = []
-          const evaluationRatings = await EvaluationRatingRepository.getAllByFilters({
-            evaluation_template_content_id: content.id,
-          })
-          for (const evaluationRating of evaluationRatings) {
-            if (evaluationRating.answer_option_id !== null) {
-              const answerOption = await AnswerOptionRepository.getById(
-                evaluationRating.answer_option_id
-              )
-              if (answerOption?.answer_type !== AnswerType.NA) {
-                evaluationRatingIds.push(evaluationRating.id)
-              }
-            }
-          }
-          const evaluationRatingsAverage =
-            await EvaluationRatingRepository.getAverageScoreByTemplateContent(
-              {
-                rate: true,
-              },
-              {
-                id: {
-                  in: evaluationRatingIds,
-                },
-              }
-            )
-
-          const average_rate = Math.round((Number(evaluationRatingsAverage._avg.rate) / 10) * 100)
-
-          return {
-            name: content.name,
-            description: content.description,
-            average_rate,
-          }
-        })
-      )
-
-      const score_rating = await ScoreRatingRepository.getById(detail.score_ratings_id ?? 0)
-
       return {
         id: detail.id,
         score: detail.score,
         zscore: detail.zscore,
         banding: detail.banding,
         template_name: evaluation_template?.display_name,
-        evaluation_template_contents: finalEvaluationTemplateContents,
-        total_score: Math.round((Number(detail.score) / 10) * 100),
-        score_rating,
       }
     })
   )
@@ -383,8 +334,6 @@ export const getEvaluationResult = async (user: UserToken, id: number) => {
     .map((evaluation) => evaluation.comments)
     .filter((comment) => comment !== null && comment.length > 0)
 
-  const score_rating = await ScoreRatingRepository.getById(evaluationResult.score_ratings_id ?? 0)
-
   Object.assign(evaluationResult, {
     users: evaluee,
     eval_period_start_date: evaluationAdministration.eval_period_start_date,
@@ -392,9 +341,6 @@ export const getEvaluationResult = async (user: UserToken, id: number) => {
     comments,
     evaluation_result_details: finalEvaluationResultDetails,
     status: evaluationAdministration.status,
-    eval_admin_name: evaluationAdministration.name,
-    total_score: Math.round((Number(evaluationResult.score) / 10) * 100),
-    score_rating,
   })
 
   return evaluationResult
@@ -454,10 +400,6 @@ export const getEvaluationAdministrationsAsEvaluee = async (user: UserToken, pag
           user.id
         )
 
-      const score_rating = await ScoreRatingRepository.getById(
-        evaluationResult?.score_ratings_id ?? 0
-      )
-
       return {
         id: evaluationAdministration.id,
         name: evaluationAdministration.name,
@@ -470,8 +412,6 @@ export const getEvaluationAdministrationsAsEvaluee = async (user: UserToken, pag
         totalSubmitted,
         totalPending,
         banding: evaluationResult?.banding,
-        score: evaluationResult?.score,
-        score_rating,
       }
     })
   )
@@ -537,21 +477,16 @@ export const getEvaluationAdministrations = async (user: UserToken, page: number
       const totalSubmitted = await EvaluationRepository.countAllByFilters({
         for_evaluation: true,
         evaluation_administration_id: evaluationAdministration.id,
-        status: EvaluationStatus.Submitted,
+        status: {
+          in: [EvaluationStatus.Submitted, EvaluationStatus.Reviewed],
+        },
         ...(user.is_external ? { external_evaluator_id: user.id } : { evaluator_id: user.id }),
       })
 
       const totalPending = await EvaluationRepository.countAllByFilters({
         for_evaluation: true,
         evaluation_administration_id: evaluationAdministration.id,
-        status: {
-          in: [
-            EvaluationStatus.Open,
-            EvaluationStatus.Ongoing,
-            EvaluationStatus.Submitted,
-            EvaluationStatus.ForRemoval,
-          ],
-        },
+        status: EvaluationStatus.Submitted,
         ...(user.is_external ? { external_evaluator_id: user.id } : { evaluator_id: user.id }),
       })
 
