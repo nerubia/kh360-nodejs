@@ -402,6 +402,33 @@ const createSystemSettings = async () => {
   }
 }
 
+const updateProjectRoles = async () => {
+  const names = [
+    "Project Manager",
+    "System Analyst",
+    "Developer",
+    "Quality Assurance",
+    "Code Reviewer",
+  ]
+  for (const name of names) {
+    const projectRole = await prisma.project_roles.findFirst({
+      where: {
+        name,
+      },
+    })
+    if (projectRole !== null) {
+      await prisma.project_roles.update({
+        where: {
+          id: projectRole.id,
+        },
+        data: {
+          for_project: true,
+        },
+      })
+    }
+  }
+}
+
 async function main() {
   if (process.env.APP_ENV === Environment.Production) {
     await createRoles()
@@ -409,6 +436,7 @@ async function main() {
     await createEmailRecipients()
     await updateEvaluationTemplates()
     await createSystemSettings()
+    await updateProjectRoles()
   }
   if (process.env.APP_ENV === Environment.Local) {
     await createUsers()
