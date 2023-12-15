@@ -1,4 +1,5 @@
 import { type Prisma } from "@prisma/client"
+import * as EmailRecipientRepository from "../repositories/email-recipient-repository"
 import * as EmailTemplateRepository from "../repositories/email-template-repository"
 import * as EvaluationAdministrationRepository from "../repositories/evaluation-administration-repository"
 import * as EvaluationRatingRepository from "../repositories/evaluation-rating-repository"
@@ -9,12 +10,14 @@ import * as UserRepository from "../repositories/user-repository"
 import * as ProjectMemberRepository from "../repositories/project-member-repository"
 import * as ProjectRepository from "../repositories/project-repository"
 import * as ProjectRoleRepository from "../repositories/project-role-repository"
+import * as SystemSettingsRepository from "../repositories/system-settings-repository"
 import { EvaluationStatus, type Evaluation } from "../types/evaluation-type"
 import { type UserToken } from "../types/user-token-type"
 import CustomError from "../utils/custom-error"
 import { calculateNorms } from "../utils/calculate-norms"
 import { formatDateRange } from "../utils/format-date"
 import { sendMail } from "../utils/sendgrid"
+import { format, utcToZonedTime } from "date-fns-tz"
 
 export const getById = async (id: number) => {
   return await EvaluationRepository.getById(id)
@@ -374,6 +377,79 @@ export const approve = async (id: number) => {
 
   await EvaluationRepository.updateStatusById(evaluation.id, EvaluationStatus.Removed)
   await EvaluationRatingRepository.resetByEvaluationId(evaluation.id)
+
+  const filter = {
+    evaluation_administration_id: evaluation.evaluation_administration_id,
+    for_evaluation: true,
+    status: {
+      in: [EvaluationStatus.Open, EvaluationStatus.Ongoing, EvaluationStatus.ForRemoval],
+    },
+  }
+
+  if (evaluation.is_external === true) {
+    Object.assign(filter, {
+      external_evaluator_id: evaluation.external_evaluator_id,
+    })
+  } else {
+    Object.assign(filter, {
+      evaluator_id: evaluation.evaluator_id,
+    })
+  }
+
+  const userRemainingEvaluations = await EvaluationRepository.countAllByFilters(filter)
+
+  if (userRemainingEvaluations === 0) {
+    const evaluationAdministration = await EvaluationAdministrationRepository.getById(
+      evaluation.evaluation_administration_id ?? 0
+    )
+
+    const emailTemplate = await EmailTemplateRepository.getByTemplateType(
+      "Evaluation Completed by Evaluator"
+    )
+
+    if (evaluationAdministration !== null && emailTemplate !== null) {
+      const currentDate = new Date()
+
+      const emailSubject = emailTemplate.subject ?? ""
+      const emailContent = emailTemplate.content ?? ""
+
+      const systemSettings = await SystemSettingsRepository.getByName("default_timezone")
+
+      const targetTimeZone = systemSettings?.value ?? "+08:00"
+
+      const convertedDate = utcToZonedTime(currentDate, targetTimeZone)
+
+      const replacements: Record<string, string> = {
+        evaluator_last_name: evaluator.last_name ?? "",
+        evaluator_first_name: evaluator.first_name ?? "",
+        evaluation_administration_name: evaluationAdministration.name ?? "",
+        submitted_date: format(convertedDate, "yyyy-MM-dd hh:mm:ss a", {
+          timeZone: targetTimeZone,
+        }),
+      }
+
+      const modifiedSubject: string = emailSubject.replace(
+        /{{(.*?)}}/g,
+        (match: string, p1: string) => {
+          return replacements[p1] ?? match
+        }
+      )
+      let modifiedContent: string = emailContent.replace(
+        /{{(.*?)}}/g,
+        (match: string, p1: string) => {
+          return replacements[p1] ?? match
+        }
+      )
+
+      modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
+
+      const emailRecipients = await EmailRecipientRepository.getAllByEmailType("KH360 Admin")
+
+      for (const emailRecipient of emailRecipients) {
+        await sendMail(emailRecipient.email, modifiedSubject, modifiedContent)
+      }
+    }
+  }
 }
 
 export const decline = async (id: number) => {
