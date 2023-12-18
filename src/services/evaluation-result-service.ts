@@ -2,6 +2,7 @@ import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as EvaluationResultRepository from "../repositories/evaluation-result-repository"
 import * as EvaluationResultDetailsRepository from "../repositories/evaluation-result-detail-repository"
 import * as EvaluationTemplateRepository from "../repositories/evaluation-template-repository"
+import * as ScoreRatingRepository from "../repositories/score-rating-repository"
 import { EvaluationResultStatus, type EvaluationResult } from "../types/evaluation-result-type"
 import CustomError from "../utils/custom-error"
 import { getBanding } from "../utils/calculate-norms"
@@ -98,4 +99,26 @@ export const calculateZScore = async (evaluation_result_id: number) => {
     zscore,
     getBanding(zscore)
   )
+}
+
+export const calculateScoreRating = async (id: number) => {
+  const evaluationResult = await EvaluationResultRepository.getById(id)
+
+  if (evaluationResult === null) {
+    throw new CustomError("Evaluation result not found", 400)
+  }
+
+  const score = evaluationResult.score
+
+  if (score === null) {
+    throw new CustomError("Invalid evaluation result score", 400)
+  }
+
+  const scoreRating = await ScoreRatingRepository.getByScore(score)
+
+  if (scoreRating === null) {
+    throw new CustomError("Score rating not found", 400)
+  }
+
+  await EvaluationResultRepository.updateScoreRatingById(id, scoreRating.id)
 }

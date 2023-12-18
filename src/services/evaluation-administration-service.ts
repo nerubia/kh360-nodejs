@@ -236,6 +236,7 @@ export const close = async (id: number) => {
   for (const evaluationResult of evaluationResults) {
     await EvaluationResultDetailService.calculateScore(evaluationResult.id)
     await EvaluationResultService.calculateScore(evaluationResult.id)
+    await EvaluationResultService.calculateScoreRating(evaluationResult.id)
   }
 
   await EvaluationService.calculateZscore(evaluationAdministration.id)
