@@ -17,9 +17,10 @@ export const refreshToken = async (req: Request, res: Response) => {
       if (error != null) return res.status(403).json({ message: "Forbidden" })
       const decodedToken = decoded as UserToken
 
-      const existingUser = decodedToken.is_external
-        ? await ExternalUserRepository.getByEmail(decodedToken.email)
-        : await UserRepository.getByEmail(decodedToken.email)
+      const user = await UserRepository.getByEmail(decodedToken.email)
+      const external_user = await ExternalUserRepository.getByEmail(decodedToken.email)
+
+      const existingUser = decodedToken.is_external ? external_user : user
 
       if (existingUser === null) return res.status(403).json({ message: "Forbidden" })
 
@@ -58,6 +59,7 @@ export const refreshToken = async (req: Request, res: Response) => {
           last_name: existingUser.last_name,
           roles,
           is_external: decodedToken.is_external,
+          user_details: user?.user_details,
         },
       })
     }

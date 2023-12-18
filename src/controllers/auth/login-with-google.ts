@@ -34,6 +34,13 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
       where: {
         email: payload.email,
       },
+      include: {
+        user_details: {
+          select: {
+            user_type: true,
+          },
+        },
+      },
     })
 
     if (existingUser === null) {
@@ -91,6 +98,7 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
         first_name: existingUser.first_name,
         last_name: existingUser.last_name,
         roles,
+        user_details: existingUser.user_details,
       },
     })
   } catch (error) {
