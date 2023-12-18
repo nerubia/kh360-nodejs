@@ -21,6 +21,8 @@ import evaluationTemplateRoute from "./routes/admin/evaluation-template-route"
 import evaluationRoute from "./routes/admin/evaluation-route"
 import externalUserRoute from "./routes/admin/external-user-route"
 import projectMemberRoute from "./routes/admin/project-member-route"
+import projectRoleRoute from "./routes/admin/project-role-route"
+import projectRoute from "./routes/admin/project-route"
 import usersRoute from "./routes/admin/users-route"
 
 const app: Application = express()
@@ -61,6 +63,8 @@ app.use("/admin/evaluation-templates", adminMiddleware, evaluationTemplateRoute)
 app.use("/admin/evaluations", adminMiddleware, evaluationRoute)
 app.use("/admin/external-users", adminMiddleware, externalUserRoute)
 app.use("/admin/project-members", adminMiddleware, projectMemberRoute)
+app.use("/admin/project-roles", adminMiddleware, projectRoleRoute)
+app.use("/admin/projects", adminMiddleware, projectRoute)
 app.use("/admin/users", adminMiddleware, usersRoute)
 
 export default app

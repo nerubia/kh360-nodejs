@@ -84,7 +84,9 @@ export const getAllByFilters = async (
   end_date: string,
   name: string,
   project_name: string,
-  role: string
+  role: string,
+  user_id: number,
+  overlap: boolean
 ) => {
   let userIds: number[] = []
   let projectIds: number[] = []
@@ -112,9 +114,11 @@ export const getAllByFilters = async (
     projectIds = projects.map((project) => project.id)
   }
 
+  const startDate = new Date(start_date)
+  const endDate = new Date(end_date)
+
   const filter = {
-    start_date,
-    end_date,
+    user_id,
   }
 
   if (userIds.length > 0) {
@@ -136,6 +140,46 @@ export const getAllByFilters = async (
   if (role !== undefined) {
     Object.assign(filter, {
       project_role_id: parseInt(role),
+    })
+  }
+
+  if (overlap) {
+    Object.assign(filter, {
+      OR: [
+        {
+          start_date: {
+            gte: startDate,
+            lte: endDate,
+          },
+        },
+        {
+          end_date: {
+            gte: startDate,
+            lte: endDate,
+          },
+        },
+        {
+          start_date: {
+            lte: startDate,
+          },
+          end_date: {
+            gte: startDate,
+          },
+        },
+        {
+          start_date: {
+            lte: endDate,
+          },
+          end_date: {
+            gte: endDate,
+          },
+        },
+      ],
+    })
+  } else {
+    Object.assign(filter, {
+      start_date: startDate,
+      end_date: endDate,
     })
   }
 

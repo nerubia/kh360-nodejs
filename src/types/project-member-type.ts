@@ -5,5 +5,4 @@ export interface ProjectMember {
   start_date?: Date | string
   end_date?: Date | string
   allocation_rate?: number
-  remarks?: string
 }
