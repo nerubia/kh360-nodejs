@@ -357,23 +357,6 @@ model currencies {
   updated_at DateTime? @db.DateTime(0)
 }
 
-model email_logs {
-  id            Int       @id @default(autoincrement())
-  email_type    String?   @default("") @db.VarChar(100)
-  user_id       Int?
-  email_address String    @default("") @db.VarChar(255)
-  sent_at       DateTime  @db.DateTime(0)
-  subject       String?   @default("") @db.VarChar(255)
-  content       String?   @db.Text
-  notes         String?   @default("") @db.VarChar(255)
-  mail_id       String    @default("") @db.VarChar(255)
-  email_status  String    @default("") @db.VarChar(20)
-  created_at    DateTime? @db.DateTime(0)
-  updated_at    DateTime? @db.DateTime(0)
-
-  @@index([user_id], map: "index_email_logs_on_user_id")
-}
-
 model email_recipients {
   id         Int       @id @default(autoincrement())
   email_type String?   @default("") @db.VarChar(255)
@@ -414,18 +397,20 @@ model evaluation_administrations {
 }
 
 model evaluation_ratings {
-  id                             Int       @id @default(autoincrement())
+  id                             Int            @id @default(autoincrement())
   evaluation_administration_id   Int?
   evaluation_id                  Int?
   evaluation_template_id         Int?
   evaluation_template_content_id Int?
   answer_option_id               Int?
-  rate                           Decimal?  @default(0.00) @db.Decimal(5, 2)
-  percentage                     Decimal?  @default(0.00) @db.Decimal(8, 2)
-  score                          Decimal?  @default(0.00) @db.Decimal(8, 2)
-  comments                       String?   @db.Text
-  created_at                     DateTime? @db.DateTime(0)
-  updated_at                     DateTime? @db.DateTime(0)
+  rate                           Decimal?       @default(0.00) @db.Decimal(5, 2)
+  percentage                     Decimal?       @default(0.00) @db.Decimal(8, 2)
+  score                          Decimal?       @default(0.00) @db.Decimal(8, 2)
+  score_ratings_id               Int?
+  comments                       String?        @db.Text
+  created_at                     DateTime?      @db.DateTime(0)
+  updated_at                     DateTime?      @db.DateTime(0)
+  score_ratings                  score_ratings? @relation(fields: [score_ratings_id], references: [id])
 
   @@index([answer_option_id], map: "index_evaluation_ratings_on_answer_option_id")
   @@index([evaluation_administration_id], map: "index_evaluation_ratings_on_evaluation_administration_id")
@@ -435,21 +420,19 @@ model evaluation_ratings {
 }
 
 model evaluation_result_details {
-  id                           Int            @id @default(autoincrement())
+  id                           Int       @id @default(autoincrement())
   evaluation_administration_id Int?
   user_id                      Int?
   evaluation_result_id         Int?
   evaluation_template_id       Int?
-  score                        Decimal?       @default(0.0000) @db.Decimal(8, 4)
-  weight                       Decimal?       @default(0.0000) @db.Decimal(8, 4)
-  zscore                       Decimal?       @default(0.0000) @db.Decimal(8, 4)
-  weighted_score               Decimal?       @default(0.0000) @db.Decimal(10, 4)
-  weighted_zscore              Decimal?       @default(0.0000) @db.Decimal(10, 4)
-  score_ratings_id             Int?
-  banding                      String?        @default("") @db.VarChar(20)
-  created_at                   DateTime?      @db.DateTime(0)
-  updated_at                   DateTime?      @db.DateTime(0)
-  score_ratings                score_ratings? @relation(fields: [score_ratings_id], references: [id])
+  score                        Decimal?  @default(0.0000) @db.Decimal(8, 4)
+  weight                       Decimal?  @default(0.0000) @db.Decimal(8, 4)
+  zscore                       Decimal?  @default(0.0000) @db.Decimal(8, 4)
+  weighted_score               Decimal?  @default(0.0000) @db.Decimal(10, 4)
+  weighted_zscore              Decimal?  @default(0.0000) @db.Decimal(10, 4)
+  banding                      String?   @default("") @db.VarChar(20)
+  created_at                   DateTime? @db.DateTime(0)
+  updated_at                   DateTime? @db.DateTime(0)
 
   @@index([evaluation_administration_id], map: "index_evaluation_result_details_on_evaluation_administration_id")
   @@index([evaluation_result_id], map: "index_evaluation_result_details_on_evaluation_result_id")
@@ -458,24 +441,22 @@ model evaluation_result_details {
 }
 
 model evaluation_results {
-  id                           Int            @id @default(autoincrement())
+  id                           Int       @id @default(autoincrement())
   evaluation_administration_id Int?
   user_id                      Int?
-  score                        Decimal?       @default(0.00) @db.Decimal(5, 2)
-  score_ratings_id             Int?
-  zscore                       Decimal?       @default(0.00) @db.Decimal(8, 2)
-  banding                      String?        @default("") @db.VarChar(20)
-  submitted_date               DateTime?      @db.Date
-  employee_comments            String?        @db.Text
-  cm_comments                  String?        @db.Text
-  action_plans                 String?        @db.Text
-  status                       String?        @default("") @db.VarChar(20)
+  score                        Decimal?  @default(0.00) @db.Decimal(5, 2)
+  zscore                       Decimal?  @default(0.00) @db.Decimal(8, 2)
+  banding                      String?   @default("") @db.VarChar(20)
+  submitted_date               DateTime? @db.Date
+  employee_comments            String?   @db.Text
+  cm_comments                  String?   @db.Text
+  action_plans                 String?   @db.Text
+  status                       String?   @default("") @db.VarChar(20)
   created_by_id                Int?
   updated_by_id                Int?
-  created_at                   DateTime?      @db.DateTime(0)
-  updated_at                   DateTime?      @db.DateTime(0)
-  users                        users?         @relation(fields: [user_id], references: [id])
-  score_ratings                score_ratings? @relation(fields: [score_ratings_id], references: [id])
+  created_at                   DateTime? @db.DateTime(0)
+  updated_at                   DateTime? @db.DateTime(0)
+  users                        users?    @relation(fields: [user_id], references: [id])
 
   @@index([evaluation_administration_id], map: "index_evaluation_results_on_evaluation_administration_id")
   @@index([user_id], map: "index_evaluation_results_on_user_id")
@@ -1023,18 +1004,16 @@ model schema_migrations {
 }
 
 model score_ratings {
-  id                        Int                         @id @default(autoincrement())
-  name                      String?                     @db.VarChar(100)
-  display_name              String?                     @db.VarChar(100)
-  min_score                 Decimal?                    @default(0.00) @db.Decimal(8, 2)
-  max_score                 Decimal?                    @default(0.00) @db.Decimal(8, 2)
-  result_description        String?                     @db.Text
-  evaluee_description       String?                     @db.Text
-  status                    Boolean?
-  created_at                DateTime?                   @db.DateTime(0)
-  updated_at                DateTime?                   @db.DateTime(0)
-  evaluation_results        evaluation_results[]
-  evaluation_result_details evaluation_result_details[]
+  id                 Int                  @id @default(autoincrement())
+  name               String?              @db.VarChar(100)
+  display_name       String?              @db.VarChar(100)
+  min_score          Decimal?             @default(0.00) @db.Decimal(8, 2)
+  max_score          Decimal?             @default(0.00) @db.Decimal(8, 2)
+  description        String?              @db.Text
+  status             Boolean?
+  created_at         DateTime?            @db.DateTime(0)
+  updated_at         DateTime?            @db.DateTime(0)
+  evaluation_ratings evaluation_ratings[]
 }
 
 model system_settings {
