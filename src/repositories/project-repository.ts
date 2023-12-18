@@ -1,3 +1,4 @@
+import { type Prisma } from "@prisma/client"
 import prisma from "../utils/prisma"
 
 export const getById = async (id: number) => {
@@ -23,5 +24,15 @@ export const getAllByName = async (name: string) => {
         contains: name,
       },
     },
+  })
+}
+
+export const getAllByFilters = async (where: Prisma.projectsWhereInput) => {
+  return await prisma.projects.findMany({
+    select: {
+      id: true,
+      name: true,
+    },
+    where,
   })
 }
