@@ -397,18 +397,20 @@ model evaluation_administrations {
 }
 
 model evaluation_ratings {
-  id                             Int       @id @default(autoincrement())
+  id                             Int            @id @default(autoincrement())
   evaluation_administration_id   Int?
   evaluation_id                  Int?
   evaluation_template_id         Int?
   evaluation_template_content_id Int?
   answer_option_id               Int?
-  rate                           Decimal?  @default(0.00) @db.Decimal(5, 2)
-  percentage                     Decimal?  @default(0.00) @db.Decimal(8, 2)
-  score                          Decimal?  @default(0.00) @db.Decimal(8, 2)
-  comments                       String?   @db.Text
-  created_at                     DateTime? @db.DateTime(0)
-  updated_at                     DateTime? @db.DateTime(0)
+  rate                           Decimal?       @default(0.00) @db.Decimal(5, 2)
+  percentage                     Decimal?       @default(0.00) @db.Decimal(8, 2)
+  score                          Decimal?       @default(0.00) @db.Decimal(8, 2)
+  score_ratings_id               Int?
+  comments                       String?        @db.Text
+  created_at                     DateTime?      @db.DateTime(0)
+  updated_at                     DateTime?      @db.DateTime(0)
+  score_ratings                  score_ratings? @relation(fields: [score_ratings_id], references: [id])
 
   @@index([answer_option_id], map: "index_evaluation_ratings_on_answer_option_id")
   @@index([evaluation_administration_id], map: "index_evaluation_ratings_on_evaluation_administration_id")
@@ -999,6 +1001,19 @@ model projects {
 
 model schema_migrations {
   version String @unique(map: "unique_schema_migrations") @db.VarChar(255)
+}
+
+model score_ratings {
+  id                 Int                  @id @default(autoincrement())
+  name               String?              @db.VarChar(100)
+  display_name       String?              @db.VarChar(100)
+  min_score          Decimal?             @default(0.00) @db.Decimal(8, 2)
+  max_score          Decimal?             @default(0.00) @db.Decimal(8, 2)
+  description        String?              @db.Text
+  status             Boolean?
+  created_at         DateTime?            @db.DateTime(0)
+  updated_at         DateTime?            @db.DateTime(0)
+  evaluation_ratings evaluation_ratings[]
 }
 
 model system_settings {
