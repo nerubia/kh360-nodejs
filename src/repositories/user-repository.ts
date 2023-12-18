@@ -44,9 +44,3 @@ export const getAllByFilters = async (where: Prisma.usersWhereInput) => {
     where,
   })
 }
-
-export const getAllByFilters = async (where: Prisma.usersWhereInput) => {
-  return await prisma.users.findMany({
-    where,
-  })
-}
