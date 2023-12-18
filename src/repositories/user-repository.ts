@@ -28,20 +28,7 @@ export const getByEmail = async (email: string) => {
           user_type: true,
         },
       },
-      user_settings: {
-        select: {
-          id: true,
-          name: true,
-          setting: true,
-        },
-      },
     },
-  })
-}
-
-export const getAllByFilters = async (where: Prisma.usersWhereInput) => {
-  return await prisma.users.findMany({
-    where,
   })
 }
 

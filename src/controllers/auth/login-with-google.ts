@@ -40,13 +40,6 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
             user_type: true,
           },
         },
-        user_settings: {
-          select: {
-            id: true,
-            name: true,
-            setting: true,
-          },
-        },
       },
     })
 
@@ -70,7 +63,6 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
         last_name: existingUser.last_name,
         roles,
         is_external: false,
-        user_details: existingUser.user_details,
       },
       process.env.ACCESS_TOKEN_SECRET as string,
       {
@@ -105,10 +97,8 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
         email: existingUser.email,
         first_name: existingUser.first_name,
         last_name: existingUser.last_name,
-        picture: existingUser.picture,
         roles,
         user_details: existingUser.user_details,
-        user_settings: existingUser.user_settings,
       },
     })
   } catch (error) {
