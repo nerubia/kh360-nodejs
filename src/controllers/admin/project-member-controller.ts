@@ -11,16 +11,20 @@ import { createProjectMemberSchema } from "../../utils/validation/project-member
  * @param req.query.name - Filter by name.
  * @param req.query.project_name - Filter by project_name.
  * @param req.query.role - Filter by role.
+ * @param req.query.user_id - Filter by user id.
+ * @param req.query.overlap - Overlap.
  */
 export const search = async (req: Request, res: Response) => {
   try {
-    const { start_date, end_date, name, project_name, role } = req.query
+    const { start_date, end_date, name, project_name, role, user_id, overlap } = req.query
     const results = await ProjectMemberService.getAllByFilters(
       start_date as string,
       end_date as string,
       name as string,
       project_name as string,
-      role as string
+      role as string,
+      parseInt(user_id as string),
+      Boolean(parseInt(overlap as string))
     )
     res.json(results)
   } catch (error) {
@@ -58,12 +62,10 @@ export const index = async (req: Request, res: Response) => {
  * @param req.body.start_date - Start date.
  * @param req.body.end_date - End date.
  * @param req.body.allocation_rate - Allocation rate.
- * @param req.body.remarks - Remarks.
  */
 export const store = async (req: Request, res: Response) => {
   try {
-    const { project_id, user_id, project_role_id, start_date, end_date, allocation_rate, remarks } =
-      req.body
+    const { project_id, user_id, project_role_id, start_date, end_date, allocation_rate } = req.body
 
     await createProjectMemberSchema.validate({
       project_id,
@@ -72,7 +74,6 @@ export const store = async (req: Request, res: Response) => {
       start_date,
       end_date,
       allocation_rate,
-      remarks,
     })
 
     const newProjectMember = await ProjectMemberService.create({
@@ -82,7 +83,6 @@ export const store = async (req: Request, res: Response) => {
       start_date: new Date(start_date),
       end_date: new Date(end_date),
       allocation_rate: parseFloat(allocation_rate),
-      remarks,
     })
 
     res.json(newProjectMember)
@@ -128,8 +128,7 @@ export const show = async (req: Request, res: Response) => {
 export const update = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const { project_id, user_id, project_role_id, start_date, end_date, allocation_rate, remarks } =
-      req.body
+    const { project_id, user_id, project_role_id, start_date, end_date, allocation_rate } = req.body
 
     await createProjectMemberSchema.validate({
       project_id,
@@ -138,7 +137,6 @@ export const update = async (req: Request, res: Response) => {
       start_date,
       end_date,
       allocation_rate,
-      remarks,
     })
 
     const updatedProjectMember = await ProjectMemberService.update(parseInt(id), {
@@ -148,7 +146,6 @@ export const update = async (req: Request, res: Response) => {
       start_date: new Date(start_date),
       end_date: new Date(end_date),
       allocation_rate: parseFloat(allocation_rate),
-      remarks,
     })
 
     res.json(updatedProjectMember)
