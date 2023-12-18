@@ -42,6 +42,18 @@ export const updateZScoreById = async (id: number, zscore: number, banding: stri
   })
 }
 
+export const updateScoreRatingById = async (id: number, score_rating_id: number) => {
+  await prisma.evaluation_results.update({
+    where: {
+      id,
+    },
+    data: {
+      score_ratings_id: score_rating_id,
+      updated_at: new Date(),
+    },
+  })
+}
+
 export const getAllByEvaluationAdministrationId = async (evaluation_administration_id: number) => {
   return await prisma.evaluation_results.findMany({
     where: {
