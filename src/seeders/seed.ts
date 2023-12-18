@@ -304,13 +304,6 @@ const createEmailTemplates = async () => {
       await prisma.email_templates.create({
         data,
       })
-    } else {
-      await prisma.email_templates.update({
-        where: {
-          id: emailTemplate.id,
-        },
-        data,
-      })
     }
   }
 }
@@ -480,13 +473,6 @@ const createScoreRatings = async () => {
     })
     if (scoreRating === null) {
       await prisma.score_ratings.create({
-        data,
-      })
-    } else {
-      await prisma.score_ratings.update({
-        where: {
-          id: scoreRating.id,
-        },
         data,
       })
     }
