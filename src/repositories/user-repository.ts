@@ -22,6 +22,13 @@ export const getByEmail = async (email: string) => {
     where: {
       email,
     },
+    include: {
+      user_details: {
+        select: {
+          user_type: true,
+        },
+      },
+    },
   })
 }
 
