@@ -36,6 +36,13 @@ export const login = async (req: Request, res: Response) => {
       where: {
         email: data.email,
       },
+      include: {
+        user_details: {
+          select: {
+            user_type: true,
+          },
+        },
+      },
     })
 
     if (existingUser === null) return res.status(400).json({ message: "Invalid credentials" })
@@ -91,6 +98,7 @@ export const login = async (req: Request, res: Response) => {
         first_name: existingUser.first_name,
         last_name: existingUser.last_name,
         roles,
+        user_details: existingUser.user_details,
       },
     })
   } catch (error) {
