@@ -1,6 +1,7 @@
 import { type Prisma } from "@prisma/client"
 import { format } from "date-fns"
 import bcrypt from "bcrypt"
+import * as EmailLogRepository from "../repositories/email-log-repository"
 import * as EmailTemplateRepository from "../repositories/email-template-repository"
 import * as EvaluationAdministrationRepository from "../repositories/evaluation-administration-repository"
 import * as EvaluationResultRepository from "../repositories/evaluation-result-repository"
@@ -601,11 +602,14 @@ export const getEvaluators = async (id: number) => {
         },
       })
 
+      const email_logs = await EmailLogRepository.getAllByEmail(evaluator.email)
+
       evaluators.push({
         ...evaluator,
         totalSubmitted,
         totalEvaluations,
         is_external: evaluation.is_external,
+        email_logs,
       })
     }
   }
@@ -637,11 +641,14 @@ export const getEvaluators = async (id: number) => {
         external_evaluator_id: evaluator.id,
       })
 
+      const email_logs = await EmailLogRepository.getAllByEmail(evaluator.email)
+
       evaluators.push({
         ...evaluator,
         totalSubmitted,
         totalEvaluations,
         is_external: evaluation.is_external,
+        email_logs,
       })
     }
   }
