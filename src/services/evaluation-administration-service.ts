@@ -43,7 +43,7 @@ export const getAllByFilters = async (name: string, status: string, page: string
     },
   }
 
-  if (status !== "all") {
+  if (status !== undefined && status !== "all") {
     const statuses = status.split(",")
     Object.assign(where, {
       status: {
