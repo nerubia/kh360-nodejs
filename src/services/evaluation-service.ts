@@ -403,7 +403,7 @@ export const approve = async (id: number) => {
       evaluation.evaluation_administration_id ?? 0
     )
 
-    const emailTemplate = await EmailTemplateRepository.getByTemplateType(
+    let emailTemplate = await EmailTemplateRepository.getByTemplateType(
       "Evaluation Completed by Evaluator"
     )
 
@@ -449,6 +449,22 @@ export const approve = async (id: number) => {
         await sendMail(emailRecipient.email, modifiedSubject, modifiedContent)
       }
     }
+
+    emailTemplate = await EmailTemplateRepository.getByTemplateType(
+      "Evaluation Complete Thank You Message"
+    )
+
+    if (emailTemplate === null) {
+      throw new CustomError("Email template not found", 400)
+    }
+
+    const emailSubject = emailTemplate.subject ?? ""
+    const emailContent = emailTemplate.content ?? ""
+
+    modifiedContent = emailContent.concat(`\n\nThanks and Best Regards,\nKH360 Admin`)
+    modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
+
+    await sendMail(evaluator.email, emailSubject, modifiedContent)
   }
 }
 
