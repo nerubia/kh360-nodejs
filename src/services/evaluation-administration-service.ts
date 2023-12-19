@@ -32,12 +32,58 @@ export const getAllByStatus = async (status: string) => {
   return await EvaluationAdministrationRepository.getAllByStatus(status)
 }
 
-export const getAllByFilters = async (
-  skip: number,
-  take: number,
-  where: Prisma.evaluation_administrationsWhereInput
-) => {
-  return await EvaluationAdministrationRepository.getAllByFilters(skip, take, where)
+export const getAllByFilters = async (name: string, status: string, page: string) => {
+  const itemsPerPage = 10
+  const parsedPage = parseInt(page)
+  const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
+
+  const where = {
+    name: {
+      contains: name,
+    },
+  }
+
+  if (status !== "all") {
+    const statuses = status.split(",")
+    Object.assign(where, {
+      status: {
+        in: statuses,
+      },
+    })
+  }
+
+  const evaluationAdministrations = await EvaluationAdministrationRepository.getAllByFilters(
+    (currentPage - 1) * itemsPerPage,
+    itemsPerPage,
+    where
+  )
+
+  const finalEvaluationAdministrations = await Promise.all(
+    evaluationAdministrations.map(async (evaluationAdministration) => {
+      const evaluees_count = await EvaluationResultRepository.countByAdministrationId(
+        evaluationAdministration.id
+      )
+
+      return {
+        ...evaluationAdministration,
+        evaluees_count,
+      }
+    })
+  )
+
+  const totalItems = await EvaluationAdministrationRepository.countAllByFilters(where)
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+
+  return {
+    data: finalEvaluationAdministrations,
+    pageInfo: {
+      hasPreviousPage: currentPage > 1,
+      hasNextPage: currentPage < totalPages,
+      currentPage,
+      totalPages,
+      totalItems,
+    },
+  }
 }
 
 export const getById = async (id: number) => {
