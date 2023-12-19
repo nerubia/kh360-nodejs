@@ -1019,16 +1019,17 @@ model schema_migrations {
 }
 
 model score_ratings {
-  id                 Int                  @id @default(autoincrement())
-  name               String?              @db.VarChar(100)
-  display_name       String?              @db.VarChar(100)
-  min_score          Decimal?             @default(0.00) @db.Decimal(8, 2)
-  max_score          Decimal?             @default(0.00) @db.Decimal(8, 2)
-  description        String?              @db.Text
-  status             Boolean?
-  created_at         DateTime?            @db.DateTime(0)
-  updated_at         DateTime?            @db.DateTime(0)
-  evaluation_results evaluation_results[]
+  id                  Int                  @id @default(autoincrement())
+  name                String?              @db.VarChar(100)
+  display_name        String?              @db.VarChar(100)
+  min_score           Decimal?             @default(0.00) @db.Decimal(8, 2)
+  max_score           Decimal?             @default(0.00) @db.Decimal(8, 2)
+  result_description  String?              @db.Text
+  evaluee_description String?              @db.Text
+  status              Boolean?
+  created_at          DateTime?            @db.DateTime(0)
+  updated_at          DateTime?            @db.DateTime(0)
+  evaluation_results  evaluation_results[]
 }
 
 model system_settings {
