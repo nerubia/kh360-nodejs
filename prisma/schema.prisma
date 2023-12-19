@@ -357,6 +357,21 @@ model currencies {
   updated_at DateTime? @db.DateTime(0)
 }
 
+model email_logs {
+  id            Int       @id @default(autoincrement())
+  email_type    String?   @default("")  @db.VarChar(255)
+  user_id       Int?
+  email_address String
+  sent_at       DateTime  @db.DateTime(0)
+  subject       String?   @default("") @db.VarChar(255)
+  content       String?   @db.Text
+  notes         String?   @db.Text
+  mail_id       String
+  email_status  String
+
+  @@index([user_id], map: "index_email_logs_on_user_id")
+}
+
 model email_recipients {
   id         Int       @id @default(autoincrement())
   email_type String?   @default("") @db.VarChar(255)
