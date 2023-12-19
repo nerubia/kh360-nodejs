@@ -1,7 +1,6 @@
 import { type Prisma } from "@prisma/client"
 import { format } from "date-fns"
 import bcrypt from "bcrypt"
-import * as EmailLogRepository from "../repositories/email-log-repository"
 import * as EmailTemplateRepository from "../repositories/email-template-repository"
 import * as EvaluationAdministrationRepository from "../repositories/evaluation-administration-repository"
 import * as EvaluationResultRepository from "../repositories/evaluation-result-repository"
@@ -24,7 +23,6 @@ import { sendMail } from "../utils/sendgrid"
 import CustomError from "../utils/custom-error"
 import { EvaluationResultStatus } from "../types/evaluation-result-type"
 import { EvaluationStatus } from "../types/evaluation-type"
-import { EmailLogType, type EmailLog } from "../types/email-log-type"
 
 export const getAllByStatusAndDate = async (status: string, date: Date) => {
   return await EvaluationAdministrationRepository.getAllByStatusAndDate(status, date)
@@ -45,7 +43,7 @@ export const getAllByFilters = async (name: string, status: string, page: string
     },
   }
 
-  if (status !== undefined && status !== "all") {
+  if (status !== "all") {
     const statuses = status.split(",")
     Object.assign(where, {
       status: {
@@ -452,21 +450,6 @@ export const sendReminderByEvaluator = async (
 
     let modifiedContent = emailTemplate.content ?? ""
 
-    if (evaluation?.is_external === true) {
-      const externalEvaluator = await ExternalUserRepository.getById(
-        evaluation.external_evaluator_id ?? 0
-      )
-      modifiedContent = modifiedContent.replace(
-        "{{link}}",
-        `<a href='${process.env.APP_URL}/external-evaluations/${evaluationAdministration.id}/evaluations/all?token=${externalEvaluator?.access_token}'>link</a>`
-      )
-    } else {
-      modifiedContent = modifiedContent.replace(
-        "{{link}}",
-        `<a href='${process.env.APP_URL}/evaluation-administrations/${evaluationAdministration.id}/evaluations/all'>link</a>`
-      )
-    }
-
     modifiedContent = modifiedContent.replace("{{evaluator_first_name}}", `${evaluator.first_name}`)
 
     modifiedContent = modifiedContent.replace(
@@ -478,33 +461,7 @@ export const sendReminderByEvaluator = async (
 
     modifiedContent = modifiedContent.replace("{{evaluation_end_date}}", scheduleEndDate)
 
-    const currentDate = new Date()
-    const emailLogData: EmailLog = {
-      content: modifiedContent,
-      created_at: currentDate,
-      email_address: evaluator.email,
-      email_status: EmailLogType.Pending,
-      email_type: emailTemplate.template_type,
-      mail_id: "",
-      notes: evaluationAdministration.id.toString(),
-      sent_at: currentDate,
-      subject: emailTemplate.subject,
-      updated_at: currentDate,
-      user_id: evaluator.id,
-    }
-
-    const sgResp = await sendMail(evaluator.email, emailTemplate.subject ?? "", modifiedContent)
-    if (sgResp !== null && sgResp !== undefined) {
-      const mailId = sgResp[0].headers["x-message-id"]
-      emailLogData.mail_id = mailId
-      emailLogData.email_status = EmailLogType.Sent
-    } else {
-      emailLogData.email_status = EmailLogType.Error
-    }
-
-    await EmailLogRepository.create(emailLogData)
-
-    return emailLogData
+    await sendMail(evaluator.email, emailTemplate.subject ?? "", modifiedContent)
   }
 }
 
@@ -666,14 +623,11 @@ export const getEvaluators = async (id: number) => {
         },
       })
 
-      const email_logs = await EmailLogRepository.getAllByEmail(evaluator.email)
-
       evaluators.push({
         ...evaluator,
         totalSubmitted,
         totalEvaluations,
         is_external: evaluation.is_external,
-        email_logs,
       })
     }
   }
@@ -705,14 +659,11 @@ export const getEvaluators = async (id: number) => {
         external_evaluator_id: evaluator.id,
       })
 
-      const email_logs = await EmailLogRepository.getAllByEmail(evaluator.email)
-
       evaluators.push({
         ...evaluator,
         totalSubmitted,
         totalEvaluations,
         is_external: evaluation.is_external,
-        email_logs,
       })
     }
   }
