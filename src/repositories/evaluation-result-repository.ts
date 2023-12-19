@@ -86,3 +86,11 @@ export const updateStatusByAdministrationId = async (
     },
   })
 }
+
+export const countByAdministrationId = async (evaluation_administration_id: number) => {
+  return await prisma.evaluation_results.count({
+    where: {
+      evaluation_administration_id,
+    },
+  })
+}
