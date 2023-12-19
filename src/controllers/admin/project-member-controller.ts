@@ -17,14 +17,13 @@ import { createProjectMemberSchema } from "../../utils/validation/project-member
 export const search = async (req: Request, res: Response) => {
   try {
     const { start_date, end_date, name, project_name, role, user_id, overlap } = req.query
-    const projectRole = role === "all" ? "" : role
 
     const results = await ProjectMemberService.getAllByFilters(
       start_date as string,
       end_date as string,
       name as string,
       project_name as string,
-      projectRole as string,
+      role as string,
       parseInt(user_id as string),
       Boolean(parseInt(overlap as string))
     )
