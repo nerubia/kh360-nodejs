@@ -57,7 +57,7 @@ const createUsers = async () => {
   })
 }
 
-const createEvaluations = async () => {
+const createEvaluationAdministrations = async () => {
   for (let i = 0; i < 200; i++) {
     await prisma.evaluation_administrations.create({
       data: {
@@ -486,7 +486,7 @@ async function main() {
   }
   if (process.env.APP_ENV === Environment.Local) {
     await createUsers()
-    await createEvaluations()
+    await createEvaluationAdministrations()
     await createUserDetails()
     await createEvaluationResults()
   }
