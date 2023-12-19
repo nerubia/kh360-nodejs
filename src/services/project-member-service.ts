@@ -95,6 +95,7 @@ export const getAllByFilters = async (
   }
   const startDate = start_date !== undefined ? new Date(start_date) : undefined
   const endDate = end_date !== undefined ? new Date(end_date) : undefined
+  const projectRole = role === "all" ? undefined : role
 
   if (name !== undefined) {
     const users = await UserRepository.getAllByFilters({
@@ -141,12 +142,10 @@ export const getAllByFilters = async (
     }
   }
 
-  if (role !== undefined) {
-    if (role.trim().length > 0) {
-      Object.assign(filter, {
-        project_role_id: parseInt(role),
-      })
-    }
+  if (projectRole !== undefined) {
+    Object.assign(filter, {
+      project_role_id: parseInt(role),
+    })
   }
 
   if (overlap) {
