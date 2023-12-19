@@ -358,16 +358,18 @@ model currencies {
 }
 
 model email_logs {
-  id            Int       @id @default(autoincrement())
-  email_type    String?   @default("")  @db.VarChar(255)
+  id            Int       @id             @default(autoincrement())
+  email_type    String?   @default("")    @db.VarChar(100)
   user_id       Int?
   email_address String
   sent_at       DateTime  @db.DateTime(0)
-  subject       String?   @default("") @db.VarChar(255)
+  subject       String?   @default("")    @db.VarChar(255)
   content       String?   @db.Text
-  notes         String?   @db.Text
+  notes         String?   @default("")    @db.VarChar(255)
   mail_id       String
   email_status  String
+  created_at    DateTime? @db.DateTime(0)
+  updated_at    DateTime? @db.DateTime(0)
 
   @@index([user_id], map: "index_email_logs_on_user_id")
 }
