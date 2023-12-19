@@ -451,7 +451,9 @@ export const approve = async (id: number) => {
     }
 
     emailTemplate = await EmailTemplateRepository.getByTemplateType(
-      "Evaluation Complete Thank You Message"
+      evaluation.is_external === true
+        ? "Evaluation Complete Thank You Message External"
+        : "Evaluation Complete Thank You Message"
     )
 
     if (emailTemplate === null) {
