@@ -90,6 +90,12 @@ export const getAllByFilters = async (
 ) => {
   let userIds: number[] = []
   let projectIds: number[] = []
+  const filter = {
+    user_id: !isNaN(user_id) ? user_id : undefined,
+  }
+  const startDate = start_date !== undefined ? new Date(start_date) : undefined
+  const endDate = end_date !== undefined ? new Date(end_date) : undefined
+  const projectRole = role === "all" ? undefined : role
 
   if (name !== undefined) {
     const users = await UserRepository.getAllByFilters({
@@ -107,37 +113,36 @@ export const getAllByFilters = async (
       ],
     })
     userIds = users.map((user) => user.id)
+    if (userIds.length > 0) {
+      Object.assign(filter, {
+        user_id: {
+          in: userIds,
+        },
+      })
+    } else {
+      Object.assign(filter, {
+        user_id: null,
+      })
+    }
   }
 
   if (project_name !== undefined) {
     const projects = await ProjectRepository.getAllByName(project_name)
     projectIds = projects.map((project) => project.id)
+    if (projectIds.length > 0) {
+      Object.assign(filter, {
+        project_id: {
+          in: projectIds,
+        },
+      })
+    } else {
+      Object.assign(filter, {
+        project_id: null,
+      })
+    }
   }
 
-  const startDate = new Date(start_date)
-  const endDate = new Date(end_date)
-
-  const filter = {
-    user_id,
-  }
-
-  if (userIds.length > 0) {
-    Object.assign(filter, {
-      user_id: {
-        in: userIds,
-      },
-    })
-  }
-
-  if (projectIds.length > 0) {
-    Object.assign(filter, {
-      project_id: {
-        in: projectIds,
-      },
-    })
-  }
-
-  if (role !== undefined) {
+  if (projectRole !== undefined) {
     Object.assign(filter, {
       project_role_id: parseInt(role),
     })
@@ -177,10 +182,18 @@ export const getAllByFilters = async (
       ],
     })
   } else {
-    Object.assign(filter, {
-      start_date: startDate,
-      end_date: endDate,
-    })
+    if (startDate !== undefined || endDate !== undefined) {
+      Object.assign(filter, {
+        AND: [
+          {
+            start_date: { gte: startDate },
+          },
+          {
+            end_date: { lte: endDate },
+          },
+        ],
+      })
+    }
   }
 
   const projectMembers = await ProjectMemberRepository.getAllByFilters(filter)
@@ -189,10 +202,12 @@ export const getAllByFilters = async (
     projectMembers.map(async (projectMember) => {
       const user = await UserRepository.getById(projectMember.user_id ?? 0)
       const project = await ProjectRepository.getById(projectMember.project_id ?? 0)
+      const role = await ProjectRoleRepository.getById(projectMember.project_role_id ?? 0)
       return {
         ...projectMember,
         user,
         project,
+        role: role?.name,
       }
     })
   )

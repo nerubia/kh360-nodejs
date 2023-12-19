@@ -26,51 +26,12 @@ import {
 export const index = async (req: Request, res: Response) => {
   try {
     const { name, status, page } = req.query
-
-    const evaluationStatus = status === "all" ? "" : status
-
-    const itemsPerPage = 10
-    const parsedPage = parseInt(page as string)
-    const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
-
-    const evaluations = await prisma.evaluation_administrations.findMany({
-      skip: (currentPage - 1) * itemsPerPage,
-      take: itemsPerPage,
-      where: {
-        name: {
-          contains: name as string,
-        },
-        status: {
-          contains: evaluationStatus as string,
-        },
-      },
-      orderBy: {
-        id: "desc",
-      },
-    })
-
-    const totalItems = await prisma.evaluation_administrations.count({
-      where: {
-        name: {
-          contains: name as string,
-        },
-        status: {
-          contains: evaluationStatus as string,
-        },
-      },
-    })
-
-    const totalPages = Math.ceil(totalItems / itemsPerPage)
-
-    res.json({
-      data: evaluations,
-      pageInfo: {
-        hasPreviousPage: currentPage > 1,
-        hasNextPage: currentPage < totalPages,
-        totalPages,
-        totalItems,
-      },
-    })
+    const evaluationAdministrations = await EvaluationAdministrationService.getAllByFilters(
+      name as string,
+      status as string,
+      page as string
+    )
+    res.json(evaluationAdministrations)
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
