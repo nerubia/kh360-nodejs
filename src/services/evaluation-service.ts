@@ -254,16 +254,6 @@ export const updateStatusByAdministrationId = async (
   await EvaluationRepository.updateStatusByAdministrationId(evaluation_administration_id, status)
 }
 
-export const deleteById = async (id: number) => {
-  const evaluation = await EvaluationRepository.getById(id)
-
-  if (evaluation === null) {
-    throw new CustomError("Id not found", 400)
-  }
-
-  await EvaluationRepository.deleteById(id)
-}
-
 export const countAllByFilters = async (where: Prisma.evaluationsWhereInput) => {
   return await EvaluationRepository.countAllByFilters(where)
 }
@@ -276,16 +266,15 @@ export const aggregateSumByFilters = async (
 }
 
 export const calculateZscore = async (evaluation_administration_id: number) => {
-  const uniqueInternalEvaluations = await EvaluationRepository.getAllDistinctByFilters(
+  const uniqueEvaluations = await EvaluationRepository.getAllDistinctByFilters(
     {
       evaluation_administration_id,
       status: EvaluationStatus.Submitted,
-      is_external: false,
     },
     ["evaluator_id"]
   )
 
-  for (const uniqueEvaluation of uniqueInternalEvaluations) {
+  for (const uniqueEvaluation of uniqueEvaluations) {
     const evaluations = await EvaluationRepository.getAllByFilters({
       evaluation_administration_id,
       evaluator_id: uniqueEvaluation.evaluator_id,
@@ -296,49 +285,8 @@ export const calculateZscore = async (evaluation_administration_id: number) => {
     const norms = await calculateNorms(scores)
 
     for (const evaluation of evaluations) {
-      let zscore = 0
-      let weighted_zscore = 0
-
-      if (Number(evaluation.score) !== 0) {
-        zscore = (Number(evaluation.score) - norms.mean) / norms.stdDev
-        weighted_zscore = zscore * Number(evaluation.weight)
-      }
-
-      await EvaluationRepository.updateZScoreById(
-        evaluation.id,
-        isNaN(zscore) ? 0 : zscore,
-        isNaN(weighted_zscore) ? 0 : weighted_zscore
-      )
-    }
-  }
-
-  const uniqueExternalEvaluations = await EvaluationRepository.getAllDistinctByFilters(
-    {
-      evaluation_administration_id,
-      status: EvaluationStatus.Submitted,
-      is_external: true,
-    },
-    ["external_evaluator_id"]
-  )
-
-  for (const uniqueEvaluation of uniqueExternalEvaluations) {
-    const evaluations = await EvaluationRepository.getAllByFilters({
-      evaluation_administration_id,
-      external_evaluator_id: uniqueEvaluation.external_evaluator_id,
-      status: EvaluationStatus.Submitted,
-    })
-
-    const scores = evaluations.map((evaluation) => Number(evaluation.score))
-    const norms = await calculateNorms(scores)
-
-    for (const evaluation of evaluations) {
-      let zscore = 0
-      let weighted_zscore = 0
-
-      if (Number(evaluation.score) !== 0) {
-        zscore = (Number(evaluation.score) - norms.mean) / norms.stdDev
-        weighted_zscore = zscore * Number(evaluation.weight)
-      }
+      const zscore = (Number(evaluation.score) - norms.mean) / norms.stdDev
+      const weighted_zscore = zscore * Number(evaluation.weight)
 
       await EvaluationRepository.updateZScoreById(
         evaluation.id,
@@ -503,9 +451,7 @@ export const approve = async (id: number) => {
     }
 
     emailTemplate = await EmailTemplateRepository.getByTemplateType(
-      evaluation.is_external === true
-        ? "Evaluation Complete Thank You Message External"
-        : "Evaluation Complete Thank You Message"
+      "Evaluation Complete Thank You Message"
     )
 
     if (emailTemplate === null) {
