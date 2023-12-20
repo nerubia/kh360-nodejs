@@ -3,10 +3,12 @@ import * as EvaluationResultDetailRepository from "../repositories/evaluation-re
 import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as EvaluationRatingRepository from "../repositories/evaluation-rating-repository"
 import * as AnswerOptionRepository from "../repositories/answer-option-repository"
+import * as ScoreRatingRepository from "../repositories/score-rating-repository"
 import { type EvaluationResultDetail } from "../types/evaluation-result-detail-type"
 import { EvaluationStatus } from "../types/evaluation-type"
 import { getBanding } from "../utils/calculate-norms"
 import { AnswerType } from "../types/answer-type"
+import CustomError from "../utils/custom-error"
 
 export const getAllByFilters = async (where: Prisma.evaluation_result_detailsWhereInput) => {
   return await EvaluationResultDetailRepository.getAllByFilters(where)
@@ -108,6 +110,30 @@ export const calculateZscore = async (evaluation_result_id: number) => {
       zscore,
       Number(evaluationResultDetail.weight) * zscore,
       getBanding(zscore)
+    )
+  }
+}
+
+export const calculateScoreRating = async (evaluation_result_id: number) => {
+  const evaluationResultDetails = await EvaluationResultDetailRepository.getAllByFilters({
+    evaluation_result_id,
+  })
+  for (const evaluationResultDetail of evaluationResultDetails) {
+    const score = evaluationResultDetail.score
+
+    if (score === null) {
+      throw new CustomError("Invalid evaluation result detail score", 400)
+    }
+
+    const scoreRating = await ScoreRatingRepository.getByScore(score)
+
+    if (scoreRating === null) {
+      throw new CustomError("Score rating not found", 400)
+    }
+
+    await EvaluationResultDetailRepository.updateScoreRatingById(
+      evaluationResultDetail.id,
+      scoreRating.id
     )
   }
 }
