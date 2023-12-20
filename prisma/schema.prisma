@@ -361,13 +361,13 @@ model email_logs {
   id            Int       @id             @default(autoincrement())
   email_type    String?   @default("")    @db.VarChar(100)
   user_id       Int?
-  email_address String
+  email_address String    @default("") @db.VarChar(255)
   sent_at       DateTime  @db.DateTime(0)
   subject       String?   @default("")    @db.VarChar(255)
   content       String?   @db.Text
-  notes         String?   @default("")    @db.VarChar(255)
-  mail_id       String
-  email_status  String
+  notes         String?   @default("") @db.VarChar(255)
+  mail_id       String    @default("") @db.VarChar(255)
+  email_status  String    @default("") @db.VarChar(20)
   created_at    DateTime? @db.DateTime(0)
   updated_at    DateTime? @db.DateTime(0)
 
