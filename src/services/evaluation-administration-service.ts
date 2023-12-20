@@ -466,12 +466,13 @@ export const sendReminderByEvaluator = async (
 
     const currentDate = new Date()
     const emailLogData: EmailLog = {
-      content: emailTemplate.content,
+      content: modifiedContent,
       created_at: currentDate,
       email_address: evaluator.email,
       email_status: EmailLogType.Pending,
       email_type: emailTemplate.template_type,
       mail_id: "",
+      notes: evaluationAdministration.id.toString(),
       sent_at: currentDate,
       subject: emailTemplate.subject,
       updated_at: currentDate,
