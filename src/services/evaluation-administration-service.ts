@@ -481,6 +481,7 @@ export const sendReminderByEvaluator = async (
     if (sgResp !== null && sgResp !== undefined) {
       const mailId = sgResp[0].headers["x-message-id"]
       emailLogData.mail_id = mailId
+      emailLogData.email_status = EmailLogType.Sent
     } else {
       emailLogData.email_status = EmailLogType.Error
     }
