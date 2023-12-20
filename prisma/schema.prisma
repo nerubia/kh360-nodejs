@@ -363,7 +363,7 @@ model email_logs {
   user_id       Int?
   email_address String    @default("") @db.VarChar(255)
   sent_at       DateTime  @db.DateTime(0)
-  subject       String?   @default("")    @db.VarChar(255)
+  subject       String?   @default("") @db.VarChar(255)
   content       String?   @db.Text
   notes         String?   @default("") @db.VarChar(255)
   mail_id       String    @default("") @db.VarChar(255)
