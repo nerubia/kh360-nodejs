@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/return-await */
 import { type EmailLog } from "../types/email-log-type"
 import prisma from "../utils/prisma"
 
