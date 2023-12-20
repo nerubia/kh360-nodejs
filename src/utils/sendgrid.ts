@@ -11,7 +11,9 @@ export const sendMail = async (to: string, subject: string, content: string) => 
       html: content,
     }
     return await sgMail.send(msg)
-  } catch (error) {}
+  } catch (error) {
+    return null
+  }
 }
 
 export const sendMultipleMail = async (to: string[], subject: string, content: string) => {
