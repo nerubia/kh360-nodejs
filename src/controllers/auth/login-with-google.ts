@@ -40,6 +40,13 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
             user_type: true,
           },
         },
+        user_settings: {
+          select: {
+            id: true,
+            name: true,
+            setting: true,
+          },
+        },
       },
     })
 
@@ -100,6 +107,7 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
         last_name: existingUser.last_name,
         roles,
         user_details: existingUser.user_details,
+        user_settings: existingUser.user_settings,
       },
     })
   } catch (error) {
