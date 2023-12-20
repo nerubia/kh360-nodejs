@@ -77,6 +77,9 @@ jobs:
               pm2 kill &&
               git pull &&
               npm install &&
+              npx prisma migrate deploy &&
+              npx prisma generate &&
+              npx prisma db seed &&
               npm run build &&
               pm2 start npm -- start
               '
