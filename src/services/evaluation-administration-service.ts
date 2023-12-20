@@ -283,7 +283,6 @@ export const close = async (id: number) => {
 
   for (const evaluationResult of evaluationResults) {
     await EvaluationResultDetailService.calculateScore(evaluationResult.id)
-    await EvaluationResultDetailService.calculateScoreRating(evaluationResult.id)
     await EvaluationResultService.calculateScore(evaluationResult.id)
     await EvaluationResultService.calculateScoreRating(evaluationResult.id)
   }
@@ -466,13 +465,12 @@ export const sendReminderByEvaluator = async (
 
     const currentDate = new Date()
     const emailLogData: EmailLog = {
-      content: modifiedContent,
+      content: emailTemplate.content,
       created_at: currentDate,
       email_address: evaluator.email,
       email_status: EmailLogType.Pending,
       email_type: emailTemplate.template_type,
       mail_id: "",
-      notes: evaluationAdministration.id.toString(),
       sent_at: currentDate,
       subject: emailTemplate.subject,
       updated_at: currentDate,
@@ -483,7 +481,6 @@ export const sendReminderByEvaluator = async (
     if (sgResp !== null && sgResp !== undefined) {
       const mailId = sgResp[0].headers["x-message-id"]
       emailLogData.mail_id = mailId
-      emailLogData.email_status = EmailLogType.Sent
     } else {
       emailLogData.email_status = EmailLogType.Error
     }
