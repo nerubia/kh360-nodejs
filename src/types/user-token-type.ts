@@ -5,4 +5,7 @@ export interface UserToken {
   last_name: string
   roles: string[]
   is_external: boolean
+  user_details: {
+    user_type: string
+  }
 }
