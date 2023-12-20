@@ -67,6 +67,9 @@ export const getUserEvaluationResult = async (req: Request, res: Response) => {
 
     res.json(evaluationResult)
   } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
     logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
