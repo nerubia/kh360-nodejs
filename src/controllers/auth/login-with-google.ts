@@ -63,6 +63,7 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
         last_name: existingUser.last_name,
         roles,
         is_external: false,
+        user_details: existingUser.user_details,
       },
       process.env.ACCESS_TOKEN_SECRET as string,
       {
