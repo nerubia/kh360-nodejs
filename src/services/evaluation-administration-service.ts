@@ -24,6 +24,7 @@ import { sendMail } from "../utils/sendgrid"
 import CustomError from "../utils/custom-error"
 import { EvaluationResultStatus } from "../types/evaluation-result-type"
 import { EvaluationStatus } from "../types/evaluation-type"
+import { EmailLogType, type EmailLog } from "../types/email-log-type"
 
 export const getAllByStatusAndDate = async (status: string, date: Date) => {
   return await EvaluationAdministrationRepository.getAllByStatusAndDate(status, date)
@@ -462,7 +463,29 @@ export const sendReminderByEvaluator = async (
 
     modifiedContent = modifiedContent.replace("{{evaluation_end_date}}", scheduleEndDate)
 
-    await sendMail(evaluator.email, emailTemplate.subject ?? "", modifiedContent)
+    const currentDate = new Date()
+    const emailLogData: EmailLog = {
+      content: emailTemplate.content,
+      created_at: currentDate,
+      email_address: evaluator.email,
+      email_status: EmailLogType.Pending,
+      email_type: emailTemplate.template_type,
+      mail_id: "",
+      sent_at: currentDate,
+      subject: emailTemplate.subject,
+      updated_at: currentDate,
+      user_id: evaluator.id,
+    }
+
+    const sgResp = await sendMail(evaluator.email, emailTemplate.subject ?? "", modifiedContent)
+    if (sgResp !== null && sgResp !== undefined) {
+      const mailId = sgResp[0].headers["x-message-id"]
+      emailLogData.mail_id = mailId
+    } else {
+      emailLogData.email_status = EmailLogType.Error
+    }
+
+    await EmailLogRepository.create(emailLogData)
   }
 }
 
