@@ -28,6 +28,13 @@ export const getByEmail = async (email: string) => {
           user_type: true,
         },
       },
+      user_settings: {
+        select: {
+          id: true,
+          name: true,
+          setting: true,
+        },
+      },
     },
   })
 }
