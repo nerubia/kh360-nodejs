@@ -4,6 +4,8 @@ import prisma from "../utils/prisma"
 export const getById = async (id: number) => {
   return await prisma.score_ratings.findUnique({
     select: {
+      id: true,
+      name: true,
       display_name: true,
       evaluee_description: true,
     },
@@ -24,4 +26,8 @@ export const getByScore = async (score: Decimal) => {
       },
     },
   })
+}
+
+export const getScoreRatings = async () => {
+  return await prisma.score_ratings.findMany()
 }
