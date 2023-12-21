@@ -311,7 +311,49 @@ export const getEvaluationResult = async (user: UserToken, id: number) => {
           evaluation_template?.id ?? 0
         )
 
+      const finalEvaluationTemplateContents = await Promise.all(
+        evaluation_template_contents.map(async (content) => {
+          const evaluationRatingIds = []
+          const evaluationRatings = await EvaluationRatingRepository.getAllByFilters({
+            evaluation_template_content_id: content.id,
+          })
+          for (const evaluationRating of evaluationRatings) {
+            if (evaluationRating.answer_option_id !== null) {
+              const answerOption = await AnswerOptionRepository.getById(
+                evaluationRating.answer_option_id
+              )
+              if (answerOption?.answer_type !== AnswerType.NA) {
+                evaluationRatingIds.push(evaluationRating.id)
+              }
+            }
+          }
+          const evaluationRatingsAverage =
+            await EvaluationRatingRepository.getAverageScoreByTemplateContent(
+              {
+                rate: true,
+              },
+              {
+                id: {
+                  in: evaluationRatingIds,
+                },
+              }
+            )
+
+          const average_rate = Math.round((Number(evaluationRatingsAverage._avg.rate) / 10) * 100)
+
+          return {
+            name: content.name,
+            description: content.description,
+            average_rate,
+          }
+        })
+      )
+
       const score_rating = await ScoreRatingRepository.getById(detail.score_ratings_id ?? 0)
+
+      if (score_rating === null) {
+        throw new CustomError("Score rating not found", 400)
+      }
 
       return {
         id: detail.id,
@@ -319,11 +361,8 @@ export const getEvaluationResult = async (user: UserToken, id: number) => {
         zscore: detail.zscore,
         banding: detail.banding,
         template_name: evaluation_template?.display_name,
-        evaluation_template_contents: {
-          name: evaluation_template_contents?.name,
-          description: evaluation_template_contents?.description,
-        },
-        total_score: (Number(detail.score) / 10) * 100,
+        evaluation_template_contents: finalEvaluationTemplateContents,
+        total_score: Math.round((Number(detail.score) / 10) * 100),
         score_rating,
       }
     })
@@ -358,7 +397,8 @@ export const getEvaluationResult = async (user: UserToken, id: number) => {
     comments,
     evaluation_result_details: finalEvaluationResultDetails,
     status: evaluationAdministration.status,
-    total_score: (Number(evaluationResult.score) / 10) * 100,
+    eval_admin_name: evaluationAdministration.name,
+    total_score: Math.round((Number(evaluationResult.score) / 10) * 100),
     score_rating,
   })
 

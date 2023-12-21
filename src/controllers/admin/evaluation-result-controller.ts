@@ -455,48 +455,13 @@ export const store = async (req: Request, res: Response) => {
 export const show = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const evaluationResult = await prisma.evaluation_results.findUnique({
-      select: {
-        id: true,
-        evaluation_administration_id: true,
-        status: true,
-        users: {
-          select: {
-            id: true,
-            slug: true,
-            first_name: true,
-            last_name: true,
-            picture: true,
-          },
-        },
-      },
-      where: {
-        id: parseInt(id),
-      },
-    })
+    const evaluationResult = await EvaluationResultService.getById(parseInt(id))
 
-    const previousEvaluationResult = await prisma.evaluation_results.findFirst({
-      where: {
-        id: { lt: evaluationResult?.id },
-        evaluation_administration_id: evaluationResult?.evaluation_administration_id,
-      },
-      orderBy: { id: "desc" },
-    })
-
-    const nextEvaluationResult = await prisma.evaluation_results.findFirst({
-      where: {
-        id: { gt: evaluationResult?.id },
-        evaluation_administration_id: evaluationResult?.evaluation_administration_id,
-      },
-      orderBy: { id: "asc" },
-    })
-
-    res.json({
-      data: evaluationResult,
-      previousId: previousEvaluationResult?.id,
-      nextId: nextEvaluationResult?.id,
-    })
+    res.json(evaluationResult)
   } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message, data: error.data })
+    }
     res.status(500).json({ message: "Something went wrong" })
   }
 }
