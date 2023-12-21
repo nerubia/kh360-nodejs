@@ -7,7 +7,6 @@ import { type UserToken } from "./types/user-token-type"
 
 import { authMiddleware } from "./middlewares/auth-middleware"
 import { adminMiddleware } from "./middlewares/admin-middleware"
-import { bodMiddleware } from "./middlewares/bod-middleware"
 
 import homeRoute from "./routes/home-route"
 import authRoute from "./routes/auth-route"
@@ -15,7 +14,6 @@ import userRoute from "./routes/user/user-route"
 
 import emailTemplateRoute from "./routes/admin/email-template-route"
 import evaluationAdministrationRoute from "./routes/admin/evaluation-administration-route"
-import bodEvaluationAdministrationRoute from "./routes/bod/evaluation-administration-route"
 import evaluationResultRoute from "./routes/admin/evaluation-result-route"
 import evaluationTemplateContentsRoute from "./routes/user/evaluation_template_contents_route"
 import ratingTemplateRoute from "./routes/user/rating-template-route"
@@ -68,11 +66,5 @@ app.use("/admin/project-members", adminMiddleware, projectMemberRoute)
 app.use("/admin/project-roles", adminMiddleware, projectRoleRoute)
 app.use("/admin/projects", adminMiddleware, projectRoute)
 app.use("/admin/users", adminMiddleware, usersRoute)
-
-/**
- * BOD routes
- */
-
-app.use("/bod/evaluation-administrations", bodMiddleware, bodEvaluationAdministrationRoute)
 
 export default app
