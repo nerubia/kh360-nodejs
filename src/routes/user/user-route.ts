@@ -1,8 +1,8 @@
 import express from "express"
 import * as EmailTemplateController from "../../controllers/user/email-template-controller"
-import * as ScoreRatingController from "../../controllers/user/score-rating-controller"
 import * as UserController from "../../controllers/user/user-controller"
 import * as LogoutController from "../../controllers/user/logout-controller"
+import * as ScoreRatingController from "../../controllers/user/score-rating-controller"
 import * as EvaluationResultController from "../../controllers/admin/evaluation-result-controller"
 
 const router = express.Router()
@@ -20,9 +20,7 @@ router.get("/my-evaluations", UserController.getEvaluationAdministrationsAsEvalu
 router.get("/my-evaluations/:id", UserController.getUserEvaluationResult)
 router.get("/score-ratings", ScoreRatingController.index)
 
-router.get("/evaluation-results/:id/evaluators", EvaluationResultController.getEvaluators)
 router.get("/evaluation-results", EvaluationResultController.index)
-router.get("/evaluation-results/:id", EvaluationResultController.show)
 
 // TODO: Refactor
 router.get("/profile", UserController.getProfile)
