@@ -350,6 +350,10 @@ export const getEvaluationResult = async (user: UserToken, id: number) => {
 
       const score_rating = await ScoreRatingRepository.getById(detail.score_ratings_id ?? 0)
 
+      if (score_rating === null) {
+        throw new CustomError("Score rating not found", 400)
+      }
+
       return {
         id: detail.id,
         score: detail.score,
