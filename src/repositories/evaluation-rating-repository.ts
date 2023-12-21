@@ -52,6 +52,17 @@ export const aggregateSumByEvaluationId = async (
   return sum
 }
 
+export const getAverageScoreByTemplateContent = async (
+  _avg: Prisma.Evaluation_ratingsAvgAggregateInputType,
+  where: Prisma.evaluation_ratingsWhereInput
+) => {
+  const avg = await prisma.evaluation_ratings.aggregate({
+    _avg,
+    where,
+  })
+  return avg
+}
+
 export const resetByEvaluationId = async (evaluation_id: number) => {
   await prisma.evaluation_ratings.updateMany({
     where: {
