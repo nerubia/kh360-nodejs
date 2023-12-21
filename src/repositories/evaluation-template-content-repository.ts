@@ -10,7 +10,12 @@ export const getById = async (id: number) => {
 }
 
 export const getByEvaluationTemplateId = async (evaluation_template_id: number) => {
-  return await prisma.evaluation_template_contents.findFirst({
+  return await prisma.evaluation_template_contents.findMany({
+    select: {
+      id: true,
+      name: true,
+      description: true,
+    },
     where: {
       evaluation_template_id,
     },

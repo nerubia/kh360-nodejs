@@ -8,6 +8,7 @@ export const getById = async (id: number) => {
       name: true,
       display_name: true,
       evaluee_description: true,
+      result_description: true,
     },
     where: {
       id,

@@ -455,9 +455,7 @@ export const store = async (req: Request, res: Response) => {
 export const show = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const user = req.user
-
-    const evaluationResult = await EvaluationResultService.getById(user, parseInt(id))
+    const evaluationResult = await EvaluationResultService.getById(parseInt(id))
 
     res.json(evaluationResult)
   } catch (error) {
@@ -539,25 +537,6 @@ export const all = async (req: Request, res: Response) => {
 
     res.json(evaluationResults)
   } catch (error) {
-    res.status(500).json({ message: "Something went wrong" })
-  }
-}
-
-/**
- * List evaluation results based on provided filters.
- * @param req.params.id - The unique ID of the evaluation result.
- */
-export const getEvaluators = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params
-    const user = req.user
-
-    const evaluators = await EvaluationResultService.getEvaluatorsById(user, parseInt(id))
-    res.json(evaluators)
-  } catch (error) {
-    if (error instanceof CustomError) {
-      return res.status(error.status).json({ message: error.message, data: error.data })
-    }
     res.status(500).json({ message: "Something went wrong" })
   }
 }
