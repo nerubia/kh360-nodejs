@@ -1,5 +1,42 @@
 import prisma from "../utils/prisma"
+import { type Prisma } from "@prisma/client"
 import { type EvaluationResult } from "../types/evaluation-result-type"
+
+export const getAllByFilters = async (
+  skip: number,
+  take: number,
+  where: Prisma.evaluation_resultsWhereInput,
+  orderBy: Prisma.evaluation_resultsOrderByWithRelationInput[]
+) => {
+  return await prisma.evaluation_results.findMany({
+    skip,
+    take,
+    select: {
+      id: true,
+      score: true,
+      status: true,
+      score_ratings: {
+        select: {
+          id: true,
+          display_name: true,
+        },
+      },
+      zscore: true,
+      banding: true,
+      users: {
+        select: {
+          id: true,
+          slug: true,
+          first_name: true,
+          last_name: true,
+          picture: true,
+        },
+      },
+    },
+    where,
+    orderBy,
+  })
+}
 
 export const getById = async (id: number) => {
   return await prisma.evaluation_results.findUnique({
@@ -93,4 +130,11 @@ export const countByAdministrationId = async (evaluation_administration_id: numb
       evaluation_administration_id,
     },
   })
+}
+
+export const countAllByFilters = async (where: Prisma.evaluation_resultsWhereInput) => {
+  const count = await prisma.evaluation_results.count({
+    where,
+  })
+  return count
 }

@@ -11,90 +11,31 @@ import * as EvaluationResultService from "../../services/evaluation-result-servi
  * @param req.query.evaluation_administration_id - Filter by evaluation administration id.
  * @param req.query.name - Filter by name.
  * @param req.query.status - Filter by status.
+ * @param req.query.score_ratings_id - Filter by score ratings id.
+ * @param req.query.banding - Filter by banding.
+ * @param req.query.sort_by - Filter by sort_by.
  * @param req.query.page - Page number for pagination.
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const { evaluation_administration_id, name, status, page } = req.query
-
-    const evaluationResultStatus = status === "all" ? "" : status
-
-    const itemsPerPage = 20
-    const parsedPage = parseInt(page as string)
-    const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
-
-    const where = {
-      evaluation_administration_id: parseInt(evaluation_administration_id as string),
-      status: {
-        contains: evaluationResultStatus as string,
-      },
-    }
-
-    if (name !== undefined) {
-      Object.assign(where, {
-        users: {
-          OR: [
-            {
-              first_name: {
-                contains: name as string,
-              },
-            },
-            {
-              last_name: {
-                contains: name as string,
-              },
-            },
-          ],
-        },
-      })
-    }
-
-    const evaluationResults = await prisma.evaluation_results.findMany({
-      skip: (currentPage - 1) * itemsPerPage,
-      take: itemsPerPage,
-      select: {
-        id: true,
-        status: true,
-        users: {
-          select: {
-            id: true,
-            slug: true,
-            first_name: true,
-            last_name: true,
-            picture: true,
-          },
-        },
-      },
-      where,
-      orderBy: [
-        {
-          users: {
-            last_name: "asc",
-          },
-        },
-        {
-          users: {
-            first_name: "asc",
-          },
-        },
-      ],
-    })
-
-    const totalItems = await prisma.evaluation_results.count({
-      where,
-    })
-
-    const totalPages = Math.ceil(totalItems / itemsPerPage)
-
-    res.json({
-      data: evaluationResults,
-      pageInfo: {
-        hasPreviousPage: currentPage > 1,
-        hasNextPage: currentPage < totalPages,
-        totalPages,
-      },
-    })
+    const user = req.user
+    const { evaluation_administration_id, name, status, score_ratings_id, banding, sort_by, page } =
+      req.query
+    const evaluationResults = await EvaluationResultService.getAllByFilters(
+      user,
+      evaluation_administration_id as string,
+      name as string,
+      status as string,
+      score_ratings_id as string,
+      banding as string,
+      sort_by as string,
+      page as string
+    )
+    res.json(evaluationResults)
   } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message, data: error.data })
+    }
     res.status(500).json({ message: "Something went wrong" })
   }
 }

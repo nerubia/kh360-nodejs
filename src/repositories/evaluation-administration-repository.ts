@@ -64,6 +64,16 @@ export const getAllByFilters = async (
   })
 }
 
+export const getAllByStatuses = async (statuses: string[]) => {
+  return await prisma.evaluation_administrations.findMany({
+    where: {
+      status: {
+        in: statuses,
+      },
+    },
+  })
+}
+
 export const countAllByFilters = async (where: Prisma.evaluation_administrationsWhereInput) => {
   const count = await prisma.evaluation_administrations.count({
     where,
