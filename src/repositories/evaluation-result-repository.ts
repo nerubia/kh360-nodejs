@@ -1,5 +1,5 @@
-import prisma from "../utils/prisma"
 import { type Prisma } from "@prisma/client"
+import prisma from "../utils/prisma"
 import { type EvaluationResult } from "../types/evaluation-result-type"
 
 export const getAllByFilters = async (
@@ -43,6 +43,16 @@ export const getById = async (id: number) => {
     where: {
       id,
     },
+  })
+}
+
+export const getByFilters = async (
+  where: Prisma.evaluation_resultsWhereInput,
+  orderBy: Prisma.evaluation_resultsOrderByWithRelationInput
+) => {
+  return await prisma.evaluation_results.findFirst({
+    where,
+    orderBy,
   })
 }
 
