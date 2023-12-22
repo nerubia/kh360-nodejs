@@ -871,3 +871,87 @@ export const getAttendanceAndPunctuality = async (id: number) => {
 
   return finalResults
 }
+
+export const getEvaluatorsById = async (id: number) => {
+  const evaluationResult = await EvaluationResultRepository.getById(id)
+
+  if (evaluationResult === null) {
+    throw new CustomError("Invalid id.", 400)
+  }
+
+  const evaluationAdministration = await EvaluationAdministrationRepository.getById(
+    evaluationResult.evaluation_administration_id ?? 0
+  )
+
+  if (evaluationAdministration === null) {
+    throw new CustomError("Evaluation administration not found.", 400)
+  }
+
+  const evaluators = []
+  const internalEvaluations = await EvaluationRepository.getAllDistinctByFilters(
+    {
+      evaluation_result_id: id,
+      for_evaluation: true,
+    },
+    ["evaluator_id"]
+  )
+
+  for (const evaluation of internalEvaluations) {
+    const evaluator = await UserRepository.getById(evaluation.evaluator_id ?? 0)
+
+    if (evaluator !== null) {
+      evaluators.push({
+        ...evaluator,
+      })
+    }
+  }
+
+  const externalEvaluations = await EvaluationRepository.getAllDistinctByFilters(
+    {
+      evaluation_result_id: id,
+      for_evaluation: true,
+    },
+    ["external_evaluator_id"]
+  )
+
+  for (const evaluation of externalEvaluations) {
+    const evaluator = await ExternalUserRepository.getById(evaluation.external_evaluator_id ?? 0)
+
+    if (evaluator !== null) {
+      evaluators.push({
+        ...evaluator,
+      })
+    }
+  }
+
+  for (const evaluator of evaluators) {
+    const evaluations = await EvaluationRepository.getAllByFilters({
+      evaluator_id: evaluator.id,
+      eval_start_date: { gte: evaluationAdministration.eval_period_start_date ?? new Date() },
+      eval_end_date: { lte: evaluationAdministration.eval_period_end_date ?? new Date() },
+      for_evaluation: true,
+    })
+    const finalEvaluations = await Promise.all(
+      evaluations.map(async (evaluation) => {
+        const evaluee = await UserRepository.getById(evaluation.evaluee_id ?? 0)
+        const project = await ProjectRepository.getById(evaluation.project_id ?? 0)
+        const project_role = await ProjectRoleRepository.getById(
+          evaluation.project_members?.project_role_id ?? 0
+        )
+
+        Object.assign(evaluation, {
+          evaluee,
+          project,
+          project_role,
+        })
+        return evaluation
+      })
+    )
+
+    Object.assign(evaluator, {
+      evaluations: finalEvaluations,
+    })
+  }
+
+  return evaluators
+}
