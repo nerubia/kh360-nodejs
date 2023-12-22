@@ -11,4 +11,6 @@ router.get("/:id", EvaluationResultController.show)
 router.delete("/:id", EvaluationResultController.destroy)
 router.patch("/:id/set-status", EvaluationResultController.setStatus)
 
+router.get("/:id/evaluators", EvaluationResultController.getEvaluators)
+
 export default router
