@@ -733,3 +733,141 @@ export const getEvaluatorsById = async (user: UserToken, id: number) => {
 
   return evaluators
 }
+
+export const getAttendanceAndPunctuality = async (id: number) => {
+  const evaluationResult = await EvaluationResultRepository.getById(id)
+
+  if (evaluationResult === null) {
+    throw new CustomError("Evaluation result not found", 400)
+  }
+
+  const evaluationAdministration = await EvaluationAdministrationRepository.getById(
+    evaluationResult.evaluation_administration_id ?? 0
+  )
+
+  if (evaluationAdministration === null) {
+    throw new CustomError("Evaluation administration not found", 400)
+  }
+
+  const startDate = new Date(evaluationAdministration.eval_period_start_date ?? 0)
+  const endDate = new Date(evaluationAdministration.eval_period_end_date ?? 0)
+
+  const monthsArray = eachMonthOfInterval({
+    start: startDate,
+    end: endDate,
+  })
+
+  const finalResults = await Promise.all(
+    monthsArray.map(async (month) => {
+      const startMonth = startOfMonth(month)
+      const endMonth = endOfMonth(month)
+
+      const weekdaysPerMonth = eachDayOfInterval({
+        start: startMonth,
+        end: endMonth,
+      }).filter((day) => !isWeekend(day)).length
+
+      const holidays = await HolidayRepository.getHolidays(startMonth, endMonth)
+      const holidaysPerMonth = holidays.filter((day) => day !== null && !isWeekend(day)).length
+      const totalWorkingDays = weekdaysPerMonth - holidaysPerMonth
+
+      const attendances = await AttendanceRepository.getAttendances(
+        evaluationResult.user_id ?? 0,
+        startMonth,
+        endMonth
+      )
+
+      const presentWholeDay =
+        attendances.find((attendance) => attendance.att_type === 3)?._count.att_type ?? 0
+      const presentPm =
+        (attendances.find((attendance) => attendance.att_type === 2)?._count.att_type ?? 0) * 0.5
+      const presentAm =
+        (attendances.find((attendance) => attendance.att_type === 1)?._count.att_type ?? 0) * 0.5
+      const daysPresent = presentWholeDay + presentPm + presentAm
+
+      const latesGracePeriod = await AttendanceRepository.getLates(
+        evaluationResult.user_id ?? 0,
+        startMonth,
+        endMonth,
+        "Late (within Grace Period)"
+      )
+
+      const lates = await AttendanceRepository.getLates(
+        evaluationResult.user_id ?? 0,
+        startMonth,
+        endMonth,
+        "Late (Counted)"
+      )
+
+      const vacationAndBirthdayLeaves = await LeaveRepository.getLeaves(
+        evaluationResult.user_id ?? 0,
+        [1, 5]
+      )
+
+      const vacationAndBirthdayLeaveDuration = await LeaveBreakdownRepository.getTotalLeaveDuration(
+        vacationAndBirthdayLeaves.map((vacationAndBirthdayLeave) => vacationAndBirthdayLeave.id),
+        startMonth,
+        endMonth
+      )
+
+      const sickLeaves = await LeaveRepository.getLeaves(evaluationResult.user_id ?? 0, [2])
+
+      const sickLeaveDuration = await LeaveBreakdownRepository.getTotalLeaveDuration(
+        sickLeaves.map((sickLeave) => sickLeave.id),
+        startMonth,
+        endMonth
+      )
+
+      const emergencyLeaves = await LeaveRepository.getLeaves(evaluationResult.user_id ?? 0, [3])
+
+      const emergencyLeaveDuration = await LeaveBreakdownRepository.getTotalLeaveDuration(
+        emergencyLeaves.map((emergencyLeave) => emergencyLeave.id),
+        startMonth,
+        endMonth
+      )
+
+      const otherLeaves = await LeaveRepository.getLeaves(
+        evaluationResult.user_id ?? 0,
+        [6, 7, 9, 10]
+      )
+
+      const otherLeaveDuration = await LeaveBreakdownRepository.getTotalLeaveDuration(
+        otherLeaves.map((otherLeave) => otherLeave.id),
+        startMonth,
+        endMonth
+      )
+
+      const unpaidLeaves = await LeaveRepository.getLeaves(evaluationResult.user_id ?? 0, [8])
+
+      const unpaidLeaveDuration = await LeaveBreakdownRepository.getTotalLeaveDuration(
+        unpaidLeaves.map((unpaidLeave) => unpaidLeave.id),
+        startMonth,
+        endMonth
+      )
+
+      const totalLeaves = await LeaveRepository.getAllLeaves(evaluationResult.user_id ?? 0)
+
+      const totalLeaveDuration = await LeaveBreakdownRepository.getTotalLeaveDuration(
+        totalLeaves.map((totalLeave) => totalLeave.id),
+        startMonth,
+        endMonth
+      )
+
+      return {
+        month: format(month, "MMMM"),
+        total_working_days: totalWorkingDays,
+        days_present: daysPresent,
+        lates_grace_period: latesGracePeriod,
+        lates,
+        vacation_and_birthday_leave_duration: vacationAndBirthdayLeaveDuration._sum.duration ?? 0,
+        sick_leave_duration: sickLeaveDuration._sum.duration ?? 0,
+        emergency_leave_duration: emergencyLeaveDuration._sum.duration ?? 0,
+        other_leave_duration: otherLeaveDuration._sum.duration ?? 0,
+        unpaid_leave_duration: unpaidLeaveDuration._sum.duration ?? 0,
+        unfiled_leave_duration: daysPresent - Number(totalLeaveDuration._sum.duration ?? 0),
+      }
+    })
+  )
+
+  return finalResults
+}
