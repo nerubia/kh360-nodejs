@@ -540,3 +540,21 @@ export const all = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+/**
+ * List evaluation results based on provided filters.
+ * @param req.params.id - The unique ID of the evaluation result.
+ */
+export const getEvaluators = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+
+    const evaluators = await EvaluationResultService.getEvaluatorsById(parseInt(id))
+    res.json(evaluators)
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message, data: error.data })
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
