@@ -455,7 +455,9 @@ export const store = async (req: Request, res: Response) => {
 export const show = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const evaluationResult = await EvaluationResultService.getById(parseInt(id))
+    const user = req.user
+
+    const evaluationResult = await EvaluationResultService.getById(user, parseInt(id))
 
     res.json(evaluationResult)
   } catch (error) {
