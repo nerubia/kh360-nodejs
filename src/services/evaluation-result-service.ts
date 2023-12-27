@@ -609,7 +609,15 @@ export const getAttendanceAndPunctuality = async (id: number) => {
   return finalResults
 }
 
-export const getEvaluatorsById = async (id: number) => {
+export const getEvaluatorsById = async (user: UserToken, id: number) => {
+  if (
+    !user.roles.includes("kh360") &&
+    !user.roles.includes("khv2_cm_admin") &&
+    !user.roles.includes("khv2_cm")
+  ) {
+    throw new CustomError("You do not have permission to view this.", 400)
+  }
+
   const evaluationResult = await EvaluationResultRepository.getById(id)
 
   if (evaluationResult === null) {
