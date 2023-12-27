@@ -20,6 +20,7 @@ router.get("/my-evaluations", UserController.getEvaluationAdministrationsAsEvalu
 router.get("/my-evaluations/:id", UserController.getUserEvaluationResult)
 router.get("/score-ratings", ScoreRatingController.index)
 
+router.get("/evaluation-results/:id/evaluators", EvaluationResultController.getEvaluators)
 router.get("/evaluation-results", EvaluationResultController.index)
 router.get("/evaluation-results/:id", EvaluationResultController.show)
 
