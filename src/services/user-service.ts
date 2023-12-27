@@ -540,7 +540,12 @@ export const getEvaluationAdministrations = async (user: UserToken, page: number
         for_evaluation: true,
         evaluation_administration_id: evaluationAdministration.id,
         status: {
-          in: [EvaluationStatus.Open, EvaluationStatus.Ongoing],
+          in: [
+            EvaluationStatus.Open,
+            EvaluationStatus.Ongoing,
+            EvaluationStatus.Submitted,
+            EvaluationStatus.ForRemoval,
+          ],
         },
         ...(user.is_external ? { external_evaluator_id: user.id } : { evaluator_id: user.id }),
       })
