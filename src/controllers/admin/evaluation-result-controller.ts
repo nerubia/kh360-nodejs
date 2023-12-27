@@ -550,8 +550,9 @@ export const all = async (req: Request, res: Response) => {
 export const getEvaluators = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
+    const user = req.user
 
-    const evaluators = await EvaluationResultService.getEvaluatorsById(parseInt(id))
+    const evaluators = await EvaluationResultService.getEvaluatorsById(user, parseInt(id))
     res.json(evaluators)
   } catch (error) {
     if (error instanceof CustomError) {
