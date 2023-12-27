@@ -21,6 +21,7 @@ router.get("/my-evaluations/:id", UserController.getUserEvaluationResult)
 router.get("/score-ratings", ScoreRatingController.index)
 
 router.get("/evaluation-results", EvaluationResultController.index)
+router.get("/evaluation-results/:id", EvaluationResultController.show)
 
 // TODO: Refactor
 router.get("/profile", UserController.getProfile)

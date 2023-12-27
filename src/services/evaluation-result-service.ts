@@ -198,7 +198,15 @@ export const getAllByFilters = async (
   }
 }
 
-export const getById = async (id: number) => {
+export const getById = async (user: UserToken, id: number) => {
+  if (
+    !user.roles.includes("kh360") &&
+    !user.roles.includes("khv2_cm_admin") &&
+    !user.roles.includes("khv2_cm")
+  ) {
+    throw new CustomError("You do not have permission to view this.", 400)
+  }
+
   const evaluationResult = await EvaluationResultRepository.getById(id)
 
   if (evaluationResult === null) {
