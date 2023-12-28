@@ -603,7 +603,8 @@ export const getAttendanceAndPunctuality = async (id: number) => {
         emergency_leave_duration: emergencyLeaveDuration._sum.duration ?? 0,
         other_leave_duration: otherLeaveDuration._sum.duration ?? 0,
         unpaid_leave_duration: unpaidLeaveDuration._sum.duration ?? 0,
-        unfiled_leave_duration: daysPresent - Number(totalLeaveDuration._sum.duration ?? 0),
+        unfiled_leave_duration:
+          totalWorkingDays - daysPresent - Number(totalLeaveDuration._sum.duration ?? 0),
       }
     })
   )
