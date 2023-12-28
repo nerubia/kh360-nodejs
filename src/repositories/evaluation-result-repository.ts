@@ -13,6 +13,7 @@ export const getAllByFilters = async (
     take,
     select: {
       id: true,
+      evaluation_administration_id: true,
       score: true,
       status: true,
       score_ratings: {
