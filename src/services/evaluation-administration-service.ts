@@ -503,6 +503,8 @@ export const sendReminderByEvaluator = async (
     }
 
     await EmailLogRepository.create(emailLogData)
+
+    return emailLogData
   }
 }
 
