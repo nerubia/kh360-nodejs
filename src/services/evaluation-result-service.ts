@@ -174,10 +174,12 @@ export const getAllByFilters = async (
   const finalEvaluationResults = await Promise.all(
     evaluationResults.map(async (evaluationResult) => {
       const evaluation_administration = await EvaluationAdministrationRepository.getById(
-        evaluationResult.id
+        evaluationResult.evaluation_administration_id ?? 0
       )
       return {
         ...evaluationResult,
+        score: evaluationResult.score?.toFixed(2),
+        zscore: evaluationResult.zscore?.toFixed(2),
         evaluation_administration,
       }
     })
