@@ -140,11 +140,10 @@ export const submitEvaluation = async (
         }
       )
 
-      const computed_score = (
+      const computed_score =
         Number(evaluationRatings._sum.score) / Number(evaluationRatings._sum.percentage)
-      ).toFixed(2)
 
-      score = Number(computed_score)
+      score = Math.round(computed_score * 100) / 100
 
       const evaluationAdministration = await EvaluationAdministrationRepository.getById(
         evaluation.evaluation_administration_id ?? 0
