@@ -453,6 +453,21 @@ export const sendReminderByEvaluator = async (
 
     let modifiedContent = emailTemplate.content ?? ""
 
+    if (evaluation?.is_external === true) {
+      const externalEvaluator = await ExternalUserRepository.getById(
+        evaluation.external_evaluator_id ?? 0
+      )
+      modifiedContent = modifiedContent.replace(
+        "{{link}}",
+        `<a href='${process.env.APP_URL}/external-evaluations/${evaluationAdministration.id}/evaluations/all?token=${externalEvaluator?.access_token}'>link</a>`
+      )
+    } else {
+      modifiedContent = modifiedContent.replace(
+        "{{link}}",
+        `<a href='${process.env.APP_URL}/evaluation-administrations/${evaluationAdministration.id}/evaluations/all'>link</a>`
+      )
+    }
+
     modifiedContent = modifiedContent.replace("{{evaluator_first_name}}", `${evaluator.first_name}`)
 
     modifiedContent = modifiedContent.replace(
