@@ -475,12 +475,12 @@ export const sendReminder = async (req: Request, res: Response) => {
     const { id } = req.params
     const { user_id, is_external } = req.body
 
-    await EvaluationAdministrationService.sendReminderByEvaluator(
+    const emailLog = await EvaluationAdministrationService.sendReminderByEvaluator(
       parseInt(id),
       parseInt(user_id as string),
       Boolean(is_external)
     )
-    res.json({ id })
+    res.json({ evaluatorId: user_id, emailLog })
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
   }
