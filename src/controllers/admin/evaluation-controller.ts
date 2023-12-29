@@ -61,6 +61,23 @@ export const update = async (req: Request, res: Response) => {
 }
 
 /**
+ * Delete a specific evaluation by ID.
+ * @param req.params.id - The unique ID of the evaluation.
+ */
+export const destroy = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    await EvaluationService.deleteById(parseInt(id))
+    res.json({ id })
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
  * Update multiple status and for_evaluation.
  * @param req.body.evaluation_ids - Evaluation IDs
  * @param req.body.for_evaluation - Evaluation for_evaluation.
