@@ -440,9 +440,13 @@ export const calculateZScore = async (evaluation_result_id: number) => {
       weighted_zscore: true,
     })
 
-  const zscore =
-    Number(evaluationResultDetailsSum._sum.weighted_zscore) /
-    Number(evaluationResultDetailsSum._sum.weight)
+  let zscore = 0
+
+  if (Number(evaluationResultDetailsSum._sum.weighted_zscore) !== 0) {
+    zscore =
+      Number(evaluationResultDetailsSum._sum.weighted_zscore) /
+      Number(evaluationResultDetailsSum._sum.weight)
+  }
 
   await EvaluationResultRepository.updateZScoreById(
     evaluation_result_id,
