@@ -58,6 +58,7 @@ export const refreshToken = async (req: Request, res: Response) => {
           email: existingUser.email,
           first_name: existingUser.first_name,
           last_name: existingUser.last_name,
+          picture: user?.picture,
           roles,
           is_external: decodedToken.is_external,
           user_details: user?.user_details,
