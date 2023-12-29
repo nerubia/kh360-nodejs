@@ -454,6 +454,10 @@ export const getEvaluationAdministrationsAsEvaluee = async (user: UserToken, pag
           user.id
         )
 
+      const score_rating = await ScoreRatingRepository.getById(
+        evaluationResult?.score_ratings_id ?? 0
+      )
+
       return {
         id: evaluationAdministration.id,
         name: evaluationAdministration.name,
@@ -466,6 +470,8 @@ export const getEvaluationAdministrationsAsEvaluee = async (user: UserToken, pag
         totalSubmitted,
         totalPending,
         banding: evaluationResult?.banding,
+        score: evaluationResult?.score,
+        score_rating,
       }
     })
   )
