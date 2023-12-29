@@ -145,27 +145,3 @@ export const calculateScoreRating = async (evaluation_result_id: number) => {
     )
   }
 }
-
-export const calculateScoreRating = async (evaluation_result_id: number) => {
-  const evaluationResultDetails = await EvaluationResultDetailRepository.getAllByFilters({
-    evaluation_result_id,
-  })
-  for (const evaluationResultDetail of evaluationResultDetails) {
-    const score = evaluationResultDetail.score
-
-    if (score === null) {
-      throw new CustomError("Invalid evaluation result detail score", 400)
-    }
-
-    const scoreRating = await ScoreRatingRepository.getByScore(score)
-
-    if (scoreRating === null) {
-      throw new CustomError("Score rating not found", 400)
-    }
-
-    await EvaluationResultDetailRepository.updateScoreRatingById(
-      evaluationResultDetail.id,
-      scoreRating.id
-    )
-  }
-}
