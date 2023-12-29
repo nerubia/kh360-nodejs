@@ -254,6 +254,16 @@ export const updateStatusByAdministrationId = async (
   await EvaluationRepository.updateStatusByAdministrationId(evaluation_administration_id, status)
 }
 
+export const deleteById = async (id: number) => {
+  const evaluation = await EvaluationRepository.getById(id)
+
+  if (evaluation === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
+  await EvaluationRepository.deleteById(id)
+}
+
 export const countAllByFilters = async (where: Prisma.evaluationsWhereInput) => {
   return await EvaluationRepository.countAllByFilters(where)
 }
