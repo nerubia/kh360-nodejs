@@ -44,6 +44,8 @@ export const getById = async (id: number) => {
       first_name: true,
       middle_name: true,
       last_name: true,
+      role: true,
+      company: true,
       access_token: true,
       deleted_at: true,
     },
