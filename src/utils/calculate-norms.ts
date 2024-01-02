@@ -17,16 +17,16 @@ export const getBanding = (score: number) => {
   if (score > -1.5 && score <= -0.5) {
     return "Moderate Low"
   }
-  if (score > -0.5 && score <= 0.5) {
+  if (score > -0.5 && score < 0.5) {
     return "Average"
   }
-  if (score > 0.5 && score <= 1.5) {
+  if (score >= 0.5 && score < 1.5) {
     return "Moderate High"
   }
-  if (score > 1.5 && score <= 2.0) {
+  if (score >= 1.5 && score < 2.0) {
     return "High"
   }
-  if (score > 2.0) {
+  if (score >= 2.0) {
     return "Very High"
   }
   return "Unknown"
