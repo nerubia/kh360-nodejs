@@ -290,6 +290,7 @@ export const getById = async (user: UserToken, id: number) => {
         evaluation_template_contents: finalEvaluationTemplateContents,
         total_score: Math.round((Number(detail.score) / 10) * 100),
         score_rating,
+        weight: detail.weight,
       }
     })
   )
