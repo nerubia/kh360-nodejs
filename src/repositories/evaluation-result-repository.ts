@@ -90,7 +90,7 @@ export const updateZScoreById = async (id: number, zscore: number, banding: stri
   })
 }
 
-export const updateScoreRatingById = async (id: number, score_rating_id: number) => {
+export const updateScoreRatingById = async (id: number, score_rating_id: number | null) => {
   await prisma.evaluation_results.update({
     where: {
       id,

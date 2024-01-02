@@ -105,17 +105,19 @@ export const calculateZscore = async (evaluation_result_id: number) => {
 
     let zscore = 0
     let weighted_zscore = 0
+    let banding = ""
 
     if (Number(evaluationResultDetail.weight) !== 0) {
       zscore = Number(evaluations._sum.weighted_zscore) / Number(evaluations._sum.weight)
       weighted_zscore = Number(evaluationResultDetail.weight) * zscore
+      banding = getBanding(zscore)
     }
 
     await EvaluationResultDetailRepository.updateZScoreById(
       evaluationResultDetail.id,
       zscore,
       weighted_zscore,
-      getBanding(zscore)
+      banding
     )
   }
 }
@@ -139,7 +141,7 @@ export const calculateScoreRating = async (evaluation_result_id: number) => {
 
     await EvaluationResultDetailRepository.updateScoreRatingById(
       evaluationResultDetail.id,
-      scoreRating.id
+      Number(evaluationResultDetail.weight) !== 0 ? scoreRating.id : null
     )
   }
 }
