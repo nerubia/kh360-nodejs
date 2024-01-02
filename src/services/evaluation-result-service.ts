@@ -535,10 +535,15 @@ export const getAttendanceAndPunctuality = async (id: number) => {
       const holidaysPerMonth = holidays.filter((day) => day !== null && !isWeekend(day)).length
       const totalWorkingDays = weekdaysPerMonth - holidaysPerMonth
 
+      const allDaysInInterval = eachDayOfInterval({ start: startDate, end: endDate })
+
+      const workingDays = allDaysInInterval.filter(
+        (day) => !isWeekend(day) && !holidays.includes(day)
+      )
+
       const attendances = await AttendanceRepository.getAttendances(
         evaluationResult.user_id ?? 0,
-        startMonth,
-        endMonth
+        workingDays
       )
 
       const presentWholeDay =
