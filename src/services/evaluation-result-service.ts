@@ -223,6 +223,7 @@ export const getById = async (user: UserToken, id: number) => {
     evaluation_result_id: evaluationResult.id,
     for_evaluation: true,
   })
+  const evaluationIds = evaluations.map((evaluation) => evaluation.id)
   const evaluationTemplateIds = evaluations.map((evaluation) => evaluation.evaluation_template_id)
   const evaluationResultDetails = await EvaluationResultDetailRepository.getAllByFilters({
     evaluation_result_id: evaluationResult.id,
@@ -246,6 +247,10 @@ export const getById = async (user: UserToken, id: number) => {
           const evaluationRatingIds = []
           const evaluationRatings = await EvaluationRatingRepository.getAllByFilters({
             evaluation_template_content_id: content.id,
+            evaluation_id: {
+              in: evaluationIds,
+            },
+            evaluation_template_id: detail.evaluation_template_id,
           })
           for (const evaluationRating of evaluationRatings) {
             if (evaluationRating.answer_option_id !== null) {
