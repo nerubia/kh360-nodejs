@@ -64,7 +64,7 @@ export const updateZScoreById = async (
   })
 }
 
-export const updateScoreRatingById = async (id: number, score_rating_id: number) => {
+export const updateScoreRatingById = async (id: number, score_rating_id: number | null) => {
   await prisma.evaluation_result_details.update({
     where: {
       id,
