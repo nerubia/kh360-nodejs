@@ -448,10 +448,17 @@ export const calculateZScore = async (evaluation_result_id: number) => {
       Number(evaluationResultDetailsSum._sum.weight)
   }
 
+  if (Number(evaluationResultDetailsSum._sum.weight) === 0) {
+    await EvaluationResultRepository.updateStatusById(
+      evaluation_result_id,
+      EvaluationResultStatus.NoResult
+    )
+  }
+
   await EvaluationResultRepository.updateZScoreById(
     evaluation_result_id,
     zscore,
-    getBanding(zscore)
+    Number(evaluationResultDetailsSum._sum.weight) !== 0 ? getBanding(zscore) : ""
   )
 }
 
@@ -474,7 +481,15 @@ export const calculateScoreRating = async (id: number) => {
     throw new CustomError("Score rating not found", 400)
   }
 
-  await EvaluationResultRepository.updateScoreRatingById(id, scoreRating.id)
+  const evaluationResultDetailsSum =
+    await EvaluationResultDetailRepository.aggregateSumByEvaluationResultId(evaluationResult.id, {
+      weight: true,
+    })
+
+  await EvaluationResultRepository.updateScoreRatingById(
+    id,
+    Number(evaluationResultDetailsSum._sum.weight) !== 0 ? scoreRating.id : null
+  )
 }
 
 export const getAttendanceAndPunctuality = async (id: number) => {
