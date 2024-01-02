@@ -1,6 +1,6 @@
 import prisma from "../utils/prisma"
 
-export const getAttendances = async (user_id: number, startDate: Date, endDate: Date) => {
+export const getAttendances = async (user_id: number, workingDays: Date[]) => {
   return await prisma.attendances.groupBy({
     by: ["att_type"],
     _count: {
@@ -8,8 +8,7 @@ export const getAttendances = async (user_id: number, startDate: Date, endDate: 
     },
     where: {
       date: {
-        gte: startDate,
-        lte: endDate,
+        in: workingDays,
       },
       user_id,
     },
