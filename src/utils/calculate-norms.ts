@@ -29,5 +29,5 @@ export const getBanding = (score: number) => {
   if (score > 2.0) {
     return "Very High"
   }
-  return "Unknown"
+  return ""
 }
