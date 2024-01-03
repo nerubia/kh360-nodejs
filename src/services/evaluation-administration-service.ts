@@ -487,7 +487,7 @@ export const sendReminderByEvaluator = async (
       email_status: EmailLogType.Pending,
       email_type: emailTemplate.template_type,
       mail_id: "",
-      notes: evaluationAdministration.id.toString(),
+      notes: `{"evaluation_administration_id": ${evaluationAdministration.id}}`,
       sent_at: currentDate,
       subject: emailTemplate.subject,
       updated_at: currentDate,
