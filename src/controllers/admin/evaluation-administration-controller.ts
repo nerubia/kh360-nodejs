@@ -465,6 +465,23 @@ export const publish = async (req: Request, res: Response) => {
 }
 
 /**
+ * Reopen a specific evaluation administration by ID.
+ * @param req.params.id - The unique ID of the evaluation administration.
+ */
+export const reopen = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    await EvaluationAdministrationService.reopen(parseInt(id))
+    res.json({ id })
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
  * Send reminder for evaluator by ID.
  * @param req.params.id - The unique ID of the evaluation administration.
  * @param req.body.user_id - Evaluator id

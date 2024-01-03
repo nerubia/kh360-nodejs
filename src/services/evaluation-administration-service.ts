@@ -4,6 +4,7 @@ import bcrypt from "bcrypt"
 import * as EmailLogRepository from "../repositories/email-log-repository"
 import * as EmailTemplateRepository from "../repositories/email-template-repository"
 import * as EvaluationAdministrationRepository from "../repositories/evaluation-administration-repository"
+import * as EvaluationRatingRepository from "../repositories/evaluation-rating-repository"
 import * as EvaluationResultRepository from "../repositories/evaluation-result-repository"
 import * as EvaluationResultDetailsRepository from "../repositories/evaluation-result-detail-repository"
 import * as EvaluationRepository from "../repositories/evaluation-repository"
@@ -341,6 +342,67 @@ export const publish = async (id: number) => {
   await EvaluationAdministrationRepository.updateStatusById(
     evaluationAdministration.id,
     EvaluationAdministrationStatus.Published
+  )
+}
+
+export const reopen = async (id: number) => {
+  const evaluationAdministration = await EvaluationAdministrationRepository.getById(id)
+
+  if (evaluationAdministration === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
+  if (
+    evaluationAdministration.status !== EvaluationAdministrationStatus.Closed &&
+    evaluationAdministration.status !== EvaluationAdministrationStatus.Published
+  ) {
+    throw new CustomError("Only closed and published statuses are allowed.", 400)
+  }
+
+  const evaluations = await EvaluationRepository.getAllByFilters({
+    evaluation_administration_id: evaluationAdministration.id,
+  })
+
+  for (const evaluation of evaluations) {
+    const evaluationRatings = await EvaluationRatingRepository.aggregateSumByEvaluationId(
+      evaluation.id,
+      {
+        score: true,
+      }
+    )
+
+    const data = {
+      zscore: 0,
+      weighted_zscore: 0,
+    }
+
+    if (evaluation.status === EvaluationStatus.Expired) {
+      Object.assign(data, {
+        status:
+          Number(evaluationRatings._sum.score) > 0
+            ? EvaluationStatus.Ongoing
+            : EvaluationStatus.Open,
+      })
+    }
+
+    await EvaluationRepository.updateById(evaluation.id, data)
+  }
+
+  await EvaluationResultDetailsRepository.updateByAdministrationId(evaluationAdministration.id, {
+    zscore: 0,
+    weighted_zscore: 0,
+    banding: "",
+  })
+
+  await EvaluationResultRepository.updateByAdministrationId(evaluationAdministration.id, {
+    zscore: 0,
+    banding: "",
+    status: EvaluationResultStatus.Ongoing,
+  })
+
+  await EvaluationAdministrationRepository.updateStatusById(
+    evaluationAdministration.id,
+    EvaluationAdministrationStatus.Ongoing
   )
 }
 

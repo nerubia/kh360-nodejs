@@ -102,6 +102,21 @@ export const updateScoreRatingById = async (id: number, score_rating_id: number 
   })
 }
 
+export const updateByAdministrationId = async (
+  evaluation_administration_id: number,
+  data: Prisma.evaluation_resultsUpdateInput
+) => {
+  await prisma.evaluation_results.updateMany({
+    where: {
+      evaluation_administration_id,
+    },
+    data: {
+      ...data,
+      updated_at: new Date(),
+    },
+  })
+}
+
 export const getAllByEvaluationAdministrationId = async (evaluation_administration_id: number) => {
   return await prisma.evaluation_results.findMany({
     where: {
