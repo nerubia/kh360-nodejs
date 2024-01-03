@@ -76,6 +76,21 @@ export const updateScoreRatingById = async (id: number, score_rating_id: number 
   })
 }
 
+export const updateByAdministrationId = async (
+  evaluation_administration_id: number,
+  data: Prisma.evaluation_result_detailsUpdateInput
+) => {
+  await prisma.evaluation_result_details.updateMany({
+    where: {
+      evaluation_administration_id,
+    },
+    data: {
+      ...data,
+      updated_at: new Date(),
+    },
+  })
+}
+
 export const aggregateSumByEvaluationResultId = async (
   evaluation_result_id: number,
   _sum: Prisma.Evaluation_result_detailsSumAggregateInputType
