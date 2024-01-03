@@ -30,6 +30,7 @@ import { EvaluationAdministrationStatus } from "../types/evaluation-administrati
 import { type Prisma } from "@prisma/client"
 import { type UserToken } from "../types/user-token-type"
 import { AnswerType } from "../types/answer-type"
+import { convertToFullDate } from "../utils/format-date"
 
 export const getAllByFilters = async (
   user: UserToken,
@@ -535,11 +536,20 @@ export const getAttendanceAndPunctuality = async (id: number) => {
       const holidaysPerMonth = holidays.filter((day) => day !== null && !isWeekend(day)).length
       const totalWorkingDays = weekdaysPerMonth - holidaysPerMonth
 
-      const allDaysInInterval = eachDayOfInterval({ start: startDate, end: endDate })
-
-      const workingDays = allDaysInInterval.filter(
-        (day) => !isWeekend(day) && !holidays.includes(day)
+      const convertedHolidays = holidays.map(
+        (day) => new Date(convertToFullDate(day ?? new Date()).split("T")[0])
       )
+
+      const allDaysInInterval = eachDayOfInterval({ start: startMonth, end: endMonth })
+
+      const workingDays = allDaysInInterval
+        .filter(
+          (day) =>
+            !isWeekend(day) &&
+            convertedHolidays.find((holiday) => holiday.getTime() === new Date(day).getTime()) ===
+              undefined
+        )
+        .map((day) => new Date(format(day, "yyyy-MM-dd")))
 
       const attendances = await AttendanceRepository.getAttendances(
         evaluationResult.user_id ?? 0,

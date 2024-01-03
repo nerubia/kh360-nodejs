@@ -1,3 +1,5 @@
+import { format, utcToZonedTime } from "date-fns-tz"
+
 export const formatDateRange = (startDate: Date, endDate: Date) => {
   const options: Intl.DateTimeFormatOptions = {
     month: "short",
@@ -32,4 +34,10 @@ export const formatDateRange = (startDate: Date, endDate: Date) => {
   }
 
   return formattedDate
+}
+
+export const convertToFullDate = (date?: Date) => {
+  const inputDate = new Date(date ?? "")
+  const utcDate = utcToZonedTime(inputDate, "UTC")
+  return format(utcDate, "MMMM d, yyyy", { timeZone: "UTC" })
 }
