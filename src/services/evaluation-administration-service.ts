@@ -389,12 +389,14 @@ export const reopen = async (id: number) => {
   }
 
   await EvaluationResultDetailsRepository.updateByAdministrationId(evaluationAdministration.id, {
+    score_ratings_id: null,
     zscore: 0,
     weighted_zscore: 0,
     banding: "",
   })
 
   await EvaluationResultRepository.updateByAdministrationId(evaluationAdministration.id, {
+    score_ratings_id: null,
     zscore: 0,
     banding: "",
     status: EvaluationResultStatus.Ongoing,

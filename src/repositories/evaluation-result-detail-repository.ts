@@ -78,7 +78,7 @@ export const updateScoreRatingById = async (id: number, score_rating_id: number 
 
 export const updateByAdministrationId = async (
   evaluation_administration_id: number,
-  data: Prisma.evaluation_result_detailsUpdateInput
+  data: Prisma.evaluation_result_detailsUncheckedUpdateInput
 ) => {
   await prisma.evaluation_result_details.updateMany({
     where: {
