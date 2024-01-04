@@ -76,3 +76,15 @@ export const resetByEvaluationId = async (evaluation_id: number) => {
     },
   })
 }
+
+export const deleteByEvaluationAdministrationIds = async (
+  evaluationAdministrationIds: number[]
+) => {
+  await prisma.evaluation_ratings.deleteMany({
+    where: {
+      evaluation_administration_id: {
+        in: evaluationAdministrationIds,
+      },
+    },
+  })
+}
