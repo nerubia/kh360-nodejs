@@ -503,6 +503,7 @@ model evaluation_template_contents {
   is_active              Boolean?
   created_at             DateTime? @db.DateTime(0)
   updated_at             DateTime? @db.DateTime(0)
+  deleted_at             DateTime? @db.DateTime(0)
 
   @@index([evaluation_template_id], map: "index_evaluation_template_contents_on_evaluation_template_id")
 }
@@ -522,6 +523,7 @@ model evaluation_templates {
   is_active           Boolean?
   created_at          DateTime? @db.DateTime(0)
   updated_at          DateTime? @db.DateTime(0)
+  deleted_at          DateTime? @db.DateTime(0)
 }
 
 model evaluations {

@@ -3,7 +3,12 @@ import * as EvaluationTemplateController from "../../controllers/admin/evaluatio
 
 const router = express.Router()
 
-router.get("/", EvaluationTemplateController.index)
 router.get("/active", EvaluationTemplateController.active)
+
+router.get("/", EvaluationTemplateController.index)
+router.post("/", EvaluationTemplateController.store)
+router.get("/:id", EvaluationTemplateController.show)
+router.put("/:id", EvaluationTemplateController.update)
+router.delete("/:id", EvaluationTemplateController.destroy)
 
 export default router

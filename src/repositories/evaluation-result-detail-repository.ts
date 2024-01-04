@@ -107,3 +107,15 @@ export const aggregateSumByEvaluationResultId = async (
     _sum,
   })
 }
+
+export const deleteByEvaluationAdministrationIds = async (
+  evaluationAdministrationIds: number[]
+) => {
+  await prisma.evaluation_result_details.deleteMany({
+    where: {
+      evaluation_administration_id: {
+        in: evaluationAdministrationIds,
+      },
+    },
+  })
+}
