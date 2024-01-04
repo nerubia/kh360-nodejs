@@ -77,10 +77,10 @@ export const calculateScore = async (evaluation_result_id: number) => {
     )
 
     const calculated_score =
-      Math.round(Number(evaluationsSum._sum.weighted_score) * 10000) /
-      Math.round(Number(evaluationsSum._sum.weight) * 10000)
+      Math.round(Number(evaluationsSum._sum.weighted_score) * 100) /
+      Math.round(Number(evaluationsSum._sum.weight) * 100)
 
-    const score = isNaN(calculated_score) ? 0 : Math.round(calculated_score * 10000) / 10000
+    const score = isNaN(calculated_score) ? 0 : Math.round(calculated_score * 100) / 100
 
     await EvaluationResultDetailRepository.updateById(evaluationResultDetail.id, {
       score,
@@ -109,29 +109,20 @@ export const calculateZscore = async (evaluation_result_id: number) => {
 
     let zscore = 0
     let weighted_zscore = 0
+    let banding = ""
 
     if (Number(evaluationResultDetail.weight) !== 0) {
       zscore = Number(evaluations._sum.weighted_zscore) / Number(evaluations._sum.weight)
       weighted_zscore = Number(evaluationResultDetail.weight) * zscore
+      banding = getBanding(zscore)
     }
 
     await EvaluationResultDetailRepository.updateZScoreById(
       evaluationResultDetail.id,
       zscore,
-      weighted_zscore
+      weighted_zscore,
+      banding
     )
-
-    const evalResultDetail = await EvaluationResultDetailRepository.getById(
-      evaluationResultDetail.id
-    )
-
-    if (evalResultDetail !== null) {
-      let banding = ""
-      if (Number(evaluationResultDetail.weight) !== 0) {
-        banding = getBanding(Number(evalResultDetail.zscore))
-      }
-      await EvaluationResultDetailRepository.updateBandingById(evalResultDetail?.id, banding)
-    }
   }
 }
 
