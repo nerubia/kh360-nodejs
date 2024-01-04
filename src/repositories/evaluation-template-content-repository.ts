@@ -1,11 +1,15 @@
 import prisma from "../utils/prisma"
 import { type Prisma } from "@prisma/client"
 
-export const create = async (data: Prisma.evaluation_template_contentsCreateInput) => {
+export const create = async (
+  evaluation_template_id: number,
+  data: Prisma.evaluation_template_contentsCreateInput
+) => {
   const currentDate = new Date()
   return await prisma.evaluation_template_contents.create({
     data: {
       ...data,
+      evaluation_template_id,
       created_at: currentDate,
       updated_at: currentDate,
     },
@@ -37,21 +41,17 @@ export const getByEvaluationTemplateId = async (evaluation_template_id: number) 
       rate: true,
       is_active: true,
       deleted_at: true,
+      sequence_no: true,
     },
     where: {
       evaluation_template_id,
+      deleted_at: null,
     },
   })
 }
 
 export const getAllByFilters = async (where: Prisma.evaluation_template_contentsWhereInput) => {
   return await prisma.evaluation_template_contents.findMany({
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      deleted_at: true,
-    },
     where,
   })
 }

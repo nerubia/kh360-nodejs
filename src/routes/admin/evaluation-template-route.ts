@@ -12,4 +12,10 @@ router.get("/:id", EvaluationTemplateController.show)
 router.put("/:id", EvaluationTemplateController.update)
 router.delete("/:id", EvaluationTemplateController.destroy)
 
+router.get("/", EvaluationTemplateController.index)
+router.post("/", EvaluationTemplateController.store)
+router.get("/:id", EvaluationTemplateController.show)
+router.put("/:id", EvaluationTemplateController.update)
+router.delete("/:id", EvaluationTemplateController.destroy)
+
 export default router

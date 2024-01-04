@@ -133,6 +133,27 @@ export const deleteById = async (id: number) => {
   })
 }
 
+export const deleteByEvaluationIds = async (ids: number[]) => {
+  await prisma.evaluations.deleteMany({
+    where: {
+      id: {
+        in: ids,
+      },
+    },
+  })
+}
+
+export const softDeleteByEvaluationIds = async (ids: number[]) => {
+  await prisma.evaluations.updateMany({
+    where: {
+      id: {
+        in: ids,
+      },
+    },
+    data: { deleted_at: new Date() },
+  })
+}
+
 export const countAllByFilters = async (where: Prisma.evaluationsWhereInput) => {
   const count = await prisma.evaluations.count({
     where,
@@ -176,6 +197,14 @@ export const deleteByEvaluationAdministrationIds = async (
   })
 }
 
+export const deleteByEvaluationResultId = async (evaluationResultId: number) => {
+  await prisma.evaluations.deleteMany({
+    where: {
+      evaluation_result_id: evaluationResultId,
+    },
+  })
+}
+
 export const updateEvaluations = async (ids: number[], data: Prisma.evaluationsUpdateInput) => {
   await prisma.evaluations.updateMany({
     where: {
@@ -188,4 +217,15 @@ export const updateEvaluations = async (ids: number[], data: Prisma.evaluationsU
       updated_at: new Date(),
     },
   })
+}
+
+export const hasForEvaluation = async (evaluation_admin_id: number, eval_result_id: number) => {
+  const result = await prisma.evaluations.count({
+    where: {
+      evaluation_administration_id: evaluation_admin_id,
+      evaluation_result_id: eval_result_id,
+      for_evaluation: true,
+    },
+  })
+  return result
 }
