@@ -61,6 +61,7 @@ export const getAllByFilters = async (
     status: {
       contains: evaluationResultStatus,
     },
+    deleted_at: null,
   }
 
   if (user.roles.includes("khv2_cm")) {
@@ -79,6 +80,7 @@ export const getAllByFilters = async (
         status: {
           notIn: [EvaluationResultStatus.NoResult],
         },
+        deleted_at: null,
       },
       ["evaluation_administration_id"]
     )
@@ -188,7 +190,7 @@ export const getAllByFilters = async (
     })
   }
 
-  const evaluationResults = await EvaluationResultRepository.getAllByFilters(
+  const evaluationResults = await EvaluationResultRepository.getAllByFiltersWithPaging(
     (currentPage - 1) * itemsPerPage,
     itemsPerPage,
     where,
@@ -443,8 +445,7 @@ export const updateStatusById = async (id: number, status: string) => {
       if (
         evaluation.project_id === null &&
         evaluation.project_member_id === null &&
-        template?.evaluee_role_id !== null &&
-        template?.evaluee_role_id !== null
+        template.template_type === "Project Evaluation"
       ) {
         throw new CustomError("Please select a project for an external user.", 400, {
           template_id: template.id,
@@ -795,4 +796,31 @@ export const getEvaluatorsById = async (user: UserToken, id: number) => {
   }
 
   return evaluators
+}
+
+export const deleteEvaluationResult = async (id: number) => {
+  const evaluationResult = await EvaluationResultRepository.getById(id)
+
+  if (evaluationResult === null) {
+    throw new CustomError("Evaluation result not found.", 400)
+  }
+
+  const evaluations = await EvaluationRepository.getAllByFilters({
+    evaluation_result_id: evaluationResult.id,
+    status: {
+      notIn: [
+        EvaluationStatus.Draft,
+        EvaluationStatus.Excluded,
+        EvaluationStatus.Pending,
+        EvaluationStatus.Open,
+      ],
+    },
+  })
+
+  if (evaluations.length > 0) {
+    throw new CustomError("You are not allowed to delete this evaluee.", 400)
+  }
+
+  await EvaluationResultRepository.deleteById(evaluationResult.id)
+  await EvaluationRepository.deleteByEvaluationResultId(evaluationResult.id)
 }
