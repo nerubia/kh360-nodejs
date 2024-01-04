@@ -32,3 +32,22 @@ export const getAllByFilters = async (where: Prisma.evaluation_template_contents
     where,
   })
 }
+
+export const deleteByEvaluationTemplateId = async (evaluation_template_id: number) => {
+  await prisma.evaluation_template_contents.deleteMany({
+    where: {
+      evaluation_template_id,
+    },
+  })
+}
+
+export const softDeleteByEvaluationTemplateId = async (evaluation_template_id: number) => {
+  await prisma.evaluation_template_contents.updateMany({
+    where: {
+      evaluation_template_id,
+    },
+    data: {
+      deleted_at: new Date(),
+    },
+  })
+}
