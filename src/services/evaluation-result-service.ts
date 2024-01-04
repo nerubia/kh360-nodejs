@@ -31,7 +31,6 @@ import { type Prisma } from "@prisma/client"
 import { type UserToken } from "../types/user-token-type"
 import { AnswerType } from "../types/answer-type"
 import { convertToFullDate } from "../utils/format-date"
-import { EvaluationStatus } from "../types/evaluation-type"
 
 export const getAllByFilters = async (
   user: UserToken,
@@ -315,30 +314,8 @@ export const getById = async (user: UserToken, id: number) => {
   }
 
   const comments = evaluations
-    .filter((evaluation) => {
-      return evaluation.status === EvaluationStatus.Submitted && Number(evaluation.weight) !== 0
-    })
     .map((evaluation) => evaluation.comments)
     .filter((comment) => comment !== null && comment.length > 0)
-
-  const otherEvaluations = evaluations.filter((evaluation) => {
-    return (
-      (evaluation.status === EvaluationStatus.Submitted && Number(evaluation.weight) === 0) ||
-      (evaluation.status !== EvaluationStatus.Submitted &&
-        evaluation.status !== EvaluationStatus.Expired)
-    )
-  })
-
-  const other_comments = await Promise.all(
-    otherEvaluations.map(async (evaluation) => {
-      const evaluator = await UserRepository.getById(evaluation.evaluator_id ?? 0)
-      return { comment: evaluation.comments, evaluator }
-    })
-  )
-
-  const filteredOtherComments = other_comments.filter((evaluation) => {
-    return evaluation.comment !== null && evaluation.comment.length > 0
-  })
 
   const recommendations = evaluations
     .map((evaluation) => evaluation.recommendations)
@@ -351,7 +328,6 @@ export const getById = async (user: UserToken, id: number) => {
     eval_period_start_date: evaluationAdministration.eval_period_start_date,
     eval_period_end_date: evaluationAdministration.eval_period_end_date,
     comments,
-    other_comments: filteredOtherComments,
     recommendations,
     evaluation_result_details: finalEvaluationResultDetails,
     status: evaluationAdministration.status,
@@ -453,8 +429,8 @@ export const calculateScore = async (evaluation_result_id: number) => {
     })
 
   const calculated_score =
-    Math.round(Number(evaluationResultDetailsSum._sum.weighted_score) * 10000) /
-    Math.round(Number(evaluationResultDetailsSum._sum.weight) * 10000)
+    Math.round(Number(evaluationResultDetailsSum._sum.weighted_score) * 100) /
+    Math.round(Number(evaluationResultDetailsSum._sum.weight) * 100)
 
   const score = isNaN(calculated_score) ? 0 : Math.round(calculated_score * 100) / 100
 
@@ -487,17 +463,11 @@ export const calculateZScore = async (evaluation_result_id: number) => {
     )
   }
 
-  await EvaluationResultRepository.updateZScoreById(evaluation_result_id, zscore)
-
-  const evalResult = await EvaluationResultRepository.getById(evaluation_result_id)
-
-  if (evalResult !== null) {
-    let banding = ""
-    if (Number(evaluationResultDetailsSum._sum.weight) !== 0) {
-      banding = getBanding(Number(evalResult.zscore))
-    }
-    await EvaluationResultRepository.updateBandingById(evalResult.id, banding)
-  }
+  await EvaluationResultRepository.updateZScoreById(
+    evaluation_result_id,
+    zscore,
+    Number(evaluationResultDetailsSum._sum.weight) !== 0 ? getBanding(zscore) : ""
+  )
 }
 
 export const calculateScoreRating = async (id: number) => {
@@ -578,7 +548,7 @@ export const getAttendanceAndPunctuality = async (id: number) => {
           (day) =>
             !isWeekend(day) &&
             convertedHolidays.find((holiday) => holiday.getTime() === new Date(day).getTime()) ===
-              undefined
+            undefined
         )
         .map((day) => new Date(format(day, "yyyy-MM-dd")))
 
