@@ -73,16 +73,28 @@ export const getAllByFilters = async (
   }
 
   if (evaluation_administration_id === undefined || evaluation_administration_id === "all") {
-    const evaluationAdministrations = await EvaluationAdministrationRepository.getAllByStatuses([
-      EvaluationAdministrationStatus.Closed,
-      EvaluationAdministrationStatus.Published,
-    ])
-    const evaluationAdministrationIds = evaluationAdministrations.map(
+    const evaluationResults = await EvaluationResultRepository.getAllDistinctByFilters(
+      {
+        status: {
+          notIn: [EvaluationResultStatus.NoResult],
+        },
+      },
+      ["evaluation_administration_id"]
+    )
+    const evaluationAdministrationIds = evaluationResults.map(
+      (evaluationResult) => evaluationResult.evaluation_administration_id
+    )
+    const evaluationAdministrations =
+      await EvaluationAdministrationRepository.getAllByIdsAndStatuses(
+        evaluationAdministrationIds as number[],
+        [EvaluationAdministrationStatus.Closed, EvaluationAdministrationStatus.Published]
+      )
+    const finalEvaluationAdministrationIds = evaluationAdministrations.map(
       (evaluationAdministration) => evaluationAdministration.id
     )
     Object.assign(where, {
       evaluation_administration_id: {
-        in: evaluationAdministrationIds,
+        in: finalEvaluationAdministrationIds,
       },
     })
   } else {
