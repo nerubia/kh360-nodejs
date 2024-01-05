@@ -78,13 +78,23 @@ export const updateById = async (id: number, data: EvaluationResult) => {
   })
 }
 
-export const updateZScoreById = async (id: number, zscore: number, banding: string) => {
+export const updateZScoreById = async (id: number, zscore: number) => {
   await prisma.evaluation_results.update({
     where: {
       id,
     },
     data: {
       zscore,
+    },
+  })
+}
+
+export const updateBandingById = async (id: number, banding: string) => {
+  return await prisma.evaluation_results.update({
+    where: {
+      id,
+    },
+    data: {
       banding,
     },
   })
