@@ -441,8 +441,8 @@ export const calculateScore = async (evaluation_result_id: number) => {
     })
 
   const calculated_score =
-    Math.round(Number(evaluationResultDetailsSum._sum.weighted_score) * 100) /
-    Math.round(Number(evaluationResultDetailsSum._sum.weight) * 100)
+    Math.round(Number(evaluationResultDetailsSum._sum.weighted_score) * 10000) /
+    Math.round(Number(evaluationResultDetailsSum._sum.weight) * 10000)
 
   const score = isNaN(calculated_score) ? 0 : Math.round(calculated_score * 100) / 100
 
