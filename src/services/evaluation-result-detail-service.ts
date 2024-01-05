@@ -110,9 +110,10 @@ export const calculateZscore = async (evaluation_result_id: number) => {
     let banding = ""
 
     if (Number(evaluationResultDetail.weight) !== 0) {
-      zscore = Math.round(
-        Number(evaluations._sum.weighted_zscore) / Number(evaluations._sum.weight)
-      )
+      zscore =
+        Math.round(
+          (Number(evaluations._sum.weighted_zscore) / Number(evaluations._sum.weight)) * 10000
+        ) / 10000
       weighted_zscore = Number(evaluationResultDetail.weight) * zscore
       banding = getBanding(zscore)
     }
