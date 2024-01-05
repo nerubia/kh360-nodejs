@@ -75,10 +75,10 @@ export const calculateScore = async (evaluation_result_id: number) => {
     )
 
     const calculated_score =
-      Math.round(Number(evaluationsSum._sum.weighted_score) * 100) /
-      Math.round(Number(evaluationsSum._sum.weight) * 100)
+      Math.round(Number(evaluationsSum._sum.weighted_score) * 10000) /
+      Math.round(Number(evaluationsSum._sum.weight) * 10000)
 
-    const score = isNaN(calculated_score) ? 0 : Math.round(calculated_score * 100) / 100
+    const score = isNaN(calculated_score) ? 0 : Math.round(calculated_score * 10000) / 10000
 
     await EvaluationResultDetailRepository.updateById(evaluationResultDetail.id, {
       score,
