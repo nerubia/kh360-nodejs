@@ -57,6 +57,16 @@ export const getByFilters = async (
   })
 }
 
+export const getAllDistinctByFilters = async (
+  where: Prisma.evaluation_resultsWhereInput,
+  distinct: Prisma.Evaluation_resultsScalarFieldEnum | Prisma.Evaluation_resultsScalarFieldEnum[]
+) => {
+  return await prisma.evaluation_results.findMany({
+    where,
+    distinct,
+  })
+}
+
 export const getByEvaluationAdministrationIdAndUserId = async (
   evaluation_administration_id: number,
   user_id: number
