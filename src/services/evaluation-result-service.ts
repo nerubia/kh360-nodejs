@@ -464,11 +464,8 @@ export const calculateZScore = async (evaluation_result_id: number) => {
 
   if (Number(evaluationResultDetailsSum._sum.weighted_zscore) !== 0) {
     zscore =
-      Math.round(
-        (Number(evaluationResultDetailsSum._sum.weighted_zscore) /
-          Number(evaluationResultDetailsSum._sum.weight)) *
-          100
-      ) / 100
+      Number(evaluationResultDetailsSum._sum.weighted_zscore) /
+      Number(evaluationResultDetailsSum._sum.weight)
   }
 
   if (Number(evaluationResultDetailsSum._sum.weight) === 0) {
@@ -478,11 +475,17 @@ export const calculateZScore = async (evaluation_result_id: number) => {
     )
   }
 
-  await EvaluationResultRepository.updateZScoreById(
-    evaluation_result_id,
-    zscore,
-    Number(evaluationResultDetailsSum._sum.weight) !== 0 ? getBanding(zscore) : ""
-  )
+  await EvaluationResultRepository.updateZScoreById(evaluation_result_id, zscore)
+
+  const evalResult = await EvaluationResultRepository.getById(evaluation_result_id)
+
+  if (evalResult !== null) {
+    let banding = ""
+    if (Number(evaluationResultDetailsSum._sum.weight) !== 0) {
+      banding = getBanding(Number(evalResult.zscore))
+    }
+    await EvaluationResultRepository.updateBandingById(evalResult.id, banding)
+  }
 }
 
 export const calculateScoreRating = async (id: number) => {
