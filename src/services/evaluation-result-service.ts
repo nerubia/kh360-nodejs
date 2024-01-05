@@ -499,11 +499,8 @@ export const calculateZScore = async (evaluation_result_id: number) => {
 
   if (Number(evaluationResultDetailsSum._sum.weighted_zscore) !== 0) {
     zscore =
-      Math.round(
-        (Number(evaluationResultDetailsSum._sum.weighted_zscore) /
-          Number(evaluationResultDetailsSum._sum.weight)) *
-          100
-      ) / 100
+      Number(evaluationResultDetailsSum._sum.weighted_zscore) /
+      Number(evaluationResultDetailsSum._sum.weight)
   }
 
   if (Number(evaluationResultDetailsSum._sum.weight) === 0) {
