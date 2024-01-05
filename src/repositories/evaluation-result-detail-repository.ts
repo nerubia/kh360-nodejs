@@ -46,12 +46,7 @@ export const updateWeightById = async (id: number, weight: number) => {
   })
 }
 
-export const updateZScoreById = async (
-  id: number,
-  zscore: number,
-  weighted_zscore: number,
-  banding: string
-) => {
+export const updateZScoreById = async (id: number, zscore: number, weighted_zscore: number) => {
   return await prisma.evaluation_result_details.update({
     where: {
       id,
@@ -59,6 +54,16 @@ export const updateZScoreById = async (
     data: {
       zscore,
       weighted_zscore,
+    },
+  })
+}
+
+export const updateBandingById = async (id: number, banding: string) => {
+  return await prisma.evaluation_result_details.update({
+    where: {
+      id,
+    },
+    data: {
       banding,
     },
   })
