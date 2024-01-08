@@ -4,6 +4,7 @@ import * as EvaluationTemplateController from "../../controllers/admin/evaluatio
 const router = express.Router()
 
 router.get("/active", EvaluationTemplateController.active)
+router.get("/template-types", EvaluationTemplateController.getTemplateTypes)
 
 router.get("/", EvaluationTemplateController.index)
 router.post("/", EvaluationTemplateController.store)

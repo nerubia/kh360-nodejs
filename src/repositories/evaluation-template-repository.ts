@@ -15,6 +15,18 @@ export const getAllByFilters = async (where: Prisma.evaluation_templatesWhereInp
   })
 }
 
+export const getAllDistinctByFilters = async (
+  where: Prisma.evaluation_templatesWhereInput,
+  distinct:
+    | Prisma.Evaluation_templatesScalarFieldEnum
+    | Prisma.Evaluation_templatesScalarFieldEnum[]
+) => {
+  return await prisma.evaluation_templates.findMany({
+    where,
+    distinct,
+  })
+}
+
 export const paginateByFilters = async (
   skip: number,
   take: number,
