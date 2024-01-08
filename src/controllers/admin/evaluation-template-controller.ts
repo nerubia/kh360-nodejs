@@ -5,6 +5,30 @@ import { ValidationError } from "yup"
 import CustomError from "../../utils/custom-error"
 
 /**
+ * List active evaluation templates.
+ */
+export const active = async (req: Request, res: Response) => {
+  try {
+    const evaluationTemplates = await EvaluationTemplateService.getActiveTemplates()
+    res.json(evaluationTemplates)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * List evaluation template types
+ */
+export const getTemplateTypes = async (req: Request, res: Response) => {
+  try {
+    const evaluationTemplates = await EvaluationTemplateService.getTemplateTypes()
+    res.json(evaluationTemplates)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
  * List evaluation templates based on provided filters.
  * @param req.query.evaluation_result_id - Filter by evaluation result id.
  * @param req.query.for_evaluation - Filter by for_evaluation.
@@ -37,18 +61,6 @@ export const index = async (req: Request, res: Response) => {
       parseInt(evaluee_role_id as string),
       page as string
     )
-    res.json(evaluationTemplates)
-  } catch (error) {
-    res.status(500).json({ message: "Something went wrong" })
-  }
-}
-
-/**
- * List active evaluation templates.
- */
-export const active = async (req: Request, res: Response) => {
-  try {
-    const evaluationTemplates = await EvaluationTemplateService.getActiveTemplates()
     res.json(evaluationTemplates)
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
