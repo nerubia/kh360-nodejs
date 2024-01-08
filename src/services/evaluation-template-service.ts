@@ -71,7 +71,7 @@ export const getAllByFilters = async (
     return final
   }
 
-  const itemsPerPage = 10
+  const itemsPerPage = 20
   const parsedPage = parseInt(page as string)
   const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
@@ -93,7 +93,7 @@ export const getAllByFilters = async (
     })
   }
 
-  if (template_type !== undefined) {
+  if (template_type !== undefined && template_type !== "all") {
     Object.assign(where, {
       template_type,
     })
@@ -145,6 +145,10 @@ export const getActiveTemplates = async () => {
     })
   )
   return final
+}
+
+export const getTemplateTypes = async () => {
+  return await EvaluationTemplateRepository.getAllDistinctByFilters({}, ["template_type"])
 }
 
 export const create = async (data: Prisma.evaluation_templatesCreateInput) => {
