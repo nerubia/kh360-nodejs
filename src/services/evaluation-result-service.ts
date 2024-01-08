@@ -96,11 +96,17 @@ export const getAllByFilters = async (
       evaluation_administration_id: {
         in: finalEvaluationAdministrationIds,
       },
+      status: {
+        notIn: [EvaluationResultStatus.NoResult],
+      },
     })
   } else {
     Object.assign(where, {
       evaluation_administration_id: {
         in: [parseInt(evaluation_administration_id)],
+      },
+      status: {
+        notIn: [EvaluationResultStatus.NoResult],
       },
     })
   }
