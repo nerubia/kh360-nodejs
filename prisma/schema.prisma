@@ -1039,6 +1039,30 @@ model score_ratings {
   evaluation_result_details evaluation_result_details[]
 }
 
+model skill_categories {
+  id          Int       @id @default(autoincrement())
+  name        String?   @db.VarChar(255)
+  sequence_no Int?
+  description String?   @db.Text
+  status      Boolean?
+  created_at  DateTime? @db.DateTime(0)
+  updated_at  DateTime? @db.DateTime(0)
+  skills      skills[]
+}
+
+model skills {
+  id                Int       @id @default(autoincrement())
+  skill_category_id Int
+  name              String?   @db.VarChar(255)
+  sequence_no       Int?
+  description       String?   @db.Text
+  status            Boolean?
+  created_at        DateTime? @db.DateTime(0)
+  updated_at        DateTime? @db.DateTime(0)
+
+  skill_categories skill_categories @relation(fields: [skill_category_id], references: [id])
+}
+
 model system_settings {
   id         Int       @id @default(autoincrement())
   name       String?   @db.VarChar(255)

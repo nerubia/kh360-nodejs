@@ -479,6 +479,258 @@ const createScoreRatings = async () => {
   }
 }
 
+const createSkillCategories = async () => {
+  const skillCategories = [
+    {
+      name: "Programming Languages",
+      sequence_no: 1,
+      status: true,
+      created_at: new Date(),
+      updated_at: new Date(),
+    },
+    {
+      name: "Development Frameworks",
+      sequence_no: 2,
+      status: true,
+      created_at: new Date(),
+      updated_at: new Date(),
+    },
+    {
+      name: "Database",
+      sequence_no: 3,
+      status: true,
+      created_at: new Date(),
+      updated_at: new Date(),
+    },
+    {
+      name: "Markup and Stylings",
+      sequence_no: 4,
+      status: true,
+      created_at: new Date(),
+      updated_at: new Date(),
+    },
+    {
+      name: "API Integration",
+      sequence_no: 5,
+      status: true,
+      created_at: new Date(),
+      updated_at: new Date(),
+    },
+    {
+      name: "Testing Frameworks",
+      sequence_no: 6,
+      status: true,
+      created_at: new Date(),
+      updated_at: new Date(),
+    },
+    {
+      name: "DevOps and Workflows",
+      sequence_no: 7,
+      status: true,
+      created_at: new Date(),
+      updated_at: new Date(),
+    },
+    {
+      name: "Other Technologies",
+      sequence_no: 8,
+      status: true,
+      created_at: new Date(),
+      updated_at: new Date(),
+    },
+  ]
+  for (const data of skillCategories) {
+    const skillCategory = await prisma.skill_categories.findFirst({
+      where: {
+        name: data.name,
+      },
+    })
+    if (skillCategory === null) {
+      await prisma.skill_categories.create({
+        data,
+      })
+    }
+  }
+}
+
+const createSkills = async () => {
+  const currentDate = new Date()
+  const skills = [
+    { skill_category_id: 1, name: "Adobe Flex", sequence_no: 1, status: true },
+    { skill_category_id: 1, name: "Action Script", sequence_no: 2, status: true },
+    { skill_category_id: 1, name: "C#", sequence_no: 3, status: true },
+    { skill_category_id: 1, name: "C++", sequence_no: 4, status: true },
+    { skill_category_id: 1, name: "C", sequence_no: 5, status: true },
+    { skill_category_id: 1, name: "Objective C", sequence_no: 6, status: true },
+    { skill_category_id: 1, name: "Go", sequence_no: 7, status: true },
+    { skill_category_id: 1, name: "Java (J2EE)", sequence_no: 8, status: true },
+    { skill_category_id: 1, name: "Java (J2SE)", sequence_no: 9, status: true },
+    { skill_category_id: 1, name: "JavaScript", sequence_no: 10, status: true },
+    { skill_category_id: 1, name: "Kotlin", sequence_no: 11, status: true },
+    { skill_category_id: 1, name: "Ruby", sequence_no: 12, status: true },
+    { skill_category_id: 1, name: "SQL", sequence_no: 13, status: true },
+    { skill_category_id: 1, name: "Swift", sequence_no: 14, status: true },
+    { skill_category_id: 1, name: "Perl", sequence_no: 15, status: true },
+    { skill_category_id: 1, name: "PHP", sequence_no: 16, status: true },
+    { skill_category_id: 1, name: "Python", sequence_no: 17, status: true },
+    { skill_category_id: 1, name: "Scala", sequence_no: 18, status: true },
+    { skill_category_id: 1, name: "TypeScript", sequence_no: 19, status: true },
+    { skill_category_id: 1, name: "VisualBasic.NET", sequence_no: 20, status: true },
+    { skill_category_id: 2, name: "jQuery", sequence_no: 1, status: true },
+    { skill_category_id: 2, name: "AngularJS", sequence_no: 2, status: true },
+    { skill_category_id: 2, name: "Angular", sequence_no: 3, status: true },
+    { skill_category_id: 2, name: "Ionic", sequence_no: 4, status: true },
+    { skill_category_id: 2, name: "ReactJS", sequence_no: 5, status: true },
+    { skill_category_id: 2, name: "React Native", sequence_no: 6, status: true },
+    { skill_category_id: 2, name: "Redux", sequence_no: 7, status: true },
+    { skill_category_id: 2, name: "Flux", sequence_no: 8, status: true },
+    { skill_category_id: 2, name: "NodeJS", sequence_no: 9, status: true },
+    { skill_category_id: 2, name: "ExpressJS", sequence_no: 10, status: true },
+    { skill_category_id: 2, name: "HapiJS", sequence_no: 11, status: true },
+    { skill_category_id: 2, name: "Koa2", sequence_no: 12, status: true },
+    { skill_category_id: 2, name: "KrakenJS", sequence_no: 13, status: true },
+    { skill_category_id: 2, name: "SailsJS", sequence_no: 14, status: true },
+    { skill_category_id: 2, name: "VueJS", sequence_no: 15, status: true },
+    { skill_category_id: 2, name: "Cake PHP", sequence_no: 16, status: true },
+    { skill_category_id: 2, name: "Code Igniter", sequence_no: 17, status: true },
+    { skill_category_id: 2, name: "Kohana", sequence_no: 18, status: true },
+    { skill_category_id: 2, name: "Laravel", sequence_no: 19, status: true },
+    { skill_category_id: 2, name: "PhalconPHP", sequence_no: 20, status: true },
+    { skill_category_id: 2, name: "Symfony", sequence_no: 21, status: true },
+    { skill_category_id: 2, name: "Yii 2", sequence_no: 22, status: true },
+    { skill_category_id: 2, name: "Zend Framework", sequence_no: 23, status: true },
+    { skill_category_id: 2, name: "Android", sequence_no: 24, status: true },
+    { skill_category_id: 2, name: "JSF", sequence_no: 25, status: true },
+    { skill_category_id: 2, name: "Spring Boot", sequence_no: 26, status: true },
+    { skill_category_id: 2, name: "Spring MVC", sequence_no: 27, status: true },
+    { skill_category_id: 2, name: "ASP.NET MVC5", sequence_no: 28, status: true },
+    { skill_category_id: 2, name: "ASP.NET Entity Framework", sequence_no: 29, status: true },
+    { skill_category_id: 2, name: ".NET", sequence_no: 30, status: true },
+    { skill_category_id: 2, name: "Rails", sequence_no: 31, status: true },
+    { skill_category_id: 2, name: "Play framework", sequence_no: 32, status: true },
+    { skill_category_id: 2, name: "Drupal", sequence_no: 33, status: true },
+    { skill_category_id: 2, name: "Joomla", sequence_no: 34, status: true },
+    { skill_category_id: 2, name: "Magento", sequence_no: 35, status: true },
+    { skill_category_id: 2, name: "Wordpress", sequence_no: 36, status: true },
+    { skill_category_id: 2, name: "Beego", sequence_no: 37, status: true },
+    { skill_category_id: 2, name: "Cordova", sequence_no: 38, status: true },
+    { skill_category_id: 2, name: "Django", sequence_no: 39, status: true },
+    { skill_category_id: 2, name: "Gorilla", sequence_no: 40, status: true },
+    { skill_category_id: 2, name: "GoCraft", sequence_no: 41, status: true },
+    { skill_category_id: 2, name: "GRails", sequence_no: 42, status: true },
+    { skill_category_id: 2, name: "GWT", sequence_no: 43, status: true },
+    { skill_category_id: 2, name: "Koala", sequence_no: 44, status: true },
+    { skill_category_id: 2, name: "Martini", sequence_no: 45, status: true },
+    { skill_category_id: 2, name: "Net/HTTP", sequence_no: 46, status: true },
+    { skill_category_id: 2, name: "PhoneGap", sequence_no: 47, status: true },
+    { skill_category_id: 2, name: "Sinatra", sequence_no: 48, status: true },
+    { skill_category_id: 2, name: "Slim", sequence_no: 49, status: true },
+    { skill_category_id: 2, name: "Struts", sequence_no: 50, status: true },
+    { skill_category_id: 2, name: "TurboGears", sequence_no: 51, status: true },
+    { skill_category_id: 2, name: "Unity", sequence_no: 52, status: true },
+    { skill_category_id: 2, name: "web2py", sequence_no: 53, status: true },
+    { skill_category_id: 2, name: "Xamarin", sequence_no: 54, status: true },
+    { skill_category_id: 3, name: "Android Room", sequence_no: 1, status: true },
+    { skill_category_id: 3, name: "Cassandra", sequence_no: 2, status: true },
+    { skill_category_id: 3, name: "Foxpro", sequence_no: 3, status: true },
+    { skill_category_id: 3, name: "MySQL", sequence_no: 4, status: true },
+    { skill_category_id: 3, name: "MSSQL", sequence_no: 5, status: true },
+    { skill_category_id: 3, name: "MongoDB", sequence_no: 6, status: true },
+    { skill_category_id: 3, name: "Oracle", sequence_no: 7, status: true },
+    { skill_category_id: 3, name: "Postgre", sequence_no: 8, status: true },
+    { skill_category_id: 3, name: "SQLite", sequence_no: 9, status: true },
+    { skill_category_id: 3, name: "Sybase", sequence_no: 10, status: true },
+    { skill_category_id: 4, name: "XML", sequence_no: 1, status: true },
+    { skill_category_id: 4, name: "HTML", sequence_no: 2, status: true },
+    { skill_category_id: 4, name: "HTML5", sequence_no: 3, status: true },
+    { skill_category_id: 4, name: "CSS", sequence_no: 4, status: true },
+    { skill_category_id: 4, name: "Sass", sequence_no: 5, status: true },
+    { skill_category_id: 4, name: "PostCSS", sequence_no: 6, status: true },
+    { skill_category_id: 4, name: "Bootstrap", sequence_no: 7, status: true },
+    { skill_category_id: 4, name: "Bulma", sequence_no: 8, status: true },
+    { skill_category_id: 4, name: "Material", sequence_no: 9, status: true },
+    { skill_category_id: 5, name: "Authorize.Net", sequence_no: 1, status: true },
+    { skill_category_id: 5, name: "BrainTree", sequence_no: 2, status: true },
+    { skill_category_id: 5, name: "Paypal", sequence_no: 3, status: true },
+    { skill_category_id: 5, name: "Stripe", sequence_no: 4, status: true },
+    { skill_category_id: 5, name: "WePay", sequence_no: 5, status: true },
+    { skill_category_id: 5, name: "MailChimp / Mandrill API", sequence_no: 6, status: true },
+    { skill_category_id: 5, name: "Send Grid", sequence_no: 7, status: true },
+    { skill_category_id: 5, name: "Twilio", sequence_no: 8, status: true },
+    { skill_category_id: 5, name: "Google oAuth2", sequence_no: 9, status: true },
+    { skill_category_id: 5, name: "Facebook", sequence_no: 10, status: true },
+    { skill_category_id: 5, name: "Twitter", sequence_no: 11, status: true },
+    { skill_category_id: 5, name: "Firebase", sequence_no: 12, status: true },
+    { skill_category_id: 5, name: "Google Maps", sequence_no: 13, status: true },
+    { skill_category_id: 5, name: "GraphQL", sequence_no: 14, status: true },
+    { skill_category_id: 5, name: "MakroKiosk", sequence_no: 15, status: true },
+    { skill_category_id: 5, name: "Mixpanel", sequence_no: 16, status: true },
+    { skill_category_id: 5, name: "Pinnacle API", sequence_no: 17, status: true },
+    { skill_category_id: 6, name: "Chai", sequence_no: 1, status: true },
+    { skill_category_id: 6, name: "Mocha", sequence_no: 2, status: true },
+    { skill_category_id: 6, name: "Jasmine", sequence_no: 3, status: true },
+    { skill_category_id: 6, name: "Karma", sequence_no: 4, status: true },
+    { skill_category_id: 6, name: "Istanbul", sequence_no: 5, status: true },
+    { skill_category_id: 6, name: "Selenium", sequence_no: 6, status: true },
+    { skill_category_id: 6, name: "PHPUnit", sequence_no: 7, status: true },
+    { skill_category_id: 6, name: "JUnit", sequence_no: 8, status: true },
+    { skill_category_id: 6, name: "Jest", sequence_no: 9, status: true },
+    { skill_category_id: 6, name: "WebDriver.IO", sequence_no: 10, status: true },
+    { skill_category_id: 6, name: "RSpec", sequence_no: 11, status: true },
+    { skill_category_id: 6, name: "Ava", sequence_no: 12, status: true },
+    { skill_category_id: 6, name: "Katalon", sequence_no: 13, status: true },
+    { skill_category_id: 8, name: "AJAX", sequence_no: 1, status: true },
+    { skill_category_id: 8, name: "REST", sequence_no: 2, status: true },
+    { skill_category_id: 8, name: "Socket.IO", sequence_no: 3, status: true },
+    { skill_category_id: 8, name: "Babel", sequence_no: 4, status: true },
+    { skill_category_id: 8, name: "Redis", sequence_no: 5, status: true },
+    { skill_category_id: 8, name: "Kafka", sequence_no: 6, status: true },
+    { skill_category_id: 8, name: "RabbitMQ", sequence_no: 7, status: true },
+    { skill_category_id: 8, name: "ActiveMQ", sequence_no: 8, status: true },
+    { skill_category_id: 8, name: "SQS", sequence_no: 9, status: true },
+    { skill_category_id: 8, name: "Elastic Search", sequence_no: 10, status: true },
+    { skill_category_id: 8, name: "God", sequence_no: 11, status: true },
+    { skill_category_id: 8, name: "Sphinx", sequence_no: 12, status: true },
+    { skill_category_id: 8, name: "Sidekiq", sequence_no: 13, status: true },
+    { skill_category_id: 8, name: "Shopify", sequence_no: 14, status: true },
+    { skill_category_id: 8, name: "WooCommerce", sequence_no: 15, status: true },
+    { skill_category_id: 7, name: "Docker", sequence_no: 1, status: true },
+    { skill_category_id: 7, name: "Codeship", sequence_no: 2, status: true },
+    { skill_category_id: 7, name: "Kubernetes", sequence_no: 3, status: true },
+    { skill_category_id: 7, name: "Jenkins", sequence_no: 4, status: true },
+    { skill_category_id: 7, name: "CircleCI", sequence_no: 5, status: true },
+    { skill_category_id: 7, name: "Apache", sequence_no: 6, status: true },
+    { skill_category_id: 7, name: "Nodemon", sequence_no: 7, status: true },
+    { skill_category_id: 7, name: "PM2", sequence_no: 8, status: true },
+    { skill_category_id: 7, name: "Passenger", sequence_no: 9, status: true },
+    { skill_category_id: 7, name: "Nginx", sequence_no: 10, status: true },
+    { skill_category_id: 7, name: "Azure", sequence_no: 11, status: true },
+    { skill_category_id: 7, name: "DNS", sequence_no: 12, status: true },
+    { skill_category_id: 7, name: "CloudFlare", sequence_no: 13, status: true },
+    { skill_category_id: 7, name: "CloudFront", sequence_no: 14, status: true },
+    { skill_category_id: 7, name: "AWS Integration", sequence_no: 15, status: true },
+    { skill_category_id: 7, name: "AWS CloudFormation", sequence_no: 16, status: true },
+    { skill_category_id: 7, name: "AWS Lambda", sequence_no: 17, status: true },
+    { skill_category_id: 7, name: "AWS EC2", sequence_no: 18, status: true },
+    { skill_category_id: 7, name: "AWS CLI", sequence_no: 19, status: true },
+  ]
+  for (const data of skills) {
+    const skill = await prisma.skills.findFirst({
+      where: {
+        name: data.name,
+      },
+    })
+    if (skill === null) {
+      await prisma.skills.create({
+        data: {
+          ...data,
+          created_at: currentDate,
+          updated_at: currentDate,
+        },
+      })
+    }
+  }
+}
+
 async function main() {
   if (process.env.APP_ENV === Environment.Production) {
     await createRoles()
@@ -488,6 +740,8 @@ async function main() {
     await createSystemSettings()
     await updateProjectRoles()
     await createScoreRatings()
+    await createSkillCategories()
+    await createSkills()
   }
   if (process.env.APP_ENV === Environment.Local) {
     await createUsers()
