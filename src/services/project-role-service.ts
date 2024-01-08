@@ -9,3 +9,7 @@ export const getAllForProject = async () => {
     for_project: true,
   })
 }
+
+export const getAll = async () => {
+  return await ProjectRoleRepository.getAllByFilters({})
+}
