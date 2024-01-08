@@ -15,6 +15,10 @@ export const getByEvaluationTemplateId = async (evaluation_template_id: number) 
       id: true,
       name: true,
       description: true,
+      category: true,
+      rate: true,
+      is_active: true,
+      deleted_at: true,
     },
     where: {
       evaluation_template_id,
@@ -28,8 +32,49 @@ export const getAllByFilters = async (where: Prisma.evaluation_template_contents
       id: true,
       name: true,
       description: true,
+      deleted_at: true,
     },
     where,
+  })
+}
+
+export const countAllByFilters = async (where: Prisma.evaluation_template_contentsWhereInput) => {
+  return await prisma.evaluation_template_contents.count({
+    where,
+  })
+}
+
+export const updateById = async (
+  id: number,
+  data: Prisma.evaluation_template_contentsUpdateInput
+) => {
+  return await prisma.evaluation_template_contents.update({
+    where: {
+      id,
+    },
+    data: {
+      ...data,
+      updated_at: new Date(),
+    },
+  })
+}
+
+export const softDeleteById = async (id: number) => {
+  await prisma.evaluation_template_contents.updateMany({
+    where: {
+      id,
+    },
+    data: {
+      deleted_at: new Date(),
+    },
+  })
+}
+
+export const deleteById = async (id: number) => {
+  await prisma.evaluation_template_contents.deleteMany({
+    where: {
+      id,
+    },
   })
 }
 
