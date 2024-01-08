@@ -353,8 +353,6 @@ export const getEvaluationResult = async (user: UserToken, id: number) => {
       return {
         id: detail.id,
         score: detail.score,
-        zscore: detail.zscore,
-        banding: detail.banding,
         template_name: evaluation_template?.display_name,
         evaluation_template_contents: finalEvaluationTemplateContents,
         total_score: Math.round((Number(detail.score) / 10) * 100),
@@ -385,19 +383,21 @@ export const getEvaluationResult = async (user: UserToken, id: number) => {
 
   const score_rating = await ScoreRatingRepository.getById(evaluationResult.score_ratings_id ?? 0)
 
-  Object.assign(evaluationResult, {
-    users: evaluee,
+  return {
     eval_period_start_date: evaluationAdministration.eval_period_start_date,
     eval_period_end_date: evaluationAdministration.eval_period_end_date,
-    comments,
-    evaluation_result_details: finalEvaluationResultDetails,
-    status: evaluationAdministration.status,
     eval_admin_name: evaluationAdministration.name,
     total_score: Math.round((Number(evaluationResult.score) / 10) * 100),
+    users: {
+      first_name: evaluee.first_name,
+      last_name: evaluee.last_name,
+      picture: evaluee.picture,
+    },
+    comments,
+    evaluation_result_details: finalEvaluationResultDetails,
     score_rating,
-  })
-
-  return evaluationResult
+    score: evaluationResult.score,
+  }
 }
 
 export const getEvaluationAdministrationsAsEvaluee = async (user: UserToken, page: number) => {
