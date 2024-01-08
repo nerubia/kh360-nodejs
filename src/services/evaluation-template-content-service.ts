@@ -5,6 +5,7 @@ import * as AnswerOptionRepository from "../repositories/answer-option-repositor
 import * as EvaluationRatingRepository from "../repositories/evaluation-rating-repository"
 import { type Prisma } from "@prisma/client"
 import { type UserToken } from "../types/user-token-type"
+import { EvaluationStatus } from "../types/evaluation-type"
 import CustomError from "../utils/custom-error"
 
 export const getById = async (id: number) => {
@@ -67,9 +68,84 @@ export const getEvaluationTemplateContents = async (user: UserToken, evaluation_
         evaluationRating,
         answerId: answerOptionsType?.answer_id,
         answerOptions,
+        deleted_at: templateContent.deleted_at,
       }
     })
   )
 
-  return finalEvaluationTemplateContents
+  return finalEvaluationTemplateContents.filter((content) => content.deleted_at === null)
+}
+
+export const updateById = async (
+  id: number,
+  data: Prisma.evaluation_template_contentsUpdateInput
+) => {
+  const evaluationTemplateContent = await EvaluationTemplateContentRepository.getById(id)
+
+  if (evaluationTemplateContent === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
+  return await EvaluationTemplateContentRepository.updateById(id, data)
+}
+
+export const deleteById = async (id: number) => {
+  const evaluationTemplateContent = await EvaluationTemplateContentRepository.getById(id)
+
+  if (evaluationTemplateContent === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
+  const evaluationTemplate = await EvaluationTemplateRepository.getById(
+    evaluationTemplateContent.evaluation_template_id ?? 0
+  )
+
+  if (evaluationTemplate === null) {
+    throw new CustomError("Template not found", 400)
+  }
+
+  const evaluationTemplateContentCount =
+    await EvaluationTemplateContentRepository.countAllByFilters({
+      evaluation_template_id: evaluationTemplate.id,
+    })
+
+  if (evaluationTemplateContentCount === 1) {
+    throw new CustomError(
+      "You are no longer allowed to delete an evaluation template content.",
+      400
+    )
+  }
+
+  const evaluationRatings = await EvaluationRatingRepository.getAllByFilters({
+    evaluation_template_content_id: evaluationTemplateContent.id,
+  })
+  const evaluationIds = evaluationRatings.map((rating) => rating.evaluation_id)
+
+  const totalOngoingEvaluations = await EvaluationRepository.countAllByFilters({
+    id: {
+      in: evaluationIds as number[],
+    },
+    status: {
+      in: [EvaluationStatus.Ongoing, EvaluationStatus.Open],
+    },
+  })
+
+  if (totalOngoingEvaluations > 0) {
+    throw new CustomError("You are not allowed to delete this content.", 400)
+  }
+
+  const totalSubmittedEvaluations = await EvaluationRepository.countAllByFilters({
+    id: {
+      in: evaluationIds as number[],
+    },
+    status: {
+      in: [EvaluationStatus.Submitted, EvaluationStatus.Reviewed],
+    },
+  })
+
+  if (totalSubmittedEvaluations > 0) {
+    await EvaluationTemplateContentRepository.softDeleteById(evaluationTemplateContent.id)
+  } else {
+    await EvaluationTemplateContentRepository.deleteById(evaluationTemplateContent.id)
+  }
 }

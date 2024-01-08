@@ -6,6 +6,7 @@ import * as EvaluationResultDetailRepository from "../repositories/evaluation-re
 import * as EvaluationTemplateContentRepository from "../repositories/evaluation-template-content-repository"
 import * as EvaluationTemplateRepository from "../repositories/evaluation-template-repository"
 import * as ProjectRoleRepository from "../repositories/project-role-repository"
+import * as AnswerRepository from "../repositories/answer-repository"
 import CustomError from "../utils/custom-error"
 import { EvaluationAdministrationStatus } from "../types/evaluation-administration-type"
 
@@ -16,12 +17,36 @@ export const getById = async (id: number) => {
     throw new CustomError("Id not found", 400)
   }
 
+  const evaluatorRole = await ProjectRoleRepository.getById(
+    evaluationTemplate.evaluator_role_id ?? 0
+  )
+
+  if (evaluatorRole === null) {
+    throw new CustomError("Evaluator role not found", 400)
+  }
+
+  const evalueeRole = await ProjectRoleRepository.getById(evaluationTemplate.evaluee_role_id ?? 0)
+
+  if (evalueeRole === null) {
+    throw new CustomError("Evaluee role not found", 400)
+  }
+
+  const answer = await AnswerRepository.getById(evaluationTemplate.answer_id ?? 0)
+
+  Object.assign(evaluationTemplate, {
+    evaluatorRole,
+    evalueeRole,
+    answer,
+  })
+
   const evaluationTemplateContents =
     await EvaluationTemplateContentRepository.getByEvaluationTemplateId(evaluationTemplate.id)
 
   return {
     ...evaluationTemplate,
-    evaluationTemplateContents,
+    evaluationTemplateContents: evaluationTemplateContents.filter(
+      (content) => content.deleted_at === null
+    ),
   }
 }
 
