@@ -27,7 +27,7 @@ export const getById = async (id: number) => {
 
 export const getAllByFilters = async (
   evaluation_result_id?: string,
-  for_evaluation?: boolean,
+  for_evaluation?: string,
   name?: string,
   display_name?: string,
   template_type?: string,

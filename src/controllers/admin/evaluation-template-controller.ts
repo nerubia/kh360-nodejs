@@ -53,7 +53,7 @@ export const index = async (req: Request, res: Response) => {
     } = req.query
     const evaluationTemplates = await EvaluationTemplateService.getAllByFilters(
       evaluation_result_id as string,
-      Boolean(for_evaluation),
+      for_evaluation as string,
       name as string,
       display_name as string,
       template_type as string,
