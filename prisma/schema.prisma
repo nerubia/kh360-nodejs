@@ -948,22 +948,49 @@ model project_infos {
   @@index([project_id], map: "index_project_infos_on_project_id")
 }
 
+model project_member_skills {
+  id                Int       @id @default(autoincrement())
+  project_member_id Int
+  skill_id          Int
+  description       String?   @db.Text
+  status            Boolean?
+  created_at        DateTime? @db.DateTime(0)
+  updated_at        DateTime? @db.DateTime(0)
+
+  project_member project_members @relation(fields: [project_member_id], references: [id])
+  skills         skills          @relation(fields: [skill_id], references: [id])
+}
+
 model project_members {
-  id              Int           @id @default(autoincrement())
-  project_id      Int?
-  user_id         Int?
-  project_role_id Int?
-  start_date      DateTime?     @db.Date
-  end_date        DateTime?     @db.Date
-  allocation_rate Decimal?      @default(100.00) @db.Decimal(5, 2)
-  remarks         String?       @db.Text
-  created_at      DateTime?     @db.DateTime(0)
-  updated_at      DateTime?     @db.DateTime(0)
-  evaluations     evaluations[]
+  id                    Int                     @id @default(autoincrement())
+  project_id            Int?
+  user_id               Int?
+  project_role_id       Int?
+  start_date            DateTime?               @db.Date
+  end_date              DateTime?               @db.Date
+  allocation_rate       Decimal?                @default(100.00) @db.Decimal(5, 2)
+  remarks               String?                 @db.Text
+  created_at            DateTime?               @db.DateTime(0)
+  updated_at            DateTime?               @db.DateTime(0)
+  evaluations           evaluations[]
+  project_member_skills project_member_skills[]
 
   @@index([project_id], map: "index_project_members_on_project_id")
   @@index([project_role_id], map: "index_project_members_on_project_role_id")
   @@index([user_id], map: "index_project_members_on_user_id")
+}
+
+model project_skills {
+  id          Int       @id @default(autoincrement())
+  project_id  Int
+  skill_id    Int
+  description String?   @db.Text
+  status      Boolean?
+  created_at  DateTime? @db.DateTime(0)
+  updated_at  DateTime? @db.DateTime(0)
+
+  projects projects @relation(fields: [project_id], references: [id])
+  skills   skills   @relation(fields: [skill_id], references: [id])
 }
 
 model project_roles {
@@ -1002,20 +1029,21 @@ model project_teams {
 }
 
 model projects {
-  id            Int             @id @default(autoincrement())
-  slug          String?         @db.VarChar(80)
-  name          String?         @db.VarChar(255)
-  type          String?         @db.VarChar(100)
-  client_id     Int?
-  start_date    DateTime?       @db.Date
-  end_date      DateTime?       @db.Date
-  status        String?         @db.VarChar(50)
-  description   String?         @db.Text
-  created_at    DateTime        @db.DateTime(0)
-  updated_at    DateTime        @db.DateTime(0)
-  project_infos project_infos[]
-  project_tasks project_tasks[]
-  project_teams project_teams[]
+  id             Int              @id @default(autoincrement())
+  slug           String?          @db.VarChar(80)
+  name           String?          @db.VarChar(255)
+  type           String?          @db.VarChar(100)
+  client_id      Int?
+  start_date     DateTime?        @db.Date
+  end_date       DateTime?        @db.Date
+  status         String?          @db.VarChar(50)
+  description    String?          @db.Text
+  created_at     DateTime         @db.DateTime(0)
+  updated_at     DateTime         @db.DateTime(0)
+  project_infos  project_infos[]
+  project_tasks  project_tasks[]
+  project_teams  project_teams[]
+  project_skills project_skills[]
 
   @@index([client_id], map: "index_projects_on_client_id")
 }
@@ -1060,7 +1088,9 @@ model skills {
   created_at        DateTime? @db.DateTime(0)
   updated_at        DateTime? @db.DateTime(0)
 
-  skill_categories skill_categories @relation(fields: [skill_category_id], references: [id])
+  skill_categories      skill_categories        @relation(fields: [skill_category_id], references: [id])
+  project_skills        project_skills[]
+  project_member_skills project_member_skills[]
 }
 
 model system_settings {
