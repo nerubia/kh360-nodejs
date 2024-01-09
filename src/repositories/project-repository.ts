@@ -36,3 +36,21 @@ export const getAllByFilters = async (where: Prisma.projectsWhereInput) => {
     where,
   })
 }
+
+export const paginateByFilters = async (
+  skip: number,
+  take: number,
+  where: Prisma.projectsWhereInput
+) => {
+  return await prisma.projects.findMany({
+    skip,
+    take,
+    where,
+  })
+}
+
+export const countByFilters = async (where: Prisma.projectsWhereInput) => {
+  return await prisma.projects.count({
+    where,
+  })
+}
