@@ -81,6 +81,23 @@ export const store = async (req: Request, res: Response) => {
 }
 
 /**
+ * Get a specific email template by ID.
+ * @param req.params.id - The unique ID of the email template.
+ */
+export const show = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const emailTemplate = await EmailTemplateService.getById(parseInt(id))
+    res.json(emailTemplate)
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
  * Update an existing email template by ID.
  * @param req.body.name - Name.
  * @param req.body.template_type - Template Type.
