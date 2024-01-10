@@ -8,8 +8,8 @@ export const createEvaluationTemplate = object().shape({
   with_recommendation: boolean().required("With recommendation is required"),
   evaluator_role_id: number().required("Evaluator role id is required"),
   evaluee_role_id: number().required("Evaluee role id is required"),
-  rate: string().required("Rate is required"),
+  rate: number().required("Rate is required"),
   answer_id: number().required("Answer id is required"),
-  description: string().required("Description is required"),
+  description: string(),
   is_active: boolean().required("Is active is required"),
 })

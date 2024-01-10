@@ -14,3 +14,11 @@ export const getAllByFilters = async (where: Prisma.answersWhereInput) => {
     where,
   })
 }
+
+export const list = async (is_active: boolean) => {
+  return await prisma.answers.findMany({
+    where: {
+      is_active,
+    },
+  })
+}
