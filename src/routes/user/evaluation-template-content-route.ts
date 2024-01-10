@@ -3,6 +3,7 @@ import * as EvaluationTemplateContentController from "../../controllers/user/eva
 
 const router = express.Router()
 
+router.post("/", EvaluationTemplateContentController.store)
 router.get("/", EvaluationTemplateContentController.index)
 router.delete("/:id", EvaluationTemplateContentController.destroy)
 router.put("/:id", EvaluationTemplateContentController.update)
