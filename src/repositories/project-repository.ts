@@ -105,6 +105,33 @@ export const updateById = async (id: number, data: Project) => {
   })
 }
 
+export const create = async (data: Project) => {
+  const currentDate = new Date()
+  return await prisma.projects.create({
+    data: {
+      ...data,
+      slug: convertToSlug(data.name as string),
+      created_at: currentDate,
+      updated_at: currentDate,
+    },
+  })
+}
+
+export const updateById = async (id: number, data: Project) => {
+  const currentDate = new Date()
+  return await prisma.projects.update({
+    where: {
+      id,
+    },
+    data: {
+      ...data,
+      slug: convertToSlug(data.name as string),
+      created_at: currentDate,
+      updated_at: currentDate,
+    },
+  })
+}
+
 export const countByFilters = async (where: Prisma.projectsWhereInput) => {
   return await prisma.projects.count({
     where,
