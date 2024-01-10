@@ -8,6 +8,10 @@ import { type UserToken } from "../types/user-token-type"
 import { EvaluationStatus } from "../types/evaluation-type"
 import CustomError from "../utils/custom-error"
 
+export const create = async (data: Prisma.evaluation_template_contentsCreateInput) => {
+  return await EvaluationTemplateContentRepository.create(data)
+}
+
 export const getById = async (id: number) => {
   return await EvaluationTemplateContentRepository.getById(id)
 }
