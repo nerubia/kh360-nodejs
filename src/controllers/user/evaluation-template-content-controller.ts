@@ -2,6 +2,45 @@ import { type Request, type Response } from "express"
 import * as EvaluationTemplateContentService from "../../services/evaluation-template-content-service"
 import CustomError from "../../utils/custom-error"
 import logger from "../../utils/logger"
+import { createEvaluationTemplateContentSchema } from "../../utils/validation/evaluation-template-content-schema"
+import { ValidationError } from "yup"
+
+/**
+ * Store a new evaluation template content.
+ * @param req.body.name - Name.
+ * @param req.body.description - Description.
+ * @param req.body.category - Category.
+ * @param req.body.rate - Rate.
+ * @param req.body.is_active - Is active.
+ */
+export const store = async (req: Request, res: Response) => {
+  try {
+    const { name, description, category, rate, is_active } = req.body
+
+    await createEvaluationTemplateContentSchema.validate({
+      name,
+      description,
+      category,
+      rate,
+      is_active,
+    })
+
+    const newEvaluationTemplate = await EvaluationTemplateContentService.create({
+      name,
+      description,
+      category,
+      rate,
+      is_active,
+    })
+
+    res.json(newEvaluationTemplate)
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
 
 /**
  * List evaluation template contents based on provided filters.

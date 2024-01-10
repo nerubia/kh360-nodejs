@@ -1,6 +1,17 @@
 import prisma from "../utils/prisma"
 import { type Prisma } from "@prisma/client"
 
+export const create = async (data: Prisma.evaluation_template_contentsCreateInput) => {
+  const currentDate = new Date()
+  return await prisma.evaluation_template_contents.create({
+    data: {
+      ...data,
+      created_at: currentDate,
+      updated_at: currentDate,
+    },
+  })
+}
+
 export const getById = async (id: number) => {
   return await prisma.evaluation_template_contents.findUnique({
     where: {
