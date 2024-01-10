@@ -1,5 +1,7 @@
 import { type Prisma } from "@prisma/client"
 import prisma from "../utils/prisma"
+import { type Project } from "../types/project-type"
+import { convertToSlug } from "../utils/format-string"
 
 export const getById = async (id: number) => {
   return await prisma.projects.findUnique({
@@ -12,6 +14,14 @@ export const getById = async (id: number) => {
     },
     where: {
       id,
+    },
+  })
+}
+
+export const getByName = async (name: string) => {
+  return await prisma.projects.findFirst({
+    where: {
+      name,
     },
   })
 }
@@ -58,6 +68,33 @@ export const paginateByFilters = async (
     skip,
     take,
     where,
+  })
+}
+
+export const create = async (data: Project) => {
+  const currentDate = new Date()
+  return await prisma.projects.create({
+    data: {
+      ...data,
+      slug: convertToSlug(data.name as string),
+      created_at: currentDate,
+      updated_at: currentDate,
+    },
+  })
+}
+
+export const updateById = async (id: number, data: Project) => {
+  const currentDate = new Date()
+  return await prisma.projects.update({
+    where: {
+      id,
+    },
+    data: {
+      ...data,
+      slug: convertToSlug(data.name as string),
+      created_at: currentDate,
+      updated_at: currentDate,
+    },
   })
 }
 
