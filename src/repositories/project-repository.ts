@@ -6,6 +6,9 @@ export const getById = async (id: number) => {
     select: {
       id: true,
       name: true,
+      start_date: true,
+      end_date: true,
+      status: true,
     },
     where: {
       id,
@@ -37,6 +40,15 @@ export const getAllByFilters = async (where: Prisma.projectsWhereInput) => {
   })
 }
 
+export const getAllStatus = async () => {
+  return await prisma.projects.findMany({
+    select: {
+      status: true,
+    },
+    distinct: ["status"],
+  })
+}
+
 export const paginateByFilters = async (
   skip: number,
   take: number,
@@ -52,5 +64,24 @@ export const paginateByFilters = async (
 export const countByFilters = async (where: Prisma.projectsWhereInput) => {
   return await prisma.projects.count({
     where,
+  })
+}
+
+export const softDeleteById = async (id: number) => {
+  await prisma.projects.updateMany({
+    where: {
+      id,
+    },
+    data: {
+      deleted_at: new Date(),
+    },
+  })
+}
+
+export const deleteById = async (id: number) => {
+  await prisma.projects.deleteMany({
+    where: {
+      id,
+    },
   })
 }
