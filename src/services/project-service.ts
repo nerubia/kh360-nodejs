@@ -5,10 +5,19 @@ import * as ProjectMemberRepository from "../repositories/project-member-reposit
 import * as ProjectRepository from "../repositories/project-repository"
 import * as ProjectSkillRepository from "../repositories/project-skill-repository"
 import CustomError from "../utils/custom-error"
-import { ProjectStatus } from "../types/project-type"
+import { type Project, ProjectStatus } from "../types/project-type"
 
 export const getById = async (id: number) => {
-  return await ProjectRepository.getById(id)
+  const project = await ProjectRepository.getById(id)
+  const project_skills = await ProjectSkillRepository.getAllByProjectId(project?.id ?? 0)
+  const project_members = await ProjectMemberRepository.getAllByFilters({
+    project_id: project?.id ?? 0,
+  })
+  return {
+    ...project,
+    project_skills,
+    project_members,
+  }
 }
 
 export const getAllByFilters = async (name: string) => {
@@ -103,6 +112,45 @@ export const paginateByFilters = async (
     data: finalProjects,
     pageInfo,
   }
+}
+
+export const create = async (data: Project, skill_ids: string[]) => {
+  const project = await ProjectRepository.getByName(data.name as string)
+
+  if (project !== null) {
+    throw new CustomError("Project name should be unique", 400)
+  }
+
+  const newProject = await ProjectRepository.create(data)
+
+  const newProjectSkills = skill_ids.map((skillId) => {
+    return {
+      project_id: newProject.id,
+      skill_id: parseInt(skillId),
+    }
+  })
+
+  await ProjectSkillRepository.createMany(newProjectSkills)
+
+  return newProject
+}
+
+export const updateById = async (id: number, data: Project) => {
+  const project = await ProjectRepository.getById(id)
+
+  if (project === null) {
+    throw new CustomError("Project not found", 400)
+  }
+
+  const existingProject = await ProjectRepository.getByName(data.name as string)
+
+  if (existingProject !== null && id !== existingProject.id) {
+    throw new CustomError("Project name should be unique", 400)
+  }
+
+  const updatedProject = await ProjectRepository.updateById(project.id, data)
+
+  return updatedProject
 }
 
 export const deleteById = async (id: number) => {
