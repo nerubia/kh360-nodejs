@@ -69,9 +69,11 @@ export const getProjectMembers = async (
   const finalProjects = await Promise.all(
     projectMembers.map(async (projectMember) => {
       const project = await ProjectRepository.getById(projectMember.project_id ?? 0)
+      const role = await ProjectRoleRepository.getById(projectMember.project_role_id ?? 0)
       return {
         ...projectMember,
         project,
+        role: role?.short_name,
       }
     })
   )
