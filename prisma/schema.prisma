@@ -951,6 +951,7 @@ model project_infos {
 model project_member_skills {
   id                Int       @id @default(autoincrement())
   project_member_id Int
+  sequence_no       Int?
   skill_id          Int
   description       String?   @db.Text
   status            Boolean?
@@ -983,6 +984,7 @@ model project_members {
 model project_skills {
   id          Int       @id @default(autoincrement())
   project_id  Int
+  sequence_no Int?
   skill_id    Int
   description String?   @db.Text
   status      Boolean?
