@@ -1,4 +1,4 @@
-import { boolean, number, object, string } from "yup"
+import { boolean, number, object, string, array } from "yup"
 
 export const createEvaluationTemplate = object().shape({
   name: string().required("Name is required"),
@@ -12,4 +12,8 @@ export const createEvaluationTemplate = object().shape({
   answer_id: number().required("Answer id is required"),
   description: string(),
   is_active: boolean().required("Is active is required"),
+  evaluation_template_contents: array().min(
+    1,
+    "Evaluation template contents must have at least one item"
+  ),
 })
