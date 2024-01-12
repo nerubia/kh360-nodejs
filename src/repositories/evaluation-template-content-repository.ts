@@ -12,6 +12,13 @@ export const create = async (data: Prisma.evaluation_template_contentsCreateInpu
   })
 }
 
+export const createMany = async (data: Prisma.evaluation_template_contentsCreateInput[]) => {
+  return await prisma.evaluation_template_contents.createMany({
+    data,
+    skipDuplicates: true,
+  })
+}
+
 export const getById = async (id: number) => {
   return await prisma.evaluation_template_contents.findUnique({
     where: {

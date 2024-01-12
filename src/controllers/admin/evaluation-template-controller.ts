@@ -80,6 +80,7 @@ export const index = async (req: Request, res: Response) => {
  * @param req.body.answer_id - Answer id.
  * @param req.body.description - Description.
  * @param req.body.is_active - Is active.
+ * @param req.body.evaluation_template_contents - Evaluation template contents.
  */
 export const store = async (req: Request, res: Response) => {
   try {
@@ -95,6 +96,7 @@ export const store = async (req: Request, res: Response) => {
       answer_id,
       description,
       is_active,
+      evaluation_template_contents,
     } = req.body
 
     await createEvaluationTemplate.validate({
@@ -109,21 +111,25 @@ export const store = async (req: Request, res: Response) => {
       answer_id,
       description,
       is_active,
+      evaluation_template_contents,
     })
 
-    const newEvaluationTemplate = await EvaluationTemplateService.create({
-      name,
-      display_name,
-      template_type,
-      template_class,
-      with_recommendation: Boolean(parseInt(with_recommendation)),
-      evaluator_role_id: parseInt(evaluator_role_id),
-      evaluee_role_id: parseInt(evaluee_role_id),
-      rate,
-      answer_id: parseInt(answer_id),
-      description,
-      is_active: Boolean(parseInt(is_active)),
-    })
+    const newEvaluationTemplate = await EvaluationTemplateService.create(
+      {
+        name,
+        display_name,
+        template_type,
+        template_class,
+        with_recommendation: Boolean(parseInt(with_recommendation)),
+        evaluator_role_id: parseInt(evaluator_role_id),
+        evaluee_role_id: parseInt(evaluee_role_id),
+        rate,
+        answer_id: parseInt(answer_id),
+        description,
+        is_active: Boolean(parseInt(is_active)),
+      },
+      evaluation_template_contents
+    )
 
     res.json(newEvaluationTemplate)
   } catch (error) {

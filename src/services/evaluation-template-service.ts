@@ -176,8 +176,23 @@ export const getTemplateTypes = async () => {
   return await EvaluationTemplateRepository.getAllDistinctByFilters({}, ["template_type"])
 }
 
-export const create = async (data: Prisma.evaluation_templatesCreateInput) => {
-  return await EvaluationTemplateRepository.create(data)
+export const create = async (
+  data: Prisma.evaluation_templatesCreateInput,
+  evaluationTemplateContents: Prisma.evaluation_template_contentsCreateInput[]
+) => {
+  const evaluationTemplate = await EvaluationTemplateRepository.create(data)
+  const currentDate = new Date()
+
+  await EvaluationTemplateContentRepository.createMany(
+    evaluationTemplateContents.map((content) => ({
+      ...content,
+      evaluation_template_id: evaluationTemplate.id,
+      created_at: currentDate,
+      updated_at: currentDate,
+    }))
+  )
+
+  return evaluationTemplate
 }
 
 export const updateById = async (id: number, data: Prisma.evaluation_templatesUpdateInput) => {
