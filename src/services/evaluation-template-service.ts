@@ -145,6 +145,18 @@ export const getAllByFilters = async (
     where
   )
 
+  const finalEvaluationTemplates = await Promise.all(
+    evaluationTemplates.map(async (template) => {
+      const evaluatorRole = await ProjectRoleRepository.getById(template.evaluator_role_id ?? 0)
+      const evalueeRole = await ProjectRoleRepository.getById(template.evaluee_role_id ?? 0)
+      return {
+        ...template,
+        evaluatorRole,
+        evalueeRole,
+      }
+    })
+  )
+
   const pageInfo = {
     hasPreviousPage: currentPage > 1,
     hasNextPage: currentPage < totalPages,
@@ -153,7 +165,7 @@ export const getAllByFilters = async (
   }
 
   return {
-    data: evaluationTemplates,
+    data: finalEvaluationTemplates,
     pageInfo,
   }
 }
