@@ -1,5 +1,5 @@
 import { type Prisma } from "@prisma/client"
-import * as ClienRepository from "../repositories/client-repository"
+import * as ClientRepository from "../repositories/client-repository"
 import * as ContractRepository from "../repositories/contract-repository"
 import * as ProjectMemberRepository from "../repositories/project-member-repository"
 import * as ProjectRepository from "../repositories/project-repository"
@@ -11,6 +11,9 @@ import { type Project, ProjectStatus } from "../types/project-type"
 
 export const getById = async (id: number) => {
   const project = await ProjectRepository.getById(id)
+  if (project === null) {
+    throw new CustomError("Project not found", 400)
+  }
   const project_skills = await ProjectSkillRepository.getAllByProjectId(project?.id ?? 0)
   const project_members = await ProjectMemberRepository.getAllByFilters({
     project_id: project?.id ?? 0,
@@ -44,6 +47,15 @@ export const getById = async (id: number) => {
       }
     })
   )
+
+  const client = await ClientRepository.getById(project?.client_id ?? 0)
+
+  if (client !== null) {
+    Object.assign(project, {
+      client,
+    })
+  }
+
   return {
     ...project,
     project_skills: allProjectSkills,
@@ -88,7 +100,7 @@ export const paginateByFilters = async (
   }
 
   if (client !== undefined) {
-    const clients = await ClienRepository.getAllByName(client)
+    const clients = await ClientRepository.getAllByName(client)
     const clientids = clients.map((c) => c.id)
     Object.assign(where, {
       client_id: {
@@ -124,7 +136,7 @@ export const paginateByFilters = async (
 
   const finalProjects = await Promise.all(
     projects.map(async (project) => {
-      const client = await ClienRepository.getById(project.client_id ?? 0)
+      const client = await ClientRepository.getById(project.client_id ?? 0)
       return {
         ...project,
         client,

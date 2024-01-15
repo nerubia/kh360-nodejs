@@ -11,6 +11,7 @@ export const getById = async (id: number) => {
       start_date: true,
       end_date: true,
       status: true,
+      client_id: true,
     },
     where: {
       id,
