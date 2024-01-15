@@ -11,6 +11,29 @@ export const getById = async (id: number) => {
 
 export const getAllByFilters = async (where: Prisma.project_membersWhereInput) => {
   return await prisma.project_members.findMany({
+    select: {
+      id: true,
+      user_id: true,
+      project_id: true,
+      project_role_id: true,
+      project_member_skills: {
+        select: {
+          id: true,
+          sequence_no: true,
+          skills: {
+            select: {
+              id: true,
+              name: true,
+              sequence_no: true,
+              skill_categories: true,
+            },
+          },
+        },
+      },
+      start_date: true,
+      end_date: true,
+      allocation_rate: true,
+    },
     where,
   })
 }
