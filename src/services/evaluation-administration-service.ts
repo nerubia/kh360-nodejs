@@ -36,7 +36,8 @@ export const getAllByStatus = async (status: string) => {
 }
 
 export const getAllByFilters = async (name: string, status: string, page: string) => {
-  const itemsPerPage = 10
+  const totalEvaluationAdmin = await EvaluationAdministrationRepository.getAll()
+  const itemsPerPage = totalEvaluationAdmin.length
   const parsedPage = parseInt(page)
   const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 

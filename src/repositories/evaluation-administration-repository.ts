@@ -94,3 +94,7 @@ export const getAllByIdsAndStatuses = async (ids: number[], statuses: string[]) 
     },
   })
 }
+
+export const getAll = async () => {
+  return await prisma.evaluation_administrations.findMany()
+}
