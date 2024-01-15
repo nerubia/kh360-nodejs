@@ -10,6 +10,8 @@ export const getAllByProjectId = async (project_id: number) => {
           id: true,
           skill_category_id: true,
           name: true,
+          skill_categories: true,
+          sequence_no: true,
         },
       },
     },
