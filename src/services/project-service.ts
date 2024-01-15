@@ -3,7 +3,9 @@ import * as ClienRepository from "../repositories/client-repository"
 import * as ContractRepository from "../repositories/contract-repository"
 import * as ProjectMemberRepository from "../repositories/project-member-repository"
 import * as ProjectRepository from "../repositories/project-repository"
+import * as ProjectRoleRepository from "../repositories/project-role-repository"
 import * as ProjectSkillRepository from "../repositories/project-skill-repository"
+import * as UserRepository from "../repositories/user-repository"
 import CustomError from "../utils/custom-error"
 import { type Project, ProjectStatus } from "../types/project-type"
 
@@ -13,10 +15,39 @@ export const getById = async (id: number) => {
   const project_members = await ProjectMemberRepository.getAllByFilters({
     project_id: project?.id ?? 0,
   })
+  const allProjectSkills = project_skills.map((skill) => skill.skills)
+
+  const finalProjectMembers = await Promise.all(
+    project_members.map(async (projectMember) => {
+      const user = await UserRepository.getById(projectMember.user_id ?? 0)
+      const project = await ProjectRepository.getById(projectMember.project_id ?? 0)
+      const role = await ProjectRoleRepository.getById(projectMember.project_role_id ?? 0)
+      const skills = projectMember.project_member_skills.map((skill) => {
+        return {
+          ...skill,
+          skills: skill.skills,
+        }
+      })
+
+      return {
+        id: projectMember.id,
+        user_id: projectMember.user_id,
+        project_id: projectMember.project_id,
+        project_role_id: projectMember.project_role_id,
+        project_member_skills: skills,
+        start_date: projectMember.start_date,
+        end_date: projectMember.end_date,
+        allocation_rate: projectMember.allocation_rate,
+        user,
+        project,
+        role: role?.name,
+      }
+    })
+  )
   return {
     ...project,
-    project_skills,
-    project_members,
+    project_skills: allProjectSkills,
+    project_members: finalProjectMembers,
   }
 }
 
