@@ -33,7 +33,7 @@ export const getAllByFilters = async (
     where,
     orderBy: [
       {
-        sequence_no: "asc",
+        name: "asc",
       },
     ],
   })
