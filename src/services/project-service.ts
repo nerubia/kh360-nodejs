@@ -166,8 +166,9 @@ export const create = async (data: Project, skill_ids: string[]) => {
 
   const newProject = await ProjectRepository.create(data)
 
-  const newProjectSkills = skill_ids.map((skillId) => {
+  const newProjectSkills = skill_ids.map((skillId, index) => {
     return {
+      sequence_no: index + 1,
       project_id: newProject.id,
       skill_id: parseInt(skillId),
     }
