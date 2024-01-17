@@ -321,24 +321,24 @@ export const getById = async (user: UserToken, id: number) => {
     .map((evaluation) => evaluation.comments)
     .filter((comment) => comment !== null && comment.length > 0)
 
+  const otherEvaluations = evaluations.filter((evaluation) => {
+    return (
+      (evaluation.status === EvaluationStatus.Submitted && Number(evaluation.weight) === 0) ||
+      (evaluation.status !== EvaluationStatus.Submitted &&
+        evaluation.status !== EvaluationStatus.Expired)
+    )
+  })
+
   const other_comments = await Promise.all(
-    evaluations
-      .filter((evaluation) => {
-        return (
-          (evaluation.status === EvaluationStatus.Submitted && Number(evaluation.weight) === 0) ||
-          (evaluation.status !== EvaluationStatus.Submitted &&
-            evaluation.status !== EvaluationStatus.Expired)
-        )
-      })
-      .map(async (evaluation) => {
-        const evaluator = await UserRepository.getById(evaluation.evaluator_id ?? 0)
-        return { comment: evaluation.comments, evaluator }
-      })
-      .filter(async (evaluation) => {
-        const { comment } = await evaluation
-        return comment !== null && comment.length > 0
-      })
+    otherEvaluations.map(async (evaluation) => {
+      const evaluator = await UserRepository.getById(evaluation.evaluator_id ?? 0)
+      return { comment: evaluation.comments, evaluator }
+    })
   )
+
+  const filteredOtherComments = other_comments.filter((evaluation) => {
+    return evaluation.comment !== null && evaluation.comment.length > 0
+  })
 
   const recommendations = evaluations
     .map((evaluation) => evaluation.recommendations)
@@ -351,7 +351,7 @@ export const getById = async (user: UserToken, id: number) => {
     eval_period_start_date: evaluationAdministration.eval_period_start_date,
     eval_period_end_date: evaluationAdministration.eval_period_end_date,
     comments,
-    other_comments,
+    other_comments: filteredOtherComments,
     recommendations,
     evaluation_result_details: finalEvaluationResultDetails,
     status: evaluationAdministration.status,
