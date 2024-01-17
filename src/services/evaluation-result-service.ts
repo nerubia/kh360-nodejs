@@ -108,9 +108,6 @@ export const getAllByFilters = async (
       evaluation_administration_id: {
         in: [parseInt(evaluation_administration_id)],
       },
-      status: {
-        notIn: [EvaluationResultStatus.NoResult],
-      },
     })
     if (banding !== undefined) {
       Object.assign(where, {
