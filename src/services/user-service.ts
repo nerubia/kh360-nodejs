@@ -378,6 +378,9 @@ export const getEvaluationResult = async (user: UserToken, id: number) => {
   }
 
   const comments = evaluations
+    .filter((evaluation) => {
+      return evaluation.status === EvaluationStatus.Submitted && Number(evaluation.weight) !== 0
+    })
     .map((evaluation) => evaluation.comments)
     .filter((comment) => comment !== null && comment.length > 0)
 
