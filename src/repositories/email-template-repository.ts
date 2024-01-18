@@ -28,6 +28,20 @@ export const getRatingTemplates = async () => {
     },
   })
 }
+
+export const getTemplateTypes = async () => {
+  const types = await prisma.email_templates.findMany({
+    select: {
+      template_type: true,
+    },
+    distinct: ["template_type"],
+  })
+  return types.map((type) => ({
+    label: type.template_type,
+    value: type.template_type,
+  }))
+}
+
 export const getAllByFilters = async (
   skip: number,
   take: number,
