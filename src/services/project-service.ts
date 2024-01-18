@@ -6,6 +6,7 @@ import * as ProjectRepository from "../repositories/project-repository"
 import * as ProjectRoleRepository from "../repositories/project-role-repository"
 import * as ProjectSkillRepository from "../repositories/project-skill-repository"
 import * as UserRepository from "../repositories/user-repository"
+import * as ProjectMemberSkillRepository from "../repositories/project-member-skill-repository"
 import CustomError from "../utils/custom-error"
 import { type Project, ProjectStatus } from "../types/project-type"
 
@@ -18,7 +19,12 @@ export const getById = async (id: number) => {
   const project_members = await ProjectMemberRepository.getAllByFilters({
     project_id: project?.id ?? 0,
   })
-  const allProjectSkills = project_skills.map((skill) => skill.skills)
+  const allProjectSkills = project_skills.map((skill) => {
+    return {
+      ...skill.skills,
+      sequence_no: skill.sequence_no,
+    }
+  })
 
   const finalProjectMembers = await Promise.all(
     project_members.map(async (projectMember) => {
@@ -41,6 +47,7 @@ export const getById = async (id: number) => {
         start_date: projectMember.start_date,
         end_date: projectMember.end_date,
         allocation_rate: projectMember.allocation_rate,
+        description: project?.description,
         user,
         project,
         role: role?.name,
@@ -179,20 +186,71 @@ export const create = async (data: Project, skill_ids: string[]) => {
   return newProject
 }
 
-export const updateById = async (id: number, data: Project) => {
+export const updateById = async (id: number, data: Project, skill_ids: number[]) => {
   const project = await ProjectRepository.getById(id)
 
   if (project === null) {
     throw new CustomError("Project not found", 400)
   }
 
-  const existingProject = await ProjectRepository.getByName(data.name as string)
-
-  if (existingProject !== null && id !== existingProject.id) {
-    throw new CustomError("Project name should be unique", 400)
-  }
-
   const updatedProject = await ProjectRepository.updateById(project.id, data)
+
+  const allProjectSkills = await ProjectSkillRepository.getAllByProjectId(project.id)
+  const selectedSkills = await ProjectSkillRepository.getAllByFilters({
+    project_id: project.id,
+    skill_id: {
+      in: skill_ids,
+    },
+  })
+  const selectedSkillIds = selectedSkills.map((skill) => skill.id)
+  await Promise.all(
+    allProjectSkills.map(async (skill) => {
+      if (!selectedSkillIds.includes(skill.id)) {
+        const projectMembers = await ProjectMemberRepository.getAllByFilters({
+          project_id: project.id,
+        })
+        const projectMemberIds = projectMembers.map((member) => member.id)
+        const projectMemberSkills = await ProjectMemberSkillRepository.getAllByFilters({
+          skill_id: skill.skills.id,
+          project_member_id: {
+            in: projectMemberIds,
+          },
+        })
+        if (projectMemberSkills.length > 0) {
+          const existingProjectMemberSkills = projectMemberSkills
+            .map((member) => member.skills.name)
+            .join(", ")
+          throw new CustomError(
+            `You are not allowed to delete the following skills: ${existingProjectMemberSkills}`,
+            400
+          )
+        }
+        await ProjectSkillRepository.deleteById(skill.id)
+      }
+    })
+  )
+
+  await Promise.all(
+    skill_ids.map(async (skillId, index) => {
+      const existingProjectSkill = await ProjectSkillRepository.getByFilters({
+        skill_id: skillId,
+        project_id: project.id,
+      })
+      if (existingProjectSkill !== null) {
+        const updatedProjectSkills = {
+          sequence_no: index + 1,
+        }
+        await ProjectSkillRepository.updateById(existingProjectSkill.id, updatedProjectSkills)
+      } else {
+        const newProjectSkill = {
+          sequence_no: index + 1,
+          project_id: project.id,
+          skill_id: skillId,
+        }
+        await ProjectSkillRepository.createMany([newProjectSkill])
+      }
+    })
+  )
 
   return updatedProject
 }
