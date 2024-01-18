@@ -159,3 +159,15 @@ export const destroy = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+/**
+ * Get all unique template type.
+ */
+export const listTemplateType = async (req: Request, res: Response) => {
+  try {
+    const emailTemplate = await EmailTemplateService.getTemplateTypes()
+    res.json(emailTemplate)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
