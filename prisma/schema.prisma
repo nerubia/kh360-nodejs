@@ -991,7 +991,7 @@ model project_skills {
   created_at  DateTime? @db.DateTime(0)
   updated_at  DateTime? @db.DateTime(0)
 
-  projects projects @relation(fields: [project_id], references: [id])
+  projects projects @relation(fields: [project_id], references: [id], onDelete: Cascade)
   skills   skills   @relation(fields: [skill_id], references: [id])
 }
 

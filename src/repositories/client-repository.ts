@@ -4,6 +4,7 @@ import { type Prisma } from "@prisma/client"
 export const getById = async (id: number) => {
   return await prisma.clients.findUnique({
     select: {
+      id: true,
       name: true,
     },
     where: {
