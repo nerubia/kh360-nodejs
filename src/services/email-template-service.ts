@@ -20,6 +20,10 @@ export const getRatingTemplates = async () => {
   return await EmailTemplateRepository.getRatingTemplates()
 }
 
+export const getTemplateTypes = async () => {
+  return await EmailTemplateRepository.getTemplateTypes()
+}
+
 export const getById = async (id: number) => {
   return await EmailTemplateRepository.getById(id)
 }
