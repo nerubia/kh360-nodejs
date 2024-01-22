@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { type Request, type Response } from "express"
 import prisma from "../../utils/prisma"
 import { EvaluationResultStatus } from "../../types/evaluation-result-type"
@@ -499,11 +500,13 @@ export const destroy = async (req: Request, res: Response) => {
 export const setStatus = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const { status } = req.body
+    const { status, is_check_all_evaluator } = req.body
+    console.log(is_check_all_evaluator)
 
     const updateEvaluationResult = await EvaluationResultService.updateStatusById(
       parseInt(id),
-      status as string
+      status as string,
+      is_check_all_evaluator
     )
 
     res.json(updateEvaluationResult)

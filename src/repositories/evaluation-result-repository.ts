@@ -145,13 +145,18 @@ export const getAllByEvaluationAdministrationId = async (evaluation_administrati
   })
 }
 
-export const updateStatusById = async (id: number, status: string) => {
+export const updateStatusById = async (
+  id: number,
+  status: string,
+  is_check_all_evaluator: boolean
+) => {
   return await prisma.evaluation_results.update({
     where: {
       id,
     },
     data: {
       status,
+      is_check_all_evaluator,
     },
   })
 }

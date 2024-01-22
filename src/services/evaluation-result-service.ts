@@ -416,7 +416,11 @@ export const getAllByEvaluationAdministrationId = async (evaluation_administrati
   )
 }
 
-export const updateStatusById = async (id: number, status: string) => {
+export const updateStatusById = async (
+  id: number,
+  status: string,
+  is_check_all_evaluator: boolean
+) => {
   const evaluationResult = await EvaluationResultRepository.getById(id)
 
   if (evaluationResult === null) {
@@ -449,7 +453,7 @@ export const updateStatusById = async (id: number, status: string) => {
     }
   }
 
-  return await EvaluationResultRepository.updateStatusById(id, status)
+  return await EvaluationResultRepository.updateStatusById(id, status, is_check_all_evaluator)
 }
 
 export const updateStatusByAdministrationId = async (
@@ -491,6 +495,7 @@ export const calculateZScore = async (evaluation_result_id: number) => {
     })
 
   let zscore = 0
+  const is_check_all_evaluator = false
 
   if (Number(evaluationResultDetailsSum._sum.weighted_zscore) !== 0) {
     zscore =
@@ -501,7 +506,8 @@ export const calculateZScore = async (evaluation_result_id: number) => {
   if (Number(evaluationResultDetailsSum._sum.weight) === 0) {
     await EvaluationResultRepository.updateStatusById(
       evaluation_result_id,
-      EvaluationResultStatus.NoResult
+      EvaluationResultStatus.NoResult,
+      is_check_all_evaluator
     )
   }
 
