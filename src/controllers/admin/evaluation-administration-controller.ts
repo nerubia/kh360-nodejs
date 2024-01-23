@@ -8,7 +8,7 @@ import * as EvaluationResultService from "../../services/evaluation-result-servi
 import prisma from "../../utils/prisma"
 import { EvaluationAdministrationStatus } from "../../types/evaluation-administration-type"
 import { EvaluationStatus } from "../../types/evaluation-type"
-import { CheckEvaluatorStatus, EvaluationResultStatus } from "../../types/evaluation-result-type"
+import { EvaluationResultStatus } from "../../types/evaluation-result-type"
 import { type Decimal } from "@prisma/client/runtime/library"
 import CustomError from "../../utils/custom-error"
 import {
@@ -317,10 +317,11 @@ export const generate = async (req: Request, res: Response) => {
     const notReadyEvaluationResults = evaluationResults.filter(
       (evaluationResult) => evaluationResult.status !== EvaluationResultStatus.Ready
     )
+    const checkEval = false
     const evaluatorSelected = evaluationResults.filter(
-      (evaluationResult) =>
-        evaluationResult.is_check_all_evaluator !== CheckEvaluatorStatus.CheckEvaluator
+      (evaluationResult) => evaluationResult.is_check_all_evaluator === checkEval
     )
+
     if (evaluatorSelected.length === evaluationResults.length) {
       return res.status(400).json({ message: "Select at least 1 evaluator." })
     }

@@ -13,6 +13,3 @@ export enum EvaluationResultStatus {
   Cancelled = "Cancelled",
   NoResult = "No Result",
 }
-export const CheckEvaluatorStatus = {
-  CheckEvaluator: true as const,
-} as const
