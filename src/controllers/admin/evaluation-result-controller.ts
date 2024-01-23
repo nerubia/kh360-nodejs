@@ -501,7 +501,6 @@ export const setStatus = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const { status, is_check_all_evaluator } = req.body
-    console.log(is_check_all_evaluator)
 
     const updateEvaluationResult = await EvaluationResultService.updateStatusById(
       parseInt(id),
