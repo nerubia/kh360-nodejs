@@ -317,6 +317,7 @@ export const generate = async (req: Request, res: Response) => {
     const notReadyEvaluationResults = evaluationResults.filter(
       (evaluationResult) => evaluationResult.status !== EvaluationResultStatus.Ready
     )
+
     const checkEval = false
     const evaluatorSelected = evaluationResults.filter(
       (evaluationResult) => evaluationResult.is_check_all_evaluator === checkEval
