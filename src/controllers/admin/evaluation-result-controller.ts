@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { type Request, type Response } from "express"
 import prisma from "../../utils/prisma"
 import { EvaluationResultStatus } from "../../types/evaluation-result-type"
