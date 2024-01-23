@@ -127,11 +127,12 @@ export const show = async (req: Request, res: Response) => {
  * @param req.body.end_date - End date.
  * @param req.body.description - Description.
  * @param req.body.status - Status.
+ * @param req.body.skill_ids  - Skill IDs.
  */
 export const update = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const { name, client_id, start_date, end_date, description, status } = req.body
+    const { name, client_id, start_date, end_date, description, status, skill_ids } = req.body
 
     await createProjectSchema.validate({
       name,
@@ -142,14 +143,18 @@ export const update = async (req: Request, res: Response) => {
       status,
     })
 
-    const updatedProject = await ProjectService.updateById(parseInt(id), {
-      name: name as string,
-      client_id: parseInt(client_id as string),
-      start_date: new Date(start_date),
-      end_date: new Date(start_date),
-      description,
-      status,
-    })
+    const updatedProject = await ProjectService.updateById(
+      parseInt(id),
+      {
+        name: name as string,
+        client_id: parseInt(client_id as string),
+        start_date: new Date(start_date),
+        end_date: new Date(start_date),
+        description,
+        status,
+      },
+      skill_ids as number[]
+    )
 
     res.json(updatedProject)
   } catch (error) {

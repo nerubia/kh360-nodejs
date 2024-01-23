@@ -8,6 +8,7 @@ export const getById = async (id: number) => {
     select: {
       id: true,
       name: true,
+      description: true,
       start_date: true,
       end_date: true,
       status: true,
