@@ -317,12 +317,15 @@ export const generate = async (req: Request, res: Response) => {
     const notReadyEvaluationResults = evaluationResults.filter(
       (evaluationResult) => evaluationResult.status !== EvaluationResultStatus.Ready
     )
+
     const evaluatorSelected = evaluationResults.filter(
-      (evaluationResult) => !evaluationResult.is_check_all_evaluator
+      (evaluationResult) => !(evaluationResult.is_check_all_evaluator )
     )
+
     if (evaluatorSelected.length === evaluationResults.length) {
       return res.status(400).json({ message: "Select at least 1 evaluator." })
     }
+
     if (notReadyEvaluationResults.length > 0) {
       return res.status(400).json({ message: "All evaluees must be ready." })
     }
