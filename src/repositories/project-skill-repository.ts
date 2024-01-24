@@ -13,6 +13,33 @@ export const getAllByFilters = async (where: Prisma.project_skillsWhereInput) =>
   })
 }
 
+export const getAllByFiltersWithPaging = async (
+  skip: number,
+  take: number,
+  where: Prisma.project_skillsWhereInput
+) => {
+  return await prisma.project_skills.findMany({
+    select: {
+      id: true,
+      skills: {
+        select: {
+          id: true,
+          name: true,
+          sequence_no: true,
+          description: true,
+          skill_category_id: true,
+          skill_categories: true,
+        },
+      },
+      sequence_no: true,
+      project_id: true,
+    },
+    skip,
+    take,
+    where,
+  })
+}
+
 export const getAllByProjectId = async (project_id: number) => {
   return await prisma.project_skills.findMany({
     select: {
@@ -42,6 +69,12 @@ export const getAllBySkillName = async (name: string) => {
         },
       },
     },
+  })
+}
+
+export const countByFilters = async (where: Prisma.project_skillsWhereInput) => {
+  return await prisma.project_skills.count({
+    where,
   })
 }
 

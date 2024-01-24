@@ -1,6 +1,14 @@
 import { type Prisma } from "@prisma/client"
 import prisma from "../utils/prisma"
 
+export const getById = async (id: number) => {
+  return await prisma.skills.findFirst({
+    where: {
+      id,
+    },
+  })
+}
+
 export const getByFilters = async (where: Prisma.skillsWhereInput) => {
   return await prisma.skills.findFirst({
     where,
@@ -23,6 +31,11 @@ export const getAllByFilters = async (
     skip,
     take,
     where,
+    orderBy: [
+      {
+        sequence_no: "asc",
+      },
+    ],
   })
 }
 
