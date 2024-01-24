@@ -3,6 +3,29 @@ import prisma from "../utils/prisma"
 
 export const getById = async (id: number) => {
   return await prisma.project_members.findUnique({
+    select: {
+      id: true,
+      user_id: true,
+      project_id: true,
+      project_role_id: true,
+      allocation_rate: true,
+      start_date: true,
+      end_date: true,
+      project_member_skills: {
+        select: {
+          id: true,
+          sequence_no: true,
+          skills: {
+            select: {
+              id: true,
+              skill_category_id: true,
+              name: true,
+              skill_categories: true,
+            },
+          },
+        },
+      },
+    },
     where: {
       id,
     },
