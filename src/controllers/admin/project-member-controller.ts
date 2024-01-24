@@ -63,10 +63,19 @@ export const index = async (req: Request, res: Response) => {
  * @param req.body.start_date - Start date.
  * @param req.body.end_date - End date.
  * @param req.body.allocation_rate - Allocation rate.
+ * @param req.body.skill_ids - Skill IDs.
  */
 export const store = async (req: Request, res: Response) => {
   try {
-    const { project_id, user_id, project_role_id, start_date, end_date, allocation_rate } = req.body
+    const {
+      project_id,
+      user_id,
+      project_role_id,
+      start_date,
+      end_date,
+      allocation_rate,
+      skill_ids,
+    } = req.body
 
     await createProjectMemberSchema.validate({
       project_id,
@@ -77,14 +86,17 @@ export const store = async (req: Request, res: Response) => {
       allocation_rate,
     })
 
-    const newProjectMember = await ProjectMemberService.create({
-      project_id: parseInt(project_id),
-      user_id: parseInt(user_id),
-      project_role_id: parseInt(project_role_id),
-      start_date: new Date(start_date),
-      end_date: new Date(end_date),
-      allocation_rate: parseFloat(allocation_rate),
-    })
+    const newProjectMember = await ProjectMemberService.create(
+      {
+        project_id: parseInt(project_id),
+        user_id: parseInt(user_id),
+        project_role_id: parseInt(project_role_id),
+        start_date: new Date(start_date),
+        end_date: new Date(end_date),
+        allocation_rate: parseFloat(allocation_rate),
+      },
+      skill_ids as number[]
+    )
 
     res.json(newProjectMember)
   } catch (error) {
@@ -125,11 +137,20 @@ export const show = async (req: Request, res: Response) => {
  * @param req.body.end_date - End date.
  * @param req.body.allocation_rate - Allocation rate.
  * @param req.body.remarks - Remarks.
+ * @param req.body.skill_ids  - Skill IDs.
  */
 export const update = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const { project_id, user_id, project_role_id, start_date, end_date, allocation_rate } = req.body
+    const {
+      project_id,
+      user_id,
+      project_role_id,
+      start_date,
+      end_date,
+      allocation_rate,
+      skill_ids,
+    } = req.body
 
     await createProjectMemberSchema.validate({
       project_id,
@@ -140,14 +161,18 @@ export const update = async (req: Request, res: Response) => {
       allocation_rate,
     })
 
-    const updatedProjectMember = await ProjectMemberService.update(parseInt(id), {
-      project_id: parseInt(project_id),
-      user_id: parseInt(user_id),
-      project_role_id: parseInt(project_role_id),
-      start_date: new Date(start_date),
-      end_date: new Date(end_date),
-      allocation_rate: parseFloat(allocation_rate),
-    })
+    const updatedProjectMember = await ProjectMemberService.update(
+      parseInt(id),
+      {
+        project_id: parseInt(project_id),
+        user_id: parseInt(user_id),
+        project_role_id: parseInt(project_role_id),
+        start_date: new Date(start_date),
+        end_date: new Date(end_date),
+        allocation_rate: parseFloat(allocation_rate),
+      },
+      skill_ids as number[]
+    )
 
     res.json(updatedProjectMember)
   } catch (error) {

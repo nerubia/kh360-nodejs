@@ -24,6 +24,7 @@ import evaluationRoute from "./routes/admin/evaluation-route"
 import externalUserRoute from "./routes/admin/external-user-route"
 import projectMemberRoute from "./routes/admin/project-member-route"
 import projectRoleRoute from "./routes/admin/project-role-route"
+import projectSkillRoute from "./routes/admin/project-skill-route"
 import projectRoute from "./routes/admin/project-route"
 import skillRoute from "./routes/admin/skill-route"
 import skillCategoryRoute from "./routes/admin/skill-category-route"
@@ -70,6 +71,7 @@ app.use("/admin/evaluations", adminMiddleware, evaluationRoute)
 app.use("/admin/external-users", adminMiddleware, externalUserRoute)
 app.use("/admin/project-members", adminMiddleware, projectMemberRoute)
 app.use("/admin/project-roles", adminMiddleware, projectRoleRoute)
+app.use("/admin/project-skills", adminMiddleware, projectSkillRoute)
 app.use("/admin/projects", adminMiddleware, projectRoute)
 app.use("/admin/skills", adminMiddleware, skillRoute)
 app.use("/admin/skill-categories", adminMiddleware, skillCategoryRoute)
