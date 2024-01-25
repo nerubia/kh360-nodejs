@@ -303,6 +303,12 @@ export const generate = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid id" })
     }
 
+    const evaluations = await prisma.evaluations.findMany({
+      where: {
+        evaluation_administration_id: parseInt(id),
+        for_evaluation: true,
+      },
+    })
     const evaluationResults = await prisma.evaluation_results.findMany({
       select: {
         id: true,
@@ -316,6 +322,10 @@ export const generate = async (req: Request, res: Response) => {
     const notReadyEvaluationResults = evaluationResults.filter(
       (evaluationResult) => evaluationResult.status !== EvaluationResultStatus.Ready
     )
+
+    if (evaluations.length === 0) {
+      return res.status(400).json({ message: "Add atleast 1 evaluator." })
+    }
 
     if (notReadyEvaluationResults.length > 0) {
       return res.status(400).json({ message: "All evaluees must be ready." })
