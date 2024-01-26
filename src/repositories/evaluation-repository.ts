@@ -175,3 +175,17 @@ export const deleteByEvaluationAdministrationIds = async (
     },
   })
 }
+
+export const updateEvaluations = async (ids: number[], data: Prisma.evaluationsUpdateInput) => {
+  await prisma.evaluations.updateMany({
+    where: {
+      id: {
+        in: ids,
+      },
+    },
+    data: {
+      ...data,
+      updated_at: new Date(),
+    },
+  })
+}
