@@ -1,5 +1,4 @@
 import { type Request, type Response } from "express"
-import prisma from "../../utils/prisma"
 import { EvaluationStatus } from "../../types/evaluation-type"
 import * as EvaluationService from "../../services/evaluation-service"
 import CustomError from "../../utils/custom-error"
@@ -86,23 +85,10 @@ export const setForEvaluations = async (req: Request, res: Response) => {
   try {
     const { evaluation_ids, for_evaluation } = req.body
 
-    const evaluationIds = evaluation_ids as number[]
-
-    await prisma.evaluations.updateMany({
-      where: {
-        id: {
-          in: evaluationIds,
-        },
-      },
-      data: {
-        status: for_evaluation === true ? EvaluationStatus.Draft : EvaluationStatus.Excluded,
-        for_evaluation,
-        updated_at: new Date(),
-      },
-    })
+    await EvaluationService.setForEvaluations(evaluation_ids as number[], for_evaluation)
 
     res.json({
-      evaluation_ids: evaluationIds,
+      evaluation_ids,
       for_evaluation,
     })
   } catch (error) {
