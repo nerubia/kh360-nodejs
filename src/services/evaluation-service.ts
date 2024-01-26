@@ -254,6 +254,13 @@ export const updateStatusByAdministrationId = async (
   await EvaluationRepository.updateStatusByAdministrationId(evaluation_administration_id, status)
 }
 
+export const setForEvaluations = async (ids: number[], for_evaluation: boolean) => {
+  await EvaluationRepository.updateEvaluations(ids, {
+    status: for_evaluation ? EvaluationStatus.Draft : EvaluationStatus.Excluded,
+    for_evaluation,
+  })
+}
+
 export const deleteById = async (id: number) => {
   const evaluation = await EvaluationRepository.getById(id)
 
