@@ -46,7 +46,7 @@ export const getAllByFilters = async (
       contains: name,
     },
     template_type: {
-      contains: templateType,
+      equals: templateType,
     },
     is_default: isDefaultSet,
   }
