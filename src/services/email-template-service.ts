@@ -34,7 +34,7 @@ export const getAllByFilters = async (
   is_default: string,
   page: string
 ) => {
-  const templateType = template_type === "all" ? "" : template_type
+  const templateType = template_type === "all" ? undefined : template_type
 
   const itemsPerPage = 20
   const parsedPage = parseInt(page)
