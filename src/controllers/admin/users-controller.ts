@@ -82,6 +82,7 @@ export const index = async (req: Request, res: Response) => {
     res.json({
       data: employees,
       pageInfo: {
+        currentPage,
         hasPreviousPage: currentPage > 1,
         hasNextPage: currentPage < totalPages,
         totalPages,
