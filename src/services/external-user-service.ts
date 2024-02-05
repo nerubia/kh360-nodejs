@@ -161,6 +161,7 @@ export const getAllByFilters = async (
   )
 
   const pageInfo = {
+    currentPage,
     hasPreviousPage: currentPage > 1,
     hasNextPage: currentPage < totalPages,
     totalPages,

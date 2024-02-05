@@ -90,7 +90,7 @@ export const paginateByFilters = async (
   status?: string,
   page?: string
 ) => {
-  const itemsPerPage = 20
+  const itemsPerPage = 10
   const parsedPage = parseInt(page as string)
   const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
@@ -152,6 +152,7 @@ export const paginateByFilters = async (
   )
 
   const pageInfo = {
+    currentPage,
     hasPreviousPage: currentPage > 1,
     hasNextPage: currentPage < totalPages,
     totalPages,
