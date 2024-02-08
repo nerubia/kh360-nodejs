@@ -1,11 +1,15 @@
 import prisma from "../utils/prisma"
 import { type Prisma } from "@prisma/client"
 
-export const create = async (data: Prisma.evaluation_template_contentsCreateInput) => {
+export const create = async (
+  evaluation_template_id: number,
+  data: Prisma.evaluation_template_contentsCreateInput
+) => {
   const currentDate = new Date()
   return await prisma.evaluation_template_contents.create({
     data: {
       ...data,
+      evaluation_template_id,
       created_at: currentDate,
       updated_at: currentDate,
     },

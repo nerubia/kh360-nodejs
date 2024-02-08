@@ -8,8 +8,16 @@ import { type UserToken } from "../types/user-token-type"
 import { EvaluationStatus } from "../types/evaluation-type"
 import CustomError from "../utils/custom-error"
 
-export const create = async (data: Prisma.evaluation_template_contentsCreateInput) => {
-  return await EvaluationTemplateContentRepository.create(data)
+export const create = async (
+  evaluation_template_id: number,
+  data: Prisma.evaluation_template_contentsCreateInput
+) => {
+  const evaluationTemplate = await EvaluationTemplateRepository.getById(evaluation_template_id)
+  if (evaluationTemplate === null) {
+    throw new CustomError("Evaluation template not found", 400)
+  }
+
+  return await EvaluationTemplateContentRepository.create(evaluationTemplate.id, data)
 }
 
 export const getById = async (id: number) => {
