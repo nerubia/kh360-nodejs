@@ -12,6 +12,7 @@ import CustomError from "../utils/custom-error"
 import { sendMail } from "../utils/sendgrid"
 import { EvaluationStatus } from "../types/evaluation-type"
 import { addHours } from "date-fns"
+import { constructNameFilter } from "../utils/format-filter"
 
 export const login = async (token: string, code: string) => {
   const externalUser = await ExternalUserRepository.getByAccessToken(token)
@@ -130,25 +131,8 @@ export const getAllByFilters = async (
   }
 
   if (name !== undefined) {
-    Object.assign(where, {
-      OR: [
-        {
-          first_name: {
-            contains: name,
-          },
-        },
-        {
-          middle_name: {
-            contains: name,
-          },
-        },
-        {
-          last_name: {
-            contains: name,
-          },
-        },
-      ],
-    })
+    const whereClause = constructNameFilter(name)
+    Object.assign(where, whereClause)
   }
 
   const totalItems = await ExternalUserRepository.countByFilters(where)
