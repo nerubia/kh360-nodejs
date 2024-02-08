@@ -7,6 +7,7 @@ import { ValidationError } from "yup"
 
 /**
  * Store a new evaluation template content.
+ * @param req.body.evaluation_template_id - Unique id of evaluation template
  * @param req.body.name - Name.
  * @param req.body.description - Description.
  * @param req.body.category - Category.
@@ -15,7 +16,7 @@ import { ValidationError } from "yup"
  */
 export const store = async (req: Request, res: Response) => {
   try {
-    const { name, description, category, rate, is_active } = req.body
+    const { evaluation_template_id, name, description, category, rate, is_active } = req.body
 
     await createEvaluationTemplateContentSchema.validate({
       name,
@@ -25,16 +26,22 @@ export const store = async (req: Request, res: Response) => {
       is_active,
     })
 
-    const newEvaluationTemplate = await EvaluationTemplateContentService.create({
-      name,
-      description,
-      category,
-      rate,
-      is_active,
-    })
+    const newEvaluationTemplate = await EvaluationTemplateContentService.create(
+      parseInt(evaluation_template_id as string),
+      {
+        name,
+        description,
+        category,
+        rate,
+        is_active,
+      }
+    )
 
     res.json(newEvaluationTemplate)
   } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
     }
@@ -81,6 +88,14 @@ export const update = async (req: Request, res: Response) => {
     const { id } = req.params
 
     const { name, description, category, rate, is_active } = req.body
+
+    await createEvaluationTemplateContentSchema.validate({
+      name,
+      description,
+      category,
+      rate,
+      is_active,
+    })
 
     const newEvaluationTemplate = await EvaluationTemplateContentService.updateById(parseInt(id), {
       name,
