@@ -5,5 +5,5 @@ export const createEvaluationTemplateContentSchema = object().shape({
   description: string().required("Description name is required"),
   category: string().required("Category is required"),
   rate: number().required("Rate is required"),
-  is_active: boolean().required("Is active is required"),
+  is_active: boolean(),
 })
