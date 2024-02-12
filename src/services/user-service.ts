@@ -25,9 +25,55 @@ import { AnswerType } from "../types/answer-type"
 import { sendMail } from "../utils/sendgrid"
 import { formatDateRange } from "../utils/format-date"
 import { format, utcToZonedTime } from "date-fns-tz"
+import { constructNameFilter } from "../utils/format-filter"
 
 export const getById = async (id: number) => {
   return await UserRepository.getById(id)
+}
+
+export const getAll = async () => {
+  const employees = await UserRepository.getAllByFilters({})
+  return {
+    data: employees,
+  }
+}
+
+export const getAllByFilters = async (name: string, user_type: string, page: string) => {
+  const userType = user_type === "all" ? "" : user_type
+
+  const itemsPerPage = 20
+  const parsedPage = parseInt(page )
+  const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
+
+  const where = {
+    is_active: true,
+    user_details: {
+      user_type: {
+        contains: userType ,
+      },
+    },
+  }
+
+  if (name !== undefined) {
+    const whereClause = constructNameFilter(name)
+    Object.assign(where, whereClause)
+  }
+
+  const employees = await UserRepository.getAllByFiltersWithPaging(where, currentPage, itemsPerPage)
+
+  const totalItems = await UserRepository.countByFilters(where)
+
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+
+  return {
+    data: employees,
+    pageInfo: {
+      currentPage,
+      hasPreviousPage: currentPage > 1,
+      hasNextPage: currentPage < totalPages,
+      totalPages,
+    },
+  }
 }
 
 export const submitEvaluation = async (
