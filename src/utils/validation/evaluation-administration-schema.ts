@@ -1,7 +1,7 @@
 import { array, object, string } from "yup"
 
 export const createEvaluationAdministrationSchema = object().shape({
-  name: string().required("Name is required"),
+  name: string().required("Name is required").max(100, "Name must be at most 100 characters"),
   eval_period_start_date: string()
     .required("Start period is required")
     .test("start-date", "Start period must be before end period", function (start_date) {
