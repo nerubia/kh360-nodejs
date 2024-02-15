@@ -81,8 +81,8 @@ export const store = async (req: Request, res: Response) => {
       {
         name: name as string,
         client_id: parseInt(client_id as string),
-        start_date: new Date(start_date),
-        end_date: new Date(end_date),
+        start_date: start_date !== undefined ? new Date(start_date) : null,
+        end_date: end_date !== undefined ? new Date(end_date) : null,
         description,
         status,
       },
@@ -148,8 +148,8 @@ export const update = async (req: Request, res: Response) => {
       {
         name: name as string,
         client_id: parseInt(client_id as string),
-        start_date: new Date(start_date),
-        end_date: new Date(end_date),
+        start_date: start_date !== undefined ? new Date(start_date) : null,
+        end_date: end_date !== undefined ? new Date(end_date) : null,
         description,
         status,
       },
