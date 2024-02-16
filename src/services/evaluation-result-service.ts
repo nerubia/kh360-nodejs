@@ -443,8 +443,7 @@ export const updateStatusById = async (id: number, status: string) => {
       if (
         evaluation.project_id === null &&
         evaluation.project_member_id === null &&
-        template?.evaluee_role_id !== null &&
-        template?.evaluee_role_id !== null
+        template.template_type === "Project Evaluation"
       ) {
         throw new CustomError("Please select a project for an external user.", 400, {
           template_id: template.id,
