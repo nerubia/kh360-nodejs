@@ -2,7 +2,7 @@ import { type Prisma } from "@prisma/client"
 import prisma from "../utils/prisma"
 import { type EvaluationResult } from "../types/evaluation-result-type"
 
-export const getAllByFilters = async (
+export const getAllByFiltersWithPaging = async (
   skip: number,
   take: number,
   where: Prisma.evaluation_resultsWhereInput,
@@ -54,6 +54,12 @@ export const getByFilters = async (
   return await prisma.evaluation_results.findFirst({
     where,
     orderBy,
+  })
+}
+
+export const getAllByFilters = async (where: Prisma.evaluation_resultsWhereInput) => {
+  return await prisma.evaluation_results.findMany({
+    where,
   })
 }
 

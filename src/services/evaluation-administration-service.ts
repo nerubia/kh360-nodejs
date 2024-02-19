@@ -9,6 +9,7 @@ import * as EvaluationResultRepository from "../repositories/evaluation-result-r
 import * as EvaluationResultDetailsRepository from "../repositories/evaluation-result-detail-repository"
 import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as EvaluationTemplateRepository from "../repositories/evaluation-template-repository"
+import * as EvaluationTemplateContentsRepository from "../repositories/evaluation-template-content-repository"
 import * as ExternalUserRepository from "../repositories/external-user-repository"
 import * as ProjectMemberRepository from "../repositories/project-member-repository"
 import * as ProjectRepository from "../repositories/project-repository"
@@ -25,6 +26,7 @@ import { sendMail } from "../utils/sendgrid"
 import CustomError from "../utils/custom-error"
 import { EvaluationResultStatus } from "../types/evaluation-result-type"
 import { EvaluationStatus } from "../types/evaluation-type"
+import { type Decimal } from "@prisma/client/runtime/library"
 import { EmailLogType, type EmailLog } from "../types/email-log-type"
 
 export const getAllByStatusAndDate = async (status: string, date: Date) => {
@@ -204,6 +206,192 @@ export const sendEvaluationEmailById = async (id: number) => {
           modifiedContent
         )
       }
+    }
+  }
+}
+
+export const generateUpdate = async (id: number) => {
+  const evaluationAdministration = await EvaluationAdministrationRepository.getById(id)
+
+  if (evaluationAdministration !== null) {
+    if (evaluationAdministration === null) {
+      throw new CustomError("Invalid id.", 400)
+    }
+
+    const evaluations = await EvaluationRepository.getAllByFilters({
+      evaluation_administration_id: id,
+      for_evaluation: true,
+    })
+
+    const evaluationResults = await EvaluationResultRepository.getAllByFilters({
+      evaluation_administration_id: evaluationAdministration.id,
+    })
+
+    if (evaluations?.length === 0) {
+      throw new CustomError("Add atleast 1 evaluator.", 400)
+    }
+
+    const currentDate = new Date()
+
+    const evaluationRatings: Array<{
+      evaluation_administration_id: number
+      evaluation_id: number
+      evaluation_template_id: number | null
+      evaluation_template_content_id: number
+      percentage: Decimal | null
+      created_at: Date
+      updated_at: Date
+    }> = []
+
+    if (evaluationResults !== null) {
+      for (const evaluationResult of evaluationResults) {
+        const evaluations = await EvaluationRepository.getAllByFilters({
+          evaluation_result_id: evaluationResult.id,
+          for_evaluation: true,
+          status: EvaluationStatus.Draft,
+        })
+
+        for (const evaluation of evaluations) {
+          const existingEvaluationRatings = await EvaluationRatingRepository.getAllByFilters({
+            evaluation_id: evaluation.id,
+          })
+
+          if (existingEvaluationRatings.length === 0) {
+            const evaluationTemplateContents =
+              await EvaluationTemplateContentsRepository.getAllByFilters({
+                evaluation_template_id: evaluation.evaluation_template_id,
+                is_active: true,
+              })
+
+            for (const evaluationTemplateContent of evaluationTemplateContents) {
+              evaluationRatings.push({
+                evaluation_administration_id: evaluationAdministration.id,
+                evaluation_id: evaluation.id,
+                evaluation_template_id: evaluation.evaluation_template_id,
+                evaluation_template_content_id: evaluationTemplateContent.id,
+                percentage: evaluationTemplateContent.rate,
+                created_at: currentDate,
+                updated_at: currentDate,
+              })
+            }
+          }
+        }
+      }
+    }
+
+    await EvaluationRatingRepository.createMany(evaluationRatings)
+
+    const emailTemplate = await EmailTemplateRepository.getByTemplateType("Create New Evaluation")
+
+    const emailContent = emailTemplate?.content ?? ""
+
+    const scheduleEndDate = format(
+      evaluationAdministration.eval_schedule_end_date ?? new Date(),
+      "EEEE, MMMM d, yyyy"
+    )
+
+    const replacements: Record<string, string> = {
+      evaluation_name: evaluationAdministration.name ?? "",
+      eval_schedule_end_date: scheduleEndDate,
+    }
+
+    if (
+      evaluationAdministration.eval_period_start_date !== null &&
+      evaluationAdministration.eval_period_end_date !== null
+    ) {
+      const periodStartDate = format(
+        evaluationAdministration.eval_period_start_date,
+        "MMMM d, yyyy"
+      )
+      const periodEndDate = format(evaluationAdministration.eval_period_end_date, "MMMM d, yyyy")
+      Object.assign(replacements, {
+        evaluation_period: `${periodStartDate} to ${periodEndDate}`,
+      })
+    }
+
+    const internalEvaluations = await EvaluationRepository.getAllDistinctByFilters(
+      {
+        evaluation_administration_id: evaluationAdministration.id,
+        status: EvaluationStatus.Draft,
+        for_evaluation: true,
+      },
+      ["evaluator_id"]
+    )
+
+    for (const evaluation of internalEvaluations) {
+      let modifiedContent: string = emailContent.replace(
+        /{{(.*?)}}/g,
+        (match: string, p1: string) => {
+          return replacements[p1] ?? match
+        }
+      )
+      modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
+      const evaluator = await UserRepository.getById(evaluation.evaluator_id ?? 0)
+      modifiedContent = modifiedContent.replace(
+        "{{link}}",
+        `<a href='${process.env.APP_URL}/evaluation-administrations/${evaluationAdministration.id}/evaluations/all'>link</a>`
+      )
+      modifiedContent = modifiedContent.replace("{{passcode}}", "")
+      if (evaluator !== null) {
+        await sendMail(evaluator.email, emailTemplate?.subject ?? "", modifiedContent)
+      }
+      await EvaluationRepository.updateById(evaluation.id, {
+        status:
+          evaluationAdministration.eval_schedule_start_date != null &&
+          evaluationAdministration.eval_schedule_start_date > currentDate
+            ? EvaluationStatus.Pending
+            : EvaluationStatus.Open,
+        updated_at: currentDate,
+      })
+    }
+
+    const externalEvaluations = await EvaluationRepository.getAllDistinctByFilters(
+      {
+        evaluation_administration_id: evaluationAdministration.id,
+        status: EvaluationStatus.Draft,
+        for_evaluation: true,
+      },
+      ["external_evaluator_id"]
+    )
+
+    for (const evaluation of externalEvaluations) {
+      let modifiedContent: string = emailContent.replace(
+        /{{(.*?)}}/g,
+        (match: string, p1: string) => {
+          return replacements[p1] ?? match
+        }
+      )
+      modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
+      const evaluator = await ExternalUserRepository.getById(evaluation.external_evaluator_id ?? 0)
+      modifiedContent = modifiedContent.replace(
+        "{{link}}",
+        `<a href='${process.env.APP_URL}/external-evaluations/${evaluationAdministration.id}/evaluations/all?token=${evaluator?.access_token}'>link</a>`
+      )
+
+      if (evaluator !== null) {
+        const code = await ExternalUserService.generateCode()
+        const encryptedCode = await bcrypt.hash(code, 12)
+
+        await ExternalUserRepository.updateCodeById(evaluator.id, encryptedCode)
+
+        modifiedContent = modifiedContent.replace(
+          "{{passcode}}",
+          `The password to access the evaluation form is <b>${code}</b>`
+        )
+        await sendMail(
+          evaluator.email,
+          evaluationAdministration.email_subject ?? "",
+          modifiedContent
+        )
+      }
+      await EvaluationRepository.updateById(evaluation.id, {
+        status:
+          evaluationAdministration.eval_schedule_start_date != null &&
+          evaluationAdministration.eval_schedule_start_date > currentDate
+            ? EvaluationStatus.Pending
+            : EvaluationStatus.Open,
+        updated_at: currentDate,
+      })
     }
   }
 }
