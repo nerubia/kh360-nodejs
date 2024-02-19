@@ -432,7 +432,7 @@ export const approve = async (id: number) => {
   })
   modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
 
-  await sendMail(evaluator.email, modifiedSubject, modifiedContent)
+  // await sendMail(evaluator.email, modifiedSubject, modifiedContent)
 
   await EvaluationRepository.updateStatusById(evaluation.id, EvaluationStatus.Removed)
   await EvaluationRatingRepository.resetByEvaluationId(evaluation.id)
@@ -605,7 +605,7 @@ export const decline = async (id: number) => {
   })
   modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
 
-  await sendMail(evaluator.email, modifiedSubject, modifiedContent)
+  // await sendMail(evaluator.email, modifiedSubject, modifiedContent)
 
   await EvaluationRepository.updateStatusById(evaluation.id, EvaluationStatus.Ongoing)
 }
