@@ -88,3 +88,9 @@ export const deleteByEvaluationAdministrationIds = async (
     },
   })
 }
+
+export const createMany = async (data: EvaluationRating[]) => {
+  await prisma.evaluation_ratings.createMany({
+    data,
+  })
+}

@@ -50,12 +50,6 @@ export const getByEvaluationTemplateId = async (evaluation_template_id: number) 
 
 export const getAllByFilters = async (where: Prisma.evaluation_template_contentsWhereInput) => {
   return await prisma.evaluation_template_contents.findMany({
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      deleted_at: true,
-    },
     where,
   })
 }
