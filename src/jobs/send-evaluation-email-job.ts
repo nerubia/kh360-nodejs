@@ -11,6 +11,6 @@ export const sendEvaluationEmailJob = async () => {
       EvaluationAdministrationStatus.Ongoing
     )
 
-    await EvaluationAdministrationService.sendEvaluationEmailById(evaluationAdministration.id)
+    // await EvaluationAdministrationService.sendEvaluationEmailById(evaluationAdministration.id)
   }
 }
