@@ -188,7 +188,7 @@ export const getAllByFilters = async (
     })
   }
 
-  const evaluationResults = await EvaluationResultRepository.getAllByFilters(
+  const evaluationResults = await EvaluationResultRepository.getAllByFiltersWithPaging(
     (currentPage - 1) * itemsPerPage,
     itemsPerPage,
     where,

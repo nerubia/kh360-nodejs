@@ -424,6 +424,28 @@ export const generate = async (req: Request, res: Response) => {
 }
 
 /**
+ * Generates updated evaluation records and related data by ID.
+ * @param req.params.id - The unique ID of the evaluation administration.
+ */
+export const generateUpdate = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+
+    await EvaluationAdministrationService.generateUpdate(parseInt(id))
+
+    res.json({ id })
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
  * Cancel a specific evaluation administration by ID.
  * @param req.params.id - The unique ID of the evaluation administration.
  */
