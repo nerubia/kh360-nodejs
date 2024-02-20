@@ -1,7 +1,7 @@
 import * as SkillRepository from "../repositories/skill-repository"
 
 export const getAllByFilters = async (name: string, skill_category_id: string, page: string) => {
-  const itemsPerPage = 10
+  const itemsPerPage = 40
   const parsedPage = parseInt(page)
   const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
