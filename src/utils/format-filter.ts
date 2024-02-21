@@ -1,5 +1,5 @@
 export const constructNameFilter = (name: string) => {
-  const cleanedName = name.replace(/[^a-zA-Z0-9 ]/g, "")
+  const cleanedName = name.replace(/[^a-zA-Z0-9 ñ-]/g, "")
 
   const splitQuery = cleanedName.split(" ")
 
