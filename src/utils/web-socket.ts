@@ -2,6 +2,8 @@ import WebSocket from "ws"
 import logger from "./logger"
 import { type Application } from "express"
 import http from "http"
+import { setWssForPendingEvalAdmin } from "../jobs/update-evaluation-administrations-job"
+import { setWssForProcessingEvalAdmin } from "../jobs/send-evaluation-email-job"
 
 const webSocketServer = (app: Application) => {
   const server = http.createServer(app)
@@ -21,6 +23,9 @@ const webSocketServer = (app: Application) => {
         }
       })
     })
+
+    setWssForPendingEvalAdmin(wss)
+    setWssForProcessingEvalAdmin(wss)
 
     // Handle WebSocket closing
     ws.on("close", () => {
