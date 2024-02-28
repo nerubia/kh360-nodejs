@@ -3,6 +3,7 @@ import * as ProjectMemberService from "../../services/project-member-service"
 import CustomError from "../../utils/custom-error"
 import { ValidationError } from "yup"
 import { createProjectMemberSchema } from "../../utils/validation/project-member-schema"
+import * as ProjectService from "../../services/project-service"
 
 /**
  * Search project members based on provided filters.
@@ -86,6 +87,21 @@ export const store = async (req: Request, res: Response) => {
       allocation_rate,
     })
 
+    const projectDetails = await ProjectService.getById(parseInt(project_id))
+
+    // Check if the start_date and end_date of project-member are within the range
+    if (
+      projectDetails.start_date == null ||
+      projectDetails.end_date == null ||
+      new Date(start_date) < new Date(projectDetails.start_date) ||
+      new Date(end_date) > new Date(projectDetails.end_date)
+    ) {
+      throw new CustomError(
+        "Please choose assignment dates within the selected project timeframe.",
+        400
+      )
+    }
+
     const newProjectMember = await ProjectMemberService.create(
       {
         project_id: parseInt(project_id),
@@ -109,7 +125,6 @@ export const store = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
-
 /**
  * Get a specific project member by ID.
  * @param req.params.id - The unique ID of the project member.
@@ -160,6 +175,19 @@ export const update = async (req: Request, res: Response) => {
       end_date,
       allocation_rate,
     })
+    const projectDetails = await ProjectService.getById(parseInt(project_id))
+
+    if (
+      projectDetails.start_date == null ||
+      projectDetails.end_date == null ||
+      new Date(start_date) < new Date(projectDetails.start_date) ||
+      new Date(end_date) > new Date(projectDetails.end_date)
+    ) {
+      throw new CustomError(
+        "Please choose assignment dates within the selected project timeframe.",
+        400
+      )
+    }
 
     const updatedProjectMember = await ProjectMemberService.update(
       parseInt(id),
