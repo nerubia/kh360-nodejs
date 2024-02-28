@@ -190,3 +190,11 @@ export const countAllByFilters = async (where: Prisma.evaluation_resultsWhereInp
   })
   return count
 }
+
+export const deleteById = async (id: number) => {
+  await prisma.evaluation_results.deleteMany({
+    where: {
+      id,
+    },
+  })
+}
