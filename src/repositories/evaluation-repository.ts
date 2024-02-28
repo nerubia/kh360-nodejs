@@ -176,6 +176,14 @@ export const deleteByEvaluationAdministrationIds = async (
   })
 }
 
+export const deleteByEvaluationResultId = async (evaluationResultId: number) => {
+  await prisma.evaluations.deleteMany({
+    where: {
+      evaluation_result_id: evaluationResultId,
+    },
+  })
+}
+
 export const updateEvaluations = async (ids: number[], data: Prisma.evaluationsUpdateInput) => {
   await prisma.evaluations.updateMany({
     where: {

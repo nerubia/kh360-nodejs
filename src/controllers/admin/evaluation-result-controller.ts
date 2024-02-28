@@ -475,18 +475,14 @@ export const show = async (req: Request, res: Response) => {
 export const destroy = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    await prisma.evaluation_results.deleteMany({
-      where: {
-        id: parseInt(id),
-      },
-    })
-    await prisma.evaluations.deleteMany({
-      where: {
-        evaluation_result_id: parseInt(id),
-      },
-    })
+
+    await EvaluationResultService.deleteEvaluationResult(parseInt(id))
+
     res.json({ id })
   } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message, data: error.data })
+    }
     res.status(500).json({ message: "Something went wrong" })
   }
 }
