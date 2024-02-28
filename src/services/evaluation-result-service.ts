@@ -795,3 +795,30 @@ export const getEvaluatorsById = async (user: UserToken, id: number) => {
 
   return evaluators
 }
+
+export const deleteEvaluationResult = async (id: number) => {
+  const evaluationResult = await EvaluationResultRepository.getById(id)
+
+  if (evaluationResult === null) {
+    throw new CustomError("Evaluation result not found.", 400)
+  }
+
+  const evaluations = await EvaluationRepository.getAllByFilters({
+    evaluation_result_id: evaluationResult.id,
+    status: {
+      notIn: [
+        EvaluationStatus.Draft,
+        EvaluationStatus.Excluded,
+        EvaluationStatus.Pending,
+        EvaluationStatus.Open,
+      ],
+    },
+  })
+
+  if (evaluations.length > 0) {
+    throw new CustomError("You are not allowed to delete this evaluee.", 400)
+  }
+
+  await EvaluationResultRepository.deleteById(evaluationResult.id)
+  await EvaluationRepository.deleteByEvaluationResultId(evaluationResult.id)
+}
