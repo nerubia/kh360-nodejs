@@ -47,9 +47,13 @@ export const getEvaluations = async (
       external_evaluator_id,
       evaluation_administration_id,
     }
-  } else {
+  } else if (!isNaN(evaluation_template_id)) {
     where = {
       evaluation_template_id,
+      evaluation_result_id,
+    }
+  } else {
+    where = {
       evaluation_result_id,
     }
   }
