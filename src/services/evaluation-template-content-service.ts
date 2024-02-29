@@ -85,7 +85,9 @@ export const getEvaluationTemplateContents = async (user: UserToken, evaluation_
     })
   )
 
-  return finalEvaluationTemplateContents.filter((content) => content.deleted_at === null)
+  return finalEvaluationTemplateContents.filter(
+    (content) => content.deleted_at === null && content.evaluationRating !== null
+  )
 }
 
 export const updateById = async (
