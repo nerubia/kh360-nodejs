@@ -426,6 +426,7 @@ model evaluation_ratings {
   comments                       String?   @db.Text
   created_at                     DateTime? @db.DateTime(0)
   updated_at                     DateTime? @db.DateTime(0)
+  deleted_at                     DateTime? @db.DateTime(0)
 
   @@index([answer_option_id], map: "index_evaluation_ratings_on_answer_option_id")
   @@index([evaluation_administration_id], map: "index_evaluation_ratings_on_evaluation_administration_id")
@@ -449,7 +450,9 @@ model evaluation_result_details {
   banding                      String?        @default("") @db.VarChar(20)
   created_at                   DateTime?      @db.DateTime(0)
   updated_at                   DateTime?      @db.DateTime(0)
+  deleted_at                   DateTime?      @db.DateTime(0)
   score_ratings                score_ratings? @relation(fields: [score_ratings_id], references: [id])
+
 
   @@index([evaluation_administration_id], map: "index_evaluation_result_details_on_evaluation_administration_id")
   @@index([evaluation_result_id], map: "index_evaluation_result_details_on_evaluation_result_id")
@@ -474,6 +477,7 @@ model evaluation_results {
   updated_by_id                Int?
   created_at                   DateTime?      @db.DateTime(0)
   updated_at                   DateTime?      @db.DateTime(0)
+  deleted_at                   DateTime?      @db.DateTime(0)
   users                        users?         @relation(fields: [user_id], references: [id])
   score_ratings                score_ratings? @relation(fields: [score_ratings_id], references: [id])
 
@@ -555,6 +559,7 @@ model evaluations {
   external_evaluator_id        Int?
   created_at                   DateTime?        @db.DateTime(0)
   updated_at                   DateTime?        @db.DateTime(0)
+  deleted_at                   DateTime?        @db.DateTime(0)
   project_members              project_members? @relation(fields: [project_member_id], references: [id])
 
   @@index([evaluation_administration_id], map: "index_evaluations_on_evaluation_administration_id")
