@@ -198,3 +198,14 @@ export const deleteById = async (id: number) => {
     },
   })
 }
+
+export const softDeleteById = async (id: number) => {
+  await prisma.evaluation_results.updateMany({
+    where: {
+      id,
+    },
+    data: {
+      deleted_at: new Date(),
+    },
+  })
+}

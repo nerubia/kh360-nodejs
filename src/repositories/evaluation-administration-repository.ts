@@ -60,7 +60,7 @@ export const updateStatusById = async (id: number, status: string) => {
   })
 }
 
-export const getAllByFilters = async (
+export const paginateByFilters = async (
   skip: number,
   take: number,
   where: Prisma.evaluation_administrationsWhereInput
@@ -68,6 +68,15 @@ export const getAllByFilters = async (
   return await prisma.evaluation_administrations.findMany({
     skip,
     take,
+    where,
+    orderBy: {
+      id: "desc",
+    },
+  })
+}
+
+export const getAllByFilters = async (where: Prisma.evaluation_administrationsWhereInput) => {
+  return await prisma.evaluation_administrations.findMany({
     where,
     orderBy: {
       id: "desc",

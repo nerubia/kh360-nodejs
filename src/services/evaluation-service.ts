@@ -58,6 +58,10 @@ export const getEvaluations = async (
     }
   }
 
+  Object.assign(where, {
+    deleted_at: null,
+  })
+
   if (for_evaluation) {
     Object.assign(where, {
       for_evaluation,
@@ -121,6 +125,7 @@ export const getUserEvaluations = async (
         EvaluationStatus.ForRemoval,
       ],
     },
+    deleted_at: null,
   }
 
   if (user.is_external) {
@@ -149,6 +154,7 @@ export const getUserEvaluations = async (
       const template = await EvaluationTemplateRepository.getById(
         evaluation.evaluation_template_id ?? 0
       )
+
       if (template?.evaluee_role_id !== null) {
         const project_role = await ProjectRoleRepository.getById(template?.evaluee_role_id ?? 0)
         Object.assign(template ?? 0, {

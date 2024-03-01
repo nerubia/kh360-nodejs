@@ -1,14 +1,14 @@
 import { type Prisma } from "@prisma/client"
-import * as EvaluationAdministrationRepository from "../repositories/evaluation-administration-repository"
 import * as EvaluationRatingRepository from "../repositories/evaluation-rating-repository"
 import * as EvaluationRepository from "../repositories/evaluation-repository"
+import * as EvaluationResultRepository from "../repositories/evaluation-result-repository"
 import * as EvaluationResultDetailRepository from "../repositories/evaluation-result-detail-repository"
 import * as EvaluationTemplateContentRepository from "../repositories/evaluation-template-content-repository"
 import * as EvaluationTemplateRepository from "../repositories/evaluation-template-repository"
 import * as ProjectRoleRepository from "../repositories/project-role-repository"
 import * as AnswerRepository from "../repositories/answer-repository"
 import CustomError from "../utils/custom-error"
-import { EvaluationAdministrationStatus } from "../types/evaluation-administration-type"
+import { EvaluationStatus } from "../types/evaluation-type"
 
 export const getById = async (id: number) => {
   const evaluationTemplate = await EvaluationTemplateRepository.getById(id)
@@ -81,6 +81,7 @@ export const getAllByFilters = async (
       id: {
         in: evaluationTemplateIds as number[],
       },
+      deleted_at: null,
     })
 
     const final = await Promise.all(
@@ -100,7 +101,7 @@ export const getAllByFilters = async (
   const parsedPage = parseInt(page as string)
   const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
-  const where: Prisma.evaluation_templatesWhereInput = {}
+  const where: Prisma.evaluation_templatesWhereInput = { deleted_at: null }
 
   if (name !== undefined) {
     Object.assign(where, {
@@ -185,7 +186,9 @@ export const getActiveTemplates = async () => {
 }
 
 export const getTemplateTypes = async () => {
-  return await EvaluationTemplateRepository.getAllDistinctByFilters({}, ["template_type"])
+  return await EvaluationTemplateRepository.getAllDistinctByFilters({ deleted_at: null }, [
+    "template_type",
+  ])
 }
 
 export const create = async (
@@ -224,42 +227,68 @@ export const deleteById = async (id: number) => {
     throw new CustomError("Id not found", 400)
   }
 
-  const evaluations = await EvaluationRepository.getAllDistinctByFilters(
-    {
-      evaluation_template_id: evaluationTemplate.id,
-    },
-    ["evaluation_administration_id"]
-  )
-
-  const evaluationAdministrationIds = evaluations.map(
-    (evaluation) => evaluation.evaluation_administration_id
-  )
-
-  const totalItems = await EvaluationAdministrationRepository.countAllByFilters({
-    id: {
-      in: evaluationAdministrationIds as number[],
-    },
-    status: {
-      notIn: [EvaluationAdministrationStatus.Draft, EvaluationAdministrationStatus.Cancelled],
-    },
+  const evaluations = await EvaluationRepository.getAllByFilters({
+    evaluation_template_id: evaluationTemplate.id,
   })
 
-  if (totalItems > 0) {
+  const activeEvaluations = evaluations.filter(
+    (evaluation) =>
+      evaluation.status !== EvaluationStatus.Draft &&
+      evaluation.status !== EvaluationStatus.Excluded &&
+      evaluation.status !== EvaluationStatus.Pending &&
+      evaluation.status !== EvaluationStatus.Open
+  )
+
+  if (activeEvaluations.length > 0) {
+    throw new CustomError("Template is currently being used. You are not allowed to delete.", 400)
+  }
+
+  const forSoftDeleteEvaluationIds = evaluations
+    .filter((evaluation) => evaluation.status === EvaluationStatus.Open)
+    .map((evaluation) => evaluation.id)
+  const forHardDeleteEvaluationIds = evaluations
+    .filter(
+      (evaluation) =>
+        evaluation.status === EvaluationStatus.Draft ||
+        evaluation.status === EvaluationStatus.Excluded ||
+        evaluation.status === EvaluationStatus.Pending
+    )
+    .map((evaluation) => evaluation.id)
+
+  await EvaluationRepository.softDeleteByEvaluationIds(forSoftDeleteEvaluationIds)
+  await EvaluationRatingRepository.softDeleteByEvaluationIds(forSoftDeleteEvaluationIds)
+  await EvaluationRepository.deleteByEvaluationIds(forHardDeleteEvaluationIds)
+  await EvaluationRatingRepository.deleteByEvaluationIds(forHardDeleteEvaluationIds)
+
+  if (forSoftDeleteEvaluationIds.length > 0) {
     await EvaluationTemplateContentRepository.softDeleteByEvaluationTemplateId(
       evaluationTemplate.id
     )
     await EvaluationTemplateRepository.softDeleteById(evaluationTemplate.id)
   } else {
     await EvaluationTemplateContentRepository.deleteByEvaluationTemplateId(evaluationTemplate.id)
-    await EvaluationRepository.deleteByEvaluationAdministrationIds(
-      evaluationAdministrationIds as number[]
-    )
-    await EvaluationRatingRepository.deleteByEvaluationAdministrationIds(
-      evaluationAdministrationIds as number[]
-    )
-    await EvaluationResultDetailRepository.deleteByEvaluationAdministrationIds(
-      evaluationAdministrationIds as number[]
-    )
     await EvaluationTemplateRepository.deleteById(evaluationTemplate.id)
+  }
+
+  for (const evaluation of evaluations) {
+    const evaluationsCount = await EvaluationRepository.countAllByFilters({
+      evaluation_result_id: evaluation.evaluation_result_id,
+      deleted_at: null,
+      for_evaluation: true,
+    })
+
+    if (evaluationsCount === 0) {
+      if (evaluation.status === EvaluationStatus.Open) {
+        await EvaluationResultRepository.softDeleteById(evaluation.evaluation_result_id ?? 0)
+        await EvaluationResultDetailRepository.softDeleteByEvaluationResultId(
+          evaluation.evaluation_result_id ?? 0
+        )
+      } else {
+        await EvaluationResultRepository.deleteById(evaluation.evaluation_result_id ?? 0)
+        await EvaluationResultDetailRepository.deleteByEvaluationResultId(
+          evaluation.evaluation_result_id ?? 0
+        )
+      }
+    }
   }
 }

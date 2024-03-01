@@ -140,7 +140,7 @@ export const deleteById = async (id: number) => {
       in: evaluationIds as number[],
     },
     status: {
-      in: [EvaluationStatus.Ongoing, EvaluationStatus.Open],
+      in: [EvaluationStatus.Ongoing],
     },
   })
 
@@ -148,16 +148,16 @@ export const deleteById = async (id: number) => {
     throw new CustomError("You are not allowed to delete this content.", 400)
   }
 
-  const totalSubmittedEvaluations = await EvaluationRepository.countAllByFilters({
+  const totalOpenOrSubmittedEvaluations = await EvaluationRepository.countAllByFilters({
     id: {
       in: evaluationIds as number[],
     },
     status: {
-      in: [EvaluationStatus.Submitted, EvaluationStatus.Reviewed],
+      in: [EvaluationStatus.Open, EvaluationStatus.Submitted, EvaluationStatus.Reviewed],
     },
   })
 
-  if (totalSubmittedEvaluations > 0) {
+  if (totalOpenOrSubmittedEvaluations > 0) {
     await EvaluationTemplateContentRepository.softDeleteById(evaluationTemplateContent.id)
   } else {
     await EvaluationTemplateContentRepository.deleteById(evaluationTemplateContent.id)
