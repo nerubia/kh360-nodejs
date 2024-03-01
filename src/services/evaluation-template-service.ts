@@ -165,7 +165,7 @@ export const getAllByFilters = async (
   }
 
   return {
-    data: finalEvaluationTemplates,
+    data: finalEvaluationTemplates.filter((template) => template.deleted_at === null),
     pageInfo,
   }
 }
