@@ -61,7 +61,7 @@ export const getAllByFilters = async (name: string, status: string, page: string
     })
   }
 
-  const evaluationAdministrations = await EvaluationAdministrationRepository.getAllByFilters(
+  const evaluationAdministrations = await EvaluationAdministrationRepository.paginateByFilters(
     (currentPage - 1) * itemsPerPage,
     itemsPerPage,
     where

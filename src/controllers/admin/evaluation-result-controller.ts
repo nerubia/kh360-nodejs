@@ -533,6 +533,7 @@ export const all = async (req: Request, res: Response) => {
       },
       where: {
         evaluation_administration_id: parseInt(evaluation_administration_id as string),
+        deleted_at: null,
       },
     })
 

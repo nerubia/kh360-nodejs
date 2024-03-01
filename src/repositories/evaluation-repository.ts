@@ -133,6 +133,27 @@ export const deleteById = async (id: number) => {
   })
 }
 
+export const deleteByEvaluationIds = async (ids: number[]) => {
+  await prisma.evaluations.deleteMany({
+    where: {
+      id: {
+        in: ids,
+      },
+    },
+  })
+}
+
+export const softDeleteByEvaluationIds = async (ids: number[]) => {
+  await prisma.evaluations.updateMany({
+    where: {
+      id: {
+        in: ids,
+      },
+    },
+    data: { deleted_at: new Date() },
+  })
+}
+
 export const countAllByFilters = async (where: Prisma.evaluationsWhereInput) => {
   const count = await prisma.evaluations.count({
     where,
