@@ -262,54 +262,56 @@ export const store = async (req: Request, res: Response) => {
         for (const member of members) {
           const evaluatorRoleId = member.project_role_id
 
-          const evaluationTemplate = await prisma.evaluation_templates.findFirst({
+          const evaluationTemplates = await prisma.evaluation_templates.findMany({
             where: {
               evaluee_role_id: roleId,
               evaluator_role_id: evaluatorRoleId,
             },
           })
 
-          if (evaluationTemplate !== null) {
-            evaluations.push({
-              evaluation_template_id: evaluationTemplate.id,
-              evaluation_administration_id: evaluationAdministration.id,
-              evaluation_result_id: evaluationResult.id,
-              evaluator_id: member.user_id,
-              evaluee_id: evalueeId,
-              project_id: projectId,
-              project_member_id: project.id,
-              for_evaluation: false,
-              eval_start_date:
-                (project.start_date ?? 0) < (evaluationAdministration.eval_period_start_date ?? 0)
-                  ? evaluationAdministration.eval_period_start_date
-                  : project.start_date,
-              eval_end_date:
-                (project.end_date ?? 0) > (evaluationAdministration.eval_period_end_date ?? 0)
-                  ? evaluationAdministration.eval_period_end_date
-                  : project.end_date,
-              percent_involvement: project.allocation_rate,
-              status: EvaluationStatus.Excluded,
-              submission_method: null,
-              is_external: false,
-              created_at: currentDate,
-              updated_at: currentDate,
-            })
-
-            const evaluationResultDetail = evaluationResultDetails.find(
-              (evaluationResultDetail) =>
-                evaluationResultDetail.evaluation_template_id === evaluationTemplate.id
-            )
-
-            if (evaluationResultDetail === undefined) {
-              evaluationResultDetails.push({
-                evaluation_administration_id: evaluationAdministration.id,
-                user_id: evalueeId,
-                evaluation_result_id: evaluationResult.id,
+          for (const evaluationTemplate of evaluationTemplates) {
+            if (evaluationTemplate !== null) {
+              evaluations.push({
                 evaluation_template_id: evaluationTemplate.id,
-                weight: evaluationTemplate.rate,
+                evaluation_administration_id: evaluationAdministration.id,
+                evaluation_result_id: evaluationResult.id,
+                evaluator_id: member.user_id,
+                evaluee_id: evalueeId,
+                project_id: projectId,
+                project_member_id: project.id,
+                for_evaluation: false,
+                eval_start_date:
+                  (project.start_date ?? 0) < (evaluationAdministration.eval_period_start_date ?? 0)
+                    ? evaluationAdministration.eval_period_start_date
+                    : project.start_date,
+                eval_end_date:
+                  (project.end_date ?? 0) > (evaluationAdministration.eval_period_end_date ?? 0)
+                    ? evaluationAdministration.eval_period_end_date
+                    : project.end_date,
+                percent_involvement: project.allocation_rate,
+                status: EvaluationStatus.Excluded,
+                submission_method: null,
+                is_external: false,
                 created_at: currentDate,
                 updated_at: currentDate,
               })
+
+              const evaluationResultDetail = evaluationResultDetails.find(
+                (evaluationResultDetail) =>
+                  evaluationResultDetail.evaluation_template_id === evaluationTemplate.id
+              )
+
+              if (evaluationResultDetail === undefined) {
+                evaluationResultDetails.push({
+                  evaluation_administration_id: evaluationAdministration.id,
+                  user_id: evalueeId,
+                  evaluation_result_id: evaluationResult.id,
+                  evaluation_template_id: evaluationTemplate.id,
+                  weight: evaluationTemplate.rate,
+                  created_at: currentDate,
+                  updated_at: currentDate,
+                })
+              }
             }
           }
         }
