@@ -42,14 +42,14 @@ export const getAllByFilters = async (name: string, user_type: string, page: str
   const userType = user_type === "all" ? "" : user_type
 
   const itemsPerPage = 20
-  const parsedPage = parseInt(page )
+  const parsedPage = parseInt(page)
   const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
   const where = {
     is_active: true,
     user_details: {
       user_type: {
-        contains: userType ,
+        contains: userType,
       },
     },
   }
@@ -462,7 +462,7 @@ export const getEvaluationAdministrationsAsEvaluee = async (user: UserToken, pag
     (evaluation) => evaluation.evaluation_administration_id
   )
 
-  const evaluationAdministrations = await EvaluationAdministrationRepository.getAllByFilters(
+  const evaluationAdministrations = await EvaluationAdministrationRepository.paginateByFilters(
     (currentPage - 1) * itemsPerPage,
     itemsPerPage,
     {
@@ -553,6 +553,7 @@ export const getEvaluationAdministrations = async (user: UserToken, page: number
   const filter = {
     for_evaluation: true,
     ...(user.is_external ? { external_evaluator_id: user.id } : { evaluator_id: user.id }),
+    deleted_at: null,
   }
 
   const evaluations = await EvaluationRepository.getAllByFilters(filter)
@@ -561,7 +562,7 @@ export const getEvaluationAdministrations = async (user: UserToken, page: number
     (evaluation) => evaluation.evaluation_administration_id
   )
 
-  const evaluationAdministrations = await EvaluationAdministrationRepository.getAllByFilters(
+  const evaluationAdministrations = await EvaluationAdministrationRepository.paginateByFilters(
     (currentPage - 1) * itemsPerPage,
     itemsPerPage,
     {
