@@ -61,6 +61,7 @@ export const getAllByFilters = async (
     status: {
       contains: evaluationResultStatus,
     },
+    deleted_at: null,
   }
 
   if (user.roles.includes("khv2_cm")) {
@@ -79,6 +80,7 @@ export const getAllByFilters = async (
         status: {
           notIn: [EvaluationResultStatus.NoResult],
         },
+        deleted_at: null,
       },
       ["evaluation_administration_id"]
     )

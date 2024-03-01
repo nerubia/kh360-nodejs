@@ -119,3 +119,20 @@ export const deleteByEvaluationAdministrationIds = async (
     },
   })
 }
+
+export const deleteByEvaluationResultId = async (evaluation_result_id: number) => {
+  await prisma.evaluation_result_details.deleteMany({
+    where: {
+      evaluation_result_id,
+    },
+  })
+}
+
+export const softDeleteByEvaluationResultId = async (evaluation_result_id: number) => {
+  await prisma.evaluation_result_details.updateMany({
+    where: {
+      evaluation_result_id,
+    },
+    data: { deleted_at: new Date() },
+  })
+}
