@@ -14,33 +14,59 @@ export const setWssForPendingEvalAdmin = (wss: WebSocket.Server) => {
 }
 
 export const updateEvaluationAdministrationsJob = async () => {
-  const evaluationAdministrations = await EvaluationAdministrationService.getAllByStatusAndDate(
-    EvaluationAdministrationStatus.Pending,
-    new Date()
-  )
+  const pendingEvaluationAdministrations =
+    await EvaluationAdministrationService.getAllByStatusAndDate(
+      EvaluationAdministrationStatus.Pending,
+      new Date()
+    )
 
-  for (const evaluationAdministration of evaluationAdministrations) {
+  for (const pendingEvaluationAdministration of pendingEvaluationAdministrations) {
     await EvaluationAdministrationService.updateStatusById(
-      evaluationAdministration.id,
+      pendingEvaluationAdministration.id,
       EvaluationAdministrationStatus.Ongoing
     )
 
     await EvaluationResultService.updateStatusByAdministrationId(
-      evaluationAdministration.id,
+      pendingEvaluationAdministration.id,
       EvaluationResultStatus.Ongoing
     )
 
     await EvaluationService.updateStatusByAdministrationId(
-      evaluationAdministration.id,
+      pendingEvaluationAdministration.id,
       EvaluationStatus.Open
     )
 
-    await EvaluationAdministrationService.sendEvaluationEmailById(evaluationAdministration.id)
+    await EvaluationAdministrationService.sendEvaluationEmailById(
+      pendingEvaluationAdministration.id
+    )
 
     if (wssInstance !== null) {
       const message = JSON.stringify({
         event: "setEvaluationAdministrationToOngoing",
         data: "setEvaluationAdministrationToOngoing",
+      })
+
+      wssInstance.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(message)
+        }
+      })
+    }
+  }
+
+  const evaluationAdministrationsToClose =
+    await EvaluationAdministrationService.getAllByStatusAndEndDate(
+      EvaluationAdministrationStatus.Ongoing,
+      new Date()
+    )
+
+  for (const evaluationAdministrationToClose of evaluationAdministrationsToClose) {
+    await EvaluationAdministrationService.close(evaluationAdministrationToClose.id)
+
+    if (wssInstance !== null) {
+      const message = JSON.stringify({
+        event: "closeEvaluationAdministration",
+        data: "closeEvaluationAdministration",
       })
 
       wssInstance.clients.forEach((client) => {

@@ -16,6 +16,17 @@ export const getAllByStatusAndDate = async (status: string, date: Date) => {
   })
 }
 
+export const getAllByStatusAndEndDate = async (status: string, date: Date) => {
+  return await prisma.evaluation_administrations.findMany({
+    where: {
+      status,
+      eval_schedule_end_date: {
+        lte: date,
+      },
+    },
+  })
+}
+
 export const getAllByStatus = async (status: string) => {
   return await prisma.evaluation_administrations.findMany({
     where: {

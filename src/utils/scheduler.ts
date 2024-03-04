@@ -3,7 +3,8 @@ import { updateEvaluationAdministrationsJob } from "../jobs/update-evaluation-ad
 import { sendEvaluationEmailJob } from "../jobs/send-evaluation-email-job"
 
 // 12am UTC - (8am SGT)
-const everyDay = schedule.scheduleJob("0 0 * * *", async () => {
+// (5 mins for now)
+const everyDay = schedule.scheduleJob("*/5 * * * *", async () => {
   await updateEvaluationAdministrationsJob()
 })
 
