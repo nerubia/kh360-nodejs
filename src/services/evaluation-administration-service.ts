@@ -33,6 +33,10 @@ export const getAllByStatusAndDate = async (status: string, date: Date) => {
   return await EvaluationAdministrationRepository.getAllByStatusAndDate(status, date)
 }
 
+export const getAllByStatusAndEndDate = async (status: string, date: Date) => {
+  return await EvaluationAdministrationRepository.getAllByStatusAndEndDate(status, date)
+}
+
 export const getAllByStatus = async (status: string) => {
   return await EvaluationAdministrationRepository.getAllByStatus(status)
 }
