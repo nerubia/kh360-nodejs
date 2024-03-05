@@ -4,11 +4,13 @@ import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as EvaluationResultRepository from "../repositories/evaluation-result-repository"
 import * as EvaluationResultDetailRepository from "../repositories/evaluation-result-detail-repository"
 import * as EvaluationTemplateContentRepository from "../repositories/evaluation-template-content-repository"
+import * as EvaluationTemplateContentService from "../services/evaluation-template-content-service"
 import * as EvaluationTemplateRepository from "../repositories/evaluation-template-repository"
 import * as ProjectRoleRepository from "../repositories/project-role-repository"
 import * as AnswerRepository from "../repositories/answer-repository"
 import CustomError from "../utils/custom-error"
 import { EvaluationStatus } from "../types/evaluation-type"
+import { type EvaluationTemplateContent } from "../types/evaluation-template-content-type"
 
 export const getById = async (id: number) => {
   const evaluationTemplate = await EvaluationTemplateRepository.getById(id)
@@ -210,14 +212,55 @@ export const create = async (
   return evaluationTemplate
 }
 
-export const updateById = async (id: number, data: Prisma.evaluation_templatesUpdateInput) => {
+export const updateById = async (
+  id: number,
+  data: Prisma.evaluation_templatesUpdateInput,
+  evaluationTemplateContents: EvaluationTemplateContent[]
+) => {
   const evaluationTemplate = await EvaluationTemplateRepository.getById(id)
 
   if (evaluationTemplate === null) {
     throw new CustomError("Id not found", 400)
   }
 
-  return await EvaluationTemplateRepository.updateById(id, data)
+  const evaluationTemplateContentIds = evaluationTemplateContents.map((content) => content.id)
+  const existingEvaluationTemplateContents =
+    await EvaluationTemplateContentRepository.getByEvaluationTemplateId(evaluationTemplate.id)
+  const existingEvaluationTemplateContentIds = existingEvaluationTemplateContents.map(
+    (content) => content.id
+  )
+
+  for (const evaluationTemplateContent of evaluationTemplateContents) {
+    const existingEvaluationTemplateContent = await EvaluationTemplateContentRepository.getById(
+      evaluationTemplateContent.id ?? 0
+    )
+    if (existingEvaluationTemplateContent !== null) {
+      await EvaluationTemplateContentRepository.updateById(
+        evaluationTemplateContent.id,
+        evaluationTemplateContent
+      )
+    } else {
+      await EvaluationTemplateContentRepository.create(evaluationTemplate.id, {
+        name: evaluationTemplateContent.name,
+        description: evaluationTemplateContent.description,
+        category: evaluationTemplateContent.category,
+        rate: evaluationTemplateContent.rate,
+        is_active: evaluationTemplateContent.is_active,
+        sequence_no: evaluationTemplateContent.sequence_no,
+      })
+    }
+  }
+
+  const deletedTemplateContentIds = existingEvaluationTemplateContentIds.filter(
+    (id) => !evaluationTemplateContentIds.includes(id)
+  )
+
+  for (const deletedTemplateContentId of deletedTemplateContentIds) {
+    await EvaluationTemplateContentService.deleteById(deletedTemplateContentId)
+  }
+
+  const updatedEvaluationTemplate = await EvaluationTemplateRepository.updateById(id, data)
+  return updatedEvaluationTemplate
 }
 
 export const deleteById = async (id: number) => {

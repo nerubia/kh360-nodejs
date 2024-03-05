@@ -185,6 +185,7 @@ export const update = async (req: Request, res: Response) => {
       answer_id,
       description,
       is_active,
+      evaluation_template_contents,
     } = req.body
 
     await createEvaluationTemplate.validate({
@@ -199,21 +200,26 @@ export const update = async (req: Request, res: Response) => {
       answer_id,
       description,
       is_active,
+      evaluation_template_contents,
     })
 
-    const newEvaluationTemplate = await EvaluationTemplateService.updateById(parseInt(id), {
-      name,
-      display_name,
-      template_type,
-      template_class,
-      with_recommendation: Boolean(parseInt(with_recommendation)),
-      evaluator_role_id: parseInt(evaluator_role_id),
-      evaluee_role_id: parseInt(evaluee_role_id),
-      rate,
-      answer_id: parseInt(answer_id),
-      description,
-      is_active: Boolean(parseInt(is_active)),
-    })
+    const newEvaluationTemplate = await EvaluationTemplateService.updateById(
+      parseInt(id),
+      {
+        name,
+        display_name,
+        template_type,
+        template_class,
+        with_recommendation: Boolean(parseInt(with_recommendation)),
+        evaluator_role_id: parseInt(evaluator_role_id),
+        evaluee_role_id: parseInt(evaluee_role_id),
+        rate,
+        answer_id: parseInt(answer_id),
+        description,
+        is_active: Boolean(parseInt(is_active)),
+      },
+      evaluation_template_contents
+    )
 
     res.json(newEvaluationTemplate)
   } catch (error) {
