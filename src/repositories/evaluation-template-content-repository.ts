@@ -41,9 +41,11 @@ export const getByEvaluationTemplateId = async (evaluation_template_id: number) 
       rate: true,
       is_active: true,
       deleted_at: true,
+      sequence_no: true,
     },
     where: {
       evaluation_template_id,
+      deleted_at: null,
     },
   })
 }

@@ -40,6 +40,7 @@ export const getEvaluationTemplateContents = async (user: UserToken, evaluation_
 
   const evaluationTemplateContents = await EvaluationTemplateContentRepository.getAllByFilters({
     evaluation_template_id: evaluation?.evaluation_template_id,
+    deleted_at: null,
   })
 
   const finalEvaluationTemplateContents = await Promise.all(
@@ -121,6 +122,7 @@ export const deleteById = async (id: number) => {
   const evaluationTemplateContentCount =
     await EvaluationTemplateContentRepository.countAllByFilters({
       evaluation_template_id: evaluationTemplate.id,
+      deleted_at: null,
     })
 
   if (evaluationTemplateContentCount === 1) {
