@@ -83,6 +83,11 @@ export const getEvaluations = async (
         evaluation.evaluation_template_id ?? 0
       )
 
+      const hasForEval = await EvaluationRepository.hasForEvaluation(
+        evaluation.evaluation_administration_id ?? 0,
+        evaluation.evaluation_result_id ?? 0
+      )
+
       return {
         id: evaluation.id,
         eval_start_date: evaluation.eval_start_date,
@@ -98,6 +103,7 @@ export const getEvaluations = async (
         external_evaluator_id: evaluation.external_evaluator_id,
         template,
         comments: evaluation.comments,
+        hasForEvaluation: hasForEval,
       }
     })
   )

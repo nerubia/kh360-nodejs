@@ -197,3 +197,14 @@ export const updateEvaluations = async (ids: number[], data: Prisma.evaluationsU
     },
   })
 }
+
+export const hasForEvaluation = async (evaluation_admin_id: number, eval_result_id: number) => {
+  const result = await prisma.evaluations.count({
+    where: {
+      evaluation_administration_id: evaluation_admin_id,
+      evaluation_result_id: eval_result_id,
+      for_evaluation: true,
+    },
+  })
+  return result
+}
