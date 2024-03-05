@@ -153,7 +153,6 @@ export const update = async (req: Request, res: Response) => {
 
     if (
       evaluationAdministration.status !== EvaluationAdministrationStatus.Pending &&
-      evaluationAdministration.status !== EvaluationAdministrationStatus.Ongoing &&
       evaluationAdministration.status !== EvaluationAdministrationStatus.Draft
     ) {
       return res.status(400).json({ message: "This action is not allowed." })
@@ -165,7 +164,10 @@ export const update = async (req: Request, res: Response) => {
       remarks,
     }
 
-    if (evaluationAdministration.status === EvaluationAdministrationStatus.Draft) {
+    if (
+      evaluationAdministration.status === EvaluationAdministrationStatus.Draft ||
+      evaluationAdministration.status === EvaluationAdministrationStatus.Pending
+    ) {
       Object.assign(data, {
         name,
         eval_period_start_date: new Date(eval_period_start_date),
