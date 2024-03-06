@@ -10,6 +10,7 @@ import * as ProjectRoleRepository from "../repositories/project-role-repository"
 import * as AnswerRepository from "../repositories/answer-repository"
 import CustomError from "../utils/custom-error"
 import { EvaluationStatus } from "../types/evaluation-type"
+import { EvaluationTemplateType } from "../types/evaluation-template-type"
 import { type EvaluationTemplateContent } from "../types/evaluation-template-content-type"
 
 export const getById = async (id: number) => {
@@ -197,6 +198,19 @@ export const create = async (
   data: Prisma.evaluation_templatesCreateInput,
   evaluationTemplateContents: Prisma.evaluation_template_contentsCreateInput[]
 ) => {
+  const { evaluator_role_id, evaluee_role_id } = data
+
+  const forProjectRole = await ProjectRoleRepository.getAllByFilters({ for_project: true })
+  const forProjectRoleIds = forProjectRole.map((role) => role.id)
+
+  if (
+    data.template_type === EvaluationTemplateType.ProjectEvaluation &&
+    (!forProjectRoleIds.includes(evaluator_role_id ?? 0) ||
+      !forProjectRoleIds.includes(evaluee_role_id ?? 0))
+  ) {
+    throw new CustomError("Must select roles appropriate for project template type.", 400)
+  }
+
   const evaluationTemplate = await EvaluationTemplateRepository.create(data)
   const currentDate = new Date()
 
@@ -217,10 +231,26 @@ export const updateById = async (
   data: Prisma.evaluation_templatesUpdateInput,
   evaluationTemplateContents: EvaluationTemplateContent[]
 ) => {
+  const { evaluator_role_id, evaluee_role_id } = data as {
+    evaluator_role_id: number
+    evaluee_role_id: number
+  }
+
   const evaluationTemplate = await EvaluationTemplateRepository.getById(id)
 
   if (evaluationTemplate === null) {
     throw new CustomError("Id not found", 400)
+  }
+
+  const forProjectRole = await ProjectRoleRepository.getAllByFilters({ for_project: true })
+  const forProjectRoleIds = forProjectRole.map((role) => role.id)
+
+  if (
+    data.template_type === EvaluationTemplateType.ProjectEvaluation &&
+    (!forProjectRoleIds.includes(evaluator_role_id ?? 0) ||
+      !forProjectRoleIds.includes(evaluee_role_id ?? 0))
+  ) {
+    throw new CustomError("Must select roles appropriate for project template type.", 400)
   }
 
   const evaluationTemplateContentIds = evaluationTemplateContents.map((content) => content.id)

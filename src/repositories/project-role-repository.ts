@@ -21,6 +21,7 @@ export const getAllByFilters = async (where: Prisma.project_rolesWhereInput) => 
       name: true,
       short_name: true,
       is_evaluee: true,
+      for_project: true,
     },
     where,
   })
