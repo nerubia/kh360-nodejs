@@ -45,7 +45,9 @@ export const calculateScore = async (evaluation_result_id: number) => {
       const evaluationRatings = await EvaluationRatingRepository.getAllByFilters({
         evaluation_id: evaluation.id,
       })
-      const answerOptionIds = evaluationRatings.map((answer) => answer.answer_option_id)
+      const answerOptionIds = evaluationRatings
+        .map((answer) => answer.answer_option_id)
+        .filter((id) => id !== null)
       const answerOptions = await AnswerOptionRepository.getAllByFilters({
         id: {
           in: answerOptionIds as number[],
