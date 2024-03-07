@@ -8,6 +8,47 @@ export const getAllSkillCategories = async () => {
   })
 }
 
+export const getAllByFilters = async (name: string, status: string, page: string) => {
+  const statusFilter =
+    status === "all" || status === undefined ? undefined : status === "Active"
+
+  const itemsPerPage = 20
+  const parsedPage = parseInt(page)
+  const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
+
+  const where = {
+    status: statusFilter,
+  }
+
+  if (name !== undefined) {
+    Object.assign(where, {
+      name: {
+        contains: name,
+      },
+    })
+  }
+
+  const skill_categories = await SkillCategoryRepository.getAllByFiltersWithPaging(
+    where,
+    currentPage,
+    itemsPerPage
+  )
+
+  const totalItems = await SkillCategoryRepository.countByFilters(where)
+
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+
+  return {
+    data: skill_categories,
+    pageInfo: {
+      currentPage,
+      hasPreviousPage: currentPage > 1,
+      hasNextPage: currentPage < totalPages,
+      totalPages,
+    },
+  }
+}
+
 export const create = async (data: SkillCategory) => {
   const skillCategoryName = await SkillCategoryRepository.getByName(data.name)
   if (skillCategoryName != null) {

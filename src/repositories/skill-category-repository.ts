@@ -8,6 +8,29 @@ export const getAllByFilters = async (where: Prisma.skill_categoriesWhereInput) 
   })
 }
 
+export const getAllByFiltersWithPaging = async (
+  where: Prisma.skill_categoriesWhereInput,
+  currentPage: number,
+  itemsPerPage: number
+) => {
+  return await prisma.skill_categories.findMany({
+    where,
+    skip: (currentPage - 1) * itemsPerPage,
+    take: itemsPerPage,
+    orderBy: [
+      {
+        sequence_no: "asc",
+      },
+    ],
+  })
+}
+
+export const countByFilters = async (where: Prisma.skill_categoriesWhereInput) => {
+  return await prisma.skill_categories.count({
+    where,
+  })
+}
+
 export const getById = async (id: number) => {
   return await prisma.skill_categories.findUnique({
     where: {
