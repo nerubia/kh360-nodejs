@@ -5,9 +5,29 @@ import { ValidationError } from "yup"
 import CustomError from "../../utils/custom-error"
 
 /**
- * List all skill categories
+ * List skill categories based on provided filters.
+ * @param req.query.name - Filter by name.
+ * @param req.query.status - Filter by status.
  */
 export const index = async (req: Request, res: Response) => {
+  try {
+    const { name, status } = req.query
+
+    const skill_categories = await SkillCategoryService.getByFilters(
+      name as string,
+      status as string,
+    )
+
+    res.json(skill_categories)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * List all skill categories
+ */
+export const getAll = async (req: Request, res: Response) => {
   try {
     const skill_categories = await SkillCategoryService.getAllSkillCategories()
     res.json(skill_categories)
@@ -52,7 +72,13 @@ export const store = async (req: Request, res: Response) => {
     })
     res.json(newSkillCategory)
   } catch (error) {
-    res.status(500).json({ message: error })
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    res.status(500).json({ message: "Something went wrong" })
   }
 }
 /**
@@ -77,6 +103,7 @@ export const update = async (req: Request, res: Response) => {
       return res.status(400).json(error)
     }
     if (error instanceof CustomError) {
+
       return res.status(error.status).json({ message: error.message })
     }
     res.status(500).json({ message: "Something went wrong" })
@@ -90,6 +117,7 @@ export const destroy = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     await SkillCategoryService.deletedById(parseInt(id))
+
     res.json({ id, message: "Skill category successfully deleted" })
   } catch (error) {
     if (error instanceof ValidationError) {
