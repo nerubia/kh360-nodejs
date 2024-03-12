@@ -2,19 +2,15 @@ import * as SkillCategoryRepository from "../repositories/skill-category-reposit
 import { type SkillCategory } from "../types/skill-category-type"
 import CustomError from "../utils/custom-error"
 import * as SkilRepository from "../repositories/skill-repository"
+
 export const getAllSkillCategories = async () => {
   return await SkillCategoryRepository.getAllByFilters({
     status: true,
   })
 }
 
-export const getAllByFilters = async (name: string, status: string, page: string) => {
-  const statusFilter =
-    status === "all" || status === undefined ? undefined : status === "Active"
-
-  const itemsPerPage = 20
-  const parsedPage = parseInt(page)
-  const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
+export const getByFilters = async (name: string, status: string) => {
+  const statusFilter = status === "all" || status === undefined ? undefined : status === "Active"
 
   const where = {
     status: statusFilter,
@@ -28,25 +24,9 @@ export const getAllByFilters = async (name: string, status: string, page: string
     })
   }
 
-  const skill_categories = await SkillCategoryRepository.getAllByFiltersWithPaging(
-    where,
-    currentPage,
-    itemsPerPage
-  )
+  const skill_categories = await SkillCategoryRepository.getAllByFilters(where)
 
-  const totalItems = await SkillCategoryRepository.countByFilters(where)
-
-  const totalPages = Math.ceil(totalItems / itemsPerPage)
-
-  return {
-    data: skill_categories,
-    pageInfo: {
-      currentPage,
-      hasPreviousPage: currentPage > 1,
-      hasNextPage: currentPage < totalPages,
-      totalPages,
-    },
-  }
+  return skill_categories
 }
 
 export const create = async (data: SkillCategory) => {
@@ -62,7 +42,7 @@ export const create = async (data: SkillCategory) => {
   return await SkillCategoryRepository.create(data, nextSequenceNo)
 }
 
-export const updatedById = async (id: number, data: SkillCategory) => {
+export const updateById = async (id: number, data: SkillCategory) => {
   const skillCategory = await SkillCategoryRepository.getById(id)
   const skillCategoryName = await SkillCategoryRepository.getByName(data.name)
   if (skillCategoryName != null) {
@@ -71,10 +51,10 @@ export const updatedById = async (id: number, data: SkillCategory) => {
   if (skillCategory === null) {
     throw new CustomError("Skill Category not found", 400)
   }
-  return await SkillCategoryRepository.update(id, data)
+  return await SkillCategoryRepository.updateById(id, data)
 }
 
-export const deletedById = async (id: number) => {
+export const deleteById = async (id: number) => {
   const skillCategory = await SkillCategoryRepository.getById(id)
   const skillCategoryInUsed = await SkilRepository.getByFilters({
     skill_category_id: id,
@@ -85,7 +65,7 @@ export const deletedById = async (id: number) => {
   if (skillCategory === null) {
     throw new CustomError("Skill Category not found", 400)
   }
-  await SkillCategoryRepository.destroy(id, skillCategory.id)
+  await SkillCategoryRepository.deleteById(skillCategory.id)
 
   const remainingSkillCategories = await SkillCategoryRepository.getAllByFilters({})
   for (const category of remainingSkillCategories) {
@@ -93,7 +73,7 @@ export const deletedById = async (id: number) => {
       const newData = {
         sequence_no: remainingSkillCategories.indexOf(category) + 1,
       }
-      await SkillCategoryRepository.update(category.id, newData)
+      await SkillCategoryRepository.updateById(category.id, newData)
     }
   }
 }
@@ -108,4 +88,18 @@ export const getById = async (id: number) => {
 
 export const nextSequenceNo = async (data: SkillCategory) => {
   return data?.sequence_no !== null && data?.sequence_no !== undefined ? data.sequence_no + 1 : 1
+}
+
+export const updateSequenceNo = async (skillCategories: SkillCategory[]) => {
+  for (const category of skillCategories) {
+    const skillCategory = await SkillCategoryRepository.getById(category.id ?? 0)
+    if (skillCategory === null) {
+      throw new CustomError("Skill Category not found.", 400)
+    }
+
+    if (category.sequence_no === null || category.sequence_no === undefined) {
+      throw new CustomError("Invalid sequence number.", 400)
+    }
+    await SkillCategoryRepository.updateSequenceNo(skillCategory.id, category.sequence_no)
+  }
 }
