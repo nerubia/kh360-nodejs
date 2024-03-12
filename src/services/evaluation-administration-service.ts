@@ -524,7 +524,7 @@ export const publish = async (id: number) => {
       modifiedContent = modifiedContent.replace("{{evaluee_first_name}}", `${evaluee.first_name}`)
       modifiedContent = modifiedContent.replace(
         "{{link}}",
-        `<a href='${process.env.APP_URL}/my-evaluations/${evaluationResult.id}'>link</a>`
+        `<a href='${process.env.APP_URL}/my-evaluations/${evaluationAdministration.id}'>link</a>`
       )
       modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
       await sendMail(evaluee.email, emailTemplate.subject ?? "", modifiedContent)
