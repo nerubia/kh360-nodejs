@@ -1,5 +1,6 @@
 import { type Prisma } from "@prisma/client"
 import prisma from "../utils/prisma"
+import { type SkillType } from "../types/skill-type"
 
 export const getById = async (id: number) => {
   return await prisma.skills.findFirst({
@@ -9,8 +10,52 @@ export const getById = async (id: number) => {
   })
 }
 
+export const getByName = async (name: string) => {
+  return await prisma.skills.findFirst({
+    where: {
+      name,
+    },
+  })
+}
+
+export const findSkillDesc = async () => {
+  return await prisma.skills.findFirst({
+    orderBy: { sequence_no: "desc" },
+  })
+}
+
+export const create = async (data: SkillType, nextSequenceNo: number) => {
+  const currentDate = new Date()
+  return await prisma.skills.create({
+    data: {
+      ...data,
+      sequence_no: nextSequenceNo,
+      created_at: currentDate,
+      updated_at: currentDate,
+    },
+  })
+}
+
+export const updateById = async (id: number, data: Prisma.skillsUpdateInput) => {
+  return await prisma.skills.update({
+    where: {
+      id,
+    },
+    data: {
+      ...data,
+      updated_at: new Date(),
+    },
+  })
+}
+
 export const getByFilters = async (where: Prisma.skillsWhereInput) => {
   return await prisma.skills.findFirst({
+    where,
+  })
+}
+
+export const getAllSkills = async (where: Prisma.skillsWhereInput) => {
+  return await prisma.skills.findMany({
     where,
   })
 }
@@ -42,5 +87,13 @@ export const getAllByFilters = async (
 export const countByFilters = async (where: Prisma.skillsWhereInput) => {
   return await prisma.skills.count({
     where,
+  })
+}
+
+export const deleteById = async (id: number, skill_id: number) => {
+  await prisma.skills.delete({
+    where: {
+      id: skill_id,
+    },
   })
 }
