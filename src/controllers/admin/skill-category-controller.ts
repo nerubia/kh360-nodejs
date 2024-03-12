@@ -3,6 +3,7 @@ import * as SkillCategoryService from "../../services/skill-category-service"
 import { createSkillCategorySchema } from "../../utils/validation/skill-category-schema"
 import { ValidationError } from "yup"
 import CustomError from "../../utils/custom-error"
+import { type SkillCategory } from "../../types/skill-category-type"
 
 /**
  * List skill categories based on provided filters.
@@ -15,7 +16,7 @@ export const index = async (req: Request, res: Response) => {
 
     const skill_categories = await SkillCategoryService.getByFilters(
       name as string,
-      status as string,
+      status as string
     )
 
     res.json(skill_categories)
@@ -81,6 +82,7 @@ export const store = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
 /**
  * Update skill category
  * @param req.body.name - The name of the skill category
@@ -92,7 +94,7 @@ export const update = async (req: Request, res: Response) => {
     const { id } = req.params
     const { name, description, status } = req.body
     await createSkillCategorySchema.validate({ name, description, status })
-    const updateSkillCategory = await SkillCategoryService.updatedById(parseInt(id), {
+    const updateSkillCategory = await SkillCategoryService.updateById(parseInt(id), {
       name,
       description,
       status,
@@ -103,26 +105,46 @@ export const update = async (req: Request, res: Response) => {
       return res.status(400).json(error)
     }
     if (error instanceof CustomError) {
-
       return res.status(error.status).json({ message: error.message })
     }
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
 /**
  * Delete skill category
- * @param req.params.id - The ID of the skill category to be deleted
+ * @param req.body.description - The description of the skill category
+ * @param req.body.status - The status of the skill category
  */
 export const destroy = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    await SkillCategoryService.deletedById(parseInt(id))
+    await SkillCategoryService.deleteById(parseInt(id))
 
     res.json({ id, message: "Skill category successfully deleted" })
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
     }
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Update skill category sequence numbers
+ * @param req.body.skillCategories - The IDs and Sequence Numbers of the skill categories to be updated
+ */
+export const updateSequenceNumbers = async (req: Request, res: Response) => {
+  try {
+    const { skillCategories } = req.body
+
+    await SkillCategoryService.updateSequenceNo(skillCategories as SkillCategory[])
+
+    res.json()
+  } catch (error) {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }

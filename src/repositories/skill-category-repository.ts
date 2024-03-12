@@ -5,6 +5,9 @@ import { type Prisma } from "@prisma/client"
 export const getAllByFilters = async (where: Prisma.skill_categoriesWhereInput) => {
   return await prisma.skill_categories.findMany({
     where,
+    orderBy: {
+      sequence_no: "asc",
+    },
   })
 }
 
@@ -65,7 +68,7 @@ export const create = async (data: SkillCategory, nextSequenceNo: number) => {
   })
 }
 
-export const update = async (id: number, data: Prisma.skill_categoriesUpdateInput) => {
+export const updateById = async (id: number, data: Prisma.skill_categoriesUpdateInput) => {
   return await prisma.skill_categories.update({
     where: {
       id,
@@ -77,10 +80,10 @@ export const update = async (id: number, data: Prisma.skill_categoriesUpdateInpu
   })
 }
 
-export const destroy = async (id: number, skillCategory_Id: number) => {
+export const deleteById = async (id: number) => {
   await prisma.skill_categories.delete({
     where: {
-      id: skillCategory_Id,
+      id,
     },
   })
 }
@@ -89,6 +92,18 @@ export const show = async (id: number) => {
   return await prisma.skill_categories.findFirst({
     where: {
       id,
+    },
+  })
+}
+
+export const updateSequenceNo = async (id: number, sequence_no: number) => {
+  return await prisma.skill_categories.update({
+    where: {
+      id,
+    },
+    data: {
+      sequence_no,
+      updated_at: new Date(),
     },
   })
 }
