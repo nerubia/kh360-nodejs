@@ -45,7 +45,7 @@ export const create = async (data: SkillCategory) => {
 export const updateById = async (id: number, data: SkillCategory) => {
   const skillCategory = await SkillCategoryRepository.getById(id)
   const skillCategoryName = await SkillCategoryRepository.getByName(data.name)
-  if (skillCategoryName != null) {
+  if (skillCategoryName != null && skillCategory?.id !== skillCategoryName.id) {
     throw new CustomError("Skill Category name should be unique", 400)
   }
   if (skillCategory === null) {
