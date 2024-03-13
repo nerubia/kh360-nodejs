@@ -8,15 +8,17 @@ import CustomError from "../../utils/custom-error"
  * List skills based on provided filters.
  * @param req.query.name - Filter by name.
  * @param req.query.skill_category_id - Filter by skill_category_id.
+ * @param req.query.status - Filter by status.
  * @param req.query.page - Page number for pagination.
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const { name, skill_category_id, page } = req.query
+    const { name, skill_category_id, status, page } = req.query
 
     const skills = await SkillService.getAllByFilters(
       name as string,
       skill_category_id as string,
+      status as string,
       page as string
     )
 
@@ -35,9 +37,6 @@ export const show = async (req: Request, res: Response) => {
     const skill = await SkillService.getById(parseInt(id))
     return res.json(skill)
   } catch (error) {
-    if (error instanceof ValidationError) {
-      return res.status(400).json(error)
-    }
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
@@ -56,16 +55,29 @@ export const show = async (req: Request, res: Response) => {
 export const store = async (req: Request, res: Response) => {
   try {
     const { name, skill_category_id, description, status } = req.body
-    await createSkillSchema.validate({ name, skill_category_id, description, status })
+
+    await createSkillSchema.validate({
+      name: name as string,
+      description: description as string,
+      status: status as boolean,
+      skill_category_id: parseInt(skill_category_id),
+    })
+
     const newSkill = await SkillService.create({
-      name,
-      skill_category_id,
-      description,
-      status,
+      name: name as string,
+      description: description as string,
+      status: status as boolean,
+      skill_category_id: parseInt(skill_category_id),
     })
     return res.json(newSkill)
   } catch (error) {
-    res.status(500).json({ message: error })
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    res.status(500).json({ message: "Something went wrong" })
   }
 }
 
@@ -81,13 +93,21 @@ export const update = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const { name, description, status, skill_category_id } = req.body
-    await createSkillSchema.validate({ name, description, status, skill_category_id })
-    const updateSkill = await SkillService.updateById(parseInt(id), {
-      name,
-      description,
-      status,
-      skill_category_id,
+
+    await createSkillSchema.validate({
+      name: name as string,
+      description: description as string,
+      status: status as boolean,
+      skill_category_id: parseInt(skill_category_id),
     })
+
+    const updateSkill = await SkillService.updateById(parseInt(id), {
+      name: name as string,
+      description: description as string,
+      status: status as boolean,
+      skill_category_id: parseInt(skill_category_id),
+    })
+
     res.json(updateSkill)
   } catch (error) {
     if (error instanceof ValidationError) {
