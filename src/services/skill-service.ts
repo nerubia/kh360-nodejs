@@ -2,12 +2,19 @@ import * as SkillRepository from "../repositories/skill-repository"
 import { type SkillType } from "../types/skill-type"
 import CustomError from "../utils/custom-error"
 
-export const getAllByFilters = async (name: string, skill_category_id: string, page: string) => {
+export const getAllByFilters = async (
+  name: string,
+  skill_category_id: string,
+  status: string,
+  page: string
+) => {
   const itemsPerPage = 40
   const parsedPage = parseInt(page)
   const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
-  const where = {}
+  const statusFilter = status === "all" || status === undefined ? undefined : status === "Active"
+
+  const where = { status: statusFilter }
 
   if (skill_category_id !== undefined && skill_category_id !== "all") {
     Object.assign(where, {
@@ -68,12 +75,15 @@ export const create = async (data: SkillType) => {
 
 export const updateById = async (id: number, data: SkillType) => {
   const skill = await SkillRepository.getById(id)
-  const skillName = await SkillRepository.getByName(data.name)
-  if (skillName != null) {
-    throw new CustomError("Skill name should be unique", 400)
-  }
+
   if (skill === null) {
     throw new CustomError("Skill not found", 400)
+  }
+
+  const skillName = await SkillRepository.getByName(data.name)
+
+  if (skillName != null && skillName.id !== skill.id) {
+    throw new CustomError("Skill name should be unique", 400)
   }
   return await SkillRepository.updateById(id, data)
 }

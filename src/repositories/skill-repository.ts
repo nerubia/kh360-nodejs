@@ -33,6 +33,15 @@ export const create = async (data: SkillType, nextSequenceNo: number) => {
       created_at: currentDate,
       updated_at: currentDate,
     },
+    select: {
+      id: true,
+      name: true,
+      skill_category_id: true,
+      sequence_no: true,
+      skill_categories: true,
+      status: true,
+      description: true,
+    },
   })
 }
 
@@ -44,6 +53,15 @@ export const updateById = async (id: number, data: Prisma.skillsUpdateInput) => 
     data: {
       ...data,
       updated_at: new Date(),
+    },
+    select: {
+      id: true,
+      name: true,
+      skill_category_id: true,
+      sequence_no: true,
+      skill_categories: true,
+      status: true,
+      description: true,
     },
   })
 }
@@ -72,6 +90,8 @@ export const getAllByFilters = async (
       skill_category_id: true,
       sequence_no: true,
       skill_categories: true,
+      status: true,
+      description: true,
     },
     skip,
     take,
