@@ -453,7 +453,6 @@ model evaluation_result_details {
   deleted_at                   DateTime?      @db.DateTime(0)
   score_ratings                score_ratings? @relation(fields: [score_ratings_id], references: [id])
 
-
   @@index([evaluation_administration_id], map: "index_evaluation_result_details_on_evaluation_administration_id")
   @@index([evaluation_result_id], map: "index_evaluation_result_details_on_evaluation_result_id")
   @@index([evaluation_template_id], map: "index_evaluation_result_details_on_evaluation_template_id")
@@ -1268,6 +1267,145 @@ model time_entry_logs {
   @@index([user_id], map: "index_time_entry_logs_on_user_id")
 }
 
+model survey_templates {
+  id            Int       @id @default(autoincrement())
+  name          String?   @db.VarChar(100)
+  display_name  String?   @db.VarChar(150)
+  survey_type   String?   @db.VarChar(150)
+  remarks       String?   @db.VarChar(255)
+  is_active     Boolean?
+  created_by_id Int?
+  updated_by_id Int?
+  created_at    DateTime? @db.DateTime(0)
+  updated_at    DateTime? @db.DateTime(0)
+  deleted_at    DateTime? @db.DateTime(0)
+
+  survey_template_question_rules survey_template_question_rules[]
+  survey_template_questions      survey_template_questions[]
+  survey_template_answers        survey_template_answers[]
+  survey_answer                  survey_answers[]
+}
+
+model survey_template_questions {
+  id                 Int       @id @default(autoincrement())
+  survey_template_id Int
+  sequence_no        Int?
+  question_type      String?   @db.VarChar(255)
+  question_text      String?   @db.VarChar(255)
+  is_required        Boolean?
+  is_active          Boolean?
+  created_by_id      Int?
+  updated_by_id      Int?
+  created_at         DateTime? @db.DateTime(0)
+  updated_at         DateTime? @db.DateTime(0)
+  deleted_at         DateTime? @db.DateTime(0)
+
+  survey_template_question_rules survey_template_question_rules[]
+  survey_template_answers        survey_template_answers[]
+  survey_answers                 survey_answers[]
+
+  survey_template survey_templates @relation(fields: [survey_template_id], references: [id])
+}
+
+model survey_template_question_rules {
+  id                          Int       @id @default(autoincrement())
+  survey_template_id          Int
+  survey_template_question_id Int
+  rule_key                    Int?
+  rule_value                  String?
+  remarks                     String?
+  is_active                   Boolean?
+  created_by_id               Int?
+  updated_by_id               Int?
+  created_at                  DateTime? @db.DateTime(0)
+  updated_at                  DateTime? @db.DateTime(0)
+  deleted_at                  DateTime? @db.DateTime(0)
+
+  survey_templates          survey_templates          @relation(fields: [survey_template_id], references: [id])
+  survey_template_questions survey_template_questions @relation(fields: [survey_template_question_id], references: [id])
+}
+
+model survey_template_answers {
+  id                          Int              @id @default(autoincrement())
+  survey_template_id          Int
+  survey_template_question_id Int
+  sequence_no                 Int?
+  answer_text                 String?          @db.LongText
+  amount                      Int?
+  answer_image                String?
+  is_active                   Boolean?
+  created_by_id               Int?
+  updated_by_id               Int?
+  created_at                  DateTime?        @db.DateTime(0)
+  updated_at                  DateTime?        @db.DateTime(0)
+  deleted_at                  DateTime?        @db.DateTime(0)
+  survey_answers              survey_answers[]
+
+  survey_templates          survey_templates          @relation(fields: [survey_template_id], references: [id])
+  survey_template_questions survey_template_questions @relation(fields: [survey_template_question_id], references: [id])
+}
+
+model survey_administrations {
+  id                 Int       @id @default(autoincrement())
+  name               String?
+  survey_start_date  DateTime? @db.Date
+  survey_end_date    DateTime? @db.Date
+  survey_template_id Int?
+  remarks            String?   @db.VarChar(255)
+  email_subject      String?   @default("") @db.VarChar(255)
+  email_content      String?   @db.Text
+  status             String?   @db.VarChar(255)
+  created_by_id      Int?
+  updated_by_id      Int?
+  created_at         DateTime? @db.DateTime(0)
+  updated_at         DateTime? @db.DateTime(0)
+  deleted_at         DateTime? @db.DateTime(0)
+
+  survey_results survey_results[]
+  survey_answers survey_answers[]
+}
+
+model survey_results {
+  id                       Int              @id @default(autoincrement())
+  survey_administration_id Int
+  user_id                  Int
+  remarks                  String?          @db.VarChar(255)
+  status                   String?          @db.VarChar(255)
+  created_by_id            Int?
+  updated_by_id            Int?
+  created_at               DateTime?        @db.DateTime(0)
+  updated_at               DateTime?        @db.DateTime(0)
+  deleted_at               DateTime?        @db.DateTime(0)
+  survey_anwers            survey_answers[]
+
+  survey_administrations survey_administrations @relation(fields: [survey_administration_id], references: [id])
+  users                  users                  @relation(fields: [user_id], references: [id])
+}
+
+model survey_answers {
+  id                          Int       @id @default(autoincrement())
+  survey_administration_id    Int
+  survey_result_id            Int
+  user_id                     Int
+  survey_template_id          Int
+  survey_template_question_id Int
+  survey_template_answer_id   Int
+  remarks                     String?   @db.VarChar(255)
+  status                      String?   @db.VarChar(255)
+  created_by_id               Int?
+  updated_by_id               Int?
+  created_at                  DateTime? @db.DateTime(0)
+  updated_at                  DateTime? @db.DateTime(0)
+  deleted_at                  DateTime? @db.DateTime(0)
+
+  survey_administrations    survey_administrations    @relation(fields: [survey_administration_id], references: [id])
+  survey_results            survey_results            @relation(fields: [survey_result_id], references: [id])
+  users                     users                     @relation(fields: [user_id], references: [id])
+  survey_templates          survey_templates          @relation(fields: [survey_template_id], references: [id])
+  survey_template_questions survey_template_questions @relation(fields: [survey_template_question_id], references: [id])
+  survey_template_answers   survey_template_answers   @relation(fields: [survey_template_answer_id], references: [id])
+}
+
 model user_contact_informations {
   id             Int      @id @default(autoincrement())
   user_id        Int?
@@ -1471,6 +1609,8 @@ model users {
   user_settings             user_settings[]
   evaluation_results        evaluation_results[]
   user_details              user_details?
+  survey_results            survey_results[]
+  survey_answers            survey_answers[]
 
   @@index([birth_date], map: "index_users_on_birth_date")
   @@index([first_name, last_name], map: "index_users_on_first_name_and_last_name")
