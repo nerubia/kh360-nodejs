@@ -537,9 +537,12 @@ export const publish = async (id: number) => {
   )
 }
 
-export const reopen = async (id: number) => {
+export const reopen = async (id: number, eval_end_date: Date | null) => {
   const evaluationAdministration = await EvaluationAdministrationRepository.getById(id)
 
+  if (eval_end_date != null && new Date() > new Date(eval_end_date)) {
+    throw new CustomError("You can't reschedule earlier than today.", 400)
+  }
   if (evaluationAdministration === null) {
     throw new CustomError("Id not found", 400)
   }
@@ -576,9 +579,13 @@ export const reopen = async (id: number) => {
             : EvaluationStatus.Open,
       })
     }
-
     await EvaluationRepository.updateById(evaluation.id, data)
   }
+
+  await EvaluationAdministrationRepository.updateEvalEndDate(
+    evaluationAdministration.id,
+    eval_end_date
+  )
 
   await EvaluationResultDetailsRepository.updateByAdministrationId(evaluationAdministration.id, {
     score_ratings_id: null,

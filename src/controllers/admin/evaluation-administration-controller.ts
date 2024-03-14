@@ -505,7 +505,8 @@ export const publish = async (req: Request, res: Response) => {
 export const reopen = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    await EvaluationAdministrationService.reopen(parseInt(id))
+    const { eval_end_date } = req.body
+    await EvaluationAdministrationService.reopen(parseInt(id), eval_end_date)
     res.json({ id })
   } catch (error) {
     if (error instanceof CustomError) {
