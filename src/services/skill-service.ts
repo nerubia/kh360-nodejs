@@ -6,9 +6,11 @@ export const getAllByFilters = async (
   name: string,
   skill_category_id: string,
   status: string,
-  page: string
+  page: string,
+  items: string
 ) => {
-  const itemsPerPage = 40
+  const parsedItems = parseInt(items)
+  const itemsPerPage = isNaN(parsedItems) ? 40 : 20
   const parsedPage = parseInt(page)
   const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
