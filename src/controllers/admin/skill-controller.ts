@@ -10,16 +10,18 @@ import CustomError from "../../utils/custom-error"
  * @param req.query.skill_category_id - Filter by skill_category_id.
  * @param req.query.status - Filter by status.
  * @param req.query.page - Page number for pagination.
+ * @param req.query.items - Items per page.
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const { name, skill_category_id, status, page } = req.query
+    const { name, skill_category_id, status, page, items } = req.query
 
     const skills = await SkillService.getAllByFilters(
       name as string,
       skill_category_id as string,
       status as string,
-      page as string
+      page as string,
+      items as string
     )
 
     res.json(skills)
