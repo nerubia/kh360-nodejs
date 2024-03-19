@@ -30,6 +30,7 @@ import skillRoute from "./routes/admin/skill-route"
 import skillCategoryRoute from "./routes/admin/skill-category-route"
 import usersRoute from "./routes/admin/users-route"
 import surveyTemplateRoute from "./routes/admin/survey-template-route"
+import surveyAdministrationRoute from "./routes/admin/survey-administration-route"
 
 const app: Application = express()
 
@@ -77,6 +78,7 @@ app.use("/admin/projects", adminMiddleware, projectRoute)
 app.use("/admin/skills", adminMiddleware, skillRoute)
 app.use("/admin/skill-categories", adminMiddleware, skillCategoryRoute)
 app.use("/admin/survey-templates", adminMiddleware, surveyTemplateRoute)
+app.use("/admin/survey-administrations", adminMiddleware, surveyAdministrationRoute)
 app.use("/admin/users", adminMiddleware, usersRoute)
 
 export default app
