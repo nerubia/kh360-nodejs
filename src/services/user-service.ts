@@ -15,6 +15,8 @@ import * as ProjectRepository from "../repositories/project-repository"
 import * as EmailRecipientRepository from "../repositories/email-recipient-repository"
 import * as ScoreRatingRepository from "../repositories/score-rating-repository"
 import * as SystemSettingsRepository from "../repositories/system-settings-repository"
+import * as SurveyAdministrationRepository from "../repositories/survey-administration-repository"
+import * as SurveyResultRepository from "../repositories/survey-result-repository"
 import { EvaluationStatus } from "../types/evaluation-type"
 import { submitEvaluationSchema } from "../utils/validation/evaluations/submit-evaluation-schema"
 import { type UserToken } from "../types/user-token-type"
@@ -721,5 +723,52 @@ export const sendRequestToRemove = async (evaluation_id: number, comment: string
 
   for (const emailRecipient of emailRecipients) {
     await sendMail(emailRecipient.email, emailTemplate.subject ?? "", modifiedContent)
+  }
+}
+
+export const getSurveyAdministrations = async (user: UserToken, page: number) => {
+  const itemsPerPage = 20
+  const currentPage = isNaN(page) || page < 0 ? 1 : page
+
+  const filter = {
+    user_id: user.id,
+    deleted_at: null,
+  }
+
+  const surveyResults = await SurveyResultRepository.getAllByFilters(filter)
+
+  const surveyAdministrationIds = surveyResults.map(
+    (surveyAdmin) => surveyAdmin.survey_administration_id
+  )
+
+  const surveyAdministrations = await SurveyAdministrationRepository.paginateByFilters(
+    (currentPage - 1) * itemsPerPage,
+    itemsPerPage,
+    {
+      id: {
+        in: surveyAdministrationIds,
+      },
+      status: EvaluationAdministrationStatus.Ongoing,
+    }
+  )
+
+  const totalItems = await SurveyAdministrationRepository.countAllByFilters({
+    id: {
+      in: surveyAdministrationIds,
+    },
+    status: EvaluationAdministrationStatus.Ongoing,
+  })
+
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+
+  return {
+    data: surveyAdministrations,
+    pageInfo: {
+      hasPreviousPage: currentPage > 1,
+      hasNextPage: currentPage < totalPages,
+      currentPage,
+      totalPages,
+      totalItems,
+    },
   }
 }
