@@ -5,7 +5,7 @@ import * as UserRepository from "../repositories/user-repository"
 import { sendMail } from "../utils/sendgrid"
 import {
   SurveyAdministrationStatus,
-  type SurveyAdministrationType,
+  type SurveyAdministration,
 } from "../types/survey-administration-type"
 import CustomError from "../utils/custom-error"
 import { format } from "date-fns"
@@ -64,11 +64,11 @@ export const getAllByStatusAndEndDate = async (status: string, date: Date) => {
   return await SurveyAdministrationRepository.getAllByStatusAndEndDate(status, date)
 }
 
-export const create = async (data: SurveyAdministrationType) => {
+export const create = async (data: SurveyAdministration) => {
   return await SurveyAdministrationRepository.create(data)
 }
 
-export const updateById = async (id: number, data: SurveyAdministrationType) => {
+export const updateById = async (id: number, data: SurveyAdministration) => {
   const surveyAdministration = await SurveyAdministrationRepository.getById(id)
   if (surveyAdministration === null) {
     throw new CustomError("Invalid Id.", 400)

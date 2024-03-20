@@ -266,6 +266,27 @@ export const submitComment = async (req: Request, res: Response) => {
   }
 }
 
+/**
+ * List user survey administrations
+ * @param req.query.page - Page number for pagination.
+ */
+export const getSurveyAdministrations = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+    const { page } = req.query
+
+    const surveyAdministrations = await UserService.getSurveyAdministrations(
+      user,
+      parseInt(page as string)
+    )
+
+    res.json(surveyAdministrations)
+  } catch (error) {
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
 // TODO: Refactor
 export const getProfile = async (req: Request, res: Response) => {
   try {

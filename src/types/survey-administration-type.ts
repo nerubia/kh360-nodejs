@@ -1,4 +1,4 @@
-export interface SurveyAdministrationType {
+export interface SurveyAdministration {
   id?: number
   name: string
   survey_start_date: Date
