@@ -16,6 +16,8 @@ export const getAllByFilters = async (where: Prisma.survey_resultsWhereInput) =>
       users: {
         select: {
           id: true,
+          first_name: true,
+          last_name: true,
         },
       },
       survey_administration_id: true,
