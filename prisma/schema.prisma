@@ -1389,7 +1389,7 @@ model survey_answers {
   user_id                     Int
   survey_template_id          Int
   survey_template_question_id Int
-  survey_template_answer_id   Int
+  survey_template_answer_id   Int?
   remarks                     String?   @db.VarChar(255)
   status                      String?   @db.VarChar(255)
   created_by_id               Int?
@@ -1403,7 +1403,7 @@ model survey_answers {
   users                     users                     @relation(fields: [user_id], references: [id])
   survey_templates          survey_templates          @relation(fields: [survey_template_id], references: [id])
   survey_template_questions survey_template_questions @relation(fields: [survey_template_question_id], references: [id])
-  survey_template_answers   survey_template_answers   @relation(fields: [survey_template_answer_id], references: [id])
+  survey_template_answers   survey_template_answers?   @relation(fields: [survey_template_answer_id], references: [id])
 }
 
 model user_contact_informations {
