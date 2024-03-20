@@ -1,4 +1,5 @@
 import prisma from "../utils/prisma"
+import { type Prisma } from "@prisma/client"
 import { type SurveyAdministrationType } from "../types/survey-administration-type"
 
 export const getById = async (id: number) => {
@@ -16,6 +17,29 @@ export const getAllByFilters = async (name: string, status: string) => {
       status: { equals: status },
     },
   })
+}
+
+export const paginateByFilters = async (
+  skip: number,
+  take: number,
+  where: Prisma.survey_administrationsWhereInput
+) => {
+  return await prisma.survey_administrations.findMany({
+    skip,
+    take,
+    where,
+    orderBy: {
+      id: "desc",
+    },
+  })
+}
+
+export const countAllByFilters = async (where: Prisma.survey_administrationsWhereInput) => {
+  const count = await prisma.survey_administrations.count({
+    where,
+  })
+
+  return count
 }
 
 export const create = async (data: SurveyAdministrationType) => {
