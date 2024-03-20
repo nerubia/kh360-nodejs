@@ -43,7 +43,7 @@ export const create = async (
       user_id: employeeId,
       status:
         surveyAdministration.survey_start_date != null &&
-        surveyAdministration.survey_start_date > currentDate
+          surveyAdministration.survey_start_date > currentDate
           ? SurveyResultStatus.Ready
           : SurveyResultStatus.Ongoing,
       created_by_id: user.id,
@@ -80,7 +80,7 @@ export const create = async (
         survey_template_question_id: surveyTemplateAnswer.survey_template_question_id,
         status:
           surveyAdministration.survey_start_date != null &&
-          surveyAdministration.survey_start_date > currentDate
+            surveyAdministration.survey_start_date > currentDate
             ? SurveyAnswerStatus.Pending
             : SurveyAnswerStatus.Open,
         created_by_id: user.id,
