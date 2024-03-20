@@ -1,6 +1,6 @@
 import prisma from "../utils/prisma"
 import { type Prisma } from "@prisma/client"
-import { type SurveyAdministrationType } from "../types/survey-administration-type"
+import { type SurveyAdministration } from "../types/survey-administration-type"
 
 export const getById = async (id: number) => {
   return await prisma.survey_administrations.findUnique({
@@ -64,7 +64,7 @@ export const countAllByFilters = async (where: Prisma.survey_administrationsWher
   return count
 }
 
-export const create = async (data: SurveyAdministrationType) => {
+export const create = async (data: SurveyAdministration) => {
   return await prisma.survey_administrations.create({
     data: {
       ...data,
@@ -82,7 +82,7 @@ export const create = async (data: SurveyAdministrationType) => {
     },
   })
 }
-export const updateById = async (id: number, data: SurveyAdministrationType) => {
+export const updateById = async (id: number, data: SurveyAdministration) => {
   return await prisma.survey_administrations.update({
     where: {
       id,
@@ -103,6 +103,7 @@ export const updateById = async (id: number, data: SurveyAdministrationType) => 
     },
   })
 }
+
 export const deleteById = async (id: number) => {
   return await prisma.survey_administrations.delete({
     where: {

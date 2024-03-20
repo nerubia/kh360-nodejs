@@ -24,6 +24,8 @@ router.get("/evaluation-results/:id/evaluators", EvaluationResultController.getE
 router.get("/evaluation-results", EvaluationResultController.index)
 router.get("/evaluation-results/:id", EvaluationResultController.show)
 
+router.get("/survey-administrations", UserController.getSurveyAdministrations)
+
 // TODO: Refactor
 router.get("/profile", UserController.getProfile)
 router.get("/mail", UserController.sendSampleMail)
