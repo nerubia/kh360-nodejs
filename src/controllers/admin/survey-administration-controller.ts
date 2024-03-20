@@ -7,15 +7,17 @@ import { SurveyAdministrationStatus } from "../../types/survey-administration-ty
 
 /**
  *List survey administrations
- @param req.body.name - Filter by name 
- @param req.body.status - Filter by status 
+ * @param req.query.name - Filter by name.
+ * @param req.query.status - Filter by status.
+ * @param req.query.page - Page number for pagination.
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const { name, status } = req.query
+    const { name, status, page } = req.query
     const survey = await SurveyAdministrationService.getAllByFilters(
       name as string,
-      status as string
+      status as string,
+      page as string
     )
     res.json(survey)
   } catch (error) {

@@ -5,8 +5,44 @@ import {
 } from "../types/survey-administration-type"
 import CustomError from "../utils/custom-error"
 
-export const getAllByFilters = async (name: string, status: string) => {
-  return await SurveyAdministrationRepository.getAllByFilters(name, status)
+export const getAllByFilters = async (name: string, status: string, page: string) => {
+  const itemsPerPage = 10
+  const parsedPage = parseInt(page)
+  const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
+
+  const where = {
+    name: {
+      contains: name,
+    },
+  }
+
+  if (status !== undefined && status !== "all") {
+    const statuses = status.split(",")
+    Object.assign(where, {
+      status: {
+        in: statuses,
+      },
+    })
+  }
+  const surveyAdministrations = await SurveyAdministrationRepository.paginateByFilters(
+    (currentPage - 1) * itemsPerPage,
+    itemsPerPage,
+    where
+  )
+
+  const totalItems = await SurveyAdministrationRepository.countAllByFilters(where)
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+
+  return {
+    data: surveyAdministrations,
+    pageInfo: {
+      hasPreviousPage: currentPage > 1,
+      hasNextPage: currentPage < totalPages,
+      currentPage,
+      totalPages,
+      totalItems,
+    },
+  }
 }
 
 export const create = async (data: SurveyAdministrationType) => {
