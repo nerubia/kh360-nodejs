@@ -1,9 +1,10 @@
 export interface SurveyAnswer {
+  id?: number | string
   survey_administration_id: number
   survey_result_id: number
   user_id: number
   survey_template_id: number
-  survey_template_answer_id?: number
+  survey_template_answer_id?: number | string
   survey_template_question_id: number
   status: string
   created_by_id: number
