@@ -1,4 +1,7 @@
 import * as SkillRepository from "../repositories/skill-repository"
+import * as ProjectSkillRepository from "../repositories/project-skill-repository"
+import * as ProjectMemberSkillRepository from "../repositories/project-member-skill-repository"
+
 import { type SkillType } from "../types/skill-type"
 import CustomError from "../utils/custom-error"
 
@@ -94,6 +97,15 @@ export const deleteById = async (id: number) => {
   const skill = await SkillRepository.getById(id)
   if (skill === null) {
     throw new CustomError("Skill not found", 400)
+  }
+  const existingProjectSkillCount = await ProjectSkillRepository.countByFilters({
+    skill_id: skill.id,
+  })
+  const existingProjectMemberSkillsCount = await ProjectMemberSkillRepository.countByFilters({
+    skill_id: skill.id,
+  })
+  if (existingProjectSkillCount > 0 || existingProjectMemberSkillsCount > 0) {
+    throw new CustomError("Skill is currently being used. You are not allowed to delete.", 400)
   }
   await SkillRepository.deleteById(id, skill.id)
   const remainingSkills = await SkillRepository.getAllSkills({})
