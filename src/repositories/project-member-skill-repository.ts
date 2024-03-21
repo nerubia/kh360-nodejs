@@ -9,6 +9,12 @@ export const getById = async (id: number) => {
   })
 }
 
+export const countByFilters = async (where: Prisma.project_member_skillsWhereInput) => {
+  return await prisma.project_member_skills.count({
+    where,
+  })
+}
+
 export const getAllByFilters = async (where: Prisma.project_member_skillsWhereInput) => {
   return await prisma.project_member_skills.findMany({
     select: {
