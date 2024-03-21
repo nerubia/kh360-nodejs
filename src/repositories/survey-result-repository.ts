@@ -26,6 +26,24 @@ export const getAllByFilters = async (where: Prisma.survey_resultsWhereInput) =>
   })
 }
 
+export const getByFilters = async (where: Prisma.survey_resultsWhereInput) => {
+  return await prisma.survey_results.findFirst({
+    where,
+  })
+}
+
+export const updateStatusById = async (id: number, status: string) => {
+  return await prisma.survey_results.update({
+    where: {
+      id,
+    },
+    data: {
+      status,
+      updated_at: new Date(),
+    },
+  })
+}
+
 export const updateById = async (id: number, data: Prisma.survey_answersUpdateInput) => {
   await prisma.survey_results.update({
     where: {
