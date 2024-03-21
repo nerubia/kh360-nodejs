@@ -25,6 +25,7 @@ router.get("/evaluation-results", EvaluationResultController.index)
 router.get("/evaluation-results/:id", EvaluationResultController.show)
 
 router.get("/survey-administrations", UserController.getSurveyAdministrations)
+router.post("/survey-administrations/:id/submit-survey", UserController.submitSurveyAnswers)
 
 // TODO: Refactor
 router.get("/profile", UserController.getProfile)

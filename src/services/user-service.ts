@@ -17,7 +17,10 @@ import * as ScoreRatingRepository from "../repositories/score-rating-repository"
 import * as SystemSettingsRepository from "../repositories/system-settings-repository"
 import * as SurveyAdministrationRepository from "../repositories/survey-administration-repository"
 import * as SurveyResultRepository from "../repositories/survey-result-repository"
+import * as SurveyAnswerRepository from "../repositories/survey-answer-repository"
+import * as SurveyTemplateQuestionRepository from "../repositories/survey-template-question-repository"
 import { EvaluationStatus } from "../types/evaluation-type"
+import { SurveyAnswerStatus, type SurveyAnswer } from "../types/survey-answer-type"
 import { submitEvaluationSchema } from "../utils/validation/evaluations/submit-evaluation-schema"
 import { type UserToken } from "../types/user-token-type"
 import { differenceInDays } from "date-fns"
@@ -28,6 +31,7 @@ import { sendMail } from "../utils/sendgrid"
 import { formatDateRange } from "../utils/format-date"
 import { format, utcToZonedTime } from "date-fns-tz"
 import { constructNameFilter } from "../utils/format-filter"
+import { SurveyResultStatus } from "../types/survey-result-type"
 
 export const getById = async (id: number) => {
   return await UserRepository.getById(id)
@@ -771,4 +775,48 @@ export const getSurveyAdministrations = async (user: UserToken, page: number) =>
       totalItems,
     },
   }
+}
+
+export const submitSurveyAnswers = async (
+  survey_result_id: number,
+  user: UserToken,
+  survey_answers: SurveyAnswer[],
+  comment: string
+) => {
+  const surveyResult = await SurveyResultRepository.getByFilters({
+    id: survey_result_id,
+    user_id: user.id,
+  })
+
+  if (surveyResult === null) {
+    throw new CustomError("Invalid survey result.", 400)
+  }
+
+  for (const surveyAnswer of survey_answers) {
+    const existingSurveyAnswer = await SurveyAnswerRepository.getById(
+      parseInt(surveyAnswer.id as string)
+    )
+
+    if (existingSurveyAnswer === null) {
+      throw new CustomError("Invalid survey answer id.", 400)
+    }
+
+    const surveyQuestion = await SurveyTemplateQuestionRepository.getByFilters({
+      id: existingSurveyAnswer.survey_template_question_id,
+      is_active: true,
+    })
+
+    if (surveyQuestion?.is_required === true && surveyAnswer.survey_template_answer_id === null) {
+      throw new CustomError("Must answer required questions.", 400)
+    }
+
+    await SurveyAnswerRepository.updateByid(existingSurveyAnswer.id, {
+      survey_template_answer_id: parseInt(surveyAnswer.survey_template_answer_id as string),
+      remarks: comment,
+      status: SurveyAnswerStatus.Submitted,
+      updated_by_id: user.id,
+    })
+  }
+
+  await SurveyResultRepository.updateStatusById(survey_result_id, SurveyResultStatus.Completed)
 }
