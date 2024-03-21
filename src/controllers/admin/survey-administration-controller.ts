@@ -131,8 +131,8 @@ export const update = async (req: Request, res: Response) => {
     })
     const updateSurvey = await SurveyAdministrationService.updateById(parseInt(id), {
       name: name as string,
-      survey_start_date: survey_start_date as Date,
-      survey_end_date: survey_end_date as Date,
+      survey_start_date: new Date(survey_start_date),
+      survey_end_date: new Date(survey_end_date),
       survey_template_id: parseInt(survey_template_id),
       remarks: remarks as string,
       email_subject: email_subject as string,
