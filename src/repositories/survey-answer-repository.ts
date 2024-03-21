@@ -1,10 +1,29 @@
-import { type SurveyAnswer } from "../types/survey-answer-type"
 import prisma from "../utils/prisma"
 import { type Prisma } from "@prisma/client"
 
-export const createMany = async (data: SurveyAnswer[]) => {
+export const createMany = async (data: Prisma.survey_answersUncheckedCreateInput[]) => {
   return await prisma.survey_answers.createMany({
     data,
+  })
+}
+
+export const getById = async (id: number) => {
+  return await prisma.survey_answers.findUnique({
+    where: {
+      id,
+    },
+  })
+}
+
+export const updateByid = async (id: number, data: Prisma.survey_answersUncheckedUpdateInput) => {
+  return await prisma.survey_answers.update({
+    where: {
+      id,
+    },
+    data: {
+      ...data,
+      updated_at: new Date(),
+    },
   })
 }
 

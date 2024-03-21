@@ -1,10 +1,11 @@
+import { type Prisma } from "@prisma/client"
 import { SurveyResultStatus } from "../types/survey-result-type"
 import * as SurveyResultRepository from "../repositories/survey-result-repository"
 import * as SurveyAdministrationRepository from "../repositories/survey-administration-repository"
 import * as SurveyTemplateAnswerRepository from "../repositories/survey-template-answer-repository"
 import * as SurveyAnswerRepository from "../repositories/survey-answer-repository"
 import CustomError from "../utils/custom-error"
-import { type SurveyAnswer, SurveyAnswerStatus } from "../types/survey-answer-type"
+import { SurveyAnswerStatus } from "../types/survey-answer-type"
 import { type UserToken } from "../types/user-token-type"
 import { SurveyAdministrationStatus } from "../types/survey-administration-type"
 
@@ -43,7 +44,7 @@ export const create = async (
       user_id: employeeId,
       status:
         surveyAdministration.survey_start_date != null &&
-          surveyAdministration.survey_start_date > currentDate
+        surveyAdministration.survey_start_date > currentDate
           ? SurveyResultStatus.Ready
           : SurveyResultStatus.Ongoing,
       created_by_id: user.id,
@@ -65,7 +66,7 @@ export const create = async (
   for (const surveyResult of newSurveyResults) {
     const respondentId = surveyResult.users?.id
 
-    const surveyAnswers: SurveyAnswer[] = []
+    const surveyAnswers: Prisma.survey_answersUncheckedCreateInput[] = []
 
     const surveyTemplateAnswers = await SurveyTemplateAnswerRepository.getAllByFilters({
       survey_template_id: surveyAdministration.survey_template_id ?? 0,
@@ -80,7 +81,7 @@ export const create = async (
         survey_template_question_id: surveyTemplateAnswer.survey_template_question_id,
         status:
           surveyAdministration.survey_start_date != null &&
-            surveyAdministration.survey_start_date > currentDate
+          surveyAdministration.survey_start_date > currentDate
             ? SurveyAnswerStatus.Pending
             : SurveyAnswerStatus.Open,
         created_by_id: user.id,
