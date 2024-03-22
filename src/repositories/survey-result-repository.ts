@@ -25,3 +25,26 @@ export const getAllByFilters = async (where: Prisma.survey_resultsWhereInput) =>
     where,
   })
 }
+
+export const updateById = async (id: number, data: Prisma.survey_answersUpdateInput) => {
+  await prisma.survey_results.update({
+    where: {
+      id,
+    },
+    data,
+  })
+}
+
+export const updateStatusByAdministrationId = async (
+  survey_administration_id: number,
+  status: string
+) => {
+  await prisma.survey_results.updateMany({
+    where: {
+      survey_administration_id,
+    },
+    data: {
+      status,
+    },
+  })
+}

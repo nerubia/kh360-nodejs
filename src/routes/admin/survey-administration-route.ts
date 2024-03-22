@@ -1,18 +1,16 @@
 import express from "express"
-import {
-  index,
-  show,
-  store,
-  update,
-  destroy,
-} from "../../controllers/admin/survey-administration-controller"
+import * as SurveyAdminsitrationController from "../../controllers/admin/survey-administration-controller"
 
 const router = express.Router()
 
-router.get("/", index)
-router.get("/:id", show)
-router.post("/", store)
-router.put("/:id", update)
-router.delete("/:id", destroy)
+router.get("/", SurveyAdminsitrationController.index)
+router.get("/:id", SurveyAdminsitrationController.show)
+router.post("/", SurveyAdminsitrationController.store)
+router.put("/:id", SurveyAdminsitrationController.update)
+router.delete("/:id", SurveyAdminsitrationController.destroy)
+
+router.post("/:id/close", SurveyAdminsitrationController.close)
+router.post("/:id/cancel", SurveyAdminsitrationController.cancel)
+router.post("/:id/reopen", SurveyAdminsitrationController.reopen)
 
 export default router

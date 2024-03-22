@@ -13,11 +13,15 @@ export interface SurveyAnswer {
 }
 
 export enum SurveyAnswerStatus {
-  ForReview = "For Review",
   Draft = "Draft",
-  Ready = "Ready",
+  Excluded = "Excluded",
+  Pending = "Pending",
+  Open = "Open",
   Ongoing = "Ongoing",
-  Completed = "Completed",
+  Submitted = "Submitted",
   Cancelled = "Cancelled",
-  NoResult = "No Result",
+  Expired = "Expired",
+  Reviewed = "Reviewed",
+  ForRemoval = "For Removal",
+  Removed = "Removed",
 }
