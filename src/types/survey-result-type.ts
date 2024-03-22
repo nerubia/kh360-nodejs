@@ -13,6 +13,7 @@ export enum SurveyResultStatus {
   Draft = "Draft",
   Ready = "Ready",
   Ongoing = "Ongoing",
+  Closed = "Closed",
   Completed = "Completed",
   Cancelled = "Cancelled",
   NoResult = "No Result",
