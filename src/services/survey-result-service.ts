@@ -3,12 +3,10 @@ import * as SurveyResultRepository from "../repositories/survey-result-repositor
 import * as SurveyAdministrationRepository from "../repositories/survey-administration-repository"
 import * as SurveyTemplateAnswerRepository from "../repositories/survey-template-answer-repository"
 import * as SurveyAnswerRepository from "../repositories/survey-answer-repository"
-import * as UserRepository from "../repositories/user-repository"
 import CustomError from "../utils/custom-error"
 import { type SurveyAnswer, SurveyAnswerStatus } from "../types/survey-answer-type"
-import { sendMail } from "../utils/sendgrid"
-import { format } from "date-fns"
 import { type UserToken } from "../types/user-token-type"
+import { SurveyAdministrationStatus } from "../types/survey-administration-type"
 
 export const create = async (
   survey_administration_id: number,
@@ -43,7 +41,11 @@ export const create = async (
     return {
       survey_administration_id: surveyAdministration.id,
       user_id: employeeId,
-      status: SurveyResultStatus.ForReview,
+      status:
+        surveyAdministration.survey_start_date != null &&
+        surveyAdministration.survey_start_date > currentDate
+          ? SurveyResultStatus.Ready
+          : SurveyResultStatus.Ongoing,
       created_by_id: user.id,
       updated_by_id: user.id,
       created_at: currentDate,
@@ -76,7 +78,11 @@ export const create = async (
         user_id: respondentId,
         survey_template_id: surveyAdministration.survey_template_id ?? 0,
         survey_template_question_id: surveyTemplateAnswer.survey_template_question_id,
-        status: SurveyAnswerStatus.Draft,
+        status:
+          surveyAdministration.survey_start_date != null &&
+          surveyAdministration.survey_start_date > currentDate
+            ? SurveyAnswerStatus.Pending
+            : SurveyAnswerStatus.Open,
         created_by_id: user.id,
         updated_by_id: user.id,
         created_at: currentDate,
@@ -85,36 +91,15 @@ export const create = async (
     }
 
     await SurveyAnswerRepository.createMany(surveyAnswers)
-
-    const emailContent = surveyAdministration.email_content ?? ""
-
-    const scheduleEndDate = format(
-      surveyAdministration.survey_end_date ?? new Date(),
-      "EEEE, MMMM d, yyyy"
-    )
-
-    const replacements: Record<string, string> = {
-      survey_name: surveyAdministration.name ?? "",
-      survey_end_date: scheduleEndDate,
-    }
-
-    let modifiedContent: string = emailContent.replace(
-      /{{(.*?)}}/g,
-      (match: string, p1: string) => {
-        return replacements[p1] ?? match
-      }
-    )
-    modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
-    const respondent = await UserRepository.getById(surveyResult.user_id ?? 0)
-    modifiedContent = modifiedContent.replace(
-      "{{link}}",
-      `<a href='${process.env.APP_URL}/survey-administrations/${surveyAdministration.id}'>link</a>`
-    )
-    modifiedContent = modifiedContent.replace("{{passcode}}", "")
-    if (respondent !== null) {
-      await sendMail(respondent.email, surveyAdministration.email_subject ?? "", modifiedContent)
-    }
   }
+
+  await SurveyAdministrationRepository.updateStatusById(
+    surveyAdministration.id,
+    surveyAdministration.survey_start_date != null &&
+      surveyAdministration.survey_start_date > currentDate
+      ? SurveyAdministrationStatus.Pending
+      : SurveyAdministrationStatus.Processing
+  )
 
   return { survey_administration_id: surveyAdministration.id }
 }
@@ -124,4 +109,11 @@ export const getAllBySurveyAdminId = async (survey_administration_id: number) =>
     survey_administration_id,
     deleted_at: null,
   })
+}
+
+export const updateStatusByAdministrationId = async (
+  evaluation_administration_id: number,
+  status: string
+) => {
+  await SurveyResultRepository.updateStatusByAdministrationId(evaluation_administration_id, status)
 }

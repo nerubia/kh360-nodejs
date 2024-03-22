@@ -4,6 +4,8 @@ import { type Application } from "express"
 import http from "http"
 import { setWssForPendingEvalAdmin } from "../jobs/update-evaluation-administrations-job"
 import { setWssForProcessingEvalAdmin } from "../jobs/send-evaluation-email-job"
+import { setWssForPendingSurveyAdmin } from "../jobs/update-survey-administrations-job"
+import { setWssForProcessingSurveyAdmin } from "../jobs/send-survey-email-job"
 
 const webSocketServer = (app: Application) => {
   const server = http.createServer(app)
@@ -26,6 +28,8 @@ const webSocketServer = (app: Application) => {
 
     setWssForPendingEvalAdmin(wss)
     setWssForProcessingEvalAdmin(wss)
+    setWssForPendingSurveyAdmin(wss)
+    setWssForProcessingSurveyAdmin(wss)
 
     // Handle WebSocket closing
     ws.on("close", () => {
