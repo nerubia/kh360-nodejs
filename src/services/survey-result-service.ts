@@ -104,10 +104,13 @@ export const getAllBySurveyAdminId = async (survey_administration_id: number) =>
       })
 
       const total_questions = surveyTemplateQuestions.length
-      const surveyAnswers = await SurveyAnswerRepository.getAllDistinctByFilters({
-        survey_result_id: surveyResult.id,
-        status: SurveyAnswerStatus.Submitted,
-      })
+      const surveyAnswers = await SurveyAnswerRepository.getAllDistinctByFilters(
+        {
+          survey_result_id: surveyResult.id,
+          status: SurveyAnswerStatus.Submitted,
+        },
+        ["survey_template_question_id"]
+      )
 
       const total_answered = surveyAnswers.filter(
         (answer) => answer.survey_template_answer_id !== null
@@ -227,7 +230,7 @@ export const sendSurveyEmailByRespondentId = async (
     )
 
     const replacements: Record<string, string> = {
-      survey_name: surveyAdministration.name ?? "",
+      survey_admin_name: surveyAdministration.name ?? "",
       survey_end_date: scheduleEndDate,
     }
 
@@ -243,9 +246,60 @@ export const sendSurveyEmailByRespondentId = async (
       "{{link}}",
       `<a href='${process.env.APP_URL}/survey-forms/${surveyAdministration.id}'>link</a>`
     )
-    modifiedContent = modifiedContent.replace("{{passcode}}", "")
     if (respondent !== null) {
+      modifiedContent = modifiedContent.replace(
+        "{{respondent_first_name}}",
+        `${respondent.first_name}`
+      )
       await sendMail(respondent.email, surveyAdministration.email_subject ?? "", modifiedContent)
     }
   }
+}
+
+export const getResultsByRespondent = async (id: number) => {
+  const surveyResults = await SurveyResultRepository.getAllByFilters({
+    survey_administration_id: id,
+    status: SurveyResultStatus.Closed,
+  })
+  return surveyResults
+}
+
+export const getResultsByAnswer = async (id: number) => {
+  const surveyAnswers = await SurveyAnswerRepository.getAllDistinctByFilters(
+    {
+      survey_administration_id: id,
+      survey_results: {
+        status: SurveyResultStatus.Closed,
+      },
+      status: SurveyAnswerStatus.Submitted,
+    },
+    ["survey_template_answer_id"]
+  )
+
+  const finalSurveyAnswers = await Promise.all(
+    surveyAnswers.map(async (answer) => {
+      const totalRespondents = []
+
+      const allSurveyAnswers = await SurveyAnswerRepository.getAllDistinctByFilters(
+        {
+          survey_template_answer_id: answer.survey_template_answer_id,
+          survey_administration_id: id,
+        },
+        ["user_id"]
+      )
+
+      for (const surveyAnswer of allSurveyAnswers) {
+        const users = await UserRepository.getById(surveyAnswer.user_id)
+        totalRespondents.push(users)
+      }
+
+      return {
+        ...answer,
+        totalCount: allSurveyAnswers.length,
+        users: totalRespondents,
+      }
+    })
+  )
+
+  return finalSurveyAnswers
 }
