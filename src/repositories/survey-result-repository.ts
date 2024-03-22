@@ -8,6 +8,14 @@ export const createMany = async (data: SurveyResult[]) => {
   })
 }
 
+export const getById = async (id: number) => {
+  return await prisma.survey_results.findUnique({
+    where: {
+      id,
+    },
+  })
+}
+
 export const getAllByFilters = async (where: Prisma.survey_resultsWhereInput) => {
   return await prisma.survey_results.findMany({
     select: {
@@ -18,6 +26,7 @@ export const getAllByFilters = async (where: Prisma.survey_resultsWhereInput) =>
           id: true,
           first_name: true,
           last_name: true,
+          email: true,
         },
       },
       survey_administration_id: true,
