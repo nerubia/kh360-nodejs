@@ -10,11 +10,33 @@ export const getById = async (id: number) => {
   })
 }
 
-export const getAllByFilters = async (name: string, status: string) => {
+export const getAllByFilters = async (where: Prisma.survey_administrationsWhereInput) => {
+  return await prisma.survey_administrations.findMany({
+    where,
+  })
+}
+
+export const getAllByStatusAndDate = async (status: string, date: Date) => {
   return await prisma.survey_administrations.findMany({
     where: {
-      name: { contains: name },
-      status: { equals: status },
+      status,
+      survey_start_date: {
+        lte: date,
+      },
+      survey_end_date: {
+        gte: date,
+      },
+    },
+  })
+}
+
+export const getAllByStatusAndEndDate = async (status: string, date: Date) => {
+  return await prisma.survey_administrations.findMany({
+    where: {
+      status,
+      survey_end_date: {
+        lte: date,
+      },
     },
   })
 }
@@ -85,6 +107,18 @@ export const deleteById = async (id: number) => {
   return await prisma.survey_administrations.delete({
     where: {
       id,
+    },
+  })
+}
+
+export const updateStatusById = async (id: number, status: string) => {
+  return await prisma.survey_administrations.update({
+    where: {
+      id,
+    },
+    data: {
+      status,
+      updated_at: new Date(),
     },
   })
 }
