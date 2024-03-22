@@ -50,3 +50,26 @@ export const store = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+/**
+ * Send reminder for respondent by ID.
+ * @param req.params.id - The unique ID of the survey administration.
+ * @param req.body.user_id - Respondent id
+ */
+export const sendReminder = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const { user_id } = req.body
+
+    const emailLog = await SurveyResultService.sendReminderByRespondent(
+      parseInt(id),
+      parseInt(user_id as string)
+    )
+    res.json({ respondentId: user_id, emailLog })
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}

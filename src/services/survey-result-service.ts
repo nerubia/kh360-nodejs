@@ -4,10 +4,16 @@ import * as SurveyResultRepository from "../repositories/survey-result-repositor
 import * as SurveyAdministrationRepository from "../repositories/survey-administration-repository"
 import * as SurveyTemplateAnswerRepository from "../repositories/survey-template-answer-repository"
 import * as SurveyAnswerRepository from "../repositories/survey-answer-repository"
+import * as EmailTemplateRepository from "../repositories/email-template-repository"
+import * as EmailLogRepository from "../repositories/email-log-repository"
+import * as UserRepository from "../repositories/user-repository"
 import CustomError from "../utils/custom-error"
 import { SurveyAnswerStatus } from "../types/survey-answer-type"
 import { type UserToken } from "../types/user-token-type"
 import { SurveyAdministrationStatus } from "../types/survey-administration-type"
+import { sendMail } from "../utils/sendgrid"
+import { format } from "date-fns"
+import { EmailLogType, type EmailLog } from "../types/email-log-type"
 
 export const create = async (
   survey_administration_id: number,
@@ -106,10 +112,32 @@ export const create = async (
 }
 
 export const getAllBySurveyAdminId = async (survey_administration_id: number) => {
-  return await SurveyResultRepository.getAllByFilters({
+  const surveyResults = await SurveyResultRepository.getAllByFilters({
     survey_administration_id,
     deleted_at: null,
   })
+
+  const finalSurveyResults = Promise.all(
+    surveyResults.map(async (surveyResult) => {
+      const surveyAnswers = await SurveyAnswerRepository.getAllByFilters({
+        survey_result_id: surveyResult.id,
+      })
+      const total_questions = surveyAnswers.length
+      const total_answered = surveyAnswers.filter(
+        (answer) => answer.survey_template_answer_id !== null
+      ).length
+      const email_logs = await EmailLogRepository.getAllByEmail(surveyResult.users.email)
+
+      return {
+        ...surveyResult,
+        total_questions,
+        total_answered,
+        email_logs,
+      }
+    })
+  )
+
+  return await finalSurveyResults
 }
 
 export const updateStatusByAdministrationId = async (
@@ -117,4 +145,78 @@ export const updateStatusByAdministrationId = async (
   status: string
 ) => {
   await SurveyResultRepository.updateStatusByAdministrationId(evaluation_administration_id, status)
+}
+
+export const sendReminderByRespondent = async (
+  survey_administration_id: number,
+  user_id: number
+) => {
+  const surveyAdministration =
+    await SurveyAdministrationRepository.getById(survey_administration_id)
+
+  if (surveyAdministration === null) {
+    throw new CustomError("Survey administration not found", 400)
+  }
+
+  const emailTemplate = await EmailTemplateRepository.getByTemplateType("Answer Survey Reminder")
+
+  if (emailTemplate === null) {
+    throw new CustomError("Template not found", 400)
+  }
+
+  const respondent = await UserRepository.getById(user_id)
+
+  if (respondent === null) {
+    throw new CustomError("Respondent not found", 400)
+  }
+
+  const emailContent = emailTemplate.content ?? ""
+  const scheduleEndDate = format(
+    surveyAdministration.survey_end_date ?? new Date(),
+    "EEEE, MMMM d, yyyy"
+  )
+
+  const replacements: Record<string, string> = {
+    survey_name: surveyAdministration.name ?? "",
+    eval_schedule_end_date: scheduleEndDate,
+  }
+
+  let modifiedContent: string = emailContent.replace(/{{(.*?)}}/g, (match: string, p1: string) => {
+    return replacements[p1] ?? match
+  })
+  modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
+  modifiedContent = modifiedContent.replace(
+    "{{link}}",
+    `<a href='${process.env.APP_URL}/survey-administrations/${surveyAdministration.id}'>link</a>`
+  )
+  modifiedContent = modifiedContent.replace("{{passcode}}", "")
+  const currentDate = new Date()
+  const emailLogData: EmailLog = {
+    content: modifiedContent,
+    created_at: currentDate,
+    email_address: respondent.email,
+    email_status: EmailLogType.Pending,
+    email_type: emailTemplate.template_type,
+    mail_id: "",
+    notes: `{"survey_administration_id": ${surveyAdministration.id}}`,
+    sent_at: currentDate,
+    subject: emailTemplate.subject,
+    updated_at: currentDate,
+    user_id: respondent.id,
+  }
+
+  if (respondent !== null) {
+    const sgResp = await sendMail(respondent.email, emailTemplate.subject ?? "", modifiedContent)
+    if (sgResp !== null && sgResp !== undefined) {
+      const mailId = sgResp[0].headers["x-message-id"]
+      emailLogData.mail_id = mailId
+      emailLogData.email_status = EmailLogType.Sent
+    } else {
+      emailLogData.email_status = EmailLogType.Error
+    }
+
+    await EmailLogRepository.create(emailLogData)
+
+    return emailLogData
+  }
 }
