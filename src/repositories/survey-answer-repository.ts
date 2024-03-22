@@ -38,6 +38,7 @@ export const getAllByFilters = async (where: Prisma.survey_answersWhereInput) =>
         },
       },
       survey_administration_id: true,
+      survey_template_answer_id: true,
     },
     where,
   })
@@ -64,5 +65,11 @@ export const updateById = async (id: number, data: Prisma.survey_answersUpdateIn
       id,
     },
     data,
+  })
+}
+
+export const countByFilters = async (where: Prisma.survey_answersWhereInput) => {
+  return await prisma.survey_answers.count({
+    where,
   })
 }
