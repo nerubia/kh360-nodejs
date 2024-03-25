@@ -49,10 +49,9 @@ export const create = async (
       survey_administration_id: surveyAdministration.id,
       user_id: employeeId,
       status:
-        surveyAdministration.survey_start_date != null &&
-        surveyAdministration.survey_start_date > currentDate
-          ? SurveyResultStatus.Ready
-          : SurveyResultStatus.Ongoing,
+        surveyAdministration.status === SurveyAdministrationStatus.Ongoing
+          ? SurveyResultStatus.Ongoing
+          : SurveyResultStatus.ForReview,
       created_by_id: user.id,
       updated_by_id: user.id,
       created_at: currentDate,
@@ -98,15 +97,21 @@ export const create = async (
     }
 
     await SurveyAnswerRepository.createMany(surveyAnswers)
+
+    if (surveyAdministration.status === SurveyAdministrationStatus.Ongoing) {
+      await sendSurveyEmailByRespondentId(respondentId, surveyAdministration.id)
+    }
   }
 
-  await SurveyAdministrationRepository.updateStatusById(
-    surveyAdministration.id,
-    surveyAdministration.survey_start_date != null &&
-      surveyAdministration.survey_start_date > currentDate
-      ? SurveyAdministrationStatus.Pending
-      : SurveyAdministrationStatus.Processing
-  )
+  if (surveyAdministration.status === SurveyAdministrationStatus.Draft) {
+    await SurveyAdministrationRepository.updateStatusById(
+      surveyAdministration.id,
+      surveyAdministration.survey_start_date != null &&
+        surveyAdministration.survey_start_date > currentDate
+        ? SurveyAdministrationStatus.Pending
+        : SurveyAdministrationStatus.Processing
+    )
+  }
 
   return { survey_administration_id: surveyAdministration.id }
 }
@@ -218,5 +223,44 @@ export const sendReminderByRespondent = async (
     await EmailLogRepository.create(emailLogData)
 
     return emailLogData
+  }
+}
+
+export const sendSurveyEmailByRespondentId = async (
+  user_id: number,
+  survey_administration_id: number
+) => {
+  const surveyAdministration =
+    await SurveyAdministrationRepository.getById(survey_administration_id)
+
+  if (surveyAdministration !== null) {
+    const emailContent = surveyAdministration.email_content ?? ""
+
+    const scheduleEndDate = format(
+      surveyAdministration.survey_end_date ?? new Date(),
+      "EEEE, MMMM d, yyyy"
+    )
+
+    const replacements: Record<string, string> = {
+      survey_name: surveyAdministration.name ?? "",
+      survey_end_date: scheduleEndDate,
+    }
+
+    let modifiedContent: string = emailContent.replace(
+      /{{(.*?)}}/g,
+      (match: string, p1: string) => {
+        return replacements[p1] ?? match
+      }
+    )
+    modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
+    const respondent = await UserRepository.getById(user_id ?? 0)
+    modifiedContent = modifiedContent.replace(
+      "{{link}}",
+      `<a href='${process.env.APP_URL}/survey-administrations/${surveyAdministration.id}'>link</a>`
+    )
+    modifiedContent = modifiedContent.replace("{{passcode}}", "")
+    if (respondent !== null) {
+      await sendMail(respondent.email, surveyAdministration.email_subject ?? "", modifiedContent)
+    }
   }
 }
