@@ -1286,25 +1286,40 @@ model survey_templates {
   survey_answer                  survey_answers[]
 }
 
+model survey_template_categories {
+  id            Int       @id @default(autoincrement())
+  name          String?   @db.VarChar(255)
+  sequence_no   Int?
+  description   String?   @db.Text
+  category_type String?   @db.VarChar(255)
+  created_at    DateTime? @db.DateTime(0)
+  updated_at    DateTime? @db.DateTime(0)
+
+  survey_template_answers        survey_template_answers[]
+  survey_template_questions       survey_template_questions[]
+}
+
 model survey_template_questions {
-  id                 Int       @id @default(autoincrement())
-  survey_template_id Int
-  sequence_no        Int?
-  question_type      String?   @db.VarChar(255)
-  question_text      String?   @db.VarChar(255)
-  is_required        Boolean?
-  is_active          Boolean?
-  created_by_id      Int?
-  updated_by_id      Int?
-  created_at         DateTime? @db.DateTime(0)
-  updated_at         DateTime? @db.DateTime(0)
-  deleted_at         DateTime? @db.DateTime(0)
+  id                            Int       @id @default(autoincrement())
+  survey_template_id            Int
+  survey_template_category_id   Int?
+  sequence_no                   Int?
+  question_type                 String?   @db.VarChar(255)
+  question_text                 String?   @db.VarChar(255)
+  is_required                   Boolean?
+  is_active                     Boolean?
+  created_by_id                 Int?
+  updated_by_id                 Int?
+  created_at                    DateTime? @db.DateTime(0)
+  updated_at                    DateTime? @db.DateTime(0)
+  deleted_at                    DateTime? @db.DateTime(0)
 
   survey_template_question_rules survey_template_question_rules[]
   survey_template_answers        survey_template_answers[]
   survey_answers                 survey_answers[]
 
   survey_template survey_templates @relation(fields: [survey_template_id], references: [id])
+  survey_template_category survey_template_categories? @relation(fields: [survey_template_category_id], references: [id])
 }
 
 model survey_template_question_rules {
@@ -1329,6 +1344,7 @@ model survey_template_answers {
   id                          Int              @id @default(autoincrement())
   survey_template_id          Int
   survey_template_question_id Int
+  survey_template_category_id Int?
   sequence_no                 Int?
   answer_text                 String?          @db.LongText
   amount                      Int?
@@ -1341,8 +1357,9 @@ model survey_template_answers {
   deleted_at                  DateTime?        @db.DateTime(0)
   survey_answers              survey_answers[]
 
-  survey_templates          survey_templates          @relation(fields: [survey_template_id], references: [id])
-  survey_template_questions survey_template_questions @relation(fields: [survey_template_question_id], references: [id])
+  survey_templates                     survey_templates          @relation(fields: [survey_template_id], references: [id])
+  survey_template_questions            survey_template_questions @relation(fields: [survey_template_question_id], references: [id])
+  survey_template_categories           survey_template_categories? @relation(fields: [survey_template_category_id], references: [id])
 }
 
 model survey_administrations {
