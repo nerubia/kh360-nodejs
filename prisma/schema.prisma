@@ -1280,6 +1280,7 @@ model survey_templates {
   updated_at    DateTime? @db.DateTime(0)
   deleted_at    DateTime? @db.DateTime(0)
 
+  survey_template_categories     survey_template_categories[]
   survey_template_question_rules survey_template_question_rules[]
   survey_template_questions      survey_template_questions[]
   survey_template_answers        survey_template_answers[]
@@ -1287,17 +1288,20 @@ model survey_templates {
 }
 
 model survey_template_categories {
-  id            Int       @id @default(autoincrement())
-  name          String?   @db.VarChar(255)
-  sequence_no   Int?
-  category_type String?   @db.VarChar(255)
-  description   String?   @db.Text
-  status        Boolean?
-  created_at    DateTime? @db.DateTime(0)
-  updated_at    DateTime? @db.DateTime(0)
+  id                  Int       @id @default(autoincrement())
+  survey_template_id  Int?
+  name                String?   @db.VarChar(255)
+  sequence_no         Int?
+  category_type       String?   @db.VarChar(255)
+  description         String?   @db.Text
+  status              Boolean?
+  created_at          DateTime? @db.DateTime(0)
+  updated_at          DateTime? @db.DateTime(0)
 
   survey_template_answers        survey_template_answers[]
-  survey_template_questions       survey_template_questions[]
+  survey_template_questions      survey_template_questions[]
+
+  survey_templates    survey_templates? @relation(fields: [survey_template_id], references: [id], onDelete: Cascade, map: "survey_templates_survey_template_id")
 }
 
 model survey_template_questions {
@@ -1319,8 +1323,8 @@ model survey_template_questions {
   survey_template_answers        survey_template_answers[]
   survey_answers                 survey_answers[]
 
-  survey_template survey_templates @relation(fields: [survey_template_id], references: [id])
-  survey_template_category survey_template_categories? @relation(fields: [survey_template_category_id], references: [id])
+  survey_templates survey_templates @relation(fields: [survey_template_id], references: [id])
+  survey_template_categories survey_template_categories? @relation(fields: [survey_template_category_id], references: [id])
 }
 
 model survey_template_question_rules {
@@ -1337,8 +1341,8 @@ model survey_template_question_rules {
   updated_at                  DateTime? @db.DateTime(0)
   deleted_at                  DateTime? @db.DateTime(0)
 
-  survey_templates          survey_templates          @relation(fields: [survey_template_id], references: [id])
-  survey_template_questions survey_template_questions @relation(fields: [survey_template_question_id], references: [id])
+  survey_templates            survey_templates          @relation(fields: [survey_template_id], references: [id])
+  survey_template_questions   survey_template_questions @relation(fields: [survey_template_question_id], references: [id])
 }
 
 model survey_template_answers {
