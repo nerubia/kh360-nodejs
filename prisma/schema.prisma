@@ -1290,8 +1290,9 @@ model survey_template_categories {
   id            Int       @id @default(autoincrement())
   name          String?   @db.VarChar(255)
   sequence_no   Int?
-  description   String?   @db.Text
   category_type String?   @db.VarChar(255)
+  description   String?   @db.Text
+  status        Boolean?
   created_at    DateTime? @db.DateTime(0)
   updated_at    DateTime? @db.DateTime(0)
 
