@@ -1310,7 +1310,7 @@ model survey_template_questions {
   survey_template_category_id   Int?
   sequence_no                   Int?
   question_type                 String?   @db.VarChar(255)
-  question_text                 String?   @db.VarChar(255)
+  question_text                 String?   @db.Text
   is_required                   Boolean?
   is_active                     Boolean?
   created_by_id                 Int?
