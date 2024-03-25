@@ -1331,8 +1331,8 @@ model survey_template_question_rules {
   id                          Int       @id @default(autoincrement())
   survey_template_id          Int
   survey_template_question_id Int
-  rule_key                    Int?
-  rule_value                  String?
+  rule_key                    String?   @db.VarChar(255)
+  rule_value                  String?   @db.VarChar(255)
   remarks                     String?
   is_active                   Boolean?
   created_by_id               Int?
@@ -1352,6 +1352,7 @@ model survey_template_answers {
   survey_template_category_id Int?
   sequence_no                 Int?
   answer_text                 String?          @db.LongText
+  answer_description          String?          @db.Text
   amount                      Int?
   answer_image                String?
   is_active                   Boolean?
