@@ -19,6 +19,9 @@ import * as SurveyAdministrationRepository from "../repositories/survey-administ
 import * as SurveyResultRepository from "../repositories/survey-result-repository"
 import * as SurveyAnswerRepository from "../repositories/survey-answer-repository"
 import * as SurveyTemplateQuestionRepository from "../repositories/survey-template-question-repository"
+import * as SurveyTemplateQuestionRuleRepository from "../repositories/survey-template-question-rule-repository"
+import * as SurveyTemplateAnswerRepository from "../repositories/survey-template-answer-repository"
+import * as SurveyTemplateCategoryRepository from "../repositories/survey-template-category-repository"
 import { EvaluationStatus } from "../types/evaluation-type"
 import { SurveyAnswerStatus, type SurveyAnswer } from "../types/survey-answer-type"
 import { submitEvaluationSchema } from "../utils/validation/evaluations/submit-evaluation-schema"
@@ -32,6 +35,7 @@ import { formatDateRange } from "../utils/format-date"
 import { format, utcToZonedTime } from "date-fns-tz"
 import { constructNameFilter } from "../utils/format-filter"
 import { SurveyResultStatus } from "../types/survey-result-type"
+import { type Prisma } from "@prisma/client"
 
 export const getById = async (id: number) => {
   return await UserRepository.getById(id)
@@ -777,14 +781,82 @@ export const getSurveyAdministrations = async (user: UserToken, page: number) =>
   }
 }
 
-export const submitSurveyAnswers = async (
-  survey_result_id: number,
-  user: UserToken,
-  survey_answers: SurveyAnswer[],
-  comment: string
-) => {
+export const getSurveyQuestions = async (survey_administration_id: number, user: UserToken) => {
+  const surveyAdministration =
+    await SurveyAdministrationRepository.getById(survey_administration_id)
+
+  if (surveyAdministration === null) {
+    throw new CustomError("Survey administration not found", 400)
+  }
+
   const surveyResult = await SurveyResultRepository.getByFilters({
-    id: survey_result_id,
+    survey_administration_id: surveyAdministration.id,
+    user_id: user.id,
+  })
+
+  if (surveyResult === null) {
+    throw new CustomError("Survey result not found", 400)
+  }
+
+  const filter = {
+    survey_template_id: surveyAdministration.survey_template_id ?? 0,
+    deleted_at: null,
+    is_active: true,
+  }
+
+  const surveyTemplateQuestions = await SurveyTemplateQuestionRepository.getAllByFilters(filter)
+
+  const finalSurveyTemplateQuestions = await Promise.all(
+    surveyTemplateQuestions.map(async (question) => {
+      const surveyTemplateCategories = await SurveyTemplateCategoryRepository.getAllByFilters({
+        survey_template_id: surveyAdministration.survey_template_id ?? 0,
+        category_type: "answer",
+        status: true,
+      })
+
+      const finalSurveyTemplateCategories = await Promise.all(
+        surveyTemplateCategories.map(async (category) => {
+          const surveyTemplateAnswers = await SurveyTemplateAnswerRepository.getAllByFilters({
+            survey_template_category_id: category.id,
+          })
+          return {
+            ...category,
+            surveyTemplateAnswers,
+          }
+        })
+      )
+
+      return {
+        ...question,
+        surveyTemplateCategories: finalSurveyTemplateCategories,
+      }
+    })
+  )
+
+  const survey_answers = await SurveyAnswerRepository.getAllByFilters({
+    user_id: user.id,
+    survey_administration_id,
+  })
+
+  return {
+    survey_template_questions: finalSurveyTemplateQuestions,
+    survey_administration: surveyAdministration,
+    survey_result_status: surveyResult.status,
+    survey_answers,
+  }
+}
+
+export const submitSurveyAnswers = async (
+  survey_administration_id: number,
+  user: UserToken,
+  survey_answers: SurveyAnswer[]
+) => {
+  if (survey_answers.length === 0) {
+    throw new CustomError("Please select atleast one answer.", 400)
+  }
+
+  const surveyResult = await SurveyResultRepository.getByFilters({
+    survey_administration_id,
     user_id: user.id,
   })
 
@@ -792,31 +864,76 @@ export const submitSurveyAnswers = async (
     throw new CustomError("Invalid survey result.", 400)
   }
 
+  const surveyAdministration =
+    await SurveyAdministrationRepository.getById(survey_administration_id)
+
+  if (surveyAdministration === null) {
+    throw new CustomError("Invalid survey administration.", 400)
+  }
+
   for (const surveyAnswer of survey_answers) {
-    const existingSurveyAnswer = await SurveyAnswerRepository.getById(
-      parseInt(surveyAnswer.id as string)
+    const templateQuestionId = parseInt(surveyAnswer.survey_template_question_id as string)
+    const templateAnswerId = parseInt(surveyAnswer.survey_template_answer_id as string)
+
+    const surveyTemplateAnswer = await SurveyTemplateAnswerRepository.getById(
+      isNaN(templateAnswerId) ? 0 : templateAnswerId
     )
 
-    if (existingSurveyAnswer === null) {
-      throw new CustomError("Invalid survey answer id.", 400)
-    }
-
     const surveyQuestion = await SurveyTemplateQuestionRepository.getByFilters({
-      id: existingSurveyAnswer.survey_template_question_id,
+      id: templateQuestionId,
       is_active: true,
     })
 
-    if (surveyQuestion?.is_required === true && surveyAnswer.survey_template_answer_id === null) {
-      throw new CustomError("Must answer required questions.", 400)
+    const surveyQuestionRules = await SurveyTemplateQuestionRuleRepository.getAllByFilters({
+      survey_template_question_id: surveyQuestion?.id,
+    })
+
+    if (surveyQuestionRules !== undefined) {
+      const maxLimitRule = surveyQuestionRules.find((rule) => rule.rule_key === "max_limit")
+
+      if (maxLimitRule !== undefined) {
+        const maxLimit = parseInt(maxLimitRule.rule_value as string)
+        if (
+          surveyTemplateAnswer?.amount !== null &&
+          surveyTemplateAnswer?.amount !== undefined &&
+          surveyTemplateAnswer.amount > maxLimit
+        ) {
+          throw new CustomError("Answer exceeded max limit.", 400)
+        }
+      }
     }
 
-    await SurveyAnswerRepository.updateByid(existingSurveyAnswer.id, {
-      survey_template_answer_id: parseInt(surveyAnswer.survey_template_answer_id as string),
-      remarks: comment,
+    const surveyAnswers: Prisma.survey_answersUncheckedCreateInput[] = []
+    const currentDate = new Date()
+
+    surveyAnswers.push({
+      survey_administration_id,
+      survey_result_id: surveyResult.id,
+      user_id: user.id,
+      survey_template_id: surveyAdministration.survey_template_id ?? 0,
+      survey_template_answer_id: templateAnswerId,
+      survey_template_question_id: templateQuestionId,
       status: SurveyAnswerStatus.Submitted,
+      created_by_id: user.id,
       updated_by_id: user.id,
+      created_at: currentDate,
+      updated_at: currentDate,
     })
+
+    await SurveyAnswerRepository.createMany(surveyAnswers)
+
+    const answersToQuestion = await SurveyAnswerRepository.countByFilters({
+      survey_template_question_id: surveyQuestion?.id,
+      survey_result_id: surveyResult.id,
+      survey_template_answer_id: {
+        not: null,
+      },
+    })
+
+    if (surveyQuestion?.is_required === true && answersToQuestion === 0) {
+      throw new CustomError("Must answer required questions.", 400)
+    }
   }
 
-  await SurveyResultRepository.updateStatusById(survey_result_id, SurveyResultStatus.Completed)
+  await SurveyResultRepository.updateStatusById(surveyResult.id, SurveyResultStatus.Completed)
 }
