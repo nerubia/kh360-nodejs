@@ -15,6 +15,12 @@ export const getById = async (id: number) => {
   })
 }
 
+export const getByFilters = async (where: Prisma.survey_answersWhereInput) => {
+  return await prisma.survey_answers.findFirst({
+    where,
+  })
+}
+
 export const updateByid = async (id: number, data: Prisma.survey_answersUncheckedUpdateInput) => {
   return await prisma.survey_answers.update({
     where: {
@@ -39,8 +45,16 @@ export const getAllByFilters = async (where: Prisma.survey_answersWhereInput) =>
       },
       survey_administration_id: true,
       survey_template_answer_id: true,
+      survey_template_question_id: true,
     },
     where,
+  })
+}
+
+export const getAllDistinctByFilters = async (where: Prisma.survey_answersWhereInput) => {
+  return await prisma.survey_answers.findMany({
+    where,
+    distinct: ["survey_template_question_id"],
   })
 }
 

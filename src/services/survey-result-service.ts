@@ -1,19 +1,18 @@
-import { type Prisma } from "@prisma/client"
 import { SurveyResultStatus } from "../types/survey-result-type"
 import * as SurveyResultRepository from "../repositories/survey-result-repository"
 import * as SurveyAdministrationRepository from "../repositories/survey-administration-repository"
-import * as SurveyTemplateAnswerRepository from "../repositories/survey-template-answer-repository"
 import * as SurveyAnswerRepository from "../repositories/survey-answer-repository"
+import * as SurveyTemplateQuestionRepository from "../repositories/survey-template-question-repository"
 import * as EmailTemplateRepository from "../repositories/email-template-repository"
 import * as EmailLogRepository from "../repositories/email-log-repository"
 import * as UserRepository from "../repositories/user-repository"
 import CustomError from "../utils/custom-error"
-import { SurveyAnswerStatus } from "../types/survey-answer-type"
 import { type UserToken } from "../types/user-token-type"
 import { SurveyAdministrationStatus } from "../types/survey-administration-type"
 import { sendMail } from "../utils/sendgrid"
 import { format } from "date-fns"
 import { EmailLogType, type EmailLog } from "../types/email-log-type"
+import { SurveyAnswerStatus } from "../types/survey-answer-type"
 
 export const create = async (
   survey_administration_id: number,
@@ -71,33 +70,6 @@ export const create = async (
   for (const surveyResult of newSurveyResults) {
     const respondentId = surveyResult.users?.id
 
-    const surveyAnswers: Prisma.survey_answersUncheckedCreateInput[] = []
-
-    const surveyTemplateAnswers = await SurveyTemplateAnswerRepository.getAllByFilters({
-      survey_template_id: surveyAdministration.survey_template_id ?? 0,
-    })
-
-    for (const surveyTemplateAnswer of surveyTemplateAnswers) {
-      surveyAnswers.push({
-        survey_administration_id: surveyAdministration.id,
-        survey_result_id: surveyResult.id,
-        user_id: respondentId,
-        survey_template_id: surveyAdministration.survey_template_id ?? 0,
-        survey_template_question_id: surveyTemplateAnswer.survey_template_question_id,
-        status:
-          surveyAdministration.survey_start_date != null &&
-          surveyAdministration.survey_start_date > currentDate
-            ? SurveyAnswerStatus.Pending
-            : SurveyAnswerStatus.Open,
-        created_by_id: user.id,
-        updated_by_id: user.id,
-        created_at: currentDate,
-        updated_at: currentDate,
-      })
-    }
-
-    await SurveyAnswerRepository.createMany(surveyAnswers)
-
     if (surveyAdministration.status === SurveyAdministrationStatus.Ongoing) {
       await sendSurveyEmailByRespondentId(respondentId, surveyAdministration.id)
     }
@@ -122,12 +94,21 @@ export const getAllBySurveyAdminId = async (survey_administration_id: number) =>
     deleted_at: null,
   })
 
-  const finalSurveyResults = Promise.all(
+  const surveyAdministration =
+    await SurveyAdministrationRepository.getById(survey_administration_id)
+
+  const finalSurveyResults = await Promise.all(
     surveyResults.map(async (surveyResult) => {
-      const surveyAnswers = await SurveyAnswerRepository.getAllByFilters({
-        survey_result_id: surveyResult.id,
+      const surveyTemplateQuestions = await SurveyTemplateQuestionRepository.getAllByFilters({
+        survey_template_id: surveyAdministration?.survey_template_id ?? 0,
       })
-      const total_questions = surveyAnswers.length
+
+      const total_questions = surveyTemplateQuestions.length
+      const surveyAnswers = await SurveyAnswerRepository.getAllDistinctByFilters({
+        survey_result_id: surveyResult.id,
+        status: SurveyAnswerStatus.Submitted,
+      })
+
       const total_answered = surveyAnswers.filter(
         (answer) => answer.survey_template_answer_id !== null
       ).length
@@ -145,7 +126,7 @@ export const getAllBySurveyAdminId = async (survey_administration_id: number) =>
     })
   )
 
-  return await finalSurveyResults
+  return finalSurveyResults
 }
 
 export const updateStatusByAdministrationId = async (
@@ -195,7 +176,7 @@ export const sendReminderByRespondent = async (
   modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
   modifiedContent = modifiedContent.replace(
     "{{link}}",
-    `<a href='${process.env.APP_URL}/survey-administrations/${surveyAdministration.id}'>link</a>`
+    `<a href='${process.env.APP_URL}/survey-forms/${surveyAdministration.id}'>link</a>`
   )
   modifiedContent = modifiedContent.replace("{{passcode}}", "")
   const currentDate = new Date()
@@ -259,7 +240,7 @@ export const sendSurveyEmailByRespondentId = async (
     const respondent = await UserRepository.getById(user_id ?? 0)
     modifiedContent = modifiedContent.replace(
       "{{link}}",
-      `<a href='${process.env.APP_URL}/survey-administrations/${surveyAdministration.id}'>link</a>`
+      `<a href='${process.env.APP_URL}/survey-forms/${surveyAdministration.id}'>link</a>`
     )
     modifiedContent = modifiedContent.replace("{{passcode}}", "")
     if (respondent !== null) {

@@ -288,6 +288,31 @@ export const getSurveyAdministrations = async (req: Request, res: Response) => {
 }
 
 /**
+ * List user survey questions
+ * @param req.query.survey_administration_id - The unique ID of the survey administration.
+ * @param req.query.page - Page number for pagination.
+ */
+export const getSurveyQuestions = async (req: Request, res: Response) => {
+  try {
+    const { survey_administration_id } = req.query
+    const user = req.user
+
+    const surveyQuestions = await UserService.getSurveyQuestions(
+      parseInt(survey_administration_id as string),
+      user
+    )
+
+    res.json(surveyQuestions)
+  } catch (error) {
+    logger.error(error)
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
  * Save answers and comments by ID
  * @param req.params.id - The unique ID of the survey result.
  * @param req.body.survey_answers - Survey answers.
@@ -298,9 +323,9 @@ export const submitSurveyAnswers = async (req: Request, res: Response) => {
   try {
     const user = req.user
     const { id } = req.params
-    const { survey_answers, comment } = req.body
+    const { survey_answers } = req.body
 
-    await UserService.submitSurveyAnswers(parseInt(id), user, survey_answers, comment)
+    await UserService.submitSurveyAnswers(parseInt(id), user, survey_answers)
 
     res.json({ id })
   } catch (error) {

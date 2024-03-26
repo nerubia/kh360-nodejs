@@ -5,7 +5,7 @@ export interface SurveyAnswer {
   user_id: number
   survey_template_id: number
   survey_template_answer_id?: number | string
-  survey_template_question_id: number
+  survey_template_question_id: number | string
   status: string
   created_by_id: number
   updated_by_id: number

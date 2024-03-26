@@ -6,3 +6,11 @@ export const getAllByFilters = async (where: Prisma.survey_template_answersWhere
     where,
   })
 }
+
+export const getById = async (id: number) => {
+  return await prisma.survey_template_answers.findUnique({
+    where: {
+      id,
+    },
+  })
+}
