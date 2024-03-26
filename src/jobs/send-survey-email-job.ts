@@ -1,5 +1,7 @@
 import * as SurveyAdministrationService from "../services/survey-administration-service"
+import * as SurveyResultService from "../services/survey-result-service"
 import { SurveyAdministrationStatus } from "../types/survey-administration-type"
+import { SurveyResultStatus } from "../types/survey-result-type"
 import WebSocket from "ws"
 
 let wssInstance: WebSocket.Server | null = null
@@ -16,6 +18,11 @@ export const sendSurveyEmailJob = async () => {
     await SurveyAdministrationService.updateStatusById(
       surveyAdministration.id,
       SurveyAdministrationStatus.Ongoing
+    )
+
+    await SurveyResultService.updateStatusByAdministrationId(
+      surveyAdministration.id,
+      SurveyResultStatus.Ongoing
     )
 
     await SurveyAdministrationService.sendSurveyEmailById(surveyAdministration.id)
