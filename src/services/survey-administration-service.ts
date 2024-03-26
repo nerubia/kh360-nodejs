@@ -133,7 +133,7 @@ export const sendSurveyEmailById = async (id: number) => {
       const respondent = await UserRepository.getById(surveyResult.user_id ?? 0)
       modifiedContent = modifiedContent.replace(
         "{{link}}",
-        `<a href='${process.env.APP_URL}/survey-administrations/${surveyAdministration.id}'>link</a>`
+        `<a href='${process.env.APP_URL}/survey-forms/${surveyAdministration.id}'>link</a>`
       )
       modifiedContent = modifiedContent.replace("{{passcode}}", "")
       if (respondent !== null) {
