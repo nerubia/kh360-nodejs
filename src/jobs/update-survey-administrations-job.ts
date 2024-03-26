@@ -3,8 +3,8 @@ import * as SurveyResultService from "../services/survey-result-service"
 import * as SurveyAnswerService from "../services/survey-answer-service"
 
 import { SurveyAdministrationStatus } from "../types/survey-administration-type"
-import { EvaluationResultStatus } from "../types/evaluation-result-type"
-import { EvaluationStatus } from "../types/evaluation-type"
+import { SurveyResultStatus } from "../types/survey-result-type"
+import { SurveyAnswerStatus } from "../types/survey-answer-type"
 import WebSocket from "ws"
 
 let wssInstance: WebSocket.Server | null = null
@@ -27,12 +27,12 @@ export const updateSurveyAdministrationsJob = async () => {
 
     await SurveyResultService.updateStatusByAdministrationId(
       pendingSurveyAdministration.id,
-      EvaluationResultStatus.Ongoing
+      SurveyResultStatus.Ongoing
     )
 
     await SurveyAnswerService.updateStatusByAdministrationId(
       pendingSurveyAdministration.id,
-      EvaluationStatus.Open
+      SurveyAnswerStatus.Open
     )
 
     await SurveyAdministrationService.sendSurveyEmailById(pendingSurveyAdministration.id)
