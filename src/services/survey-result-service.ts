@@ -131,7 +131,10 @@ export const getAllBySurveyAdminId = async (survey_administration_id: number) =>
       const total_answered = surveyAnswers.filter(
         (answer) => answer.survey_template_answer_id !== null
       ).length
-      const email_logs = await EmailLogRepository.getAllByEmail(surveyResult.users.email)
+      const email_logs = await EmailLogRepository.getByEmailAndType(
+        surveyResult.users.email,
+        "Answer Survey Reminder"
+      )
 
       return {
         ...surveyResult,
