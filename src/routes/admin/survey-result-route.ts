@@ -1,11 +1,13 @@
 import express from "express"
-import * as SurveyResultsController from "../../controllers/admin/survey-results-controller"
+import * as SurveyResultController from "../../controllers/admin/survey-results-controller"
 
 const router = express.Router()
 
-router.get("/all", SurveyResultsController.all)
+router.get("/all", SurveyResultController.all)
 
-router.post("/", SurveyResultsController.store)
-router.post("/:id/send-reminder", SurveyResultsController.sendReminder)
+router.post("/", SurveyResultController.store)
+router.get("/by-respondent", SurveyResultController.showResultsBySurveyAdmin)
+router.get("/by-answer", SurveyResultController.showResultsByAnswer)
+router.post("/:id/send-reminder", SurveyResultController.sendReminder)
 
 export default router
