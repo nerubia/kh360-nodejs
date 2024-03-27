@@ -73,3 +73,35 @@ export const sendReminder = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+/**
+ * Get survey results by survey administration ID.
+ * @param req.query.survey_administration_id - The unique ID of the survey administration
+ */
+export const showResultsBySurveyAdmin = async (req: Request, res: Response) => {
+  try {
+    const { survey_administration_id } = req.query
+    const survey = await SurveyResultService.getResultsByRespondent(
+      parseInt(survey_administration_id as string)
+    )
+    res.json(survey)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Get survey results by survey administration ID.
+ * @param req.query.survey_administration_id - The unique ID of the survey administration
+ */
+export const showResultsByAnswer = async (req: Request, res: Response) => {
+  try {
+    const { survey_administration_id } = req.query
+    const survey = await SurveyResultService.getResultsByAnswer(
+      parseInt(survey_administration_id as string)
+    )
+    res.json(survey)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
