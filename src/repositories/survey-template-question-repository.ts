@@ -27,6 +27,9 @@ export const getAllByFilters = async (where: Prisma.survey_template_questionsWhe
       is_required: true,
       survey_template_question_rules: true,
     },
+    orderBy: {
+      sequence_no: "asc",
+    },
   })
 }
 

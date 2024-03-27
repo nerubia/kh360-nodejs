@@ -30,6 +30,11 @@ export const getAllByFilters = async (where: Prisma.survey_resultsWhereInput) =>
         },
       },
       survey_administration_id: true,
+      survey_answers: {
+        select: {
+          survey_template_answers: true,
+        },
+      },
     },
     where,
   })
