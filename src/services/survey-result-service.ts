@@ -114,7 +114,7 @@ export const getAllBySurveyAdminId = async (survey_administration_id: number) =>
       ).length
       const email_logs = await EmailLogRepository.getByEmailAndType(
         surveyResult.users.email,
-        "Answer Survey Reminder"
+        "Survey Reminder"
       )
 
       return {
@@ -147,7 +147,7 @@ export const sendReminderByRespondent = async (
     throw new CustomError("Survey administration not found", 400)
   }
 
-  const emailTemplate = await EmailTemplateRepository.getByTemplateType("Answer Survey Reminder")
+  const emailTemplate = await EmailTemplateRepository.getByTemplateType("Survey Reminder")
 
   if (emailTemplate === null) {
     throw new CustomError("Template not found", 400)
@@ -166,8 +166,8 @@ export const sendReminderByRespondent = async (
   )
 
   const replacements: Record<string, string> = {
-    survey_name: surveyAdministration.name ?? "",
-    eval_schedule_end_date: scheduleEndDate,
+    survey_admin_name: surveyAdministration.name ?? "",
+    survey_end_date: scheduleEndDate,
   }
 
   let modifiedContent: string = emailContent.replace(/{{(.*?)}}/g, (match: string, p1: string) => {
@@ -178,7 +178,8 @@ export const sendReminderByRespondent = async (
     "{{link}}",
     `<a href='${process.env.APP_URL}/survey-forms/${surveyAdministration.id}'>link</a>`
   )
-  modifiedContent = modifiedContent.replace("{{passcode}}", "")
+  modifiedContent = modifiedContent.replace("{{respondent_first_name}}", `${respondent.first_name}`)
+
   const currentDate = new Date()
   const emailLogData: EmailLog = {
     content: modifiedContent,

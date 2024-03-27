@@ -119,7 +119,7 @@ export const sendSurveyEmailById = async (id: number) => {
       )
 
       const replacements: Record<string, string> = {
-        survey_name: surveyAdministration.name ?? "",
+        survey_admin_name: surveyAdministration.name ?? "",
         survey_end_date: scheduleEndDate,
       }
 
@@ -135,8 +135,11 @@ export const sendSurveyEmailById = async (id: number) => {
         "{{link}}",
         `<a href='${process.env.APP_URL}/survey-forms/${surveyAdministration.id}'>link</a>`
       )
-      modifiedContent = modifiedContent.replace("{{passcode}}", "")
       if (respondent !== null) {
+        modifiedContent = modifiedContent.replace(
+          "{{respondent_first_name}}",
+          `${respondent.first_name}`
+        )
         await sendMail(respondent.email, surveyAdministration.email_subject ?? "", modifiedContent)
       }
     }
