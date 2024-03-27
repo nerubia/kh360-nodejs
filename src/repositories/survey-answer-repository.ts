@@ -41,6 +41,8 @@ export const getAllByFilters = async (where: Prisma.survey_answersWhereInput) =>
       users: {
         select: {
           id: true,
+          first_name: true,
+          last_name: true,
         },
       },
       survey_administration_id: true,
@@ -52,10 +54,21 @@ export const getAllByFilters = async (where: Prisma.survey_answersWhereInput) =>
   })
 }
 
-export const getAllDistinctByFilters = async (where: Prisma.survey_answersWhereInput) => {
+export const getAllDistinctByFilters = async (
+  where: Prisma.survey_answersWhereInput,
+  distinct: Prisma.Survey_answersScalarFieldEnum[]
+) => {
   return await prisma.survey_answers.findMany({
     where,
-    distinct: ["survey_template_question_id"],
+    select: {
+      id: true,
+      user_id: true,
+      survey_administration_id: true,
+      survey_template_answer_id: true,
+      survey_template_question_id: true,
+      survey_template_answers: true,
+    },
+    distinct,
   })
 }
 

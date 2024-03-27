@@ -104,10 +104,13 @@ export const getAllBySurveyAdminId = async (survey_administration_id: number) =>
       })
 
       const total_questions = surveyTemplateQuestions.length
-      const surveyAnswers = await SurveyAnswerRepository.getAllDistinctByFilters({
-        survey_result_id: surveyResult.id,
-        status: SurveyAnswerStatus.Submitted,
-      })
+      const surveyAnswers = await SurveyAnswerRepository.getAllDistinctByFilters(
+        {
+          survey_result_id: surveyResult.id,
+          status: SurveyAnswerStatus.Submitted,
+        },
+        ["survey_template_question_id"]
+      )
 
       const total_answered = surveyAnswers.filter(
         (answer) => answer.survey_template_answer_id !== null
@@ -248,4 +251,39 @@ export const sendSurveyEmailByRespondentId = async (
       await sendMail(respondent.email, surveyAdministration.email_subject ?? "", modifiedContent)
     }
   }
+}
+
+export const getResultsByRespondent = async (id: number) => {
+  const surveyResults = await SurveyResultRepository.getAllByFilters({
+    survey_administration_id: id,
+  })
+  return surveyResults
+}
+
+export const getResultsByAnswer = async (id: number) => {
+  const surveyAnswers = await SurveyAnswerRepository.getAllDistinctByFilters(
+    {
+      survey_administration_id: id,
+    },
+    ["survey_template_answer_id"]
+  )
+
+  const finalSurveyAnswers = await Promise.all(
+    surveyAnswers.map(async (answer) => {
+      const totalCount = await SurveyAnswerRepository.countByFilters({
+        id: answer.id,
+      })
+      const users = await UserRepository.getAllByFilters({
+        id: answer.user_id,
+      })
+
+      return {
+        ...answer,
+        totalCount,
+        users,
+      }
+    })
+  )
+
+  return finalSurveyAnswers
 }

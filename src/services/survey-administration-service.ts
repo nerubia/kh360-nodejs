@@ -87,6 +87,7 @@ export const updateById = async (id: number, data: SurveyAdministration) => {
 export const getById = async (id: number) => {
   return await SurveyAdministrationRepository.getById(id)
 }
+
 export const deleteById = async (id: number) => {
   const survey = await SurveyAdministrationRepository.getById(id)
   if (survey === null) {
