@@ -165,11 +165,23 @@ export const close = async (id: number) => {
 
   const surveyResults = await SurveyResultRepository.getAllByFilters({
     survey_administration_id: surveyAdministration.id,
+    status: SurveyResultStatus.Completed,
+  })
+
+  const noAnswerSurveyResults = await SurveyResultRepository.getAllByFilters({
+    survey_administration_id: surveyAdministration.id,
+    status: SurveyResultStatus.Ongoing,
   })
 
   for (const surveyResult of surveyResults) {
     await SurveyResultRepository.updateById(surveyResult.id, {
       status: SurveyResultStatus.Closed,
+    })
+  }
+
+  for (const noAnswerSurveyResult of noAnswerSurveyResults) {
+    await SurveyResultRepository.updateById(noAnswerSurveyResult.id, {
+      status: SurveyResultStatus.NoResult,
     })
   }
 
@@ -248,9 +260,21 @@ export const reopen = async (id: number) => {
 
   const surveyResults = await SurveyResultRepository.getAllByFilters({
     survey_administration_id: surveyAdministration.id,
+    status: SurveyResultStatus.Closed,
   })
 
   for (const surveyResult of surveyResults) {
+    await SurveyResultRepository.updateById(surveyResult.id, {
+      status: SurveyResultStatus.Completed,
+    })
+  }
+
+  const noResultSurveyResults = await SurveyResultRepository.getAllByFilters({
+    survey_administration_id: surveyAdministration.id,
+    status: SurveyResultStatus.NoResult,
+  })
+
+  for (const surveyResult of noResultSurveyResults) {
     await SurveyResultRepository.updateById(surveyResult.id, {
       status: SurveyResultStatus.Ongoing,
     })
