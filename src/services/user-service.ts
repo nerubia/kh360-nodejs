@@ -36,6 +36,7 @@ import { format, utcToZonedTime } from "date-fns-tz"
 import { constructNameFilter } from "../utils/format-filter"
 import { SurveyResultStatus } from "../types/survey-result-type"
 import { type Prisma } from "@prisma/client"
+import { SurveyAdministrationStatus } from "../types/survey-administration-type"
 
 export const getById = async (id: number) => {
   return await UserRepository.getById(id)
@@ -756,7 +757,7 @@ export const getSurveyAdministrations = async (user: UserToken, page: number) =>
       id: {
         in: surveyAdministrationIds,
       },
-      status: EvaluationAdministrationStatus.Ongoing,
+      status: SurveyAdministrationStatus.Ongoing,
     }
   )
 
@@ -764,13 +765,27 @@ export const getSurveyAdministrations = async (user: UserToken, page: number) =>
     id: {
       in: surveyAdministrationIds,
     },
-    status: EvaluationAdministrationStatus.Ongoing,
+    status: SurveyAdministrationStatus.Ongoing,
   })
 
   const totalPages = Math.ceil(totalItems / itemsPerPage)
 
+  const finalSurveyAdministrations = await Promise.all(
+    surveyAdministrations.map(async (surveyAdministration) => {
+      const surveyResult = await SurveyResultRepository.getByFilters({
+        survey_administration_id: surveyAdministration.id,
+        user_id: user.id,
+      })
+
+      return {
+        ...surveyAdministration,
+        survey_result_status: surveyResult?.status,
+      }
+    })
+  )
+
   return {
-    data: surveyAdministrations,
+    data: finalSurveyAdministrations,
     pageInfo: {
       hasPreviousPage: currentPage > 1,
       hasNextPage: currentPage < totalPages,
