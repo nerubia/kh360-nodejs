@@ -43,7 +43,7 @@ export const getById = async (id: number) => {
 }
 
 export const getAll = async () => {
-  const employees = await UserRepository.getAllByFilters({})
+  const employees = await UserRepository.getAllByFilters({ is_active: true })
   return {
     data: employees,
   }
@@ -877,6 +877,13 @@ export const submitSurveyAnswers = async (
 
   if (surveyResult === null) {
     throw new CustomError("Invalid survey result.", 400)
+  }
+
+  if (
+    surveyResult.status !== SurveyResultStatus.Ongoing &&
+    surveyResult.status !== SurveyResultStatus.Open
+  ) {
+    throw new CustomError("Only ongoing or open statuses allowed.", 400)
   }
 
   const surveyAdministration =

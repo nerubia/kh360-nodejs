@@ -49,6 +49,14 @@ export const getAllByFilters = async (where: Prisma.usersWhereInput) => {
       last_name: true,
       is_active: true,
     },
+    orderBy: [
+      {
+        last_name: "asc",
+      },
+      {
+        first_name: "asc",
+      },
+    ],
   })
 }
 
