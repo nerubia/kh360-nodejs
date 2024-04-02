@@ -950,5 +950,5 @@ export const submitSurveyAnswers = async (
     }
   }
 
-  await SurveyResultRepository.updateStatusById(surveyResult.id, SurveyResultStatus.Completed)
+  await SurveyResultRepository.updateStatusById(surveyResult.id, SurveyResultStatus.Submitted)
 }

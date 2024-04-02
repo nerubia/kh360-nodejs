@@ -165,7 +165,7 @@ export const close = async (id: number) => {
 
   const surveyResults = await SurveyResultRepository.getAllByFilters({
     survey_administration_id: surveyAdministration.id,
-    status: SurveyResultStatus.Completed,
+    status: SurveyResultStatus.Submitted,
   })
 
   const noAnswerSurveyResults = await SurveyResultRepository.getAllByFilters({
@@ -265,7 +265,7 @@ export const reopen = async (id: number) => {
 
   for (const surveyResult of surveyResults) {
     await SurveyResultRepository.updateById(surveyResult.id, {
-      status: SurveyResultStatus.Completed,
+      status: SurveyResultStatus.Submitted,
     })
   }
 
