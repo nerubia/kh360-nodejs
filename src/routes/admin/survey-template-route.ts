@@ -1,8 +1,8 @@
 import express from "express"
-import * as SurveyTemplateRepository from "../../controllers/admin/survey-template-controller"
+import * as SurveyTemplateController from "../../controllers/admin/survey-template-controller"
 
 const router = express.Router()
 
-router.get("/all", SurveyTemplateRepository.getAllSkillCategories)
+router.get("/all", SurveyTemplateController.getAllSurveyTemplates)
 
 export default router
