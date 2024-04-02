@@ -50,7 +50,7 @@ export const create = async (
       status:
         surveyAdministration.status === SurveyAdministrationStatus.Ongoing
           ? SurveyResultStatus.Ongoing
-          : SurveyResultStatus.ForReview,
+          : SurveyResultStatus.Open,
       created_by_id: user.id,
       updated_by_id: user.id,
       created_at: currentDate,
