@@ -841,13 +841,34 @@ export const getSurveyQuestions = async (survey_administration_id: number, user:
         })
       )
 
+      const survey_answers = await SurveyAnswerRepository.getAllByFilters({
+        user_id: user.id,
+        survey_administration_id,
+        survey_template_question_id: question.id,
+      })
+
+      const surveyTemplateAnswerIds = survey_answers.map(
+        (answer) => answer.survey_template_answer_id
+      )
+
+      const surveyTemplateAnswers = await SurveyTemplateAnswerRepository.getAllByFilters({
+        id: {
+          in: surveyTemplateAnswerIds as number[],
+        },
+      })
+
+      const totalAmount = surveyTemplateAnswers.reduce((acc, answer) => {
+        const amount = answer.amount ?? 0
+        return acc + amount
+      }, 0)
+
       return {
         ...question,
+        totalAmount,
         surveyTemplateCategories: finalSurveyTemplateCategories,
       }
     })
   )
-
   const survey_answers = await SurveyAnswerRepository.getAllByFilters({
     user_id: user.id,
     survey_administration_id,
