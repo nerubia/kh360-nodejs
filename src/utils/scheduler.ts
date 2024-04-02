@@ -14,7 +14,8 @@ const everyDay = schedule.scheduleJob("0 0 * * *", async () => {
 })
 
 // every hour 0 * * * *
-const everyHour = schedule.scheduleJob("0 * * * *", async () => {
+// 5 mins for now
+const everyHour = schedule.scheduleJob("*/5 * * * *", async () => {
   await sendEvaluationEmailJob()
   await sendSurveyEmailJob()
   await sendSkillMapEmailJob()
