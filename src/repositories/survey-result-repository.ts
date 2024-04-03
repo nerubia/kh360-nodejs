@@ -81,3 +81,11 @@ export const updateStatusByAdministrationId = async (
     },
   })
 }
+
+export const deleteById = async (id: number) => {
+  await prisma.survey_results.delete({
+    where: {
+      id,
+    },
+  })
+}

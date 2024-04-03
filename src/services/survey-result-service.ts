@@ -38,13 +38,19 @@ export const create = async (
 
   const surveyResults = await SurveyResultRepository.getAllByFilters({
     survey_administration_id: surveyAdministration.id,
+    external_respondent_id: null,
+  })
+
+  const externalSurveyResults = await SurveyResultRepository.getAllByFilters({
+    survey_administration_id: surveyAdministration.id,
+    is_external: true,
   })
 
   let newEmployeeIds = []
 
   if (is_external) {
     newEmployeeIds = employeeIds.filter((employeeId) => {
-      const surveyResult = surveyResults.find(
+      const surveyResult = externalSurveyResults.find(
         (surveyResult) => surveyResult.external_respondent_id === employeeId
       )
       return surveyResult === undefined ? employeeId : null
@@ -119,6 +125,23 @@ export const create = async (
   }
 
   return result
+}
+
+export const deleteById = async (id: number) => {
+  const surveyResult = await SurveyResultRepository.getById(id)
+  if (surveyResult === null) {
+    throw new CustomError("Survey Result not found", 400)
+  }
+
+  const surveyAnswers = await SurveyAnswerRepository.getAllByFilters({
+    survey_result_id: surveyResult.id,
+  })
+
+  const surveyAnswerIds = surveyAnswers.map((surveyAnswer) => surveyAnswer.id)
+
+  await SurveyAnswerRepository.deleteManyByIds(surveyAnswerIds)
+
+  await SurveyResultRepository.deleteById(surveyResult.id)
 }
 
 export const getAllBySurveyAdminId = async (survey_administration_id: number) => {
@@ -516,4 +539,18 @@ export const getResultsByAnswer = async (id: number) => {
   )
 
   return finalSurveyAnswers
+}
+
+export const reopen = async (id: number) => {
+  const surveyResult = await SurveyResultRepository.getById(id)
+
+  if (surveyResult === null) {
+    throw new CustomError("Id not found", 400)
+  }
+
+  if (surveyResult.status !== SurveyResultStatus.Submitted) {
+    throw new CustomError("Only submitted status is allowed.", 403)
+  }
+
+  await SurveyResultRepository.updateStatusById(surveyResult.id, SurveyResultStatus.Ongoing)
 }
