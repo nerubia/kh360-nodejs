@@ -165,7 +165,7 @@ export const countByFilters = async (where: Prisma.external_usersWhereInput) => 
 export const create = async (data: ExternalUser) => {
   const existingUser = await ExternalUserRepository.getByEmail(data.email)
 
-  if (existingUser !== null) {
+  if (data.email !== undefined && existingUser !== null) {
     throw new CustomError("Email already exists.", 400)
   }
 
@@ -177,6 +177,7 @@ export const create = async (data: ExternalUser) => {
     first_name: data.first_name,
     middle_name: data.middle_name,
     last_name: data.last_name,
+    user_type: data.user_type,
     role: data.role,
     company: data.company,
     access_token: await generateToken(),

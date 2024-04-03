@@ -3,6 +3,7 @@ export interface ExternalUser {
   first_name: string
   middle_name?: string
   last_name: string
+  user_type: string
   role?: string
   company?: string
   access_token?: string

@@ -1,9 +1,14 @@
 import { object, string } from "yup"
 
 export const createExternalUserSchema = object().shape({
+  user_type: string()
+    .required("User type is required")
+    .max(75, "User type should not exceed 75 characters."),
   email: string()
-    .email()
-    .required("Email is required")
+    .when("user_type", {
+      is: (val: string) => val === "evaluation",
+      then: () => string().required(),
+    })
     .max(255, "Email should not exceed 255 characters."),
   first_name: string()
     .required("First name is required")
@@ -13,9 +18,15 @@ export const createExternalUserSchema = object().shape({
     .required("Last name is required")
     .max(75, "Last name should not exceed 75 characters."),
   role: string()
-    .required("Role is required")
+    .when("user_type", {
+      is: (val: string) => val === "evaluation",
+      then: () => string().required(),
+    })
     .max(255, "Role name should not exceed 255 characters."),
   company: string()
-    .required("Company is required")
+    .when("user_type", {
+      is: (val: string) => val === "evaluation",
+      then: () => string().required(),
+    })
     .max(255, "Company name should not exceed 255 characters."),
 })
