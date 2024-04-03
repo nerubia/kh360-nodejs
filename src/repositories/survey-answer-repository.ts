@@ -66,7 +66,11 @@ export const getAllByFilters = async (where: Prisma.survey_answersWhereInput) =>
       survey_administration_id: true,
       survey_template_answer_id: true,
       survey_template_question_id: true,
-      survey_template_answers: true,
+      survey_template_answers: {
+        include: {
+          survey_template_categories: true,
+        },
+      },
     },
     where,
   })
@@ -84,7 +88,17 @@ export const getAllDistinctByFilters = async (
       survey_administration_id: true,
       survey_template_answer_id: true,
       survey_template_question_id: true,
-      survey_template_answers: true,
+      external_user_id: true,
+      survey_template_answers: {
+        include: {
+          survey_template_categories: true,
+        },
+      },
+    },
+    orderBy: {
+      survey_template_answers: {
+        sequence_no: "asc",
+      },
     },
     distinct,
   })
