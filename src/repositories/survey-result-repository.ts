@@ -1,8 +1,7 @@
-import { type SurveyResult } from "../types/survey-result-type"
 import prisma from "../utils/prisma"
 import { type Prisma } from "@prisma/client"
 
-export const createMany = async (data: SurveyResult[]) => {
+export const createMany = async (data: Prisma.survey_resultsUncheckedCreateInput[]) => {
   return await prisma.survey_results.createMany({
     data,
   })
@@ -21,6 +20,8 @@ export const getAllByFilters = async (where: Prisma.survey_resultsWhereInput) =>
     select: {
       id: true,
       user_id: true,
+      external_respondent_id: true,
+      status: true,
       users: {
         select: {
           id: true,

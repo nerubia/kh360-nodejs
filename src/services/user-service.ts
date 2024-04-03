@@ -843,6 +843,7 @@ export const getSurveyQuestions = async (survey_administration_id: number, user:
 
       const survey_answers = await SurveyAnswerRepository.getAllByFilters({
         user_id: user.id,
+        external_user_id: null,
         survey_administration_id,
         survey_template_question_id: question.id,
       })
@@ -871,29 +872,55 @@ export const getSurveyQuestions = async (survey_administration_id: number, user:
   )
   const survey_answers = await SurveyAnswerRepository.getAllByFilters({
     user_id: user.id,
+    external_user_id: null,
     survey_administration_id,
   })
+
+  const surveyCompanionResults = await SurveyResultRepository.getAllByFilters({
+    survey_administration_id,
+    user_id: user.id,
+    external_respondent_id: {
+      not: null,
+    },
+    is_external: true,
+  })
+
+  const survey_user_companions = await Promise.all(
+    surveyCompanionResults.map(async (companion) => {
+      const user = await ExternalUserRepository.getById(companion.external_respondent_id ?? 0)
+      if (user !== null) {
+        return {
+          ...companion,
+          companion_user: user,
+        }
+      }
+    })
+  )
 
   return {
     survey_template_questions: finalSurveyTemplateQuestions,
     survey_administration: surveyAdministration,
     survey_result_status: surveyResult.status,
     survey_answers,
+    survey_user_companions,
   }
 }
 
 export const submitSurveyAnswers = async (
   survey_administration_id: number,
   user: UserToken,
-  survey_answers: SurveyAnswer[]
+  survey_answers: SurveyAnswer[],
+  is_external: boolean,
+  survey_result_id: number
 ) => {
   if (survey_answers.length === 0) {
     throw new CustomError("Please select atleast one answer.", 400)
   }
 
   const surveyResult = await SurveyResultRepository.getByFilters({
+    id: is_external ? survey_result_id : undefined,
     survey_administration_id,
-    user_id: user.id,
+    user_id: is_external ? user.id : undefined,
   })
 
   if (surveyResult === null) {
@@ -953,6 +980,7 @@ export const submitSurveyAnswers = async (
       survey_administration_id,
       survey_result_id: surveyResult.id,
       user_id: user.id,
+      external_user_id: is_external ? surveyResult.external_respondent_id : null,
       survey_template_id: surveyAdministration.survey_template_id ?? 0,
       survey_template_answer_id: templateAnswerId,
       survey_template_question_id: templateQuestionId,

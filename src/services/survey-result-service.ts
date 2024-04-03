@@ -3,9 +3,12 @@ import * as SurveyResultRepository from "../repositories/survey-result-repositor
 import * as SurveyAdministrationRepository from "../repositories/survey-administration-repository"
 import * as SurveyAnswerRepository from "../repositories/survey-answer-repository"
 import * as SurveyTemplateQuestionRepository from "../repositories/survey-template-question-repository"
+import * as SurveyTemplateCategoryRepository from "../repositories/survey-template-category-repository"
+import * as SurveyTemplateAnswerRepository from "../repositories/survey-template-answer-repository"
 import * as EmailTemplateRepository from "../repositories/email-template-repository"
 import * as EmailLogRepository from "../repositories/email-log-repository"
 import * as UserRepository from "../repositories/user-repository"
+import * as ExternalUserRepository from "../repositories/external-user-repository"
 import CustomError from "../utils/custom-error"
 import { type UserToken } from "../types/user-token-type"
 import { SurveyAdministrationStatus } from "../types/survey-administration-type"
@@ -17,7 +20,8 @@ import { SurveyAnswerStatus } from "../types/survey-answer-type"
 export const create = async (
   survey_administration_id: number,
   employee_ids: number[],
-  user: UserToken
+  user: UserToken,
+  is_external: boolean
 ) => {
   const employeeIds = employee_ids
 
@@ -36,17 +40,30 @@ export const create = async (
     survey_administration_id: surveyAdministration.id,
   })
 
-  const newEmployeeIds = employeeIds.filter((employeeId) => {
-    const surveyResult = surveyResults.find((surveyResult) => surveyResult.user_id === employeeId)
-    return surveyResult === undefined ? employeeId : null
-  })
+  let newEmployeeIds = []
+
+  if (is_external) {
+    newEmployeeIds = employeeIds.filter((employeeId) => {
+      const surveyResult = surveyResults.find(
+        (surveyResult) => surveyResult.external_respondent_id === employeeId
+      )
+      return surveyResult === undefined ? employeeId : null
+    })
+  } else {
+    newEmployeeIds = employeeIds.filter((employeeId) => {
+      const surveyResult = surveyResults.find((surveyResult) => surveyResult.user_id === employeeId)
+      return surveyResult === undefined ? employeeId : null
+    })
+  }
 
   const currentDate = new Date()
 
   const data = newEmployeeIds.map((employeeId) => {
     return {
       survey_administration_id: surveyAdministration.id,
-      user_id: employeeId,
+      user_id: is_external ? user.id : employeeId,
+      is_external,
+      external_respondent_id: is_external ? employeeId : null,
       status:
         surveyAdministration.status === SurveyAdministrationStatus.Ongoing
           ? SurveyResultStatus.Ongoing
@@ -71,7 +88,7 @@ export const create = async (
     const respondentId = surveyResult.users?.id
 
     if (surveyAdministration.status === SurveyAdministrationStatus.Ongoing) {
-      await sendSurveyEmailByRespondentId(respondentId, surveyAdministration.id)
+      // await sendSurveyEmailByRespondentId(respondentId, surveyAdministration.id)
     }
   }
 
@@ -85,12 +102,29 @@ export const create = async (
     )
   }
 
-  return { survey_administration_id: surveyAdministration.id }
+  const companionSurveyResults = await SurveyResultRepository.getAllByFilters({
+    survey_administration_id: surveyAdministration.id,
+    external_respondent_id: {
+      in: newEmployeeIds,
+    },
+  })
+
+  const result = { survey_administration_id: surveyAdministration.id }
+
+  if (companionSurveyResults.length !== 0) {
+    const survey_result_id = companionSurveyResults[0].id
+    Object.assign(result, {
+      survey_result_id,
+    })
+  }
+
+  return result
 }
 
 export const getAllBySurveyAdminId = async (survey_administration_id: number) => {
   const surveyResults = await SurveyResultRepository.getAllByFilters({
     survey_administration_id,
+    external_respondent_id: null,
     deleted_at: null,
   })
 
@@ -254,6 +288,191 @@ export const sendSurveyEmailByRespondentId = async (
       await sendMail(respondent.email, surveyAdministration.email_subject ?? "", modifiedContent)
     }
   }
+}
+
+export const getCompanionQuestionsById = async (survey_result_id: number) => {
+  const surveyCompanionResult = await SurveyResultRepository.getById(survey_result_id)
+
+  if (surveyCompanionResult === null) {
+    throw new CustomError("Survey result not found", 400)
+  }
+
+  const surveyAdministration = await SurveyAdministrationRepository.getById(
+    surveyCompanionResult.survey_administration_id
+  )
+
+  if (surveyAdministration === null) {
+    throw new CustomError("Survey administration not found", 400)
+  }
+
+  const filter = {
+    survey_template_id: surveyAdministration.survey_template_id ?? 0,
+    deleted_at: null,
+    is_active: true,
+  }
+
+  const surveyTemplateQuestions = await SurveyTemplateQuestionRepository.getAllByFilters(filter)
+
+  const finalSurveyTemplateQuestions = await Promise.all(
+    surveyTemplateQuestions.map(async (question) => {
+      const surveyTemplateCategories = await SurveyTemplateCategoryRepository.getAllByFilters({
+        survey_template_id: surveyAdministration.survey_template_id ?? 0,
+        category_type: "answer",
+        status: true,
+      })
+
+      const finalSurveyTemplateCategories = await Promise.all(
+        surveyTemplateCategories.map(async (category) => {
+          const surveyTemplateAnswers = await SurveyTemplateAnswerRepository.getAllByFilters({
+            survey_template_category_id: category.id,
+          })
+          return {
+            ...category,
+            surveyTemplateAnswers,
+          }
+        })
+      )
+
+      const survey_answers = await SurveyAnswerRepository.getAllByFilters({
+        user_id: surveyCompanionResult.user_id ?? 0,
+        external_user_id: surveyCompanionResult.external_respondent_id ?? 0,
+        survey_administration_id: surveyAdministration.id,
+        survey_template_question_id: question.id,
+      })
+
+      const surveyTemplateAnswerIds = survey_answers.map(
+        (answer) => answer.survey_template_answer_id
+      )
+
+      const surveyTemplateAnswers = await SurveyTemplateAnswerRepository.getAllByFilters({
+        id: {
+          in: surveyTemplateAnswerIds as number[],
+        },
+      })
+
+      const totalAmount = surveyTemplateAnswers.reduce((acc, answer) => {
+        const amount = answer.amount ?? 0
+        return acc + amount
+      }, 0)
+
+      return {
+        ...question,
+        totalAmount,
+        surveyTemplateCategories: finalSurveyTemplateCategories,
+      }
+    })
+  )
+  const survey_answers = await SurveyAnswerRepository.getAllByFilters({
+    user_id: surveyCompanionResult.user_id ?? 0,
+    external_user_id: surveyCompanionResult.external_respondent_id ?? 0,
+    survey_administration_id: surveyAdministration.id,
+  })
+
+  const companionUser = await ExternalUserRepository.getById(
+    surveyCompanionResult.external_respondent_id ?? 0
+  )
+
+  return {
+    survey_template_questions: finalSurveyTemplateQuestions,
+    survey_administration: surveyAdministration,
+    survey_result_status: surveyCompanionResult.status,
+    survey_result_companion: companionUser,
+    survey_answers,
+  }
+}
+
+export const getAllCompanionQuestions = async (
+  survey_administration_id: number,
+  user: UserToken
+) => {
+  const surveyCompanionResults = await SurveyResultRepository.getAllByFilters({
+    survey_administration_id,
+    status: SurveyResultStatus.Ongoing,
+    user_id: user.id,
+    external_respondent_id: {
+      not: null,
+    },
+  })
+  const surveyAdministration =
+    await SurveyAdministrationRepository.getById(survey_administration_id)
+
+  if (surveyAdministration === null) {
+    throw new CustomError("Survey administration not found", 400)
+  }
+
+  const finalCompanionResults = await Promise.all(
+    surveyCompanionResults.map(async (companionResult) => {
+      const filter = {
+        survey_template_id: surveyAdministration.survey_template_id ?? 0,
+        deleted_at: null,
+        is_active: true,
+      }
+
+      const surveyTemplateQuestions = await SurveyTemplateQuestionRepository.getAllByFilters(filter)
+
+      const finalSurveyTemplateQuestions = await Promise.all(
+        surveyTemplateQuestions.map(async (question) => {
+          const surveyTemplateCategories = await SurveyTemplateCategoryRepository.getAllByFilters({
+            survey_template_id: surveyAdministration.survey_template_id ?? 0,
+            category_type: "answer",
+            status: true,
+          })
+
+          const finalSurveyTemplateCategories = await Promise.all(
+            surveyTemplateCategories.map(async (category) => {
+              const surveyTemplateAnswers = await SurveyTemplateAnswerRepository.getAllByFilters({
+                survey_template_category_id: category.id,
+              })
+              return {
+                ...category,
+                surveyTemplateAnswers,
+              }
+            })
+          )
+
+          const survey_answers = await SurveyAnswerRepository.getAllByFilters({
+            user_id: companionResult.external_respondent_id ?? 0,
+            survey_administration_id,
+            survey_template_question_id: question.id,
+          })
+
+          const surveyTemplateAnswerIds = survey_answers.map(
+            (answer) => answer.survey_template_answer_id
+          )
+
+          const surveyTemplateAnswers = await SurveyTemplateAnswerRepository.getAllByFilters({
+            id: {
+              in: surveyTemplateAnswerIds as number[],
+            },
+          })
+
+          const totalAmount = surveyTemplateAnswers.reduce((acc, answer) => {
+            const amount = answer.amount ?? 0
+            return acc + amount
+          }, 0)
+
+          return {
+            ...question,
+            totalAmount,
+            surveyTemplateCategories: finalSurveyTemplateCategories,
+          }
+        })
+      )
+      const survey_answers = await SurveyAnswerRepository.getAllByFilters({
+        user_id: companionResult.external_respondent_id ?? 0,
+        survey_administration_id,
+      })
+
+      return {
+        survey_template_questions: finalSurveyTemplateQuestions,
+        survey_administration: surveyAdministration,
+        survey_result_status: companionResult.status,
+        survey_answers,
+      }
+    })
+  )
+
+  return finalCompanionResults
 }
 
 export const getResultsByRespondent = async (id: number) => {

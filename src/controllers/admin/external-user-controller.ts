@@ -40,13 +40,14 @@ export const index = async (req: Request, res: Response) => {
 export const store = async (req: Request, res: Response) => {
   try {
     const user = req.user
-    const { email, first_name, middle_name, last_name, role, company } = req.body
+    const { email, first_name, middle_name, last_name, user_type, role, company } = req.body
 
     await createExternalUserSchema.validate({
       email,
       first_name,
       middle_name,
       last_name,
+      user_type,
       role,
       company,
     })
@@ -58,6 +59,7 @@ export const store = async (req: Request, res: Response) => {
       first_name,
       middle_name,
       last_name,
+      user_type,
       role,
       company,
       created_by_id: user.id,
@@ -110,13 +112,14 @@ export const update = async (req: Request, res: Response) => {
     const user = req.user
     const { id } = req.params
 
-    const { email, first_name, middle_name, last_name, role, company } = req.body
+    const { email, first_name, middle_name, last_name, user_type, role, company } = req.body
 
     await createExternalUserSchema.validate({
       email,
       first_name,
       middle_name,
       last_name,
+      user_type,
       role,
       company,
     })
@@ -134,6 +137,7 @@ export const update = async (req: Request, res: Response) => {
       first_name,
       middle_name,
       last_name,
+      user_type,
       role,
       company,
       updated_by_id: user.id,
