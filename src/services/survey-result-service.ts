@@ -259,7 +259,6 @@ export const sendSurveyEmailByRespondentId = async (
 export const getResultsByRespondent = async (id: number) => {
   const surveyResults = await SurveyResultRepository.getAllByFilters({
     survey_administration_id: id,
-    status: SurveyResultStatus.Closed,
   })
   return surveyResults
 }
@@ -268,10 +267,6 @@ export const getResultsByAnswer = async (id: number) => {
   const surveyAnswers = await SurveyAnswerRepository.getAllDistinctByFilters(
     {
       survey_administration_id: id,
-      survey_results: {
-        status: SurveyResultStatus.Closed,
-      },
-      status: SurveyAnswerStatus.Submitted,
     },
     ["survey_template_answer_id"]
   )
