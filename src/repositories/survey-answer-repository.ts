@@ -33,6 +33,24 @@ export const updateByid = async (id: number, data: Prisma.survey_answersUnchecke
   })
 }
 
+export const deleteManyByIds = async (ids: number[]) => {
+  return await prisma.survey_answers.deleteMany({
+    where: {
+      id: {
+        in: ids,
+      },
+    },
+  })
+}
+
+export const deleteById = async (id: number) => {
+  return await prisma.survey_answers.delete({
+    where: {
+      id,
+    },
+  })
+}
+
 export const getAllByFilters = async (where: Prisma.survey_answersWhereInput) => {
   return await prisma.survey_answers.findMany({
     select: {
