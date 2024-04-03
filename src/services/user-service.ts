@@ -807,6 +807,7 @@ export const getSurveyQuestions = async (survey_administration_id: number, user:
   const surveyResult = await SurveyResultRepository.getByFilters({
     survey_administration_id: surveyAdministration.id,
     user_id: user.id,
+    external_respondent_id: null,
   })
 
   if (surveyResult === null) {
@@ -920,7 +921,7 @@ export const submitSurveyAnswers = async (
   const surveyResult = await SurveyResultRepository.getByFilters({
     id: is_external ? survey_result_id : undefined,
     survey_administration_id,
-    user_id: is_external ? user.id : undefined,
+    user_id: user.id,
   })
 
   if (surveyResult === null) {
