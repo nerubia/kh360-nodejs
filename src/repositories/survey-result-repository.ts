@@ -32,8 +32,17 @@ export const getAllByFilters = async (where: Prisma.survey_resultsWhereInput) =>
       },
       survey_administration_id: true,
       survey_answers: {
-        select: {
-          survey_template_answers: true,
+        include: {
+          survey_template_answers: {
+            include: {
+              survey_template_categories: true,
+            },
+          },
+        },
+        orderBy: {
+          survey_template_answers: {
+            sequence_no: "asc",
+          },
         },
       },
     },

@@ -478,8 +478,59 @@ export const getAllCompanionQuestions = async (
 export const getResultsByRespondent = async (id: number) => {
   const surveyResults = await SurveyResultRepository.getAllByFilters({
     survey_administration_id: id,
+    external_respondent_id: null,
   })
-  return surveyResults
+
+  const companionResults = await SurveyResultRepository.getAllByFilters({
+    survey_administration_id: id,
+    is_external: true,
+  })
+
+  for (const result of surveyResults) {
+    result.survey_answers.sort((a, b) => {
+      const seqNoCategoryA =
+        a.survey_template_answers?.survey_template_categories?.sequence_no ?? Number.MAX_VALUE
+      const seqNoCategoryB =
+        b.survey_template_answers?.survey_template_categories?.sequence_no ?? Number.MAX_VALUE
+
+      if (seqNoCategoryA !== seqNoCategoryB) {
+        return seqNoCategoryA - seqNoCategoryB
+      } else {
+        const seqNoAnswerA = a.survey_template_answers?.sequence_no ?? Number.MAX_VALUE
+        const seqNoAnswerB = b.survey_template_answers?.sequence_no ?? Number.MAX_VALUE
+        return seqNoAnswerA - seqNoAnswerB
+      }
+    })
+  }
+
+  const finalCompanionResults = await Promise.all(
+    companionResults.map(async (result) => {
+      const user = await ExternalUserRepository.getById(result.external_respondent_id ?? 0)
+      return {
+        ...result,
+        companion_user: user,
+      }
+    })
+  )
+
+  for (const result of finalCompanionResults) {
+    result.survey_answers.sort((a, b) => {
+      const seqNoCategoryA =
+        a.survey_template_answers?.survey_template_categories?.sequence_no ?? Number.MAX_VALUE
+      const seqNoCategoryB =
+        b.survey_template_answers?.survey_template_categories?.sequence_no ?? Number.MAX_VALUE
+
+      if (seqNoCategoryA !== seqNoCategoryB) {
+        return seqNoCategoryA - seqNoCategoryB
+      } else {
+        const seqNoAnswerA = a.survey_template_answers?.sequence_no ?? Number.MAX_VALUE
+        const seqNoAnswerB = b.survey_template_answers?.sequence_no ?? Number.MAX_VALUE
+        return seqNoAnswerA - seqNoAnswerB
+      }
+    })
+  }
+
+  return { surveyResults, companionResults: finalCompanionResults }
 }
 
 export const getResultsByAnswer = async (id: number) => {
@@ -490,9 +541,26 @@ export const getResultsByAnswer = async (id: number) => {
     ["survey_template_answer_id"]
   )
 
+  surveyAnswers.sort((a, b) => {
+    const seqNoCategoryA =
+      a.survey_template_answers?.survey_template_categories?.sequence_no ?? Number.MAX_VALUE
+    const seqNoCategoryB =
+      b.survey_template_answers?.survey_template_categories?.sequence_no ?? Number.MAX_VALUE
+
+    if (seqNoCategoryA !== seqNoCategoryB) {
+      return seqNoCategoryA - seqNoCategoryB
+    } else {
+      const seqNoAnswerA = a.survey_template_answers?.sequence_no ?? Number.MAX_VALUE
+      const seqNoAnswerB = b.survey_template_answers?.sequence_no ?? Number.MAX_VALUE
+      return seqNoAnswerA - seqNoAnswerB
+    }
+  })
+
   const finalSurveyAnswers = await Promise.all(
     surveyAnswers.map(async (answer) => {
       const totalRespondents = []
+      const totalCompanionRespondents = []
+      let subTotal = 0
 
       const allSurveyAnswers = await SurveyAnswerRepository.getAllDistinctByFilters(
         {
@@ -504,13 +572,29 @@ export const getResultsByAnswer = async (id: number) => {
 
       for (const surveyAnswer of allSurveyAnswers) {
         const users = await UserRepository.getById(surveyAnswer.user_id)
-        totalRespondents.push(users)
+        const externalUsers = await ExternalUserRepository.getById(
+          surveyAnswer.external_user_id ?? 0
+        )
+
+        const finalExternalUsers = {
+          ...externalUsers,
+          related_user: users,
+        }
+
+        if (surveyAnswer.external_user_id !== null) {
+          totalCompanionRespondents.push(finalExternalUsers)
+        } else {
+          totalRespondents.push(users)
+        }
+        subTotal += surveyAnswer.survey_template_answers?.amount ?? 0
       }
 
       return {
         ...answer,
         totalCount: allSurveyAnswers.length,
+        subTotal,
         users: totalRespondents,
+        companion_users: totalCompanionRespondents,
       }
     })
   )
