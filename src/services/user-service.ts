@@ -942,6 +942,14 @@ export const submitSurveyAnswers = async (
     throw new CustomError("Invalid survey administration.", 400)
   }
 
+  const existingSurveyAnswers = await SurveyAnswerRepository.getAllByFilters({
+    survey_result_id: surveyResult.id,
+  })
+
+  for (const existingSurveyAnswer of existingSurveyAnswers) {
+    await SurveyAnswerRepository.deleteById(existingSurveyAnswer.id)
+  }
+
   for (const surveyAnswer of survey_answers) {
     const templateQuestionId = parseInt(surveyAnswer.survey_template_question_id as string)
     const templateAnswerId = parseInt(surveyAnswer.survey_template_answer_id as string)
