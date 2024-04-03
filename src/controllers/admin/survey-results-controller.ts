@@ -31,12 +31,13 @@ export const store = async (req: Request, res: Response) => {
   try {
     const user = req.user
 
-    const { survey_administration_id, employee_ids } = req.body
+    const { survey_administration_id, employee_ids, is_external } = req.body
 
     const newSurvey = await SurveyResultService.create(
       parseInt(survey_administration_id as string),
       employee_ids as number[],
-      user
+      user,
+      is_external as boolean
     )
 
     res.json(newSurvey)
