@@ -3,10 +3,13 @@ import { EvaluationStatus } from "../../types/evaluation-type"
 import { sendMail } from "../../utils/sendgrid"
 import { ValidationError } from "yup"
 import { submitEvaluationSchema } from "../../utils/validation/evaluations/submit-evaluation-schema"
+import { createExternalUserSchema } from "../../utils/validation/external-user-schema"
 import * as EvaluationService from "../../services/evaluation-service"
 import * as EvaluationRatingService from "../../services/evaluation-rating-service"
 import * as UserService from "../../services/user-service"
 import * as AnswerOptionService from "../../services/answer-option-service"
+import * as SurveyResultService from "../../services/survey-result-service"
+import * as ExternalUserService from "../../services/external-user-service"
 import CustomError from "../../utils/custom-error"
 import logger from "../../utils/logger"
 
@@ -316,16 +319,22 @@ export const getSurveyQuestions = async (req: Request, res: Response) => {
  * Save answers and comments by ID
  * @param req.params.id - The unique ID of the survey result.
  * @param req.body.survey_answers - Survey answers.
- * @param req.body.comment - Survey comment.
+ * @param req.body.is_external - Is external.
  */
 
 export const submitSurveyAnswers = async (req: Request, res: Response) => {
   try {
     const user = req.user
     const { id } = req.params
-    const { survey_answers } = req.body
+    const { survey_answers, is_external, survey_result_id } = req.body
 
-    await UserService.submitSurveyAnswers(parseInt(id), user, survey_answers)
+    await UserService.submitSurveyAnswers(
+      parseInt(id),
+      user,
+      survey_answers,
+      is_external as boolean,
+      parseInt(survey_result_id)
+    )
 
     res.json({ id })
   } catch (error) {
@@ -336,6 +345,104 @@ export const submitSurveyAnswers = async (req: Request, res: Response) => {
       return res.status(error.status).json({ message: error.message })
     }
     logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Store a new external user.
+ * @param req.body.email - Email.
+ * @param req.body.first_name - First name.
+ * @param req.body.middle_name - Middle name.
+ * @param req.body.last_name - Last name.
+ * @param req.body.role - Role.
+ * @param req.body.company - Company.
+ */
+export const storeExternalUser = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+    const { email, first_name, middle_name, last_name, user_type } = req.body
+
+    await createExternalUserSchema.validate({
+      email,
+      first_name,
+      middle_name,
+      last_name,
+      user_type,
+    })
+
+    const currentDate = new Date()
+
+    const newExternalUser = await ExternalUserService.create({
+      email,
+      first_name,
+      middle_name,
+      last_name,
+      user_type,
+      created_by_id: user.id,
+      updated_by_id: user.id,
+      created_at: currentDate,
+      updated_at: currentDate,
+    })
+
+    res.json(newExternalUser)
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Create new Survey result
+ * @param req.body.survey_administration_id - Survey administration id.
+ * @param req.body.companion_ids - Companion IDs.
+ * @returns
+ */
+export const createSurveyResult = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+
+    const { survey_administration_id, companion_ids, is_external } = req.body
+
+    const newSurvey = await SurveyResultService.create(
+      parseInt(survey_administration_id as string),
+      companion_ids as number[],
+      user,
+      is_external as boolean
+    )
+
+    res.json(newSurvey)
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Get companions questions by survey result id.
+ * @param req.params.survey_result_id - The unique ID of the survey result
+ */
+export const getCompanionQuestions = async (req: Request, res: Response) => {
+  try {
+    const { survey_result_id } = req.params
+    const companionResults = await SurveyResultService.getCompanionQuestionsById(
+      parseInt(survey_result_id )
+    )
+    res.json(companionResults)
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
     res.status(500).json({ message: "Something went wrong" })
   }
 }
