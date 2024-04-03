@@ -51,30 +51,6 @@ export const store = async (req: Request, res: Response) => {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
     }
-    logger.error(error)
-    res.status(500).json({ message: "Something went wrong" })
-  }
-}
-
-/**
- * Delete survey result
- * @param req.params.id -The ID of the survey result to be deleted
- */
-export const destroy = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params
-
-    const deletedIds = await SurveyResultService.deleteById(parseInt(id))
-
-    res.json({ deletedIds, message: "Survey result successfully deleted" })
-  } catch (error) {
-    if (error instanceof ValidationError) {
-      return res.status(400).json(error)
-    }
-    if (error instanceof CustomError) {
-      return res.status(error.status).json({ message: error.message })
-    }
-    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -186,6 +162,23 @@ export const showResultsByAnswer = async (req: Request, res: Response) => {
     )
     res.json(survey)
   } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Reopen a specific survey result by ID.
+ * @param req.params.id - The unique ID of the survey result.
+ */
+export const reopen = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    await SurveyResultService.reopen(parseInt(id))
+    res.json({ id, status: SurveyResultStatus.Ongoing })
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
     res.status(500).json({ message: "Something went wrong" })
   }
 }
