@@ -88,7 +88,7 @@ export const create = async (
     const respondentId = surveyResult.users?.id
 
     if (surveyAdministration.status === SurveyAdministrationStatus.Ongoing) {
-      // await sendSurveyEmailByRespondentId(respondentId, surveyAdministration.id)
+      await sendSurveyEmailByRespondentId(respondentId, surveyAdministration.id)
     }
   }
 
