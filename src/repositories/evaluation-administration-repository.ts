@@ -21,7 +21,7 @@ export const getAllByStatusAndEndDate = async (status: string, date: Date) => {
     where: {
       status,
       eval_schedule_end_date: {
-        lte: date,
+        lt: date,
       },
     },
   })
