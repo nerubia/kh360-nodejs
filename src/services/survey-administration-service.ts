@@ -165,12 +165,17 @@ export const close = async (id: number) => {
 
   const surveyResults = await SurveyResultRepository.getAllByFilters({
     survey_administration_id: surveyAdministration.id,
-    status: SurveyResultStatus.Submitted,
+    survey_answers: {
+      some: {},
+    },
   })
 
   const noAnswerSurveyResults = await SurveyResultRepository.getAllByFilters({
     survey_administration_id: surveyAdministration.id,
-    status: SurveyResultStatus.Ongoing,
+    status: { in: [SurveyResultStatus.Ongoing, SurveyResultStatus.Open] },
+    survey_answers: {
+      none: {},
+    },
   })
 
   for (const surveyResult of surveyResults) {
