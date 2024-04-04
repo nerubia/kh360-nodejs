@@ -741,6 +741,7 @@ export const getSurveyAdministrations = async (user: UserToken, page: number) =>
 
   const filter = {
     user_id: user.id,
+    external_respondent_id: null,
     deleted_at: null,
   }
 
