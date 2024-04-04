@@ -604,13 +604,10 @@ export const getResultsByAnswer = async (id: number) => {
       const totalCompanionRespondents = []
       let subTotal = 0
 
-      const allSurveyAnswers = await SurveyAnswerRepository.getAllDistinctByFilters(
-        {
-          survey_template_answer_id: answer.survey_template_answer_id,
-          survey_administration_id: id,
-        },
-        ["user_id"]
-      )
+      const allSurveyAnswers = await SurveyAnswerRepository.getAllByFilters({
+        survey_template_answer_id: answer.survey_template_answer_id,
+        survey_administration_id: id,
+      })
 
       for (const surveyAnswer of allSurveyAnswers) {
         const users = await UserRepository.getById(surveyAnswer.user_id)
