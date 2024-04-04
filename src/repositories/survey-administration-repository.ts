@@ -35,7 +35,7 @@ export const getAllByStatusAndEndDate = async (status: string, date: Date) => {
     where: {
       status,
       survey_end_date: {
-        lte: date,
+        lt: date,
       },
     },
   })
