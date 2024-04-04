@@ -75,6 +75,7 @@ jobs:
               source ~/.nvm/nvm.sh &&
               cd /home/ubuntu/kh360-nodejs &&
               pm2 kill &&
+              sudo kill -9 $(sudo lsof -t -i :5001) &&
               git pull &&
               npm install &&
               npx prisma migrate deploy &&
