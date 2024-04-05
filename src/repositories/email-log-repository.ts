@@ -1,4 +1,5 @@
 import { type EmailLog } from "../types/email-log-type"
+import { type Prisma } from "@prisma/client"
 import prisma from "../utils/prisma"
 
 export const create = async (data: EmailLog) => {
@@ -35,5 +36,11 @@ export const getByEmailAndType = async (email_address: string, email_type: strin
     orderBy: {
       id: "desc",
     },
+  })
+}
+
+export const getAllByFilters = async (where: Prisma.email_logsWhereInput) => {
+  return await prisma.email_logs.findMany({
+    where,
   })
 }
