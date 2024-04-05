@@ -923,7 +923,13 @@ export const getEvaluators = async (id: number) => {
         },
       })
 
-      const email_logs = await EmailLogRepository.getAllByEmail(evaluator.email)
+      const email_logs = await EmailLogRepository.getAllByFilters({
+        email_address: evaluator.email,
+        email_type: "Performance Evaluation Reminder",
+        notes: {
+          contains: `"evaluation_administration_id": ${evaluationAdministration.id}`,
+        },
+      })
 
       evaluators.push({
         ...evaluator,
@@ -962,7 +968,13 @@ export const getEvaluators = async (id: number) => {
         external_evaluator_id: evaluator.id,
       })
 
-      const email_logs = await EmailLogRepository.getAllByEmail(evaluator.email)
+      const email_logs = await EmailLogRepository.getAllByFilters({
+        email_address: evaluator.email,
+        email_type: "Performance Evaluation Reminder",
+        notes: {
+          contains: `"evaluation_administration_id": ${evaluationAdministration.id}`,
+        },
+      })
 
       evaluators.push({
         ...evaluator,
