@@ -173,6 +173,10 @@ export const getAllBySurveyAdminId = async (survey_administration_id: number) =>
   const surveyAdministration =
     await SurveyAdministrationRepository.getById(survey_administration_id)
 
+  if (surveyAdministration === null) {
+    throw new CustomError("Invalid survey admin id.", 400)
+  }
+
   const finalSurveyResults = await Promise.all(
     surveyResults.map(async (surveyResult) => {
       const surveyTemplateQuestions = await SurveyTemplateQuestionRepository.getAllByFilters({
@@ -191,10 +195,14 @@ export const getAllBySurveyAdminId = async (survey_administration_id: number) =>
       const total_answered = surveyAnswers.filter(
         (answer) => answer.survey_template_answer_id !== null
       ).length
-      const email_logs = await EmailLogRepository.getByEmailAndType(
-        surveyResult.users.email,
-        "Survey Reminder"
-      )
+
+      const email_logs = await EmailLogRepository.getAllByFilters({
+        email_address: surveyResult.users.email,
+        email_type: "Survey Reminder",
+        notes: {
+          contains: `"survey_administration_id": ${surveyAdministration.id}`,
+        },
+      })
 
       return {
         ...surveyResult,
@@ -260,6 +268,7 @@ export const sendReminderByRespondent = async (
   modifiedContent = modifiedContent.replace("{{respondent_first_name}}", `${respondent.first_name}`)
 
   const currentDate = new Date()
+
   const emailLogData: EmailLog = {
     content: modifiedContent,
     created_at: currentDate,
