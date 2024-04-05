@@ -81,6 +81,12 @@ export const updateById = async (id: number, data: SurveyAdministration) => {
     throw new CustomError("Only Draft and Pending status is allowed.", 403)
   }
 
+  const currentDate = new Date()
+
+  if (data.survey_start_date != null && data.survey_start_date <= currentDate) {
+    await SurveyAdministrationRepository.updateStatusById(id, SurveyAdministrationStatus.Processing)
+  }
+
   return await SurveyAdministrationRepository.updateById(id, data)
 }
 
