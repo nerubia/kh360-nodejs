@@ -62,7 +62,7 @@ export const deleteById = async (id: number) => {
     skill_category_id: id,
   })
   if (skillCategoryInUsed != null) {
-    throw new CustomError("Cannot delete skill category that is used in skills table", 400)
+    throw new CustomError("Skill category is currenly used. You are not allowed to delete.", 400)
   }
   if (skillCategory === null) {
     throw new CustomError("Skill Category not found", 400)
