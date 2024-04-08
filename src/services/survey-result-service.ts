@@ -134,24 +134,6 @@ export const deleteById = async (id: number) => {
     throw new CustomError("Survey Result not found", 400)
   }
 
-  const relatedSurveyResults = await SurveyResultRepository.getAllByFilters({
-    survey_administration_id: surveyResult.survey_administration_id,
-    user_id: surveyResult.user_id,
-    is_external: true,
-  })
-
-  for (const relatedSurveyResult of relatedSurveyResults) {
-    const surveyAnswers = await SurveyAnswerRepository.getAllByFilters({
-      survey_result_id: relatedSurveyResult.id,
-    })
-
-    const surveyAnswerIds = surveyAnswers.map((surveyAnswer) => surveyAnswer.id)
-
-    await SurveyAnswerRepository.deleteManyByIds(surveyAnswerIds)
-
-    await SurveyResultRepository.deleteById(relatedSurveyResult.id)
-  }
-
   const surveyAnswers = await SurveyAnswerRepository.getAllByFilters({
     survey_result_id: surveyResult.id,
   })
@@ -168,6 +150,11 @@ export const getAllBySurveyAdminId = async (survey_administration_id: number) =>
     survey_administration_id,
     external_respondent_id: null,
     deleted_at: null,
+  })
+
+  const companionSurveyResults = await SurveyResultRepository.getAllByFilters({
+    survey_administration_id,
+    is_external: true,
   })
 
   const surveyAdministration =
@@ -213,7 +200,39 @@ export const getAllBySurveyAdminId = async (survey_administration_id: number) =>
     })
   )
 
-  return finalSurveyResults
+  const finalCompanionResults = await Promise.all(
+    companionSurveyResults.map(async (surveyResult) => {
+      const surveyTemplateQuestions = await SurveyTemplateQuestionRepository.getAllByFilters({
+        survey_template_id: surveyAdministration?.survey_template_id ?? 0,
+      })
+
+      const total_questions = surveyTemplateQuestions.length
+      const surveyAnswers = await SurveyAnswerRepository.getAllDistinctByFilters(
+        {
+          survey_result_id: surveyResult.id,
+          status: SurveyAnswerStatus.Submitted,
+        },
+        ["survey_template_question_id"]
+      )
+
+      const total_answered = surveyAnswers.filter(
+        (answer) => answer.survey_template_answer_id !== null
+      ).length
+
+      const externalUser = await ExternalUserRepository.getById(
+        surveyResult.external_respondent_id ?? 0
+      )
+
+      return {
+        ...surveyResult,
+        users: externalUser,
+        total_questions,
+        total_answered,
+      }
+    })
+  )
+
+  return { survey_results: finalSurveyResults, companion_survey_results: finalCompanionResults }
 }
 
 export const updateStatusByAdministrationId = async (
@@ -659,19 +678,6 @@ export const reopen = async (id: number) => {
 
   if (surveyResult.status !== SurveyResultStatus.Submitted) {
     throw new CustomError("Only submitted status is allowed.", 403)
-  }
-
-  const relatedSurveyResults = await SurveyResultRepository.getAllByFilters({
-    survey_administration_id: surveyResult.survey_administration_id,
-    user_id: surveyResult.user_id,
-    is_external: true,
-  })
-
-  for (const relatedSurveyResult of relatedSurveyResults) {
-    await SurveyResultRepository.updateStatusById(
-      relatedSurveyResult.id,
-      SurveyResultStatus.Ongoing
-    )
   }
 
   await SurveyResultRepository.updateStatusById(surveyResult.id, SurveyResultStatus.Ongoing)
