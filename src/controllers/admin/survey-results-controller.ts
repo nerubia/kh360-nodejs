@@ -60,8 +60,10 @@ export const store = async (req: Request, res: Response) => {
 export const destroy = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    await SurveyResultService.deleteById(parseInt(id))
-    res.json({ id, message: "Survey result successfully deleted" })
+
+    const deletedIds = await SurveyResultService.deleteById(parseInt(id))
+
+    res.json({ deletedIds, message: "Survey result successfully deleted" })
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
