@@ -130,8 +130,32 @@ export const create = async (
 export const deleteById = async (id: number) => {
   const surveyResult = await SurveyResultRepository.getById(id)
 
+  const deletedIds = []
+
   if (surveyResult === null) {
     throw new CustomError("Survey Result not found", 400)
+  }
+
+  if (surveyResult.is_external === null || !surveyResult.is_external) {
+    const relatedSurveyResults = await SurveyResultRepository.getAllByFilters({
+      survey_administration_id: surveyResult.survey_administration_id,
+      user_id: surveyResult.user_id,
+      is_external: true,
+    })
+
+    for (const relatedSurveyResult of relatedSurveyResults) {
+      const surveyAnswers = await SurveyAnswerRepository.getAllByFilters({
+        survey_result_id: relatedSurveyResult.id,
+      })
+
+      const surveyAnswerIds = surveyAnswers.map((surveyAnswer) => surveyAnswer.id)
+
+      await SurveyAnswerRepository.deleteManyByIds(surveyAnswerIds)
+
+      await SurveyResultRepository.deleteById(relatedSurveyResult.id)
+
+      deletedIds.push(relatedSurveyResult.id)
+    }
   }
 
   const surveyAnswers = await SurveyAnswerRepository.getAllByFilters({
@@ -143,6 +167,10 @@ export const deleteById = async (id: number) => {
   await SurveyAnswerRepository.deleteManyByIds(surveyAnswerIds)
 
   await SurveyResultRepository.deleteById(surveyResult.id)
+
+  deletedIds.push(surveyResult.id)
+
+  return deletedIds
 }
 
 export const getAllBySurveyAdminId = async (survey_administration_id: number) => {
