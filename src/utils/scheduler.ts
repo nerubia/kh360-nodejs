@@ -6,7 +6,7 @@ import { sendSurveyEmailJob } from "../jobs/send-survey-email-job"
 
 // 12am UTC - (8am SGT)
 // (5 mins for now)
-const everyDay = schedule.scheduleJob("*/5 * * * *", async () => {
+const everyDay = schedule.scheduleJob("*/10 * * * *", async () => {
   await updateEvaluationAdministrationsJob()
   await updateSurveyAdministrationsJob()
 })
