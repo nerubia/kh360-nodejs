@@ -7,7 +7,9 @@ import logger from "../../utils/logger"
 export const index = async (req: Request, res: Response) => {
   try {
     const { template_type } = req.query
-    const emailTemplate = await EmailTemplateService.getByTemplateType(template_type as string)
+    const emailTemplate = await EmailTemplateService.getDefaultByTemplateType(
+      template_type as string
+    )
     res.json(emailTemplate)
   } catch (error) {
     if (error instanceof CustomError) {
