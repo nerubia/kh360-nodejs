@@ -15,6 +15,7 @@ export const getByTemplateType = async (template_type: string) => {
   return await prisma.email_templates.findFirst({
     where: {
       template_type,
+      is_default: true,
     },
   })
 }

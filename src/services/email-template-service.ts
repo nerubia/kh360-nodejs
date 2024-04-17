@@ -6,7 +6,7 @@ export const getDefault = async () => {
   return await EmailTemplateRepository.getDefault()
 }
 
-export const getByTemplateType = async (template_type: string) => {
+export const getDefaultByTemplateType = async (template_type: string) => {
   const emailTemplate = await EmailTemplateRepository.getByTemplateType(template_type)
 
   if (emailTemplate === null) {
