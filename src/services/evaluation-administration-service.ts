@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { type Prisma } from "@prisma/client"
 import { format } from "date-fns"
 import bcrypt from "bcrypt"
@@ -537,9 +538,23 @@ export const publish = async (id: number) => {
   )
 }
 
-export const reopen = async (id: number) => {
+export const reopen = async (id: number, eval_end_date: Date) => {
   const evaluationAdministration = await EvaluationAdministrationRepository.getById(id)
 
+  if (eval_end_date === null) {
+    throw new CustomError("Invalid end date.", 400)
+  }
+
+  if (eval_end_date !== undefined) {
+    const currentDate = new Date()
+    currentDate.setHours(0, 0, 0, 0)
+    const evaluation_end_date = new Date(eval_end_date)
+    evaluation_end_date.setHours(0, 0, 0, 0)
+
+    if (evaluation_end_date < currentDate) {
+      throw new CustomError("You can't reschedule earlier than today.", 400)
+    }
+  }
   if (evaluationAdministration === null) {
     throw new CustomError("Id not found", 400)
   }
@@ -576,9 +591,13 @@ export const reopen = async (id: number) => {
             : EvaluationStatus.Open,
       })
     }
-
     await EvaluationRepository.updateById(evaluation.id, data)
   }
+
+  await EvaluationAdministrationRepository.updateEvalEndDate(
+    evaluationAdministration.id,
+    eval_end_date
+  )
 
   await EvaluationResultDetailsRepository.updateByAdministrationId(evaluationAdministration.id, {
     score_ratings_id: null,
