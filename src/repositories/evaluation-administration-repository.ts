@@ -114,3 +114,15 @@ export const getAllByIdsAndStatuses = async (ids: number[], statuses: string[]) 
     },
   })
 }
+
+export const updateEvalEndDate = async (id: number, eval_end_date: Date) => {
+  return await prisma.evaluation_administrations.update({
+    where: {
+      id,
+    },
+    data: {
+      eval_schedule_end_date: eval_end_date,
+      updated_at: new Date(),
+    },
+  })
+}
