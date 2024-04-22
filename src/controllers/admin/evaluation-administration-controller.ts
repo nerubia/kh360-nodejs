@@ -295,6 +295,10 @@ export const generate = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
 
+    const currentDateTime = new Date()
+    const currentDate = new Date()
+    currentDate.setHours(0, 0, 0, 0)
+
     const evaluationAdministration = await prisma.evaluation_administrations.findUnique({
       where: {
         id: parseInt(id),
@@ -303,6 +307,17 @@ export const generate = async (req: Request, res: Response) => {
 
     if (evaluationAdministration === null) {
       return res.status(400).json({ message: "Invalid id" })
+    }
+
+    if (evaluationAdministration.eval_schedule_end_date !== null) {
+      const evaluation_end_date = new Date(evaluationAdministration.eval_schedule_end_date)
+      evaluation_end_date.setHours(0, 0, 0, 0)
+
+      if (evaluation_end_date < currentDate) {
+        return res
+          .status(400)
+          .json({ message: "Unable to proceed. Evaluation schedule has lapsed." })
+      }
     }
 
     const evaluations = await prisma.evaluations.findMany({
@@ -332,8 +347,6 @@ export const generate = async (req: Request, res: Response) => {
     if (notReadyEvaluationResults.length > 0) {
       return res.status(400).json({ message: "All evaluees must be ready." })
     }
-
-    const currentDate = new Date()
 
     const status =
       evaluationAdministration.eval_schedule_start_date != null &&
@@ -380,7 +393,7 @@ export const generate = async (req: Request, res: Response) => {
               evaluationAdministration.eval_schedule_start_date > currentDate
                 ? EvaluationStatus.Pending
                 : EvaluationStatus.Open,
-            updated_at: currentDate,
+            updated_at: currentDateTime,
           },
         })
 
@@ -398,8 +411,8 @@ export const generate = async (req: Request, res: Response) => {
             evaluation_template_id: evaluation.evaluation_template_id,
             evaluation_template_content_id: evaluationTemplateContent.id,
             percentage: evaluationTemplateContent.rate,
-            created_at: currentDate,
-            updated_at: currentDate,
+            created_at: currentDateTime,
+            updated_at: currentDateTime,
           })
         }
       }
