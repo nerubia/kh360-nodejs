@@ -350,7 +350,7 @@ export const generate = async (req: Request, res: Response) => {
 
     const status =
       evaluationAdministration.eval_schedule_start_date != null &&
-      evaluationAdministration.eval_schedule_start_date > currentDate
+      evaluationAdministration.eval_schedule_start_date > currentDateTime
         ? EvaluationAdministrationStatus.Pending
         : EvaluationAdministrationStatus.Processing
 
@@ -390,7 +390,7 @@ export const generate = async (req: Request, res: Response) => {
           data: {
             status:
               evaluationAdministration.eval_schedule_start_date != null &&
-              evaluationAdministration.eval_schedule_start_date > currentDate
+              evaluationAdministration.eval_schedule_start_date > currentDateTime
                 ? EvaluationStatus.Pending
                 : EvaluationStatus.Open,
             updated_at: currentDateTime,
