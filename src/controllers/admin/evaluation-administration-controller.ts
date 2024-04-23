@@ -3,7 +3,6 @@ import { type Request, type Response } from "express"
 import { ValidationError } from "yup"
 
 import * as EvaluationAdministrationService from "../../services/evaluation-administration-service"
-import * as EvaluationResultService from "../../services/evaluation-result-service"
 
 import prisma from "../../utils/prisma"
 import { EvaluationAdministrationStatus } from "../../types/evaluation-administration-type"
@@ -276,11 +275,17 @@ export const generateStatus = async (req: Request, res: Response) => {
     })
 
     const notReadyEvaluationResults = evaluationResults.filter(
-      (evaluationResult) => evaluationResult.status !== EvaluationResultStatus.Ready
+      (evaluationResult) =>
+        evaluationResult.status !== EvaluationResultStatus.Ready &&
+        evaluationResult.status !== EvaluationResultStatus.Ongoing
     )
 
+    const canGenerate =
+      notReadyEvaluationResults.length === 0 &&
+      !evaluationResults.every((result) => result.status === EvaluationResultStatus.Ongoing)
+
     res.json({
-      canGenerate: notReadyEvaluationResults.length === 0,
+      canGenerate,
     })
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
@@ -337,7 +342,9 @@ export const generate = async (req: Request, res: Response) => {
     })
 
     const notReadyEvaluationResults = evaluationResults.filter(
-      (evaluationResult) => evaluationResult.status !== EvaluationResultStatus.Ready
+      (evaluationResult) =>
+        evaluationResult.status !== EvaluationResultStatus.Ready &&
+        evaluationResult.status !== EvaluationResultStatus.Ongoing
     )
 
     if (evaluations.length === 0) {
@@ -421,13 +428,6 @@ export const generate = async (req: Request, res: Response) => {
     await prisma.evaluation_ratings.createMany({
       data: evaluationRatings,
     })
-
-    if (status === EvaluationAdministrationStatus.Processing) {
-      void EvaluationResultService.updateStatusByAdministrationId(
-        evaluationAdministration.id,
-        EvaluationResultStatus.Ongoing
-      )
-    }
 
     res.json({ id })
   } catch (error) {
