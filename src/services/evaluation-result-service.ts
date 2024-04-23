@@ -378,7 +378,7 @@ export const getById = async (user: UserToken, id: number) => {
     other_comments: filteredOtherComments,
     recommendations,
     evaluation_result_details: finalEvaluationResultDetails,
-    status: evaluationAdministration.status,
+    status: evaluationResult.status,
     eval_admin_name: evaluationAdministration.name,
     total_score: Math.round((Number(evaluationResult.score) / 10) * 100),
     score_rating,

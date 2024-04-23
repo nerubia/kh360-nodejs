@@ -142,10 +142,20 @@ export const sendEvaluationEmailById = async (id: number) => {
       })
     }
 
+    const readyEvaluationResults = await EvaluationResultRepository.getAllByFilters({
+      status: EvaluationResultStatus.Ready,
+      evaluation_administration_id: evaluationAdministration.id,
+    })
+
+    const readyEvaluationResultsId = readyEvaluationResults.map((result) => result.id)
+
     const internalEvaluations = await EvaluationRepository.getAllDistinctByFilters(
       {
         evaluation_administration_id: evaluationAdministration.id,
         for_evaluation: true,
+        evaluation_result_id: {
+          in: readyEvaluationResultsId,
+        },
       },
       ["evaluator_id"]
     )
@@ -177,6 +187,9 @@ export const sendEvaluationEmailById = async (id: number) => {
       {
         evaluation_administration_id: evaluationAdministration.id,
         for_evaluation: true,
+        evaluation_result_id: {
+          in: readyEvaluationResultsId,
+        },
       },
       ["external_evaluator_id"]
     )
@@ -212,6 +225,11 @@ export const sendEvaluationEmailById = async (id: number) => {
         )
       }
     }
+
+    void EvaluationResultService.updateStatusByAdministrationId(
+      evaluationAdministration.id,
+      EvaluationResultStatus.Ongoing
+    )
   }
 }
 
