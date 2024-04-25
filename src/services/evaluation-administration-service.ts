@@ -337,6 +337,7 @@ export const generateUpdate = async (id: number) => {
         evaluation_administration_id: evaluationAdministration.id,
         status: EvaluationStatus.Draft,
         for_evaluation: true,
+        is_external: false,
       },
       ["evaluator_id"]
     )
@@ -373,6 +374,7 @@ export const generateUpdate = async (id: number) => {
         evaluation_administration_id: evaluationAdministration.id,
         status: EvaluationStatus.Draft,
         for_evaluation: true,
+        is_external: true,
       },
       ["external_evaluator_id"]
     )
