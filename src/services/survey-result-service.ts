@@ -36,6 +36,18 @@ export const create = async (
     throw new CustomError("Invalid id.", 400)
   }
 
+  if (surveyAdministration.survey_end_date !== null) {
+    const currentDate = new Date()
+    currentDate.setHours(0, 0, 0, 0)
+
+    const survey_end_date = new Date(surveyAdministration.survey_end_date)
+    survey_end_date.setHours(0, 0, 0, 0)
+
+    if (survey_end_date < currentDate) {
+      throw new CustomError("Unable to proceed. Survey schedule has lapsed.", 400)
+    }
+  }
+
   const surveyResults = await SurveyResultRepository.getAllByFilters({
     survey_administration_id: surveyAdministration.id,
     external_respondent_id: null,
