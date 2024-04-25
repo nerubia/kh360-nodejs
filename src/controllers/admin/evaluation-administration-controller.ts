@@ -277,12 +277,17 @@ export const generateStatus = async (req: Request, res: Response) => {
     const notReadyEvaluationResults = evaluationResults.filter(
       (evaluationResult) =>
         evaluationResult.status !== EvaluationResultStatus.Ready &&
-        evaluationResult.status !== EvaluationResultStatus.Ongoing
+        evaluationResult.status !== EvaluationResultStatus.Ongoing &&
+        evaluationResult.status !== EvaluationResultStatus.Completed
     )
 
     const canGenerate =
       notReadyEvaluationResults.length === 0 &&
-      !evaluationResults.every((result) => result.status === EvaluationResultStatus.Ongoing)
+      !evaluationResults.every(
+        (result) =>
+          result.status === EvaluationResultStatus.Completed ||
+          result.status === EvaluationResultStatus.Ongoing
+      )
 
     res.json({
       canGenerate,
