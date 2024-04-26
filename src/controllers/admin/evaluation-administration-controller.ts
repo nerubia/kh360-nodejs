@@ -440,15 +440,15 @@ export const generate = async (req: Request, res: Response) => {
 
 /**
  * Generates updated evaluation records and related data by ID.
- * @param req.params.id - The unique ID of the evaluation administration.
+ * @param req.params.evaluation_result_id - The unique ID of the evaluation result.
  */
 export const generateUpdate = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params
+    const { evaluation_result_id } = req.params
 
-    await EvaluationAdministrationService.generateUpdate(parseInt(id))
+    await EvaluationAdministrationService.generateUpdate(parseInt(evaluation_result_id))
 
-    res.json({ id })
+    res.json({ evaluation_result_id })
   } catch (error) {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
