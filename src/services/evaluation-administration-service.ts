@@ -233,21 +233,26 @@ export const sendEvaluationEmailById = async (id: number) => {
   }
 }
 
-export const generateUpdate = async (id: number) => {
-  const evaluationAdministration = await EvaluationAdministrationRepository.getById(id)
+export const generateUpdate = async (evaluation_result_id: number) => {
+  const evaluationResult = await EvaluationResultRepository.getById(evaluation_result_id)
+
+  if (evaluationResult === null) {
+    throw new CustomError("Invalid id.", 400)
+  }
+
+  const evaluationAdministration = await EvaluationAdministrationRepository.getById(
+    evaluationResult.evaluation_administration_id ?? 0
+  )
+
+  if (evaluationAdministration === null) {
+    throw new CustomError("Evaluation Administration not found.", 400)
+  }
 
   if (evaluationAdministration !== null) {
-    if (evaluationAdministration === null) {
-      throw new CustomError("Invalid id.", 400)
-    }
-
     const evaluations = await EvaluationRepository.getAllByFilters({
-      evaluation_administration_id: id,
-      for_evaluation: true,
-    })
-
-    const evaluationResults = await EvaluationResultRepository.getAllByFilters({
       evaluation_administration_id: evaluationAdministration.id,
+      evaluation_result_id: evaluationResult.id,
+      for_evaluation: true,
     })
 
     if (evaluations?.length === 0) {
@@ -266,37 +271,35 @@ export const generateUpdate = async (id: number) => {
       updated_at: Date
     }> = []
 
-    if (evaluationResults !== null) {
-      for (const evaluationResult of evaluationResults) {
-        const evaluations = await EvaluationRepository.getAllByFilters({
-          evaluation_result_id: evaluationResult.id,
-          for_evaluation: true,
-          status: EvaluationStatus.Draft,
+    if (evaluationResult !== null) {
+      const evaluations = await EvaluationRepository.getAllByFilters({
+        evaluation_result_id: evaluationResult.id,
+        for_evaluation: true,
+        status: EvaluationStatus.Draft,
+      })
+
+      for (const evaluation of evaluations) {
+        const existingEvaluationRatings = await EvaluationRatingRepository.getAllByFilters({
+          evaluation_id: evaluation.id,
         })
 
-        for (const evaluation of evaluations) {
-          const existingEvaluationRatings = await EvaluationRatingRepository.getAllByFilters({
-            evaluation_id: evaluation.id,
-          })
+        if (existingEvaluationRatings.length === 0) {
+          const evaluationTemplateContents =
+            await EvaluationTemplateContentsRepository.getAllByFilters({
+              evaluation_template_id: evaluation.evaluation_template_id,
+              is_active: true,
+            })
 
-          if (existingEvaluationRatings.length === 0) {
-            const evaluationTemplateContents =
-              await EvaluationTemplateContentsRepository.getAllByFilters({
-                evaluation_template_id: evaluation.evaluation_template_id,
-                is_active: true,
-              })
-
-            for (const evaluationTemplateContent of evaluationTemplateContents) {
-              evaluationRatings.push({
-                evaluation_administration_id: evaluationAdministration.id,
-                evaluation_id: evaluation.id,
-                evaluation_template_id: evaluation.evaluation_template_id,
-                evaluation_template_content_id: evaluationTemplateContent.id,
-                percentage: evaluationTemplateContent.rate,
-                created_at: currentDate,
-                updated_at: currentDate,
-              })
-            }
+          for (const evaluationTemplateContent of evaluationTemplateContents) {
+            evaluationRatings.push({
+              evaluation_administration_id: evaluationAdministration.id,
+              evaluation_id: evaluation.id,
+              evaluation_template_id: evaluation.evaluation_template_id,
+              evaluation_template_content_id: evaluationTemplateContent.id,
+              percentage: evaluationTemplateContent.rate,
+              created_at: currentDate,
+              updated_at: currentDate,
+            })
           }
         }
       }
@@ -335,6 +338,7 @@ export const generateUpdate = async (id: number) => {
     const internalEvaluations = await EvaluationRepository.getAllDistinctByFilters(
       {
         evaluation_administration_id: evaluationAdministration.id,
+        evaluation_result_id: evaluationResult.id,
         status: EvaluationStatus.Draft,
         for_evaluation: true,
         is_external: false,
@@ -372,6 +376,7 @@ export const generateUpdate = async (id: number) => {
     const externalEvaluations = await EvaluationRepository.getAllDistinctByFilters(
       {
         evaluation_administration_id: evaluationAdministration.id,
+        evaluation_result_id: evaluationResult.id,
         status: EvaluationStatus.Draft,
         for_evaluation: true,
         is_external: true,

@@ -11,7 +11,10 @@ router.delete("/:id", EvaluationAdministrationController.destroy)
 
 router.get("/:id/generate-status", EvaluationAdministrationController.generateStatus)
 router.post("/:id/generate", EvaluationAdministrationController.generate)
-router.post("/:id/generate-update", EvaluationAdministrationController.generateUpdate)
+router.post(
+  "/:evaluation_result_id/generate-update",
+  EvaluationAdministrationController.generateUpdate
+)
 router.post("/:id/cancel", EvaluationAdministrationController.cancel)
 router.post("/:id/close", EvaluationAdministrationController.close)
 router.post("/:id/publish", EvaluationAdministrationController.publish)
