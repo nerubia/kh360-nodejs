@@ -659,13 +659,6 @@ export const sendRequestToRemove = async (evaluation_id: number, comment: string
     throw new CustomError("Id not found", 400)
   }
 
-  await EvaluationRepository.updateById(evaluation_id, {
-    comments: comment,
-    updated_at: new Date(),
-    status: EvaluationStatus.ForRemoval,
-  })
-
-  const project = await ProjectRepository.getById(evaluation.project_id ?? 0)
   const evaluationTemplate = await EvaluationTemplateRepository.getById(
     evaluation.evaluation_template_id ?? 0
   )
@@ -680,6 +673,14 @@ export const sendRequestToRemove = async (evaluation_id: number, comment: string
   if (emailTemplate === null) {
     throw new CustomError("Email template not found", 400)
   }
+
+  await EvaluationRepository.updateById(evaluation_id, {
+    comments: comment,
+    updated_at: new Date(),
+    status: EvaluationStatus.ForRemoval,
+  })
+
+  const project = await ProjectRepository.getById(evaluation.project_id ?? 0)
 
   const evaluator =
     evaluation?.is_external === true
