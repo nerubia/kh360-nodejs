@@ -249,6 +249,13 @@ export const generateUpdate = async (evaluation_result_id: number) => {
   }
 
   if (evaluationAdministration !== null) {
+    const emailTemplate = await EmailTemplateRepository.getByTemplateType("Create New Evaluation")
+    const emailContent = emailTemplate?.content ?? ""
+
+    if (emailTemplate === null) {
+      throw new CustomError("Default Email Template not found.", 400)
+    }
+
     const evaluations = await EvaluationRepository.getAllByFilters({
       evaluation_administration_id: evaluationAdministration.id,
       evaluation_result_id: evaluationResult.id,
@@ -306,10 +313,6 @@ export const generateUpdate = async (evaluation_result_id: number) => {
     }
 
     await EvaluationRatingRepository.createMany(evaluationRatings)
-
-    const emailTemplate = await EmailTemplateRepository.getByTemplateType("Create New Evaluation")
-
-    const emailContent = emailTemplate?.content ?? ""
 
     const scheduleEndDate = format(
       evaluationAdministration.eval_schedule_end_date ?? new Date(),
