@@ -1076,14 +1076,15 @@ model score_ratings {
 }
 
 model skill_categories {
-  id          Int       @id @default(autoincrement())
-  name        String?   @db.VarChar(255)
-  sequence_no Int?
-  description String?   @db.Text
-  status      Boolean?
-  created_at  DateTime? @db.DateTime(0)
-  updated_at  DateTime? @db.DateTime(0)
-  skills      skills[]
+  id                Int                 @id @default(autoincrement())
+  name              String?             @db.VarChar(255)
+  sequence_no       Int?
+  description       String?             @db.Text
+  status            Boolean?
+  created_at        DateTime?           @db.DateTime(0)
+  updated_at        DateTime?           @db.DateTime(0)
+  skills            skills[]
+  skill_map_ratings skill_map_ratings[]
 }
 
 model skills {
@@ -1099,6 +1100,67 @@ model skills {
   skill_categories      skill_categories        @relation(fields: [skill_category_id], references: [id])
   project_skills        project_skills[]
   project_member_skills project_member_skills[]
+  skill_map_ratings     skill_map_ratings[]
+}
+
+model skill_map_administrations {
+  id                            Int                 @id @default(autoincrement())
+  name                          String?             @default("") @db.VarChar(100)
+  skill_map_schedule_start_date DateTime?           @db.Date
+  skill_map_schedule_end_date   DateTime?           @db.Date
+  skill_map_period_start_date   DateTime?           @db.Date
+  skill_map_period_end_date     DateTime?           @db.Date
+  remarks                       String?             @db.Text
+  email_subject                 String?             @default("") @db.VarChar(255)
+  email_content                 String?             @db.Text
+  status                        String?             @default("") @db.VarChar(20)
+  created_by_id                 Int?
+  updated_by_id                 Int?
+  created_at                    DateTime?           @db.DateTime(0)
+  updated_at                    DateTime?           @db.DateTime(0)
+  skill_map_results             skill_map_results[]
+}
+
+model skill_map_results {
+  id                          Int                        @id @default(autoincrement())
+  skill_map_administration_id Int?
+  user_id                     Int?
+  submitted_date              DateTime?                  @db.Date
+  comments                    String?                    @db.Text
+  status                      String?                    @default("") @db.VarChar(20)
+  created_by_id               Int?
+  updated_by_id               Int?
+  created_at                  DateTime?                  @db.DateTime(0)
+  updated_at                  DateTime?                  @db.DateTime(0)
+  deleted_at                  DateTime?                  @db.DateTime(0)
+  users                       users?                     @relation(fields: [user_id], references: [id])
+  skill_map_ratings           skill_map_ratings[]
+  skill_map_administrations   skill_map_administrations? @relation(fields: [skill_map_administration_id], references: [id])
+
+  @@index([skill_map_administration_id], map: "index_skill_map_results_on_skill_map_administration_id")
+  @@index([user_id], map: "index_skill_map_results_on_user_id")
+}
+
+model skill_map_ratings {
+  id                          Int                @id @default(autoincrement())
+  skill_map_administration_id Int?
+  skill_map_result_id         Int?
+  skill_id                    Int?
+  skill_category_id           Int?
+  answer_option_id            Int?
+  comments                    String?            @db.Text
+  created_at                  DateTime?          @db.DateTime(0)
+  updated_at                  DateTime?          @db.DateTime(0)
+  deleted_at                  DateTime?          @db.DateTime(0)
+  skill_map_results           skill_map_results? @relation(fields: [skill_map_result_id], references: [id])
+  skills                      skills?            @relation(fields: [skill_id], references: [id])
+  skill_categories            skill_categories?  @relation(fields: [skill_category_id], references: [id])
+
+  @@index([answer_option_id], map: "index_skill_map_ratings_on_answer_option_id")
+  @@index([skill_map_administration_id], map: "index_skill_map_ratings_on_skill_map_administration_id")
+  @@index([skill_map_result_id], map: "index_skill_map_ratings_on_skill_map_result_id")
+  @@index([skill_id], map: "index_skill_map_ratings_on_skill_id")
+  @@index([skill_category_id], map: "index_skill_map_ratings_on_skill_category_id")
 }
 
 model system_settings {
@@ -1289,42 +1351,42 @@ model survey_templates {
 }
 
 model survey_template_categories {
-  id                  Int       @id @default(autoincrement())
-  survey_template_id  Int?
-  name                String?   @db.VarChar(255)
-  sequence_no         Int?
-  category_type       String?   @db.VarChar(255)
-  description         String?   @db.Text
-  status              Boolean?
-  created_at          DateTime? @db.DateTime(0)
-  updated_at          DateTime? @db.DateTime(0)
+  id                 Int       @id @default(autoincrement())
+  survey_template_id Int?
+  name               String?   @db.VarChar(255)
+  sequence_no        Int?
+  category_type      String?   @db.VarChar(255)
+  description        String?   @db.Text
+  status             Boolean?
+  created_at         DateTime? @db.DateTime(0)
+  updated_at         DateTime? @db.DateTime(0)
 
-  survey_template_answers        survey_template_answers[]
-  survey_template_questions      survey_template_questions[]
+  survey_template_answers   survey_template_answers[]
+  survey_template_questions survey_template_questions[]
 
-  survey_templates    survey_templates? @relation(fields: [survey_template_id], references: [id], onDelete: Cascade, map: "survey_templates_survey_template_id")
+  survey_templates survey_templates? @relation(fields: [survey_template_id], references: [id], onDelete: Cascade, map: "survey_templates_survey_template_id")
 }
 
 model survey_template_questions {
-  id                            Int       @id @default(autoincrement())
-  survey_template_id            Int
-  survey_template_category_id   Int?
-  sequence_no                   Int?
-  question_type                 String?   @db.VarChar(255)
-  question_text                 String?   @db.Text
-  is_required                   Boolean?
-  is_active                     Boolean?
-  created_by_id                 Int?
-  updated_by_id                 Int?
-  created_at                    DateTime? @db.DateTime(0)
-  updated_at                    DateTime? @db.DateTime(0)
-  deleted_at                    DateTime? @db.DateTime(0)
+  id                          Int       @id @default(autoincrement())
+  survey_template_id          Int
+  survey_template_category_id Int?
+  sequence_no                 Int?
+  question_type               String?   @db.VarChar(255)
+  question_text               String?   @db.Text
+  is_required                 Boolean?
+  is_active                   Boolean?
+  created_by_id               Int?
+  updated_by_id               Int?
+  created_at                  DateTime? @db.DateTime(0)
+  updated_at                  DateTime? @db.DateTime(0)
+  deleted_at                  DateTime? @db.DateTime(0)
 
   survey_template_question_rules survey_template_question_rules[]
   survey_template_answers        survey_template_answers[]
   survey_answers                 survey_answers[]
 
-  survey_templates survey_templates @relation(fields: [survey_template_id], references: [id])
+  survey_templates           survey_templates            @relation(fields: [survey_template_id], references: [id])
   survey_template_categories survey_template_categories? @relation(fields: [survey_template_category_id], references: [id])
 }
 
@@ -1342,8 +1404,8 @@ model survey_template_question_rules {
   updated_at                  DateTime? @db.DateTime(0)
   deleted_at                  DateTime? @db.DateTime(0)
 
-  survey_templates            survey_templates          @relation(fields: [survey_template_id], references: [id])
-  survey_template_questions   survey_template_questions @relation(fields: [survey_template_question_id], references: [id])
+  survey_templates          survey_templates          @relation(fields: [survey_template_id], references: [id])
+  survey_template_questions survey_template_questions @relation(fields: [survey_template_question_id], references: [id])
 }
 
 model survey_template_answers {
@@ -1364,9 +1426,9 @@ model survey_template_answers {
   deleted_at                  DateTime?        @db.DateTime(0)
   survey_answers              survey_answers[]
 
-  survey_templates                     survey_templates          @relation(fields: [survey_template_id], references: [id])
-  survey_template_questions            survey_template_questions @relation(fields: [survey_template_question_id], references: [id])
-  survey_template_categories           survey_template_categories? @relation(fields: [survey_template_category_id], references: [id])
+  survey_templates           survey_templates            @relation(fields: [survey_template_id], references: [id])
+  survey_template_questions  survey_template_questions   @relation(fields: [survey_template_question_id], references: [id])
+  survey_template_categories survey_template_categories? @relation(fields: [survey_template_category_id], references: [id])
 }
 
 model survey_administrations {
@@ -1638,6 +1700,7 @@ model users {
   user_details              user_details?
   survey_results            survey_results[]
   survey_answers            survey_answers[]
+  skill_map_results         skill_map_results[]
 
   @@index([birth_date], map: "index_users_on_birth_date")
   @@index([first_name, last_name], map: "index_users_on_first_name_and_last_name")
