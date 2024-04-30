@@ -28,6 +28,8 @@ import projectSkillRoute from "./routes/admin/project-skill-route"
 import projectRoute from "./routes/admin/project-route"
 import skillRoute from "./routes/admin/skill-route"
 import skillCategoryRoute from "./routes/admin/skill-category-route"
+import skillMapAdministrationRoute from "./routes/admin/skill-map-administration-route"
+import skillMapResultsRoute from "./routes/admin/skill-map-result-route"
 import usersRoute from "./routes/admin/users-route"
 import surveyAdministrationRoute from "./routes/admin/survey-administration-route"
 import surveyResultRoute from "./routes/admin/survey-result-route"
@@ -79,6 +81,8 @@ app.use("/admin/project-skills", adminMiddleware, projectSkillRoute)
 app.use("/admin/projects", adminMiddleware, projectRoute)
 app.use("/admin/skills", adminMiddleware, skillRoute)
 app.use("/admin/skill-categories", adminMiddleware, skillCategoryRoute)
+app.use("/admin/skill-map-administrations", adminMiddleware, skillMapAdministrationRoute)
+app.use("/admin/skill-map-results", adminMiddleware, skillMapResultsRoute)
 app.use("/admin/survey-administrations", adminMiddleware, surveyAdministrationRoute)
 app.use("/admin/survey-results", adminMiddleware, surveyResultRoute)
 app.use("/admin/survey-templates", adminMiddleware, surveyTemplateRoute)
