@@ -6,6 +6,8 @@ import { setWssForPendingEvalAdmin } from "../jobs/update-evaluation-administrat
 import { setWssForProcessingEvalAdmin } from "../jobs/send-evaluation-email-job"
 import { setWssForPendingSurveyAdmin } from "../jobs/update-survey-administrations-job"
 import { setWssForProcessingSurveyAdmin } from "../jobs/send-survey-email-job"
+import { setWssForPendingSkillMapAdmin } from "../jobs/update-skill-map-administrations-job"
+import { setWssForProcessingSkillMapAdmin } from "../jobs/send-skill-map-email-job"
 
 const webSocketServer = (app: Application) => {
   const server = http.createServer(app)
@@ -30,6 +32,8 @@ const webSocketServer = (app: Application) => {
     setWssForProcessingEvalAdmin(wss)
     setWssForPendingSurveyAdmin(wss)
     setWssForProcessingSurveyAdmin(wss)
+    setWssForPendingSkillMapAdmin(wss)
+    setWssForProcessingSkillMapAdmin(wss)
 
     // Handle WebSocket closing
     ws.on("close", () => {
