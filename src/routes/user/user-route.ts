@@ -31,6 +31,8 @@ router.get("/survey-questions/", UserController.getSurveyQuestions)
 router.get("/survey-questions/companions/:survey_result_id", UserController.getCompanionQuestions)
 router.post("/survey-administrations/:id/submit-survey", UserController.submitSurveyAnswers)
 
+router.get("/skill-map-administrations", UserController.getSkillMapAdministrations)
+
 // TODO: Refactor
 router.get("/profile", UserController.getProfile)
 router.get("/mail", UserController.sendSampleMail)
