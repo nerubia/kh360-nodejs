@@ -100,6 +100,27 @@ export const getEvaluationAdministrations = async (req: Request, res: Response) 
 }
 
 /**
+ * List user skill map administrations
+ * @param req.query.page - Page number for pagination.
+ */
+export const getSkillMapAdministrations = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+    const { page } = req.query
+
+    const skillMapAdministrations = await UserService.getSkillMapAdministrations(
+      user,
+      parseInt(page as string)
+    )
+
+    res.json(skillMapAdministrations)
+  } catch (error) {
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
  * Send email to request for removal of evaluation
  * @param req.params.id - The unique id of the evaluation.
  * @param req.body.comment - Evaluation comment.
@@ -436,7 +457,7 @@ export const getCompanionQuestions = async (req: Request, res: Response) => {
   try {
     const { survey_result_id } = req.params
     const companionResults = await SurveyResultService.getCompanionQuestionsById(
-      parseInt(survey_result_id )
+      parseInt(survey_result_id)
     )
     res.json(companionResults)
   } catch (error) {

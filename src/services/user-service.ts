@@ -22,6 +22,8 @@ import * as SurveyTemplateQuestionRepository from "../repositories/survey-templa
 import * as SurveyTemplateQuestionRuleRepository from "../repositories/survey-template-question-rule-repository"
 import * as SurveyTemplateAnswerRepository from "../repositories/survey-template-answer-repository"
 import * as SurveyTemplateCategoryRepository from "../repositories/survey-template-category-repository"
+import * as SkillMapAdministrationRepository from "../repositories/skill-map-administration-repository"
+import * as SkillMapResultRepository from "../repositories/skill-map-result-repository"
 import { EvaluationStatus } from "../types/evaluation-type"
 import { SurveyAnswerStatus, type SurveyAnswer } from "../types/survey-answer-type"
 import { submitEvaluationSchema } from "../utils/validation/evaluations/submit-evaluation-schema"
@@ -37,6 +39,7 @@ import { constructNameFilter } from "../utils/format-filter"
 import { SurveyResultStatus } from "../types/survey-result-type"
 import { type Prisma } from "@prisma/client"
 import { SurveyAdministrationStatus } from "../types/survey-administration-type"
+import { SkillMapAdministrationStatus } from "../types/skill-map-administration-type"
 
 export const getById = async (id: number) => {
   return await UserRepository.getById(id)
@@ -788,6 +791,67 @@ export const getSurveyAdministrations = async (user: UserToken, page: number) =>
 
   return {
     data: finalSurveyAdministrations,
+    pageInfo: {
+      hasPreviousPage: currentPage > 1,
+      hasNextPage: currentPage < totalPages,
+      currentPage,
+      totalPages,
+      totalItems,
+    },
+  }
+}
+
+export const getSkillMapAdministrations = async (user: UserToken, page: number) => {
+  const itemsPerPage = 20
+  const currentPage = isNaN(page) || page < 0 ? 1 : page
+
+  const filter = {
+    user_id: user.id,
+    deleted_at: null,
+  }
+
+  const skillMapResults = await SkillMapResultRepository.getAllByFilters(filter)
+
+  const skillMapAdministrationIds = skillMapResults.map(
+    (result) => result.skill_map_administration_id
+  )
+
+  const skillMapAdministrations = await SkillMapAdministrationRepository.paginateByFilters(
+    (currentPage - 1) * itemsPerPage,
+    itemsPerPage,
+    {
+      id: {
+        in: skillMapAdministrationIds as number[],
+      },
+      status: SurveyAdministrationStatus.Ongoing,
+    }
+  )
+
+  const totalItems = await SkillMapAdministrationRepository.countAllByFilters({
+    id: {
+      in: skillMapAdministrationIds as number[],
+    },
+    status: SkillMapAdministrationStatus.Ongoing,
+  })
+
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+
+  const finalSkillMapAdministrations = await Promise.all(
+    skillMapAdministrations.map(async (skillMapAdministration) => {
+      const skillMapResult = await SkillMapResultRepository.getByFilters({
+        skill_map_administration_id: skillMapAdministration.id,
+        user_id: user.id,
+      })
+
+      return {
+        ...skillMapAdministration,
+        skill_map_result_status: skillMapResult?.status,
+      }
+    })
+  )
+
+  return {
+    data: finalSkillMapAdministrations,
     pageInfo: {
       hasPreviousPage: currentPage > 1,
       hasNextPage: currentPage < totalPages,
