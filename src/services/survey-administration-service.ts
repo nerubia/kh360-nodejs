@@ -83,7 +83,11 @@ export const updateById = async (id: number, data: SurveyAdministration) => {
 
   const currentDate = new Date()
 
-  if (data.survey_start_date != null && data.survey_start_date <= currentDate) {
+  if (
+    data.survey_start_date != null &&
+    data.survey_start_date <= currentDate &&
+    data.status === SurveyAdministrationStatus.Pending
+  ) {
     await SurveyAdministrationRepository.updateStatusById(id, SurveyAdministrationStatus.Processing)
   }
 
