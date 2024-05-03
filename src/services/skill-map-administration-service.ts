@@ -85,7 +85,8 @@ export const updateById = async (id: number, data: SkillMapAdministration) => {
 
   if (
     data.skill_map_schedule_start_date != null &&
-    data.skill_map_schedule_start_date <= currentDate
+    data.skill_map_schedule_start_date <= currentDate &&
+    data.status === SkillMapAdministrationStatus.Pending
   ) {
     await SkillMapAdministrationRepository.updateStatusById(
       id,
