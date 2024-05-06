@@ -1,11 +1,26 @@
 import prisma from "../utils/prisma"
 import { type Prisma } from "@prisma/client"
-import { type SkillMapAdministration } from "../types/skill-map-administration-type"
+import {
+  type SkillMapAdministration,
+  SkillMapAdministrationStatus,
+} from "../types/skill-map-administration-type"
 
 export const getById = async (id: number) => {
   return await prisma.skill_map_administrations.findUnique({
     where: {
       id,
+    },
+  })
+}
+
+export const getPreviousSkillMapAdmin = async (endDate: Date) => {
+  return await prisma.skill_map_administrations.findFirst({
+    where: {
+      skill_map_period_end_date: { lt: endDate },
+      status: SkillMapAdministrationStatus.Closed,
+    },
+    orderBy: {
+      skill_map_period_end_date: "desc",
     },
   })
 }

@@ -23,7 +23,9 @@ import * as SurveyTemplateQuestionRuleRepository from "../repositories/survey-te
 import * as SurveyTemplateAnswerRepository from "../repositories/survey-template-answer-repository"
 import * as SurveyTemplateCategoryRepository from "../repositories/survey-template-category-repository"
 import * as SkillMapAdministrationRepository from "../repositories/skill-map-administration-repository"
+import * as SkillMapRatingRepository from "../repositories/skill-map-rating-repository"
 import * as SkillMapResultRepository from "../repositories/skill-map-result-repository"
+import * as SkillRepository from "../repositories/skill-repository"
 import { EvaluationStatus } from "../types/evaluation-type"
 import { SurveyAnswerStatus, type SurveyAnswer } from "../types/survey-answer-type"
 import { submitEvaluationSchema } from "../utils/validation/evaluations/submit-evaluation-schema"
@@ -40,6 +42,8 @@ import { SurveyResultStatus } from "../types/survey-result-type"
 import { type Prisma } from "@prisma/client"
 import { SurveyAdministrationStatus } from "../types/survey-administration-type"
 import { SkillMapAdministrationStatus } from "../types/skill-map-administration-type"
+import { SkillMapRatingStatus, type SkillMapRating } from "../types/skill-map-rating-type"
+import { SkillMapResultStatus } from "../types/skill-map-result-type"
 
 export const getById = async (id: number) => {
   return await UserRepository.getById(id)
@@ -862,6 +866,87 @@ export const getSkillMapAdministrations = async (user: UserToken, page: number) 
   }
 }
 
+export const getSkillMapRatings = async (skill_map_administration_id: number, user: UserToken) => {
+  const skillMapAdministration = await SkillMapAdministrationRepository.getById(
+    skill_map_administration_id
+  )
+
+  if (skillMapAdministration === null) {
+    throw new CustomError("Skill map administration not found.", 400)
+  }
+
+  const skillMapResult = await SkillMapResultRepository.getByFilters({
+    skill_map_administration_id: skillMapAdministration.id,
+    user_id: user.id,
+  })
+
+  if (skillMapResult === null) {
+    throw new CustomError("Skill map result not found.", 400)
+  }
+
+  const previousSkillMapAdministration =
+    await SkillMapAdministrationRepository.getPreviousSkillMapAdmin(
+      new Date(skillMapAdministration.skill_map_period_end_date ?? new Date())
+    )
+
+  if (previousSkillMapAdministration === null) {
+    return {
+      user_skill_map_ratings: [],
+      skill_map_administration: skillMapAdministration,
+      skill_map_result_status: skillMapResult.status,
+    }
+  }
+
+  const previousSkillMapRatings = await SkillMapRatingRepository.getAllByFilters({
+    skill_map_administration_id: previousSkillMapAdministration?.id,
+  })
+
+  const finalPreviousSkillMapRatings = await Promise.all(
+    previousSkillMapRatings.map(async (rating) => {
+      const skill = await SkillRepository.getById(rating.skill_id ?? 0)
+      const answerOption = await AnswerOptionRepository.getById(rating.answer_option_id ?? 0)
+
+      return {
+        ...skill,
+        previous_rating: answerOption,
+        rating: answerOption,
+      }
+    })
+  )
+
+  const skillMapRatings = await SkillMapRatingRepository.getAllByFilters({
+    skill_map_administration_id: skillMapAdministration.id,
+  })
+
+  const finalSkillMapRatings = await Promise.all(
+    skillMapRatings.map(async (rating) => {
+      const skill = await SkillRepository.getById(rating.skill_id ?? 0)
+      const answerOption = await AnswerOptionRepository.getById(rating.answer_option_id ?? 0)
+
+      const previousRating = previousSkillMapRatings.find(
+        (prevRating) => prevRating.skill_id === rating.skill_id
+      )
+      const previousAnswerOption = await AnswerOptionRepository.getById(
+        previousRating?.answer_option_id ?? 0
+      )
+
+      return {
+        ...skill,
+        previous_rating: previousAnswerOption,
+        rating: answerOption,
+      }
+    })
+  )
+
+  const isResultSubmitted = skillMapResult.status === SkillMapResultStatus.Submitted
+
+  return {
+    user_skill_map_ratings: isResultSubmitted ? finalSkillMapRatings : finalPreviousSkillMapRatings,
+    skill_map_administration: skillMapAdministration,
+    skill_map_result_status: skillMapResult.status,
+  }
+}
+
 export const getSurveyQuestions = async (survey_administration_id: number, user: UserToken) => {
   const surveyAdministration =
     await SurveyAdministrationRepository.getById(survey_administration_id)
@@ -1082,4 +1167,70 @@ export const submitSurveyAnswers = async (
   }
 
   await SurveyResultRepository.updateStatusById(surveyResult.id, SurveyResultStatus.Submitted)
+}
+
+export const submitSkillMapRatings = async (
+  skill_map_administration_id: number,
+  user: UserToken,
+  skill_map_ratings: SkillMapRating[]
+) => {
+  if (skill_map_ratings.length === 0) {
+    throw new CustomError("Please add and rate atleast one skill.", 400)
+  }
+
+  const skillMapResult = await SkillMapResultRepository.getByFilters({
+    skill_map_administration_id,
+    user_id: user.id,
+  })
+
+  if (skillMapResult === null) {
+    throw new CustomError("Skill map result not found.", 400)
+  }
+
+  if (
+    skillMapResult.status !== SurveyResultStatus.Ongoing &&
+    skillMapResult.status !== SurveyResultStatus.Open
+  ) {
+    throw new CustomError("Only ongoing or open statuses allowed.", 400)
+  }
+
+  const skillMapAdministration = await SkillMapAdministrationRepository.getById(
+    skill_map_administration_id
+  )
+
+  if (skillMapAdministration === null) {
+    throw new CustomError("Invalid skill map administration.", 400)
+  }
+
+  const existingSkillMapRatings = await SkillMapRatingRepository.getAllByFilters({
+    skill_map_result_id: skillMapResult.id,
+  })
+
+  for (const existingSkillMapRating of existingSkillMapRatings) {
+    await SkillMapRatingRepository.deleteById(existingSkillMapRating.id)
+  }
+
+  const skillMapRatings: Prisma.skill_map_ratingsUncheckedCreateInput[] = []
+  const currentDate = new Date()
+
+  for (const skillMapRating of skill_map_ratings) {
+    if (skillMapRating.answer_option_id === null || skillMapRating.answer_option_id === undefined) {
+      throw new CustomError("Must rate all skills.", 400)
+    }
+
+    skillMapRatings.push({
+      skill_map_administration_id: skillMapAdministration.id,
+      skill_map_result_id: skillMapResult.id,
+      skill_id: skillMapRating.skill_id,
+      skill_category_id: skillMapRating.skill_category_id as number,
+      answer_option_id: skillMapRating.answer_option_id as number,
+      status: SkillMapRatingStatus.Submitted,
+      created_at: currentDate,
+      updated_at: currentDate,
+    })
+  }
+
+  await SkillMapRatingRepository.createMany(skillMapRatings)
+
+  await SkillMapResultRepository.updateStatusById(skillMapResult.id, SkillMapResultStatus.Submitted)
 }

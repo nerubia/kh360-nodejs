@@ -7,6 +7,9 @@ export const getById = async (id: number) => {
     where: {
       id,
     },
+    include: {
+      skill_categories: true,
+    },
   })
 }
 
@@ -78,7 +81,7 @@ export const getAllSkills = async (where: Prisma.skillsWhereInput) => {
   })
 }
 
-export const getAllByFilters = async (
+export const getAllByFiltersWithPaging = async (
   skip: number,
   take: number,
   where: Prisma.skillsWhereInput
@@ -99,6 +102,26 @@ export const getAllByFilters = async (
     orderBy: [
       {
         name: "asc",
+      },
+    ],
+  })
+}
+
+export const getAllByFilters = async (where: Prisma.skillsWhereInput) => {
+  return await prisma.skills.findMany({
+    select: {
+      id: true,
+      name: true,
+      skill_category_id: true,
+      sequence_no: true,
+      skill_categories: true,
+      status: true,
+      description: true,
+    },
+    where,
+    orderBy: [
+      {
+        sequence_no: "asc",
       },
     ],
   })

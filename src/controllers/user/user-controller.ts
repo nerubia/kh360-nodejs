@@ -121,6 +121,58 @@ export const getSkillMapAdministrations = async (req: Request, res: Response) =>
 }
 
 /**
+ * Get user skill map ratings by skill map admin id
+ * @param req.query.skill_map_administration_id - The unique ID of the skill map administration.
+ * @param req.query.page - Page number for pagination.
+ */
+export const getSkillMapRatings = async (req: Request, res: Response) => {
+  try {
+    const { skill_map_administration_id } = req.query
+    const user = req.user
+
+    const skillMapRatings = await UserService.getSkillMapRatings(
+      parseInt(skill_map_administration_id as string),
+      user
+    )
+
+    res.json(skillMapRatings)
+  } catch (error) {
+    logger.error(error)
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Save skill map ratings by ID
+ * @param req.params.id - The unique ID of the skill map administration.
+ * @param req.body.skill_map_ratings - Survey answers.
+ */
+
+export const submitSkillMapRatings = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+    const { id } = req.params
+    const { skill_map_ratings } = req.body
+
+    await UserService.submitSkillMapRatings(parseInt(id), user, skill_map_ratings)
+
+    res.json({ id })
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
  * Send email to request for removal of evaluation
  * @param req.params.id - The unique id of the evaluation.
  * @param req.body.comment - Evaluation comment.

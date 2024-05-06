@@ -38,7 +38,7 @@ export const getAllByFilters = async (
   const totalItems = await SkillRepository.countByFilters(where)
   const totalPages = Math.ceil(totalItems / itemsPerPage)
 
-  const skills = await SkillRepository.getAllByFilters(
+  const skills = await SkillRepository.getAllByFiltersWithPaging(
     (currentPage - 1) * itemsPerPage,
     itemsPerPage,
     where
