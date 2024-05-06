@@ -9,6 +9,12 @@ export const getById = async (id: number) => {
   })
 }
 
+export const getByFilters = async (where: Prisma.answersWhereInput) => {
+  return await prisma.answers.findFirst({
+    where,
+  })
+}
+
 export const getAllByFilters = async (where: Prisma.answersWhereInput) => {
   return await prisma.answers.findMany({
     where,

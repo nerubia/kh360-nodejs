@@ -13,6 +13,7 @@ import authRoute from "./routes/auth-route"
 import userRoute from "./routes/user/user-route"
 
 import answerRoute from "./routes/user/answer-route"
+import answerOptionRoute from "./routes/user/answer-option-route"
 import clientRoute from "./routes/admin/client-route"
 import emailTemplateRoute from "./routes/admin/email-template-route"
 import evaluationAdministrationRoute from "./routes/admin/evaluation-administration-route"
@@ -61,6 +62,7 @@ app.use("/auth", authRoute)
 app.use("/user", authMiddleware, userRoute)
 app.use("/user/rating-templates", authMiddleware, ratingTemplateRoute)
 app.use("/user/evaluation-template-contents", authMiddleware, evaluationTemplateContentsRoute)
+app.use("/user/answer-options", adminMiddleware, answerOptionRoute)
 
 /**
  * Admin routes
