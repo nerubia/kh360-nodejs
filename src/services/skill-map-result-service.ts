@@ -11,7 +11,7 @@ import { SkillMapAdministrationStatus } from "../types/skill-map-administration-
 import { sendMail } from "../utils/sendgrid"
 import { format } from "date-fns"
 import { EmailLogType, type EmailLog } from "../types/email-log-type"
-
+import * as SkillRepository from "../repositories/skill-repository"
 export const create = async (
   skill_map_administration_id: number,
   employee_ids: number[],
@@ -303,4 +303,84 @@ export const reopen = async (id: number) => {
   }
 
   await SkillMapResultRepository.updateStatusById(skillMapResult.id, SkillMapResultStatus.Ongoing)
+}
+export const getAllByFilters = async (
+  user: UserToken,
+  skill_map_administration_id: string,
+  skill: string,
+  status: string,
+  name: string,
+  page: string
+) => {
+  if (
+    !user.roles.includes("kh360") &&
+    !user.roles.includes("khv2_cm_admin") &&
+    !user.roles.includes("khv2_cm")
+  ) {
+    throw new CustomError("You do not have permission to view this.", 400)
+  }
+  const skillMapResultStatus = status === "all" ? "" : status
+
+  const itemsPerPage = 10
+  const parsedPage = parseInt(page)
+  const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
+
+  const where = {
+    status: {
+      contains: skillMapResultStatus,
+    },
+  }
+
+  if (skill_map_administration_id !== undefined || skill_map_administration_id === "all") {
+    Object.assign(where, {
+      skill_map_administration_id: {
+        equals: parseInt(skill_map_administration_id),
+      },
+    })
+  }
+  if (name !== undefined) {
+    Object.assign(where, {
+      users: {
+        OR: [
+          {
+            first_name: {
+              contains: name,
+            },
+          },
+          {
+            last_name: {
+              contains: name,
+            },
+          },
+        ],
+      },
+    })
+  }
+  let skills
+  if (skill !== undefined) {
+    skills = await SkillRepository.getByName(skill)
+  }
+
+  const skillMapResults = await SkillMapResultRepository.paginateByFilters(
+    (currentPage - 1) * itemsPerPage,
+    itemsPerPage,
+    where
+  )
+
+  const totalItems = await SkillMapResultRepository.countAllByFilters(where)
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+
+  return {
+    data: {
+      skillMapResults,
+      skills,
+    },
+    pageInfo: {
+      hasPreviousPage: currentPage > 1,
+      hasNextPage: currentPage < totalPages,
+      currentPage,
+      totalPages,
+      totalItems,
+    },
+  }
 }

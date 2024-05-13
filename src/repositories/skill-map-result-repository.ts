@@ -84,3 +84,37 @@ export const deleteById = async (id: number) => {
     },
   })
 }
+export const paginateByFilters = async (
+  skip: number,
+  take: number,
+  where: Prisma.skill_map_resultsWhereInput
+) => {
+  return await prisma.skill_map_results.findMany({
+    skip,
+    take,
+    select: {
+      id: true,
+      skill_map_administration_id: true,
+      status: true,
+      users: {
+        select: {
+          id: true,
+          slug: true,
+          first_name: true,
+          last_name: true,
+          picture: true,
+        },
+      },
+    },
+    where,
+    orderBy: {
+      id: "desc",
+    },
+  })
+}
+export const countAllByFilters = async (where: Prisma.skill_map_resultsWhereInput) => {
+  const count = await prisma.skill_map_results.count({
+    where,
+  })
+  return count
+}
