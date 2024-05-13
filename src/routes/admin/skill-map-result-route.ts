@@ -4,7 +4,7 @@ import * as SkillMapResultController from "../../controllers/admin/skill-map-res
 const router = express.Router()
 
 router.get("/all", SkillMapResultController.all)
-
+router.get("/filter", SkillMapResultController.filterSkillMapResult)
 router.post("/", SkillMapResultController.store)
 router.post("/:id/reopen", SkillMapResultController.reopen)
 router.post("/:id/send-reminder", SkillMapResultController.sendReminder)

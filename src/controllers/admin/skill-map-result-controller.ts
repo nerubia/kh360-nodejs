@@ -113,3 +113,21 @@ export const reopen = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+export const filterSkillMapResult = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+    const { name, skill_map_administration_id, skill, status, page } = req.query
+    const skillMapResult = await SkillMapResultService.getAllByFilters(
+      user,
+      skill_map_administration_id as string,
+      skill as string,
+      status as string,
+      name as unknown as string,
+      page as string
+    )
+    res.json(skillMapResult)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
