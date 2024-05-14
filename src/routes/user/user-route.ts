@@ -34,6 +34,7 @@ router.post("/survey-administrations/:id/submit-survey", UserController.submitSu
 router.get("/skill-map-administrations", UserController.getSkillMapAdministrations)
 router.post("/skill-map-administrations/:id/submit", UserController.submitSkillMapRatings)
 router.get("/skill-map-ratings", UserController.getSkillMapRatings)
+router.get("/skill-map-rating-submitted", UserController.getSkillMapRatingSubmitted)
 
 // TODO: Refactor
 router.get("/profile", UserController.getProfile)

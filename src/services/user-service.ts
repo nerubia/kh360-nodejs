@@ -947,6 +947,34 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
   }
 }
 
+export const getSkillMapRatingSubmitted = async (
+  skill_map_administration_id: number,
+  user: UserToken
+) => {
+  const skillMapAdministration = await SkillMapAdministrationRepository.getById(
+    skill_map_administration_id
+  )
+  if (skillMapAdministration === null) {
+    throw new CustomError("Skill map administration not found.", 400)
+  }
+  const skillMapResult = await SkillMapResultRepository.getByFilters({
+    skill_map_administration_id: skillMapAdministration.id,
+    user_id: user.id,
+  })
+
+  if (skillMapResult === null) {
+    throw new CustomError("Skill map result not found.", 400)
+  }
+
+  const skill_map_rating_submitted = await SkillMapRatingRepository.getAllByFilters({
+    skill_map_administration_id: skillMapAdministration?.id,
+  })
+
+  return {
+    skill_map_rating_submitted,
+  }
+}
+
 export const getSurveyQuestions = async (survey_administration_id: number, user: UserToken) => {
   const surveyAdministration =
     await SurveyAdministrationRepository.getById(survey_administration_id)

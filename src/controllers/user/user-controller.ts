@@ -544,3 +544,17 @@ export const sendSampleMail = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+export const getSkillMapRatingSubmitted = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+    const skill_map_administration_id = req.query.skill_map_administration_id as string
+    const skill_map_rating_submitted = await UserService.getSkillMapRatingSubmitted(
+      parseInt(skill_map_administration_id),
+      user
+    )
+    res.json(skill_map_rating_submitted)
+  } catch (error) {
+    res.status(500).json({ message: "Something wend wrong!!" })
+  }
+}
