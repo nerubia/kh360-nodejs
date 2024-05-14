@@ -62,7 +62,7 @@ app.use("/auth", authRoute)
 app.use("/user", authMiddleware, userRoute)
 app.use("/user/rating-templates", authMiddleware, ratingTemplateRoute)
 app.use("/user/evaluation-template-contents", authMiddleware, evaluationTemplateContentsRoute)
-app.use("/user/answer-options", adminMiddleware, answerOptionRoute)
+app.use("/user/answer-options", authMiddleware, answerOptionRoute)
 
 /**
  * Admin routes

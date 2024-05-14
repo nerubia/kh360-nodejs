@@ -4,7 +4,8 @@ import * as ScoreRatingController from "../../controllers/user/score-rating-cont
 import * as UserController from "../../controllers/user/user-controller"
 import * as LogoutController from "../../controllers/user/logout-controller"
 import * as EvaluationResultController from "../../controllers/admin/evaluation-result-controller"
-
+import * as SkillCategoryController from "../../controllers/admin/skill-category-controller"
+import * as SkillController from "../../controllers/admin/skill-controller"
 const router = express.Router()
 
 router.get("/email-templates", EmailTemplateController.index)
@@ -34,6 +35,11 @@ router.post("/survey-administrations/:id/submit-survey", UserController.submitSu
 router.get("/skill-map-administrations", UserController.getSkillMapAdministrations)
 router.post("/skill-map-administrations/:id/submit", UserController.submitSkillMapRatings)
 router.get("/skill-map-ratings", UserController.getSkillMapRatings)
+
+router.get("/skills", SkillController.index)
+
+router.get("/skill-catogories/all", SkillCategoryController.getAll)
+router.get("/skill-categories/:id", SkillCategoryController.show)
 
 // TODO: Refactor
 router.get("/profile", UserController.getProfile)
