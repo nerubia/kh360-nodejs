@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { type Request, type Response } from "express"
 import * as SkillCategoryService from "../../services/skill-category-service"
 import { createSkillCategorySchema } from "../../utils/validation/skill-category-schema"
