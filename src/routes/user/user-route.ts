@@ -38,7 +38,7 @@ router.get("/skill-map-ratings", UserController.getSkillMapRatings)
 
 router.get("/skills", SkillController.index)
 
-router.get("/skill-catogories/all", SkillCategoryController.getAll)
+router.get("/skill-categories/all", SkillCategoryController.getAll)
 router.get("/skill-categories/:id", SkillCategoryController.show)
 
 // TODO: Refactor
