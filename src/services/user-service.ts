@@ -899,6 +899,7 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
 
   const previousSkillMapRatings = await SkillMapRatingRepository.getAllByFilters({
     skill_map_administration_id: previousSkillMapAdministration?.id,
+    skill_map_result_id: skillMapResult.id,
   })
 
   const finalPreviousSkillMapRatings = await Promise.all(
@@ -916,6 +917,7 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
 
   const skillMapRatings = await SkillMapRatingRepository.getAllByFilters({
     skill_map_administration_id: skillMapAdministration.id,
+    skill_map_result_id: skillMapResult.id,
   })
 
   const finalSkillMapRatings = await Promise.all(
