@@ -6,6 +6,7 @@ import * as LogoutController from "../../controllers/user/logout-controller"
 import * as EvaluationResultController from "../../controllers/admin/evaluation-result-controller"
 import * as SkillCategoryController from "../../controllers/admin/skill-category-controller"
 import * as SkillController from "../../controllers/admin/skill-controller"
+
 const router = express.Router()
 
 router.get("/email-templates", EmailTemplateController.index)
@@ -36,10 +37,8 @@ router.get("/skill-map-administrations", UserController.getSkillMapAdministratio
 router.post("/skill-map-administrations/:id/submit", UserController.submitSkillMapRatings)
 router.get("/skill-map-ratings", UserController.getSkillMapRatings)
 
+router.get("/skill-categories/all", SkillCategoryController.getAll)
 router.get("/skills", SkillController.index)
-
-router.get("/skill-catogories/all", SkillCategoryController.getAll)
-router.get("/skill-categories/:id", SkillCategoryController.show)
 
 // TODO: Refactor
 router.get("/profile", UserController.getProfile)
