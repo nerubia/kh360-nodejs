@@ -1,3 +1,4 @@
+import { SkillMapRatingStatus } from "../types/skill-map-rating-type"
 import prisma from "../utils/prisma"
 import { type Prisma } from "@prisma/client"
 
@@ -117,5 +118,23 @@ export const updateById = async (id: number, data: Prisma.skill_map_ratingsUpdat
 export const countByFilters = async (where: Prisma.skill_map_ratingsWhereInput) => {
   return await prisma.skill_map_ratings.count({
     where,
+  })
+}
+
+export const getRecentRating = async (userId: number, skillId: number, created_at: Date) => {
+  return await prisma.skill_map_ratings.findMany({
+    where: {
+      skill_map_results: {
+        user_id: userId,
+      },
+      skill_id: skillId,
+      status: SkillMapRatingStatus.Submitted,
+      created_at: {
+        lt: created_at,
+      },
+    },
+    orderBy: {
+      created_at: "desc",
+    },
   })
 }
