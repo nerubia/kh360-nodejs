@@ -892,31 +892,38 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
     skill_map_administration_id: skillMapAdministration?.id,
     skill_map_result_id: skillMapResult.id,
   })
+  const recentAllSkillMapRating = await SkillMapRatingRepository.getAllRecentRating(
+    user.id,
+    skillMapAdministration.created_at ?? new Date()
+  )
 
   if (previousSkillMapAdministration === null) {
     const checkPreviousSkillMapRating = await Promise.all(
-      userSkillMapRating.map(async (rating) => {
-        const skill = await SkillRepository.getById(rating.skill_id ?? 0)
-        const answerOption = await AnswerOptionRepository.getById(rating.answer_option_id ?? 0)
-        const getRecentRating = await SkillMapRatingRepository.getRecentRating(
-          user.id,
-          rating.skill_id ?? 0,
-          skillMapAdministration.created_at ?? new Date()
-        )
-        const previousAnswerOption =
-          getRecentRating[0]?.answer_option_id != null
-            ? await AnswerOptionRepository.getById(getRecentRating[0].answer_option_id)
-            : null
+      (userSkillMapRating.length === 0 ? recentAllSkillMapRating : userSkillMapRating).map(
+        async (rating) => {
+          const skill = await SkillRepository.getById(rating.skill_id ?? 0)
+          const answerOption = await AnswerOptionRepository.getById(rating.answer_option_id ?? 0)
+          const getRecentRating = await SkillMapRatingRepository.getRecentRating(
+            user.id,
+            rating.skill_id ?? 0,
+            skillMapAdministration.created_at ?? new Date()
+          )
+          const previousAnswerOption =
+            getRecentRating[0]?.answer_option_id != null
+              ? await AnswerOptionRepository.getById(getRecentRating[0].answer_option_id)
+              : null
 
-        const previous_rating =
-          previousSkillMapAdministration != null ? answerOption : previousAnswerOption
-        return {
-          ...skill,
-          previous_rating,
-          rating: answerOption,
+          const previous_rating =
+            previousSkillMapAdministration != null ? answerOption : previousAnswerOption
+          return {
+            ...skill,
+            previous_rating,
+            rating: answerOption,
+          }
         }
-      })
+      )
     )
+
     return {
       user_skill_map_ratings: checkPreviousSkillMapRating,
       skill_map_administration: skillMapAdministration,
