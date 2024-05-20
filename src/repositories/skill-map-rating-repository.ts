@@ -136,5 +136,34 @@ export const getRecentRating = async (userId: number, skillId: number, created_a
     orderBy: {
       created_at: "desc",
     },
+    distinct: ["skill_id"],
+  })
+}
+
+export const getAllRecentRating = async (userId: number, created_at: Date) => {
+  return await prisma.skill_map_ratings.findMany({
+    select: {
+      id: true,
+      skill_map_administration_id: true,
+      skill_id: true,
+      skills: true,
+      skill_categories: true,
+      skill_category_id: true,
+      answer_option_id: true,
+      created_at: true,
+    },
+    where: {
+      skill_map_results: {
+        user_id: userId,
+      },
+      status: SkillMapRatingStatus.Submitted,
+      created_at: {
+        lt: created_at,
+      },
+    },
+    orderBy: {
+      created_at: "desc",
+    },
+    distinct: ["skill_id"],
   })
 }
