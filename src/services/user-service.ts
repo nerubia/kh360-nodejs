@@ -879,7 +879,6 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
     skill_map_administration_id: skillMapAdministration.id,
     user_id: user.id,
   })
-
   if (skillMapResult === null) {
     throw new CustomError("Skill map result not found.", 400)
   }
@@ -889,9 +888,37 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
       new Date(skillMapAdministration.skill_map_period_end_date ?? new Date())
     )
 
+  const userSkillMapRating = await SkillMapRatingRepository.getAllByFilters({
+    skill_map_administration_id: skillMapAdministration?.id,
+    skill_map_result_id: skillMapResult.id,
+  })
+
   if (previousSkillMapAdministration === null) {
+    const checkPreviousSkillMapRating = await Promise.all(
+      userSkillMapRating.map(async (rating) => {
+        const skill = await SkillRepository.getById(rating.skill_id ?? 0)
+        const answerOption = await AnswerOptionRepository.getById(rating.answer_option_id ?? 0)
+        const getRecentRating = await SkillMapRatingRepository.getRecentRating(
+          user.id,
+          rating.skill_id ?? 0,
+          skillMapAdministration.created_at ?? new Date()
+        )
+        const previousAnswerOption =
+          getRecentRating[0]?.answer_option_id != null
+            ? await AnswerOptionRepository.getById(getRecentRating[0].answer_option_id)
+            : null
+
+        const previous_rating =
+          previousSkillMapAdministration != null ? answerOption : previousAnswerOption
+        return {
+          ...skill,
+          previous_rating,
+          rating: answerOption,
+        }
+      })
+    )
     return {
-      user_skill_map_ratings: [],
+      user_skill_map_ratings: checkPreviousSkillMapRating,
       skill_map_administration: skillMapAdministration,
       skill_map_result_status: skillMapResult.status,
     }
@@ -906,7 +933,6 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
     previousSkillMapRatings.map(async (rating) => {
       const skill = await SkillRepository.getById(rating.skill_id ?? 0)
       const answerOption = await AnswerOptionRepository.getById(rating.answer_option_id ?? 0)
-
       return {
         ...skill,
         previous_rating: answerOption,
@@ -925,13 +951,15 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
       const skill = await SkillRepository.getById(rating.skill_id ?? 0)
       const answerOption = await AnswerOptionRepository.getById(rating.answer_option_id ?? 0)
 
-      const previousRating = previousSkillMapRatings.find(
-        (prevRating) => prevRating.skill_id === rating.skill_id
+      const getRecentRating = await SkillMapRatingRepository.getRecentRating(
+        user.id,
+        rating.skill_id ?? 0,
+        skillMapAdministration.created_at ?? new Date()
       )
-      const previousAnswerOption = await AnswerOptionRepository.getById(
-        previousRating?.answer_option_id ?? 0
-      )
-
+      const previousAnswerOption =
+        getRecentRating[0]?.answer_option_id != null
+          ? await AnswerOptionRepository.getById(getRecentRating[0].answer_option_id)
+          : null
       return {
         ...skill,
         previous_rating: previousAnswerOption,
