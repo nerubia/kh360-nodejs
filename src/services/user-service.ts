@@ -908,11 +908,13 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
             rating.skill_id ?? 0,
             skillMapAdministration.created_at ?? new Date()
           )
-          const previousAnswerOption =
-            getRecentRating[0]?.answer_option_id != null
-              ? await AnswerOptionRepository.getById(getRecentRating[0].answer_option_id)
-              : null
 
+          const recentRating = getRecentRating.length > 0 ? getRecentRating[0] : null
+
+          const previousAnswerOption =
+            recentRating?.answer_option_id != null
+              ? await AnswerOptionRepository.getById(recentRating?.answer_option_id)
+              : null
           const previous_rating =
             previousSkillMapAdministration != null ? answerOption : previousAnswerOption
           return {
@@ -937,15 +939,17 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
   })
 
   const finalPreviousSkillMapRatings = await Promise.all(
-    previousSkillMapRatings.map(async (rating) => {
-      const skill = await SkillRepository.getById(rating.skill_id ?? 0)
-      const answerOption = await AnswerOptionRepository.getById(rating.answer_option_id ?? 0)
-      return {
-        ...skill,
-        previous_rating: answerOption,
-        rating: answerOption,
+    (previousSkillMapRatings.length === 0 ? recentAllSkillMapRating : previousSkillMapRatings).map(
+      async (rating) => {
+        const skill = await SkillRepository.getById(rating.skill_id ?? 0)
+        const answerOption = await AnswerOptionRepository.getById(rating.answer_option_id ?? 0)
+        return {
+          ...skill,
+          previous_rating: answerOption,
+          rating: answerOption,
+        }
       }
-    })
+    )
   )
 
   const skillMapRatings = await SkillMapRatingRepository.getAllByFilters({
@@ -963,9 +967,11 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
         rating.skill_id ?? 0,
         skillMapAdministration.created_at ?? new Date()
       )
+      const recentRating = getRecentRating.length > 0 ? getRecentRating[0] : null
+
       const previousAnswerOption =
-        getRecentRating[0]?.answer_option_id != null
-          ? await AnswerOptionRepository.getById(getRecentRating[0].answer_option_id)
+        recentRating?.answer_option_id != null
+          ? await AnswerOptionRepository.getById(recentRating?.answer_option_id)
           : null
       return {
         ...skill,
