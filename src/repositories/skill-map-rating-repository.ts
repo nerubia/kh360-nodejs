@@ -121,32 +121,47 @@ export const countByFilters = async (where: Prisma.skill_map_ratingsWhereInput) 
   })
 }
 
-export const getRecentRating = async (userId: number, skillId: number, created_at: Date) => {
+export const getRecentRating = async (
+  userId: number,
+  skillId: number,
+  end_period: Date,
+  submitted_date: Date
+) => {
   return await prisma.skill_map_ratings.findMany({
     where: {
       skill_id: skillId,
       status: SkillMapRatingStatus.Submitted,
       skill_map_results: {
         user_id: userId,
+        submitted_date: {
+          lt: submitted_date,
+        },
         skill_map_administrations: {
-          created_at: {
-            lt: created_at,
+          skill_map_period_end_date: {
+            lt: end_period,
           },
         },
       },
     },
-    orderBy: {
-      skill_map_results: {
-        skill_map_administrations: {
-          created_at: "desc",
+    orderBy: [
+      {
+        skill_map_results: {
+          submitted_date: "desc",
         },
       },
-    },
+      {
+        skill_map_results: {
+          skill_map_administrations: {
+            skill_map_period_end_date: "desc",
+          },
+        },
+      },
+    ],
     take: 1,
   })
 }
 
-export const getAllRecentRating = async (userId: number, created_at: Date) => {
+export const getAllRecentRating = async (userId: number, period_end_date: Date) => {
   return await prisma.skill_map_ratings.findMany({
     select: {
       id: true,
@@ -163,14 +178,45 @@ export const getAllRecentRating = async (userId: number, created_at: Date) => {
       skill_map_results: {
         user_id: userId,
         skill_map_administrations: {
-          created_at: {
-            lt: created_at,
+          skill_map_period_end_date: {
+            lt: period_end_date,
           },
         },
       },
     },
     orderBy: {
       created_at: "desc",
+    },
+    distinct: ["skill_id"],
+  })
+}
+
+export const getSkillsByPeriodEndDate = async (
+  userId: number,
+  submitted_date: Date,
+  endPeriod: Date
+) => {
+  return await prisma.skill_map_ratings.findMany({
+    select: {
+      id: true,
+      skill_map_administration_id: true,
+      skill_id: true,
+      skills: true,
+      skill_categories: true,
+      skill_category_id: true,
+      answer_option_id: true,
+    },
+    where: {
+      status: SkillMapRatingStatus.Submitted,
+      skill_map_results: {
+        user_id: userId,
+        submitted_date,
+        skill_map_administrations: {
+          skill_map_period_end_date: {
+            lte: endPeriod,
+          },
+        },
+      },
     },
     distinct: ["skill_id"],
   })

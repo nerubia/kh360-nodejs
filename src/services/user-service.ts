@@ -888,29 +888,39 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
       new Date(skillMapAdministration.skill_map_period_end_date ?? new Date())
     )
 
-  const userSkillMapRating = await SkillMapRatingRepository.getAllByFilters({
-    skill_map_administration_id: skillMapAdministration?.id,
-    skill_map_result_id: skillMapResult.id,
-  })
+  const userSkillByEndPeriod = await SkillMapRatingRepository.getSkillsByPeriodEndDate(
+    user.id,
+    skillMapResult.submitted_date ?? new Date(),
+    skillMapAdministration.skill_map_period_end_date ?? new Date()
+  )
   const recentAllSkillMapRating = await SkillMapRatingRepository.getAllRecentRating(
     user.id,
-    skillMapAdministration.created_at ?? new Date()
+    skillMapAdministration.skill_map_period_end_date ?? new Date()
   )
+
+  const skillIds = new Set(userSkillByEndPeriod.map((skill) => skill.skill_id))
+
+  recentAllSkillMapRating.forEach((skillRating) => {
+    if (!skillIds.has(skillRating.skill_id)) {
+      userSkillByEndPeriod.push(skillRating)
+      skillIds.add(skillRating.skill_id)
+    }
+  })
 
   if (previousSkillMapAdministration === null) {
     const checkPreviousSkillMapRating = await Promise.all(
-      (userSkillMapRating.length === 0 ? recentAllSkillMapRating : userSkillMapRating).map(
+      (userSkillByEndPeriod.length === 0 ? recentAllSkillMapRating : userSkillByEndPeriod).map(
         async (rating) => {
           const skill = await SkillRepository.getById(rating.skill_id ?? 0)
           const answerOption = await AnswerOptionRepository.getById(rating.answer_option_id ?? 0)
           const getRecentRating = await SkillMapRatingRepository.getRecentRating(
             user.id,
             rating.skill_id ?? 0,
-            skillMapAdministration.created_at ?? new Date()
+            skillMapAdministration.skill_map_period_end_date ?? new Date(),
+            skillMapResult.submitted_date ?? new Date()
           )
 
           const recentRating = getRecentRating.length > 0 ? getRecentRating[0] : null
-
           const previousAnswerOption =
             recentRating?.answer_option_id != null
               ? await AnswerOptionRepository.getById(recentRating?.answer_option_id)
@@ -937,12 +947,12 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
     skill_map_administration_id: previousSkillMapAdministration?.id,
     skill_map_result_id: skillMapResult.id,
   })
-
   const finalPreviousSkillMapRatings = await Promise.all(
     (previousSkillMapRatings.length === 0 ? recentAllSkillMapRating : previousSkillMapRatings).map(
       async (rating) => {
         const skill = await SkillRepository.getById(rating.skill_id ?? 0)
         const answerOption = await AnswerOptionRepository.getById(rating.answer_option_id ?? 0)
+
         return {
           ...skill,
           previous_rating: answerOption,
@@ -965,10 +975,10 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
       const getRecentRating = await SkillMapRatingRepository.getRecentRating(
         user.id,
         rating.skill_id ?? 0,
-        skillMapAdministration.created_at ?? new Date()
+        skillMapAdministration.skill_map_period_end_date ?? new Date(),
+        skillMapResult.submitted_date ?? new Date()
       )
       const recentRating = getRecentRating.length > 0 ? getRecentRating[0] : null
-
       const previousAnswerOption =
         recentRating?.answer_option_id != null
           ? await AnswerOptionRepository.getById(recentRating?.answer_option_id)
