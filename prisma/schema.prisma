@@ -1125,7 +1125,7 @@ model skill_map_results {
   id                          Int                        @id @default(autoincrement())
   skill_map_administration_id Int?
   user_id                     Int?
-  submitted_date              DateTime?                  @db.Date
+  submitted_date              DateTime?                  @db.DateTime(0)
   comments                    String?                    @db.Text
   status                      String?                    @default("") @db.VarChar(20)
   created_by_id               Int?
