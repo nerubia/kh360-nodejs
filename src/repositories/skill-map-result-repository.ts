@@ -49,6 +49,7 @@ export const updateStatusById = async (id: number, status: string) => {
     },
     data: {
       status,
+      submitted_date: new Date(),
       updated_at: new Date(),
     },
   })
