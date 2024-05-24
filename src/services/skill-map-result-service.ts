@@ -62,7 +62,6 @@ export const create = async (
     return {
       skill_map_administration_id: skillMapAdministration.id,
       user_id: employeeId,
-      submitted_date: currentDate,
       status:
         skillMapAdministration.status === SkillMapAdministrationStatus.Ongoing
           ? SkillMapResultStatus.Ongoing
