@@ -870,6 +870,9 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
   const skillMapAdministration = await SkillMapAdministrationRepository.getById(
     skill_map_administration_id
   )
+  const skillMapAdminSameEndPeriod = await SkillMapAdministrationRepository.getAllByFilters({
+    skill_map_period_end_date: skillMapAdministration?.skill_map_period_end_date,
+  })
 
   if (skillMapAdministration === null) {
     throw new CustomError("Skill map administration not found.", 400)
@@ -890,9 +893,10 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
 
   const userSkillByEndPeriod = await SkillMapRatingRepository.getSkillsByPeriodEndDate(
     user.id,
-    skillMapResult.submitted_date ?? new Date(),
+    skillMapAdminSameEndPeriod.length !== 0 ? skillMapResult.submitted_date : null,
     skillMapAdministration.skill_map_period_end_date ?? new Date()
   )
+
   const recentAllSkillMapRating = await SkillMapRatingRepository.getAllRecentRating(
     user.id,
     skillMapAdministration.skill_map_period_end_date ?? new Date()
@@ -947,6 +951,7 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
     skill_map_administration_id: previousSkillMapAdministration?.id,
     skill_map_result_id: skillMapResult.id,
   })
+
   const finalPreviousSkillMapRatings = await Promise.all(
     (previousSkillMapRatings.length === 0 ? recentAllSkillMapRating : previousSkillMapRatings).map(
       async (rating) => {

@@ -1,3 +1,4 @@
+import { SkillMapAdministrationStatus } from "../types/skill-map-administration-type"
 import { SkillMapRatingStatus } from "../types/skill-map-rating-type"
 import prisma from "../utils/prisma"
 import { type Prisma } from "@prisma/client"
@@ -178,6 +179,9 @@ export const getAllRecentRating = async (userId: number, period_end_date: Date) 
       skill_map_results: {
         user_id: userId,
         skill_map_administrations: {
+          status: {
+            notIn: [SkillMapAdministrationStatus.Cancelled],
+          },
           skill_map_period_end_date: {
             lt: period_end_date,
           },
@@ -193,7 +197,7 @@ export const getAllRecentRating = async (userId: number, period_end_date: Date) 
 
 export const getSkillsByPeriodEndDate = async (
   userId: number,
-  submitted_date: Date,
+  submitted_date: Date | null,
   endPeriod: Date
 ) => {
   return await prisma.skill_map_ratings.findMany({
@@ -210,7 +214,7 @@ export const getSkillsByPeriodEndDate = async (
       status: SkillMapRatingStatus.Submitted,
       skill_map_results: {
         user_id: userId,
-        submitted_date,
+        ...(submitted_date != null ? { submitted_date } : {}),
         skill_map_administrations: {
           skill_map_period_end_date: {
             lte: endPeriod,
