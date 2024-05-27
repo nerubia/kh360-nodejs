@@ -1,5 +1,6 @@
 import { type Prisma } from "@prisma/client"
 import prisma from "../utils/prisma"
+import { SkillMapAdministrationStatus } from "../types/skill-map-administration-type"
 
 export const getById = async (id: number) => {
   return await prisma.users.findUnique({
@@ -99,5 +100,48 @@ export const getAllByFiltersWithPaging = async (
         first_name: "asc",
       },
     ],
+  })
+}
+
+export const getAllRecentRating = async (userId: number) => {
+  return await prisma.skill_map_administrations.findMany({
+    where: {
+      status: {
+        notIn: [SkillMapAdministrationStatus.Cancelled],
+      },
+      skill_map_results: {
+        some: {
+          user_id: userId,
+        },
+      },
+    },
+    select: {
+      skill_map_period_end_date: true,
+      skill_map_results: {
+        where: {
+          user_id: userId,
+        },
+        select: {
+          skill_map_ratings: {
+            select: {
+              skill_id: true,
+              skills: {
+                select: {
+                  name: true,
+                },
+              },
+              answer_option_id: true,
+              created_at: true,
+            },
+            where: {
+              status: "Submitted",
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      skill_map_period_end_date: "asc",
+    },
   })
 }
