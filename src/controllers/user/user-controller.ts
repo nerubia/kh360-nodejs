@@ -544,3 +544,14 @@ export const sendSampleMail = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+export const getMySkillMap = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+    const response = await UserService.getMySkillMap(user.id)
+    res.json(response)
+  } catch (error) {
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}

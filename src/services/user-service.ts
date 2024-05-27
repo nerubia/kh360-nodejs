@@ -1287,3 +1287,10 @@ export const submitSkillMapRatings = async (
 
   await SkillMapResultRepository.updateStatusById(skillMapResult.id, SkillMapResultStatus.Submitted)
 }
+
+export const getMySkillMap = async (userId: number) => {
+  const my_skill_map = await UserRepository.getAllRecentRating(userId)
+  return {
+    my_skill_map,
+  }
+}
