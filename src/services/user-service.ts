@@ -1322,3 +1322,10 @@ export const getMySkillMap = async (userId: number) => {
     my_skill_map,
   }
 }
+
+export const getLatestSkillMapRating = async () => {
+  const response = await UserRepository.getLatestSkillMapRating()
+  return {
+    user_latest_skill_map_result: response,
+  }
+}

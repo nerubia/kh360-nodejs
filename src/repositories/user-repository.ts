@@ -145,3 +145,30 @@ export const getAllRecentRating = async (userId: number) => {
     },
   })
 }
+
+export const getLatestSkillMapRating = async () => {
+  return await prisma.skill_map_results.findMany({
+    where: {
+      status: "Submitted",
+    },
+    select: {
+      id: true,
+      skill_map_administration_id: true,
+      status: true,
+      comments: true,
+      submitted_date: true,
+      users: {
+        select: {
+          id: true,
+          first_name: true,
+          last_name: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: {
+      submitted_date: "desc",
+    },
+    distinct: ["user_id"],
+  })
+}
