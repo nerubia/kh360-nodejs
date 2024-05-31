@@ -25,6 +25,18 @@ export const getPreviousSkillMapAdmin = async (endDate: Date) => {
   })
 }
 
+export const getPreviousSkillMapAdminOngoing = async (endDate: Date) => {
+  return await prisma.skill_map_administrations.findFirst({
+    where: {
+      skill_map_period_end_date: { lt: endDate },
+      status: SkillMapAdministrationStatus.Ongoing,
+    },
+    orderBy: {
+      skill_map_period_end_date: "desc",
+    },
+  })
+}
+
 export const getAllByFilters = async (where: Prisma.skill_map_administrationsWhereInput) => {
   return await prisma.skill_map_administrations.findMany({
     where,
