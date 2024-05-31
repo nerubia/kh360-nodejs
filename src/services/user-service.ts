@@ -924,17 +924,40 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
             skillMapResult.submitted_date ?? new Date()
           )
 
-          const recentRating = getRecentRating.length > 0 ? getRecentRating[0] : null
+          const SkillMapAdministrationHasPrevious =
+            await SkillMapAdministrationRepository.getPreviousSkillMapAdminOngoing(
+              new Date(skillMapAdministration.skill_map_period_end_date ?? new Date())
+            )
+          let skillMapRatingPrev
+          if (SkillMapAdministrationHasPrevious !== null) {
+            skillMapRatingPrev = await SkillMapRatingRepository.getByFilters({
+              skill_map_administration_id: SkillMapAdministrationHasPrevious?.id,
+            })
+          } else {
+            skillMapRatingPrev = null
+          }
+
+          const recentRating =
+            getRecentRating.length > 0
+              ? getRecentRating[0]
+              : skillMapRatingPrev?.skill_map_administration_id ===
+                rating.skill_map_administration_id
+              ? skillMapRatingPrev
+              : null
           const previousAnswerOption =
             recentRating?.answer_option_id != null
               ? await AnswerOptionRepository.getById(recentRating?.answer_option_id)
               : null
           const previous_rating =
             previousSkillMapAdministration != null ? answerOption : previousAnswerOption
+
           return {
             ...skill,
             previous_rating,
-            rating: answerOption,
+            rating:
+              skillMapResult.status === SkillMapResultStatus.Ongoing
+                ? previous_rating
+                : answerOption,
           }
         }
       )
