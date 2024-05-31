@@ -145,6 +145,15 @@ export const getSkillMapRatings = async (req: Request, res: Response) => {
   }
 }
 
+export const getLatestSkillMapResult = async (req: Request, res: Response) => {
+  try {
+    const response = await UserService.getLatestSkillMapRating()
+    res.json(response)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
 /**
  * Save skill map ratings by ID
  * @param req.params.id - The unique ID of the skill map administration.
@@ -547,8 +556,8 @@ export const sendSampleMail = async (req: Request, res: Response) => {
 
 export const getMySkillMap = async (req: Request, res: Response) => {
   try {
-    const user = req.user
-    const response = await UserService.getMySkillMap(user.id)
+    const user = req.params
+    const response = await UserService.getMySkillMap(parseInt(user.id))
     res.json(response)
   } catch (error) {
     logger.error(error)

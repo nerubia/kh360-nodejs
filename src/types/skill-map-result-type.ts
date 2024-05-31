@@ -1,10 +1,14 @@
+import { type EmailLog } from "./email-log-type"
+import { type User } from "./user-type"
+
 export interface SkillMapResult {
-  skill_map_administration_id: number
+  id: number
+  skill_map_administration_id?: string
   status?: string
-  created_by_id?: number
-  updated_by_id?: number
-  created_at?: Date
-  updated_at?: Date
+  remarks?: string
+  users?: User
+  email_logs?: EmailLog[]
+  last_skill_map_date?: string
 }
 
 export enum SkillMapResultStatus {
