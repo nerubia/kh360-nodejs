@@ -25,6 +25,30 @@ export const getPreviousSkillMapAdmin = async (endDate: Date) => {
   })
 }
 
+export const getPreviousSkillMapAdminSameDate = async (id: number) => {
+  return await prisma.skill_map_administrations.findFirst({
+    where: {
+      id,
+      status: {
+        notIn: [SkillMapAdministrationStatus.Cancelled],
+      },
+    },
+  })
+}
+
+export const getPrevAdmin = async (created_at: Date) => {
+  return await prisma.skill_map_administrations.findFirst({
+    where: {
+      created_at: {
+        lt: created_at,
+      },
+      status: {
+        notIn: [SkillMapAdministrationStatus.Cancelled],
+      },
+    },
+  })
+}
+
 export const getPreviousSkillMapAdminOngoing = async (endDate: Date) => {
   return await prisma.skill_map_administrations.findFirst({
     where: {
@@ -40,6 +64,19 @@ export const getPreviousSkillMapAdminOngoing = async (endDate: Date) => {
 export const getAllByFilters = async (where: Prisma.skill_map_administrationsWhereInput) => {
   return await prisma.skill_map_administrations.findMany({
     where,
+  })
+}
+export const getAdminWithSameEndPeriod = async (endPeriod: Date) => {
+  return await prisma.skill_map_administrations.findMany({
+    where: {
+      skill_map_period_end_date: endPeriod,
+      status: {
+        notIn: [SkillMapAdministrationStatus.Cancelled],
+      },
+    },
+    orderBy: {
+      created_at: "desc",
+    },
   })
 }
 

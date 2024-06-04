@@ -126,7 +126,7 @@ export const getRecentRating = async (
   userId: number,
   skillId: number,
   end_period: Date,
-  submitted_date: Date
+  submitted_date?: Date | null
 ) => {
   return await prisma.skill_map_ratings.findMany({
     where: {
@@ -134,12 +134,13 @@ export const getRecentRating = async (
       status: SkillMapRatingStatus.Submitted,
       skill_map_results: {
         user_id: userId,
-        submitted_date: {
-          lt: submitted_date,
-        },
+        ...(submitted_date != null ? { submitted_date: { lt: submitted_date } } : {}), // Conditionally add submitted_date
         skill_map_administrations: {
           skill_map_period_end_date: {
             lt: end_period,
+          },
+          status: {
+            notIn: [SkillMapAdministrationStatus.Cancelled],
           },
         },
       },
@@ -150,6 +151,40 @@ export const getRecentRating = async (
           submitted_date: "desc",
         },
       },
+      {
+        skill_map_results: {
+          skill_map_administrations: {
+            skill_map_period_end_date: "desc",
+          },
+        },
+      },
+    ],
+    take: 1,
+  })
+}
+
+export const getRecentRatingNotSameDate = async (
+  userId: number,
+  skillId: number,
+  end_period: Date
+) => {
+  return await prisma.skill_map_ratings.findMany({
+    where: {
+      skill_id: skillId,
+      status: SkillMapRatingStatus.Submitted,
+      skill_map_results: {
+        user_id: userId,
+        skill_map_administrations: {
+          skill_map_period_end_date: {
+            lt: end_period,
+          },
+          status: {
+            notIn: [SkillMapAdministrationStatus.Cancelled],
+          },
+        },
+      },
+    },
+    orderBy: [
       {
         skill_map_results: {
           skill_map_administrations: {
@@ -219,6 +254,9 @@ export const getSkillsByPeriodEndDate = async (
           skill_map_period_end_date: {
             lte: endPeriod,
           },
+        },
+        status: {
+          notIn: [SkillMapAdministrationStatus.Cancelled],
         },
       },
     },
