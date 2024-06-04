@@ -4,6 +4,7 @@ import CustomError from "../../utils/custom-error"
 import { ValidationError } from "yup"
 import { createProjectMemberSchema } from "../../utils/validation/project-member-schema"
 import * as ProjectService from "../../services/project-service"
+import { type SkillType } from "../../types/skill-type"
 
 /**
  * Search project members based on provided filters.
@@ -68,15 +69,8 @@ export const index = async (req: Request, res: Response) => {
  */
 export const store = async (req: Request, res: Response) => {
   try {
-    const {
-      project_id,
-      user_id,
-      project_role_id,
-      start_date,
-      end_date,
-      allocation_rate,
-      skill_ids,
-    } = req.body
+    const { project_id, user_id, project_role_id, start_date, end_date, allocation_rate, skills } =
+      req.body
 
     await createProjectMemberSchema.validate({
       project_id,
@@ -102,6 +96,13 @@ export const store = async (req: Request, res: Response) => {
       )
     }
 
+    // TODO: check for overlapping dates within the same skill
+    const parsedSkills = (skills as SkillType[]).map((skill) => ({
+      ...skill,
+      start_date: new Date(skill.start_date ?? start_date),
+      end_date: new Date(skill.end_date ?? end_date),
+    }))
+
     const newProjectMember = await ProjectMemberService.create(
       {
         project_id: parseInt(project_id),
@@ -111,7 +112,7 @@ export const store = async (req: Request, res: Response) => {
         end_date: new Date(end_date),
         allocation_rate: parseFloat(allocation_rate),
       },
-      skill_ids as number[]
+      parsedSkills
     )
 
     res.json(newProjectMember)
@@ -157,15 +158,8 @@ export const show = async (req: Request, res: Response) => {
 export const update = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const {
-      project_id,
-      user_id,
-      project_role_id,
-      start_date,
-      end_date,
-      allocation_rate,
-      skill_ids,
-    } = req.body
+    const { project_id, user_id, project_role_id, start_date, end_date, allocation_rate, skills } =
+      req.body
 
     await createProjectMemberSchema.validate({
       project_id,
@@ -189,6 +183,13 @@ export const update = async (req: Request, res: Response) => {
       )
     }
 
+    // TODO: check for overlapping dates within the same skill
+    const parsedSkills = (skills as SkillType[]).map((skill) => ({
+      ...skill,
+      start_date: new Date(skill.start_date ?? start_date),
+      end_date: new Date(skill.end_date ?? end_date),
+    }))
+
     const updatedProjectMember = await ProjectMemberService.update(
       parseInt(id),
       {
@@ -199,7 +200,7 @@ export const update = async (req: Request, res: Response) => {
         end_date: new Date(end_date),
         allocation_rate: parseFloat(allocation_rate),
       },
-      skill_ids as number[]
+      parsedSkills
     )
 
     res.json(updatedProjectMember)
