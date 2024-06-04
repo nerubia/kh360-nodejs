@@ -925,16 +925,19 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
               ? skillMapResult.submitted_date ?? new Date()
               : null
           )
-
           const SkillMapAdministrationHasPrevious =
             await SkillMapAdministrationRepository.getPreviousSkillMapAdminOngoing(
               new Date(skillMapAdministration.skill_map_period_end_date ?? new Date())
             )
           let skillMapRatingPrev
           if (SkillMapAdministrationHasPrevious !== null) {
-            skillMapRatingPrev = await SkillMapRatingRepository.getByFilters({
-              skill_map_administration_id: SkillMapAdministrationHasPrevious?.id,
-            })
+            if (recentAllSkillMapRating.some((rating) => rating.skills?.name === skill?.name)) {
+              skillMapRatingPrev = await SkillMapRatingRepository.getByFilters({
+                skill_map_administration_id: SkillMapAdministrationHasPrevious?.id,
+              })
+            } else {
+              skillMapRatingPrev = null
+            }
           } else {
             const SkillMapAdministrationSameEndPeriod =
               await SkillMapAdministrationRepository.getAdminWithSameEndPeriod(
