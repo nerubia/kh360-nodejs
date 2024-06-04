@@ -960,6 +960,8 @@ model project_member_skills {
   skill_id          Int
   description       String?   @db.Text
   status            Boolean?
+  start_date        DateTime? @db.Date
+  end_date          DateTime? @db.Date
   created_at        DateTime? @db.DateTime(0)
   updated_at        DateTime? @db.DateTime(0)
 

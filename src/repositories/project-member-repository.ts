@@ -23,6 +23,8 @@ export const getById = async (id: number) => {
               skill_categories: true,
             },
           },
+          start_date: true,
+          end_date: true,
         },
       },
     },

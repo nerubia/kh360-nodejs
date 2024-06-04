@@ -10,6 +10,7 @@ import * as ProjectMemberSkillRepository from "../repositories/project-member-sk
 import * as ProjectSkillRepository from "../repositories/project-skill-repository"
 import CustomError from "../utils/custom-error"
 import { type ProjectMember } from "../types/project-member-type"
+import { type SkillType } from "../types/skill-type"
 
 export const getProjectMembers = async (
   evaluation_administration_id: number,
@@ -219,7 +220,7 @@ export const getAllByFilters = async (
   return finalProjects
 }
 
-export const create = async (data: ProjectMember, skill_ids: number[]) => {
+export const create = async (data: ProjectMember, skills: SkillType[]) => {
   const project = await ProjectRepository.getById(data.project_id ?? 0)
 
   if (project === null) {
@@ -247,14 +248,17 @@ export const create = async (data: ProjectMember, skill_ids: number[]) => {
   const projectSkillIds = projectSkills.map((skill) => skill.skill_id)
 
   await Promise.all(
-    skill_ids.map(async (skillId, index) => {
-      if (!projectSkillIds.includes(skillId)) {
+    skills.map(async (skill, index) => {
+      if (skill.id == null || !projectSkillIds.includes(skill.id)) {
         throw new CustomError(`Some skills do not exist in ${project.name}'s project skills.`, 400)
       }
       const newProjectMemberSkill = {
         sequence_no: index + 1,
         project_member_id: projectMember.id,
-        skill_id: skillId,
+        skill_id: skill.id,
+        start_date: skill.start_date,
+        end_date: skill.end_date,
+        created_at: new Date(),
       }
       await ProjectMemberSkillRepository.createMany([newProjectMemberSkill])
     })
@@ -294,7 +298,7 @@ export const getById = async (id: number) => {
   }
 }
 
-export const update = async (id: number, data: ProjectMember, skill_ids: number[]) => {
+export const update = async (id: number, data: ProjectMember, skills: SkillType[]) => {
   const projectMember = await ProjectMemberRepository.getById(id)
 
   if (projectMember === null) {
@@ -322,10 +326,11 @@ export const update = async (id: number, data: ProjectMember, skill_ids: number[
   const allProjectMemberSkills = await ProjectMemberSkillRepository.getAllByFilters({
     project_member_id: projectMember.id,
   })
+
   const selectedSkills = await ProjectMemberSkillRepository.getAllByFilters({
     project_member_id: projectMember.id,
     skill_id: {
-      in: skill_ids,
+      in: skills.filter((skill) => skill.id !== undefined).map((skill) => Number(skill.id)),
     },
   })
   const selectedSkillIds = selectedSkills.map((skill) => skill.id)
@@ -343,17 +348,19 @@ export const update = async (id: number, data: ProjectMember, skill_ids: number[
   )
 
   await Promise.all(
-    skill_ids.map(async (skillId, index) => {
-      if (!projectSkillIds.includes(skillId)) {
+    skills.map(async (skill, index) => {
+      if (skill.id == null || !projectSkillIds.includes(skill.id)) {
         throw new CustomError(`Some skills do not exist in ${project.name}'s project skills.`, 400)
       }
       const existingProjectMemberSkill = await ProjectMemberSkillRepository.getByFilters({
-        skill_id: skillId,
+        skill_id: skill.id,
         project_member_id: projectMember.id,
       })
       if (existingProjectMemberSkill !== null) {
         const updatedProjectMemberSkills = {
           sequence_no: index + 1,
+          start_date: skill.start_date,
+          end_date: skill.end_date,
         }
         await ProjectMemberSkillRepository.updateById(
           existingProjectMemberSkill.id,
@@ -363,7 +370,10 @@ export const update = async (id: number, data: ProjectMember, skill_ids: number[
         const newProjectMemberSkill = {
           sequence_no: index + 1,
           project_member_id: projectMember.id,
-          skill_id: skillId,
+          skill_id: skill.id,
+          start_date: skill.start_date,
+          end_date: skill.end_date,
+          created_at: new Date(),
         }
         await ProjectMemberSkillRepository.createMany([newProjectMemberSkill])
       }

@@ -4,4 +4,6 @@ export interface SkillType {
   status: boolean
   description: string
   name: string
+  start_date?: Date
+  end_date?: Date
 }
