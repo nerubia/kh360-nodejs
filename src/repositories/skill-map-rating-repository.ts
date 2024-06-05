@@ -216,6 +216,9 @@ export const getSkillsByPeriodEndDate = async (
         user_id: userId,
         ...(submitted_date != null ? { submitted_date } : {}),
         skill_map_administrations: {
+          status: {
+            not: SkillMapAdministrationStatus.Cancelled,
+          },
           skill_map_period_end_date: {
             lte: endPeriod,
           },
