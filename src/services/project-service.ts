@@ -310,3 +310,17 @@ export const deleteById = async (id: number) => {
     await ProjectRepository.deleteById(project.id)
   }
 }
+
+export const close = async (id: number) => {
+  const project = await ProjectRepository.getById(id)
+
+  if (project === null) {
+    throw new CustomError("Project not found", 400)
+  }
+
+  if (project.status === ProjectStatus.Closed) {
+    throw new CustomError("Project was already closed", 400)
+  }
+
+  await ProjectRepository.updateStatusById(project.id, ProjectStatus.Closed)
+}

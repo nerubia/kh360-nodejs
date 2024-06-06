@@ -12,4 +12,6 @@ router.get("/:id", ProjectController.show)
 router.put("/:id", ProjectController.update)
 router.delete("/:id", ProjectController.destroy)
 
+router.post("/:id/close", ProjectController.close)
+
 export default router
