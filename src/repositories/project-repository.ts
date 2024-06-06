@@ -1,6 +1,6 @@
 import { type Prisma } from "@prisma/client"
 import prisma from "../utils/prisma"
-import { type Project } from "../types/project-type"
+import { type ProjectStatus, type Project } from "../types/project-type"
 import { convertToSlug } from "../utils/format-string"
 
 export const getById = async (id: number) => {
@@ -126,6 +126,18 @@ export const deleteById = async (id: number) => {
   await prisma.projects.deleteMany({
     where: {
       id,
+    },
+  })
+}
+
+export const updateStatusById = async (id: number, status: ProjectStatus) => {
+  return await prisma.projects.update({
+    where: {
+      id,
+    },
+    data: {
+      status,
+      updated_at: new Date(),
     },
   })
 }

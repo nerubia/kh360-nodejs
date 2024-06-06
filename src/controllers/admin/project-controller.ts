@@ -184,3 +184,20 @@ export const destroy = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+/**
+ * Close a specific project by ID.
+ * @param req.params.id - The unique ID of the project.
+ */
+export const close = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    await ProjectService.close(parseInt(id))
+    res.json({ id })
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
