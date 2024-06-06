@@ -552,6 +552,9 @@ export const sendReminder = async (req: Request, res: Response) => {
     )
     res.json({ evaluatorId: user_id, emailLog })
   } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
     res.status(500).json({ message: "Something went wrong" })
   }
 }
