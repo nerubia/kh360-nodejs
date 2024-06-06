@@ -906,7 +906,9 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
 
   recentAllSkillMapRating.forEach((skillRating) => {
     if (!skillIds.has(skillRating.skill_id)) {
-      userSkillByEndPeriod.push(skillRating)
+      if (skillMapResult.status !== SkillMapResultStatus.Submitted) {
+        userSkillByEndPeriod.push(skillRating)
+      }
       skillIds.add(skillRating.skill_id)
     }
   })
