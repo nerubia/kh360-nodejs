@@ -32,5 +32,8 @@ export const getAllByFilters = async (where: Prisma.clientsWhereInput) => {
       status: true,
     },
     where,
+    orderBy: {
+      display_name: "asc",
+    },
   })
 }
