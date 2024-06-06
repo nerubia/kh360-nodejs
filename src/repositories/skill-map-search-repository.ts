@@ -1,0 +1,81 @@
+import { type Prisma } from "@prisma/client"
+import prisma from "../utils/prisma"
+import { SkillMapResultStatus } from "../types/skill-map-result-type"
+import { SkillMapRatingStatus } from "../types/skill-map-rating-type"
+
+export const paginateByFilters = async (where: Prisma.skill_map_resultsWhereInput) => {
+  return await prisma.skill_map_results.findMany({
+    where: {
+      ...where,
+      status: SkillMapResultStatus.Submitted,
+    },
+    include: {
+      users: {
+        select: {
+          first_name: true,
+        },
+      },
+      skill_map_administrations: true,
+      skill_map_ratings: {
+        where: {
+          status: SkillMapRatingStatus.Submitted,
+        },
+        orderBy: {
+          created_at: "desc",
+        },
+      },
+    },
+    orderBy: {
+      id: "desc",
+    },
+  })
+}
+
+export const getLatestSkillMapRating = async () => {
+  return await prisma.skill_map_results.findMany({
+    where: {
+      status: "Submitted",
+    },
+    select: {
+      id: true,
+      skill_map_administration_id: true,
+      status: true,
+      comments: true,
+      submitted_date: true,
+      users: {
+        select: {
+          id: true,
+          first_name: true,
+          last_name: true,
+          email: true,
+        },
+      },
+      skill_map_ratings: {
+        where: {
+          status: SkillMapRatingStatus.Submitted,
+        },
+        orderBy: {
+          created_at: "desc",
+        },
+        take: 1,
+        include: {
+          skills: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      submitted_date: "desc",
+    },
+    distinct: ["user_id"],
+  })
+}
+
+export const countAllByFilters = async (where: Prisma.skill_map_resultsWhereInput) => {
+  return await prisma.skill_map_results.count({
+    where,
+  })
+}
