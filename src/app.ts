@@ -36,6 +36,7 @@ import surveyAdministrationRoute from "./routes/admin/survey-administration-rout
 import surveyResultRoute from "./routes/admin/survey-result-route"
 import surveyTemplateRoute from "./routes/admin/survey-template-route"
 import surveyTemplateQuestionRoute from "./routes/admin/survey-template-question-route"
+import skillMapSearchRoute from "./routes/admin/skill-map-search-route"
 
 const app: Application = express()
 
@@ -85,6 +86,7 @@ app.use("/admin/skills", adminMiddleware, skillRoute)
 app.use("/admin/skill-categories", adminMiddleware, skillCategoryRoute)
 app.use("/admin/skill-map-administrations", adminMiddleware, skillMapAdministrationRoute)
 app.use("/admin/skill-map-results", adminMiddleware, skillMapResultsRoute)
+app.use("/admin/skill-map-search", adminMiddleware, skillMapSearchRoute)
 app.use("/admin/survey-administrations", adminMiddleware, surveyAdministrationRoute)
 app.use("/admin/survey-results", adminMiddleware, surveyResultRoute)
 app.use("/admin/survey-templates", adminMiddleware, surveyTemplateRoute)
