@@ -1122,6 +1122,7 @@ model skill_map_administrations {
   created_at                    DateTime?           @db.DateTime(0)
   updated_at                    DateTime?           @db.DateTime(0)
   skill_map_results             skill_map_results[]
+  skill_map_ratings             skill_map_ratings[]
 }
 
 model skill_map_results {
@@ -1145,21 +1146,22 @@ model skill_map_results {
 }
 
 model skill_map_ratings {
-  id                          Int                @id @default(autoincrement())
+  id                          Int                        @id @default(autoincrement())
   skill_map_administration_id Int?
   skill_map_result_id         Int?
   skill_id                    Int?
   skill_category_id           Int?
   answer_option_id            Int?
-  comments                    String?            @db.Text
-  status                      String?            @db.VarChar(255)
-  created_at                  DateTime?          @db.DateTime(0)
-  updated_at                  DateTime?          @db.DateTime(0)
-  deleted_at                  DateTime?          @db.DateTime(0)
-  skill_map_results           skill_map_results? @relation(fields: [skill_map_result_id], references: [id])
-  skills                      skills?            @relation(fields: [skill_id], references: [id])
-  skill_categories            skill_categories?  @relation(fields: [skill_category_id], references: [id])
-  answer_options              answer_options?    @relation(fields: [answer_option_id], references: [id])
+  comments                    String?                    @db.Text
+  status                      String?                    @db.VarChar(255)
+  created_at                  DateTime?                  @db.DateTime(0)
+  updated_at                  DateTime?                  @db.DateTime(0)
+  deleted_at                  DateTime?                  @db.DateTime(0)
+  skill_map_results           skill_map_results?         @relation(fields: [skill_map_result_id], references: [id])
+  skills                      skills?                    @relation(fields: [skill_id], references: [id])
+  skill_categories            skill_categories?          @relation(fields: [skill_category_id], references: [id])
+  skill_map_administrations   skill_map_administrations? @relation(fields: [skill_map_administration_id], references: [id])
+  answer_options              answer_options?            @relation(fields: [answer_option_id], references: [id])
 
   @@index([answer_option_id], map: "index_skill_map_ratings_on_answer_option_id")
   @@index([skill_map_administration_id], map: "index_skill_map_ratings_on_skill_map_administration_id")

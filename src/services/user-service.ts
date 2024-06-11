@@ -870,9 +870,6 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
   const skillMapAdministration = await SkillMapAdministrationRepository.getById(
     skill_map_administration_id
   )
-  const skillMapAdminSameEndPeriod = await SkillMapAdministrationRepository.getAllByFilters({
-    skill_map_period_end_date: skillMapAdministration?.skill_map_period_end_date,
-  })
 
   if (skillMapAdministration === null) {
     throw new CustomError("Skill map administration not found.", 400)
@@ -882,167 +879,78 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
     skill_map_administration_id: skillMapAdministration.id,
     user_id: user.id,
   })
+
   if (skillMapResult === null) {
     throw new CustomError("Skill map result not found.", 400)
   }
 
-  const previousSkillMapAdministration =
-    await SkillMapAdministrationRepository.getPreviousSkillMapAdmin(
-      new Date(skillMapAdministration.skill_map_period_end_date ?? new Date())
-    )
-
-  const userSkillByEndPeriod = await SkillMapRatingRepository.getSkillsByPeriodEndDate(
-    user.id,
-    skillMapAdminSameEndPeriod.length !== 0 ? skillMapResult.submitted_date : null,
-    skillMapAdministration.skill_map_period_end_date ?? new Date()
-  )
-
-  const recentAllSkillMapRating = await SkillMapRatingRepository.getAllRecentRating(
-    user.id,
-    skillMapAdministration.skill_map_period_end_date ?? new Date()
-  )
-
-  const skillIds = new Set(userSkillByEndPeriod.map((skill) => skill.skill_id))
-
-  recentAllSkillMapRating.forEach((skillRating) => {
-    if (!skillIds.has(skillRating.skill_id)) {
-      if (skillMapResult.status !== SkillMapResultStatus.Submitted) {
-        userSkillByEndPeriod.push(skillRating)
-      }
-      skillIds.add(skillRating.skill_id)
-    }
+  const userCurrentSkillMapRatings = await SkillMapRatingRepository.getAllByFilters({
+    skill_map_result_id: skillMapResult.id,
+    skill_map_results: {
+      user_id: user.id,
+    },
   })
 
-  if (previousSkillMapAdministration === null) {
-    const checkPreviousSkillMapRating = await Promise.all(
-      (userSkillByEndPeriod.length === 0 ? recentAllSkillMapRating : userSkillByEndPeriod).map(
-        async (rating) => {
-          const skill = await SkillRepository.getById(rating.skill_id ?? 0)
-          const answerOption = await AnswerOptionRepository.getById(rating.answer_option_id ?? 0)
-          const getRecentRating = await SkillMapRatingRepository.getRecentRating(
-            user.id,
-            rating.skill_id ?? 0,
-            skillMapAdministration.skill_map_period_end_date ?? new Date(),
-            skillMapResult.status === SkillMapResultStatus.Ongoing
-              ? skillMapResult.submitted_date ?? new Date()
-              : null
-          )
-          const SkillMapAdministrationHasPrevious =
-            await SkillMapAdministrationRepository.getPreviousSkillMapAdminOngoing(
-              new Date(skillMapAdministration.skill_map_period_end_date ?? new Date())
-            )
-          let skillMapRatingPrev
-          if (SkillMapAdministrationHasPrevious !== null) {
-            if (recentAllSkillMapRating.some((rating) => rating.skills?.name === skill?.name)) {
-              skillMapRatingPrev = await SkillMapRatingRepository.getByFilters({
-                skill_map_administration_id: SkillMapAdministrationHasPrevious?.id,
-              })
-            } else {
-              skillMapRatingPrev = null
-            }
-          } else {
-            const SkillMapAdministrationSameEndPeriod =
-              await SkillMapAdministrationRepository.getAdminWithSameEndPeriod(
-                skillMapAdministration.skill_map_period_end_date ?? new Date()
-              )
-            const skillMapSameWithPrev = await SkillMapRatingRepository.getByFilters({
-              skill_map_administration_id: SkillMapAdministrationSameEndPeriod[1]?.id,
-            })
-            const checkPrevAdmin = await SkillMapAdministrationRepository.getPrevAdmin(
-              skillMapAdministration?.created_at ?? new Date()
-            )
+  const previousSkillMapRating = await SkillMapRatingRepository.getPreviousSkillMapRating(
+    skillMapAdministration.id,
+    user.id,
+    new Date(skillMapAdministration.skill_map_period_end_date ?? new Date()),
+    new Date(skillMapResult.submitted_date ?? new Date())
+  )
 
-            if (checkPrevAdmin !== null) {
-              skillMapRatingPrev = skillMapSameWithPrev
-            } else {
-              skillMapRatingPrev = null
-            }
-          }
+  const userPreviousSkillMapRatings = await SkillMapRatingRepository.getPreviousSkillMapRatings(
+    previousSkillMapRating?.skill_map_administration_id ?? 0,
+    previousSkillMapRating?.skill_map_result_id ?? 0
+  )
 
-          const recentRating =
-            getRecentRating.length > 0
-              ? getRecentRating[0]
-              : skillMapRatingPrev?.skill_map_administration_id ===
-                rating.skill_map_administration_id
-              ? skillMapRatingPrev
-              : skillMapRatingPrev
-          const previousAnswerOption =
-            recentRating?.answer_option_id != null
-              ? await AnswerOptionRepository.getById(recentRating?.answer_option_id)
-              : null
-          const previous_rating =
-            previousSkillMapAdministration != null ? answerOption : previousAnswerOption
-          return {
-            ...skill,
-            previous_rating,
-            rating:
-              skillMapResult.status === SkillMapResultStatus.Ongoing
-                ? previous_rating
-                : answerOption,
-          }
+  let userSkillMapRatings: unknown[] = []
+
+  if (skillMapResult.status === SkillMapResultStatus.Submitted) {
+    userSkillMapRatings = await Promise.all(
+      userCurrentSkillMapRatings.map(async (skillMapRating) => {
+        const skill = await SkillRepository.getById(skillMapRating.skill_id ?? 0)
+        if (skill === null) {
+          return null
         }
-      )
+        const previousSkillMapRating = userPreviousSkillMapRatings.find(
+          (uniqueSkillMapRating) => uniqueSkillMapRating.skill_id === skillMapRating.skill_id
+        )
+        const previousAnswerOption = await AnswerOptionRepository.getById(
+          previousSkillMapRating?.answer_option_id ?? 0
+        )
+        const answerOption = await AnswerOptionRepository.getById(
+          skillMapRating.answer_option_id ?? 0
+        )
+        return {
+          ...skill,
+          previous_rating: previousAnswerOption,
+          rating: answerOption,
+        }
+      })
     )
-
-    return {
-      user_skill_map_ratings: checkPreviousSkillMapRating,
-      skill_map_administration: skillMapAdministration,
-      skill_map_result_status: skillMapResult.status,
-    }
   }
 
-  const previousSkillMapRatings = await SkillMapRatingRepository.getAllByFilters({
-    skill_map_administration_id: previousSkillMapAdministration?.id,
-    skill_map_result_id: skillMapResult.id,
-  })
-
-  const finalPreviousSkillMapRatings = await Promise.all(
-    (previousSkillMapRatings.length === 0 ? recentAllSkillMapRating : previousSkillMapRatings).map(
-      async (rating) => {
-        const skill = await SkillRepository.getById(rating.skill_id ?? 0)
-        const answerOption = await AnswerOptionRepository.getById(rating.answer_option_id ?? 0)
+  if (skillMapResult.status === SkillMapResultStatus.Ongoing) {
+    userSkillMapRatings = await Promise.all(
+      userPreviousSkillMapRatings.map(async (skillMapRating) => {
+        const skill = await SkillRepository.getById(skillMapRating.skill_id ?? 0)
+        if (skill === null) {
+          return null
+        }
+        const answerOption = await AnswerOptionRepository.getById(
+          skillMapRating.answer_option_id ?? 0
+        )
         return {
           ...skill,
           previous_rating: answerOption,
           rating: answerOption,
         }
-      }
+      })
     )
-  )
-
-  const skillMapRatings = await SkillMapRatingRepository.getAllByFilters({
-    skill_map_administration_id: skillMapAdministration.id,
-    skill_map_result_id: skillMapResult.id,
-  })
-
-  const finalSkillMapRatings = await Promise.all(
-    skillMapRatings.map(async (rating) => {
-      const skill = await SkillRepository.getById(rating.skill_id ?? 0)
-      const answerOption = await AnswerOptionRepository.getById(rating.answer_option_id ?? 0)
-      const getRecentRating = await SkillMapRatingRepository.getRecentRating(
-        user.id,
-        rating.skill_id ?? 0,
-        skillMapAdministration.skill_map_period_end_date ?? new Date(),
-        skillMapResult.submitted_date ?? new Date()
-      )
-
-      const recentRating = getRecentRating.length > 0 ? getRecentRating[0] : null
-      const previousAnswerOption =
-        recentRating?.answer_option_id != null
-          ? await AnswerOptionRepository.getById(recentRating?.answer_option_id)
-          : null
-      return {
-        ...skill,
-        previous_rating: previousAnswerOption,
-        rating: answerOption,
-      }
-    })
-  )
-
-  const isResultSubmitted = skillMapResult.status === SkillMapResultStatus.Submitted
+  }
 
   return {
-    user_skill_map_ratings: isResultSubmitted ? finalSkillMapRatings : finalPreviousSkillMapRatings,
+    user_skill_map_ratings: userSkillMapRatings,
     skill_map_administration: skillMapAdministration,
     skill_map_result_status: skillMapResult.status,
   }
@@ -1331,8 +1239,47 @@ export const submitSkillMapRatings = async (
     })
   }
 
-  await SkillMapRatingRepository.createMany(skillMapRatings)
+  const latestSkillMapAdministrations = await SkillMapAdministrationRepository.getAllByFilters({
+    skill_map_period_end_date: {
+      gt: new Date(skillMapAdministration.skill_map_period_end_date ?? new Date()),
+    },
+    status: {
+      in: [SkillMapAdministrationStatus.Ongoing, SkillMapAdministrationStatus.Closed],
+    },
+  })
 
+  const latestSubmittedSkillMapResults = await SkillMapResultRepository.getAllByFilters({
+    skill_map_administration_id: {
+      in: latestSkillMapAdministrations.map(
+        (latestSkillMapAdministration) => latestSkillMapAdministration.id
+      ),
+    },
+    user_id: user.id,
+    status: SkillMapResultStatus.Submitted,
+  })
+
+  for (const latestSubmittedSkillMapResult of latestSubmittedSkillMapResults) {
+    for (const newSkillMapRating of skill_map_ratings) {
+      const existingSkillMapRating = latestSubmittedSkillMapResult.skill_map_ratings.find(
+        (latestSubmittedSkillMapResult) =>
+          latestSubmittedSkillMapResult.skill_id === newSkillMapRating.skill_id
+      )
+      if (existingSkillMapRating === undefined) {
+        skillMapRatings.push({
+          skill_map_administration_id: latestSubmittedSkillMapResult.skill_map_administration_id,
+          skill_map_result_id: latestSubmittedSkillMapResult.id,
+          skill_id: newSkillMapRating.skill_id,
+          skill_category_id: newSkillMapRating.skill_category_id as number,
+          answer_option_id: newSkillMapRating.answer_option_id as number,
+          status: SkillMapRatingStatus.Submitted,
+          created_at: currentDate,
+          updated_at: currentDate,
+        })
+      }
+    }
+  }
+
+  await SkillMapRatingRepository.createMany(skillMapRatings)
   await SkillMapResultRepository.updateStatusById(skillMapResult.id, SkillMapResultStatus.Submitted)
 }
 
