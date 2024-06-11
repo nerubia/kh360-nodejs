@@ -64,13 +64,17 @@ export const getLatestSkillMapRating = async () => {
               name: true,
             },
           },
+          answer_options: {
+            select: {
+              name: true,
+            },
+          },
         },
       },
     },
     orderBy: {
       submitted_date: "desc",
     },
-    distinct: ["user_id"],
   })
 }
 
