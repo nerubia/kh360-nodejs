@@ -42,13 +42,15 @@ export const getAllByFilters = async (name: string, skill: string, page: string)
     currentPage * itemsPerPage
   )
 
+  const pageInfo = {
+    hasPreviousPage: currentPage > 1,
+    hasNextPage: currentPage < totalPages,
+    totalPages,
+    totalItems,
+  }
+
   return {
     data: paginatedResults,
-    pageInfo: {
-      currentPage,
-      totalPages,
-      itemsPerPage,
-      totalItems,
-    },
+    pageInfo,
   }
 }
