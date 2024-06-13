@@ -2,8 +2,12 @@ import { type SkillCategory } from "../types/skill-category-type"
 import prisma from "../utils/prisma"
 import { type Prisma } from "@prisma/client"
 
-export const getAllByFilters = async (where: Prisma.skill_categoriesWhereInput) => {
+export const getAllByFilters = async (
+  where: Prisma.skill_categoriesWhereInput,
+  include?: Prisma.skill_categoriesInclude
+) => {
   return await prisma.skill_categories.findMany({
+    include,
     where,
     orderBy: {
       sequence_no: "asc",

@@ -3,10 +3,21 @@ import { type SkillCategory } from "../types/skill-category-type"
 import CustomError from "../utils/custom-error"
 import * as SkilRepository from "../repositories/skill-repository"
 
-export const getAllSkillCategories = async () => {
-  return await SkillCategoryRepository.getAllByFilters({
-    status: true,
-  })
+export const getAllSkillCategories = async (includes?: string[]) => {
+  const include = {}
+  if (includes !== undefined) {
+    for (const i of includes) {
+      Object.assign(include, {
+        [i]: true,
+      })
+    }
+  }
+  return await SkillCategoryRepository.getAllByFilters(
+    {
+      status: true,
+    },
+    include
+  )
 }
 
 export const getByFilters = async (name: string, status: string) => {
