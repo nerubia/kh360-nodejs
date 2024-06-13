@@ -31,11 +31,32 @@ export const paginateByFilters = async (where: Prisma.skill_map_resultsWhereInpu
   })
 }
 
-export const getLatestSkillMapRating = async () => {
+export const getLatestSkillMapRating = async (name: string) => {
+  const where = {
+    status: "Submitted",
+  }
+
+  if (name !== undefined) {
+    Object.assign(where, {
+      users: {
+        OR: [
+          {
+            first_name: {
+              contains: name,
+            },
+          },
+          {
+            last_name: {
+              contains: name,
+            },
+          },
+        ],
+      },
+    })
+  }
+
   return await prisma.skill_map_results.findMany({
-    where: {
-      status: "Submitted",
-    },
+    where,
     select: {
       id: true,
       skill_map_administration_id: true,
