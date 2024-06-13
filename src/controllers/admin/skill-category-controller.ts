@@ -30,7 +30,8 @@ export const index = async (req: Request, res: Response) => {
  */
 export const getAll = async (req: Request, res: Response) => {
   try {
-    const skill_categories = await SkillCategoryService.getAllSkillCategories()
+    const { includes } = req.query
+    const skill_categories = await SkillCategoryService.getAllSkillCategories(includes as string[])
     res.json(skill_categories)
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" })
