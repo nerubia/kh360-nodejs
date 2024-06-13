@@ -6,18 +6,10 @@ export const getAllByFilters = async (name: string, skill: string, page: string)
   const parsedPage = parseInt(page)
   const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
-  const allRecentRating = await SkillMapSearchRepository.getLatestSkillMapRating()
-
-  const filteredResultsByName = allRecentRating.filter((result) => {
-    if (name !== undefined) {
-      const user = result.users
-      return user?.first_name?.toLowerCase().includes(name.toLowerCase()) ?? false
-    }
-    return true
-  })
+  const allRecentRating = await SkillMapSearchRepository.getLatestSkillMapRating(name)
 
   const filteredResultsBySkill = []
-  for (const result of filteredResultsByName) {
+  for (const result of allRecentRating) {
     if (skill !== undefined && skill.toLowerCase() !== "all") {
       const skills = skill.split(",")
       const matchesSkill = await Promise.all(
