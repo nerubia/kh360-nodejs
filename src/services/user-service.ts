@@ -1284,9 +1284,9 @@ export const submitSkillMapRatings = async (
 }
 
 export const getMySkillMap = async (userId: number) => {
-  const my_skill_map = await UserRepository.getAllRecentRating(userId)
+  const my_skill_maps = await UserRepository.getAllRecentRating(userId)
   return {
-    my_skill_map,
+    my_skill_maps,
   }
 }
 
@@ -1295,4 +1295,8 @@ export const getLatestSkillMapRating = async () => {
   return {
     user_latest_skill_map_result: response,
   }
+}
+
+export const getSingleLatestSkillMapRating = async (userId: number) => {
+  return await UserRepository.getSingleLatestRating(userId)
 }

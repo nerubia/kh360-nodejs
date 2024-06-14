@@ -564,3 +564,14 @@ export const getMySkillMap = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+export const getSingleLatestSkillMap = async (req: Request, res: Response) => {
+  try {
+    const user = req.params
+    const response = await UserService.getSingleLatestSkillMapRating(parseInt(user.id))
+    res.json(response)
+  } catch (error) {
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
