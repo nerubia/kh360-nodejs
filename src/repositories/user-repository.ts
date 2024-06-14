@@ -164,9 +164,18 @@ export const getSingleLatestRating = async (userId: number) => {
       answer_option_id: true,
       created_at: true,
     },
-    orderBy: {
-      created_at: "desc",
-    },
+    orderBy: [
+      {
+        skill_map_administrations: {
+          skill_map_period_end_date: "desc",
+        },
+      },
+      {
+        skill_map_results: {
+          submitted_date: "desc",
+        },
+      },
+    ],
   })
 
   if (latestRating == null) {
@@ -192,9 +201,6 @@ export const getSingleLatestRating = async (userId: number) => {
       },
       answer_option_id: true,
       created_at: true,
-    },
-    orderBy: {
-      created_at: "desc",
     },
   })
 

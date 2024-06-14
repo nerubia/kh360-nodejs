@@ -1296,7 +1296,3 @@ export const getLatestSkillMapRating = async () => {
     user_latest_skill_map_result: response,
   }
 }
-
-export const getSingleLatestSkillMapRating = async (userId: number) => {
-  return await UserRepository.getSingleLatestRating(userId)
-}

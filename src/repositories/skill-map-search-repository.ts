@@ -104,3 +104,63 @@ export const countAllByFilters = async (where: Prisma.skill_map_resultsWhereInpu
     where,
   })
 }
+
+export const getSingleLatestRating = async (userId: number) => {
+  const latestRating = await prisma.skill_map_ratings.findFirst({
+    where: {
+      skill_map_results: {
+        user_id: userId,
+        status: SkillMapRatingStatus.Submitted,
+      },
+    },
+    select: {
+      skill_id: true,
+      skills: {
+        select: {
+          name: true,
+        },
+      },
+      answer_option_id: true,
+      created_at: true,
+    },
+    orderBy: {
+      created_at: "desc",
+    },
+  })
+
+  if (latestRating == null) {
+    return null
+  }
+
+  const { skill_id } = latestRating
+
+  const allRatingsForLatestSkill = await prisma.skill_map_ratings.findMany({
+    where: {
+      skill_id,
+      skill_map_results: {
+        user_id: userId,
+        status: SkillMapRatingStatus.Submitted,
+      },
+    },
+    select: {
+      skill_id: true,
+      skills: {
+        select: {
+          name: true,
+        },
+      },
+      answer_option_id: true,
+      created_at: true,
+    },
+    orderBy: {
+      created_at: "desc",
+    },
+  })
+
+  return {
+    skill_map_rating: {
+      user_latest_skill_map_result: latestRating,
+      all_ratings_for_latest_skill: allRatingsForLatestSkill,
+    },
+  }
+}

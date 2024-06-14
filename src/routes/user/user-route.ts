@@ -37,7 +37,6 @@ router.get("/skill-map-administrations", UserController.getSkillMapAdministratio
 router.post("/skill-map-administrations/:id/submit", UserController.submitSkillMapRatings)
 router.get("/skill-map-ratings", UserController.getSkillMapRatings)
 router.get("/my-skill-maps/:id", UserController.getMySkillMap)
-router.get("/my-skill-map/:id", UserController.getSingleLatestSkillMap)
 router.get("/latest-skill-map-results", UserController.getLatestSkillMapResult)
 router.get("/skill-categories/all", SkillCategoryController.getAll)
 router.get("/skills", SkillController.index)

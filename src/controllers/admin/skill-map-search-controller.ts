@@ -13,3 +13,13 @@ export const index = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+export const getSingleLatestSkillMap = async (req: Request, res: Response) => {
+  try {
+    const user = req.params
+    const response = await SkillMapSearchService.getSingleLatestSkillMapRating(parseInt(user.id))
+    res.json(response)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}

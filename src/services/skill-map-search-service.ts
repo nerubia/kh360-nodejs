@@ -46,3 +46,7 @@ export const getAllByFilters = async (name: string, skill: string, page: string)
     pageInfo,
   }
 }
+
+export const getSingleLatestSkillMapRating = async (userId: number) => {
+  return await SkillMapSearchRepository.getSingleLatestRating(userId)
+}
