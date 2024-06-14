@@ -1,7 +1,6 @@
 import { type Prisma } from "@prisma/client"
 import prisma from "../utils/prisma"
 import { SkillMapAdministrationStatus } from "../types/skill-map-administration-type"
-import { SkillMapRatingStatus } from "../types/skill-map-rating-type"
 
 export const getById = async (id: number) => {
   return await prisma.users.findUnique({
@@ -145,71 +144,6 @@ export const getAllRecentRating = async (userId: number) => {
       skill_map_period_end_date: "asc",
     },
   })
-}
-export const getSingleLatestRating = async (userId: number) => {
-  const latestRating = await prisma.skill_map_ratings.findFirst({
-    where: {
-      skill_map_results: {
-        user_id: userId,
-        status: SkillMapRatingStatus.Submitted,
-      },
-    },
-    select: {
-      skill_id: true,
-      skills: {
-        select: {
-          name: true,
-        },
-      },
-      answer_option_id: true,
-      created_at: true,
-    },
-    orderBy: [
-      {
-        skill_map_administrations: {
-          skill_map_period_end_date: "desc",
-        },
-      },
-      {
-        skill_map_results: {
-          submitted_date: "desc",
-        },
-      },
-    ],
-  })
-
-  if (latestRating == null) {
-    return null
-  }
-
-  const { skill_id } = latestRating
-
-  const allRatingsForLatestSkill = await prisma.skill_map_ratings.findMany({
-    where: {
-      skill_id,
-      skill_map_results: {
-        user_id: userId,
-        status: SkillMapRatingStatus.Submitted,
-      },
-    },
-    select: {
-      skill_id: true,
-      skills: {
-        select: {
-          name: true,
-        },
-      },
-      answer_option_id: true,
-      created_at: true,
-    },
-  })
-
-  return {
-    skill_map_rating: {
-      user_latest_skill_map_result: latestRating,
-      all_ratings_for_latest_skill: allRatingsForLatestSkill,
-    },
-  }
 }
 
 export const getLatestSkillMapRating = async () => {
