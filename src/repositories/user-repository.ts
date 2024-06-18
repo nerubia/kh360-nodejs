@@ -130,7 +130,12 @@ export const getAllRecentRating = async (userId: number) => {
                   name: true,
                 },
               },
-              answer_option_id: true,
+              answer_options: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
               created_at: true,
             },
             where: {
