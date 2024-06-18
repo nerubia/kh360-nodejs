@@ -827,7 +827,9 @@ export const getSkillMapAdministrations = async (user: UserToken, page: number) 
       id: {
         in: skillMapAdministrationIds as number[],
       },
-      status: SurveyAdministrationStatus.Ongoing,
+      status: {
+        in: [SkillMapAdministrationStatus.Ongoing, SkillMapAdministrationStatus.Closed],
+      },
     }
   )
 
