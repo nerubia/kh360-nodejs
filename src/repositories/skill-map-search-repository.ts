@@ -2,6 +2,7 @@ import { type Prisma } from "@prisma/client"
 import prisma from "../utils/prisma"
 import { SkillMapResultStatus } from "../types/skill-map-result-type"
 import { SkillMapRatingStatus } from "../types/skill-map-rating-type"
+import { constructNameFilter } from "../utils/format-filter"
 
 export const paginateByFilters = async (where: Prisma.skill_map_resultsWhereInput) => {
   return await prisma.skill_map_results.findMany({
@@ -37,20 +38,10 @@ export const getLatestSkillMapRating = async (name: string) => {
   }
 
   if (name !== undefined) {
+    const whereClause = constructNameFilter(name)
     Object.assign(where, {
       users: {
-        OR: [
-          {
-            first_name: {
-              contains: name,
-            },
-          },
-          {
-            last_name: {
-              contains: name,
-            },
-          },
-        ],
+        ...whereClause,
       },
     })
   }
