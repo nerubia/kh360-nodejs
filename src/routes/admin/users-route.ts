@@ -1,9 +1,10 @@
 import express from "express"
-import { index, getAllUsers } from "../../controllers/admin/users-controller"
+import * as AdminUserController from "../../controllers/admin/users-controller"
 
 const router = express.Router()
 
-router.get("/", index)
-router.get("/all", getAllUsers)
+router.get("/", AdminUserController.index)
+router.get("/all", AdminUserController.getAllUsers)
+router.get("/:id/skill-map", AdminUserController.getUserSkillMap)
 
 export default router
