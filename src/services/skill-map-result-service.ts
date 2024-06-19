@@ -12,6 +12,58 @@ import { sendMail } from "../utils/sendgrid"
 import { format } from "date-fns"
 import { EmailLogType, type EmailLog } from "../types/email-log-type"
 import * as SkillRepository from "../repositories/skill-repository"
+import { constructNameFilter } from "../utils/format-filter"
+
+export const getLatestSkillMapRating = async (name: string, status: string, page: string) => {
+  const itemsPerPage = 10
+  const parsedPage = parseInt(page)
+  const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
+
+  const where = {
+    status: {
+      in: [SkillMapResultStatus.Submitted, SkillMapResultStatus.Closed],
+    },
+  }
+
+  if (name !== undefined) {
+    const whereClause = constructNameFilter(name)
+    Object.assign(where, {
+      users: {
+        ...whereClause,
+      },
+    })
+  }
+
+  if (status !== undefined && status !== "all") {
+    const statuses = status.split(",")
+    Object.assign(where, {
+      status: {
+        in: statuses,
+      },
+    })
+  }
+
+  const skillMapResults = await SkillMapResultRepository.getLatestSkillMapRating(
+    (currentPage - 1) * itemsPerPage,
+    itemsPerPage,
+    where
+  )
+
+  const totalItems = await SkillMapResultRepository.countAllByFiltersDistinctByUser(where)
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+
+  return {
+    data: skillMapResults,
+    pageInfo: {
+      hasPreviousPage: currentPage > 1,
+      hasNextPage: currentPage < totalPages,
+      currentPage,
+      totalPages,
+      totalItems,
+    },
+  }
+}
+
 export const create = async (
   skill_map_administration_id: number,
   employee_ids: number[],
@@ -304,7 +356,8 @@ export const reopen = async (id: number) => {
 
   await SkillMapResultRepository.updateStatusById(skillMapResult.id, SkillMapResultStatus.Ongoing)
 }
-export const getAllByFilters = async (
+
+export const getByCustomFilters = async (
   user: UserToken,
   skill_map_administration_id: string,
   skill: string,

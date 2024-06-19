@@ -5,6 +5,7 @@ const router = express.Router()
 
 router.get("/all", SkillMapResultController.all)
 router.get("/filter", SkillMapResultController.filterSkillMapResult)
+router.get("/latest", SkillMapResultController.latest)
 router.post("/", SkillMapResultController.store)
 router.post("/:id/reopen", SkillMapResultController.reopen)
 router.post("/:id/send-reminder", SkillMapResultController.sendReminder)
