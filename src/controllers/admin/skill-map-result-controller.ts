@@ -6,6 +6,28 @@ import { SkillMapResultStatus } from "../../types/skill-map-result-type"
 
 /**
  * List skill map results based on provided filters.
+ * @param req.query.name - Filter by name.
+ * @param req.query.status - Filter by status.
+ * @param req.query.page - Page number for pagination.
+ */
+export const latest = async (req: Request, res: Response) => {
+  try {
+    const { name, status, page } = req.query
+
+    const skillMapResults = await SkillMapResultService.getLatestSkillMapRating(
+      name as string,
+      status as string,
+      page as string
+    )
+
+    res.json(skillMapResults)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * List all skill map results based on provided filters.
  * @param req.query.skill_map_administration_id - Filter by skill map administration id.
  */
 export const all = async (req: Request, res: Response) => {
@@ -118,7 +140,7 @@ export const filterSkillMapResult = async (req: Request, res: Response) => {
   try {
     const user = req.user
     const { name, skill_map_administration_id, skill, status, page } = req.query
-    const skillMapResult = await SkillMapResultService.getAllByFilters(
+    const skillMapResult = await SkillMapResultService.getByCustomFilters(
       user,
       skill_map_administration_id as string,
       skill as string,

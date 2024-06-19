@@ -85,6 +85,7 @@ export const deleteById = async (id: number) => {
     },
   })
 }
+
 export const paginateByFilters = async (
   skip: number,
   take: number,
@@ -113,9 +114,50 @@ export const paginateByFilters = async (
     },
   })
 }
+
+export const getLatestSkillMapRating = async (
+  skip: number,
+  take: number,
+  where: Prisma.skill_map_resultsWhereInput
+) => {
+  return await prisma.skill_map_results.findMany({
+    skip,
+    take,
+    select: {
+      id: true,
+      skill_map_administration_id: true,
+      status: true,
+      submitted_date: true,
+      users: {
+        select: {
+          id: true,
+          first_name: true,
+          last_name: true,
+        },
+      },
+    },
+    where,
+    orderBy: {
+      submitted_date: "desc",
+    },
+    distinct: ["user_id"],
+  })
+}
+
 export const countAllByFilters = async (where: Prisma.skill_map_resultsWhereInput) => {
   const count = await prisma.skill_map_results.count({
     where,
   })
   return count
+}
+
+// NOTE: count + distinct does not work in prisma
+export const countAllByFiltersDistinctByUser = async (
+  where: Prisma.skill_map_resultsWhereInput
+) => {
+  const skillMapResults = await prisma.skill_map_results.groupBy({
+    by: ["user_id"],
+    where,
+  })
+  return skillMapResults.length
 }
