@@ -42,3 +42,16 @@ export const getUserSkillMap = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+export const getUserSkillMapBySkillId = async (req: Request, res: Response) => {
+  try {
+    const { id, skill_id } = req.params
+    const user_skill_map = await UserService.getUserSkillMapBySkillId(
+      parseInt(id),
+      parseInt(skill_id)
+    )
+    res.json(user_skill_map)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}

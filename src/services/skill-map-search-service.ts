@@ -1,48 +1,64 @@
+import { type Prisma } from "@prisma/client"
 import * as SkillMapSearchRepository from "../repositories/skill-map-search-repository"
-import * as SkillRepository from "../repositories/skill-repository"
+import { SkillMapResultStatus } from "../types/skill-map-result-type"
+import { constructNameFilter } from "../utils/format-filter"
 
-export const getAllByFilters = async (name: string, skill: string, page: string) => {
+export const getAllByFilters = async (
+  name: string,
+  skill: string,
+  sortBy: string,
+  page: string
+) => {
   const itemsPerPage = 10
   const parsedPage = parseInt(page)
   const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
-  const allRecentRating = await SkillMapSearchRepository.getLatestSkillMapRating(name)
-
-  const filteredResultsBySkill = []
-  for (const result of allRecentRating) {
-    if (skill !== undefined && skill.toLowerCase() !== "all") {
-      const skills = skill.split(",")
-      const matchesSkill = await Promise.all(
-        result.skill_map_ratings.map(async (rating) => {
-          const skillDetails = await SkillRepository.getById(rating.skill_id ?? 0)
-          const skillName = skillDetails?.name ?? ""
-          return skills.some((s) => skillName.toLowerCase() === s.toLowerCase())
-        })
-      )
-      if (matchesSkill.some(Boolean)) {
-        filteredResultsBySkill.push(result)
-      }
-    } else {
-      filteredResultsBySkill.push(result)
-    }
+  const where: Prisma.skill_map_ratingsWhereInput = {
+    skill_map_results: {
+      status: {
+        in: [SkillMapResultStatus.Submitted, SkillMapResultStatus.Closed],
+      },
+    },
   }
 
-  const totalItems = filteredResultsBySkill.length
-  const totalPages = Math.ceil(totalItems / itemsPerPage)
-  const paginatedResults = filteredResultsBySkill.slice(
+  if (name !== undefined) {
+    const whereClause = constructNameFilter(name)
+    Object.assign(where, {
+      skill_map_results: {
+        ...where.skill_map_results,
+        users: {
+          ...whereClause,
+        },
+      },
+    })
+  }
+
+  if (skill !== undefined && skill.toLowerCase() !== "all") {
+    Object.assign(where, {
+      skills: {
+        name: skill,
+      },
+    })
+  }
+
+  const skillMapRatings = await SkillMapSearchRepository.getLatestSkillMapRating(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    itemsPerPage,
+    where,
+    sortBy
   )
 
-  const pageInfo = {
-    hasPreviousPage: currentPage > 1,
-    hasNextPage: currentPage < totalPages,
-    totalPages,
-    totalItems,
-  }
+  const totalItems = await SkillMapSearchRepository.countAllByFiltersDistinctBySkill(where)
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
 
   return {
-    data: paginatedResults,
-    pageInfo,
+    data: skillMapRatings,
+    pageInfo: {
+      hasPreviousPage: currentPage > 1,
+      hasNextPage: currentPage < totalPages,
+      currentPage,
+      totalPages,
+      totalItems,
+    },
   }
 }

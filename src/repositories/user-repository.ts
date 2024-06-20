@@ -151,6 +151,55 @@ export const getAllRecentRating = async (userId: number) => {
   })
 }
 
+export const getUserSkillMapBySkillId = async (userId: number, skillId: number) => {
+  return await prisma.skill_map_administrations.findMany({
+    where: {
+      status: {
+        notIn: [SkillMapAdministrationStatus.Cancelled],
+      },
+      skill_map_results: {
+        some: {
+          user_id: userId,
+        },
+      },
+    },
+    select: {
+      skill_map_period_end_date: true,
+      skill_map_results: {
+        where: {
+          user_id: userId,
+        },
+        select: {
+          skill_map_ratings: {
+            select: {
+              skill_id: true,
+              skills: {
+                select: {
+                  name: true,
+                },
+              },
+              answer_options: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+              created_at: true,
+            },
+            where: {
+              skill_id: skillId,
+              status: "Submitted",
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      skill_map_period_end_date: "asc",
+    },
+  })
+}
+
 export const getLatestSkillMapRating = async () => {
   return await prisma.skill_map_results.findMany({
     where: {

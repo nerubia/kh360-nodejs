@@ -1232,6 +1232,7 @@ export const submitSkillMapRatings = async (
     skillMapRatings.push({
       skill_map_administration_id: skillMapAdministration.id,
       skill_map_result_id: skillMapResult.id,
+      user_id: user.id,
       skill_id: skillMapRating.skill_id,
       skill_category_id: skillMapRating.skill_category_id as number,
       answer_option_id: skillMapRating.answer_option_id as number,
@@ -1270,6 +1271,7 @@ export const submitSkillMapRatings = async (
         skillMapRatings.push({
           skill_map_administration_id: latestSubmittedSkillMapResult.skill_map_administration_id,
           skill_map_result_id: latestSubmittedSkillMapResult.id,
+          user_id: user.id,
           skill_id: newSkillMapRating.skill_id,
           skill_category_id: newSkillMapRating.skill_category_id as number,
           answer_option_id: newSkillMapRating.answer_option_id as number,
@@ -1294,6 +1296,10 @@ export const getMySkillMap = async (userId: number) => {
 
 export const getUserSkillMap = async (userId: number) => {
   return await UserRepository.getAllRecentRating(userId)
+}
+
+export const getUserSkillMapBySkillId = async (userId: number, skillId: number) => {
+  return await UserRepository.getUserSkillMapBySkillId(userId, skillId)
 }
 
 export const getLatestSkillMapRating = async () => {
