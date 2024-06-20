@@ -238,7 +238,7 @@ export const sendReminderByRespondent = async (
   const emailTemplate = await EmailTemplateRepository.getByTemplateType("Skill Map Reminder")
 
   if (emailTemplate === null) {
-    throw new CustomError("Default email template not found", 400)
+    throw new CustomError("Template not found", 400)
   }
 
   const respondent = await UserRepository.getById(user_id)
