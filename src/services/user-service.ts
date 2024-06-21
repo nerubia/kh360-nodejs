@@ -907,7 +907,10 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
 
   let userSkillMapRatings: unknown[] = []
 
-  if (skillMapResult.status === SkillMapResultStatus.Submitted) {
+  if (
+    skillMapResult.status === SkillMapResultStatus.Submitted ||
+    skillMapResult.status === SkillMapResultStatus.Closed
+  ) {
     userSkillMapRatings = await Promise.all(
       userCurrentSkillMapRatings.map(async (skillMapRating) => {
         const skill = await SkillRepository.getById(skillMapRating.skill_id ?? 0)
