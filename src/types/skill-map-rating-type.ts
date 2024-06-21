@@ -4,6 +4,7 @@ export interface SkillMapRating {
   skill_map_result_id: number
   skill_id: number
   skill_category_id?: number | string
+  other_skill_name?: string
   answer_option_id?: number | string
   status: string
   created_by_id: number
