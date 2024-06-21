@@ -66,6 +66,7 @@ export const getAllByFilters = async (where: Prisma.skill_map_ratingsWhereInput)
       skills: true,
       skill_categories: true,
       skill_category_id: true,
+      other_skill_name: true,
       answer_option_id: true,
     },
     where,
@@ -334,6 +335,9 @@ export const getPreviousSkillMapRatings = async (
     where: {
       skill_map_administration_id,
       skill_map_result_id,
+      skill_category_id: {
+        not: null,
+      },
     },
     distinct: ["skill_id"],
   })

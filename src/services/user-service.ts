@@ -916,9 +916,6 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
     userSkillMapRatings = await Promise.all(
       userCurrentSkillMapRatings.map(async (skillMapRating) => {
         const skill = await SkillRepository.getById(skillMapRating.skill_id ?? 0)
-        if (skill === null) {
-          return null
-        }
         const previousSkillMapRating = userPreviousSkillMapRatings.find(
           (uniqueSkillMapRating) => uniqueSkillMapRating.skill_id === skillMapRating.skill_id
         )
@@ -930,6 +927,7 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
         )
         return {
           ...skill,
+          other_skill_name: skillMapRating.other_skill_name,
           previous_rating: previousAnswerOption,
           rating: answerOption,
         }
@@ -1233,18 +1231,30 @@ export const submitSkillMapRatings = async (
     if (skillMapRating.answer_option_id === null || skillMapRating.answer_option_id === undefined) {
       throw new CustomError("Must rate all skills.", 400)
     }
-
-    skillMapRatings.push({
-      skill_map_administration_id: skillMapAdministration.id,
-      skill_map_result_id: skillMapResult.id,
-      user_id: user.id,
-      skill_id: skillMapRating.skill_id,
-      skill_category_id: skillMapRating.skill_category_id as number,
-      answer_option_id: skillMapRating.answer_option_id as number,
-      status: SkillMapRatingStatus.Submitted,
-      created_at: currentDate,
-      updated_at: currentDate,
-    })
+    if (skillMapRating.skill_category_id !== undefined) {
+      skillMapRatings.push({
+        skill_map_administration_id: skillMapAdministration.id,
+        skill_map_result_id: skillMapResult.id,
+        user_id: user.id,
+        skill_id: skillMapRating.skill_id,
+        skill_category_id: skillMapRating.skill_category_id as number,
+        answer_option_id: skillMapRating.answer_option_id as number,
+        status: SkillMapRatingStatus.Submitted,
+        created_at: currentDate,
+        updated_at: currentDate,
+      })
+    } else {
+      skillMapRatings.push({
+        skill_map_administration_id: skillMapAdministration.id,
+        skill_map_result_id: skillMapResult.id,
+        user_id: user.id,
+        other_skill_name: skillMapRating.other_skill_name,
+        answer_option_id: skillMapRating.answer_option_id as number,
+        status: SkillMapRatingStatus.Submitted,
+        created_at: currentDate,
+        updated_at: currentDate,
+      })
+    }
   }
 
   const latestSkillMapAdministrations = await SkillMapAdministrationRepository.getAllByFilters({

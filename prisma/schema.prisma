@@ -1152,6 +1152,7 @@ model skill_map_ratings {
   user_id                     Int?
   skill_id                    Int?
   skill_category_id           Int?
+  other_skill_name            String?
   answer_option_id            Int?
   comments                    String?                    @db.Text
   status                      String?                    @db.VarChar(255)
