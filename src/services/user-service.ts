@@ -910,7 +910,7 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
   const isOngoing = skillMapResult.status === SkillMapResultStatus.Ongoing
   const isClosed = skillMapResult.status === SkillMapResultStatus.Closed
   const isSubmitted = skillMapResult.status === SkillMapResultStatus.Submitted
-  const isReopened = isOngoing && userPreviousSkillMapRatings.length > 0
+  const isReopened = isOngoing && userCurrentSkillMapRatings.length > 0
 
   if (isClosed || isSubmitted || isReopened) {
     userSkillMapRatings = await Promise.all(
@@ -935,7 +935,7 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
     )
   }
 
-  if (isOngoing) {
+  if (isOngoing && !isReopened) {
     userSkillMapRatings = await Promise.all(
       userPreviousSkillMapRatings.map(async (skillMapRating) => {
         const skill = await SkillRepository.getById(skillMapRating.skill_id ?? 0)
