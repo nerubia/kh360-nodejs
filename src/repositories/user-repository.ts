@@ -1,6 +1,7 @@
 import { type Prisma } from "@prisma/client"
 import prisma from "../utils/prisma"
 import { SkillMapAdministrationStatus } from "../types/skill-map-administration-type"
+import { SkillMapResultStatus } from "../types/skill-map-result-type"
 
 export const getById = async (id: number) => {
   return await prisma.users.findUnique({
@@ -120,6 +121,9 @@ export const getAllRecentRating = async (userId: number) => {
       skill_map_results: {
         where: {
           user_id: userId,
+          status: {
+            in: [SkillMapResultStatus.Submitted, SkillMapResultStatus.Closed],
+          },
         },
         select: {
           skill_map_ratings: {
