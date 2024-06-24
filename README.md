@@ -64,3 +64,27 @@ SENDGRID_FROM_ADDRESS=from@yourdomain.com
 ```
 npm run dev
 ```
+
+### TO MAKE NEW MIGRATION
+
+steps here 👇
+This command is used for creating and applying migrations during development.
+
+```
+npx prisma migrate dev
+```
+
+### TO APPLY NEW MIGRATIONS
+
+steps here 👇
+This command is used for applying all pending migrations to the production database.
+
+```
+npx prisma migrate deploy
+```
+
+This command is used to generate the Prisma Client based on your Prisma schema. It creates the necessary client code that allows you to interact with your database using Prisma in your application.
+
+```
+npx prisma generate
+```
