@@ -927,6 +927,7 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
         )
         return {
           ...skill,
+          skill_rating_id: skillMapRating.id,
           other_skill_name: skillMapRating.other_skill_name,
           previous_rating: previousAnswerOption,
           rating: answerOption,
