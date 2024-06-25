@@ -1,6 +1,8 @@
+import * as AnswerOptionRepository from "../repositories/answer-option-repository"
 import * as SkillMapAdministrationRepository from "../repositories/skill-map-administration-repository"
 import * as SkillMapResultRepository from "../repositories/skill-map-result-repository"
 import * as SkillMapRatingRepository from "../repositories/skill-map-rating-repository"
+import * as SkillRepository from "../repositories/skill-repository"
 import * as UserRepository from "../repositories/user-repository"
 import { sendMail } from "../utils/sendgrid"
 import {
@@ -11,6 +13,10 @@ import CustomError from "../utils/custom-error"
 import { format } from "date-fns"
 import { SkillMapRatingStatus } from "../types/skill-map-rating-type"
 import { SkillMapResultStatus } from "../types/skill-map-result-type"
+import XLSX from "xlsx"
+import { parseSkillMapData } from "../utils/skill-map-admin"
+import { type UserToken } from "../types/user-token-type"
+import { type Prisma } from "@prisma/client"
 
 export const getAllByFilters = async (name: string, status: string, page: string) => {
   const itemsPerPage = 10
@@ -66,6 +72,104 @@ export const getAllByStatusAndEndDate = async (status: string, date: Date) => {
 
 export const create = async (data: SkillMapAdministration) => {
   return await SkillMapAdministrationRepository.create(data)
+}
+
+export const upload = async (user: UserToken, data: SkillMapAdministration, file: string) => {
+  if (file === undefined) {
+    throw new CustomError("Invalid file", 400)
+  }
+
+  const newSkillMapAdmin = await SkillMapAdministrationRepository.create(data)
+
+  const prefix = /^data:application\/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,/
+
+  if (!prefix.test(file)) {
+    throw new CustomError("Invalid file", 400)
+  }
+
+  const base64String = file.replace(prefix, "")
+  const decodedFile = Buffer.from(base64String, "base64")
+
+  const workbook = XLSX.read(decodedFile)
+  const targetSheetName = "Sample CSV Data for Skill Map A"
+  const sheet_name_list = workbook.SheetNames
+
+  const skills = await SkillRepository.getAllSkills({})
+  const answerOptions = await AnswerOptionRepository.getAllByFilters({})
+
+  const skillMapRatings: Prisma.skill_map_ratingsUncheckedCreateInput[] = []
+  const currentDate = new Date()
+
+  for (const sheetName of sheet_name_list) {
+    if (sheetName === targetSheetName) {
+      const worksheet = workbook.Sheets[sheetName]
+      const worksheetJson: never[] = XLSX.utils.sheet_to_json(worksheet, { raw: true })
+
+      for (const jsonData of worksheetJson) {
+        const submittedDate = jsonData["Submitted Date"]
+        const email = jsonData["Email Address"]
+
+        const existingUser = await UserRepository.getByEmail(email)
+
+        if (existingUser !== null) {
+          const skillMapResult = await SkillMapResultRepository.create({
+            skill_map_administration_id: newSkillMapAdmin.id,
+            user_id: existingUser.id,
+            submitted_date: new Date(submittedDate),
+            status: SkillMapResultStatus.Closed,
+            created_by_id: user.id,
+          })
+
+          const jsonDataArray = Object.keys(jsonData)
+
+          for (const key of jsonDataArray) {
+            const parsedSkills = parseSkillMapData(key, jsonData[key])
+            if (parsedSkills !== null) {
+              const skill = skills.find((skill) => skill.name === parsedSkills.skill)
+              const answerOption = answerOptions.find(
+                (answerOption) => answerOption.name === parsedSkills.rating
+              )
+              if (answerOption !== undefined) {
+                skillMapRatings.push({
+                  skill_map_administration_id: newSkillMapAdmin.id,
+                  skill_map_result_id: skillMapResult.id,
+                  user_id: existingUser.id,
+                  skill_id: skill !== undefined ? skill.id : null,
+                  skill_category_id: skill !== undefined ? skill.skill_category_id : null,
+                  other_skill_name: skill === undefined ? parsedSkills.skill : null,
+                  answer_option_id: answerOption.id,
+                  status: SkillMapRatingStatus.Submitted,
+                  created_at: currentDate,
+                  updated_at: currentDate,
+                })
+              }
+            }
+          }
+
+          const otherSkillData = jsonData[
+            "Other technologies not listed, please enumerate."
+          ] as string
+          const otherSkills = otherSkillData.split(",")
+
+          for (const otherSkill of otherSkills) {
+            skillMapRatings.push({
+              skill_map_administration_id: newSkillMapAdmin.id,
+              skill_map_result_id: skillMapResult.id,
+              user_id: user.id,
+              other_skill_name: otherSkill,
+              status: SkillMapRatingStatus.Submitted,
+              created_at: currentDate,
+              updated_at: currentDate,
+            })
+          }
+        }
+      }
+    }
+  }
+
+  await SkillMapRatingRepository.createMany(skillMapRatings)
+
+  return newSkillMapAdmin
 }
 
 export const updateById = async (id: number, data: SkillMapAdministration) => {

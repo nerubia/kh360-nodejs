@@ -2,7 +2,10 @@ import { ValidationError } from "yup"
 import { type Request, type Response } from "express"
 import * as SkillMapAdministrationService from "../../services/skill-map-administration-service"
 import CustomError from "../../utils/custom-error"
-import { createSkillMapAdministrationSchema } from "../../utils/validation/skill-map-administration-schema"
+import {
+  createSkillMapAdministrationSchema,
+  uploadSkillMapAdministrationSchema,
+} from "../../utils/validation/skill-map-administration-schema"
 import { SkillMapAdministrationStatus } from "../../types/skill-map-administration-type"
 
 /**
@@ -90,6 +93,66 @@ export const store = async (req: Request, res: Response) => {
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
+    }
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Upload a new skill map administration.
+ * @param req.body.name - Name.
+ * @param req.body.skill_map_period_start_date - Skill map period start date.
+ * @param req.body.skill_map_period_end_date - Skill map period end date.
+ * @param req.body.skill_map_schedule_start_date - Skill map schedule start date.
+ * @param req.body.skill_map_schedule_end_date - Skill map schedule end date.
+ * @param req.body.remarks - Remarks.
+ * @param req.body.file - File.
+ */
+export const upload = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+
+    const {
+      name,
+      skill_map_period_start_date,
+      skill_map_period_end_date,
+      skill_map_schedule_start_date,
+      skill_map_schedule_end_date,
+      remarks,
+      file,
+    } = req.body
+
+    await uploadSkillMapAdministrationSchema.validate({
+      name,
+      skill_map_period_start_date,
+      skill_map_period_end_date,
+      skill_map_schedule_start_date,
+      skill_map_schedule_end_date,
+      remarks,
+      file,
+    })
+
+    const newSkillMap = await SkillMapAdministrationService.upload(
+      user,
+      {
+        name,
+        skill_map_period_start_date: new Date(skill_map_period_start_date),
+        skill_map_period_end_date: new Date(skill_map_period_end_date),
+        skill_map_schedule_start_date: new Date(skill_map_schedule_start_date),
+        skill_map_schedule_end_date: new Date(skill_map_schedule_end_date),
+        remarks,
+        status: SkillMapAdministrationStatus.Closed,
+      },
+      file
+    )
+
+    res.json(newSkillMap)
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
     }
     res.status(500).json({ message: "Something went wrong" })
   }

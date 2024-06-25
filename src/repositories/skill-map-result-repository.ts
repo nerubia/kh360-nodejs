@@ -1,6 +1,12 @@
 import prisma from "../utils/prisma"
 import { type Prisma } from "@prisma/client"
 
+export const create = async (data: Prisma.skill_map_resultsUncheckedCreateInput) => {
+  return await prisma.skill_map_results.create({
+    data,
+  })
+}
+
 export const createMany = async (data: Prisma.skill_map_resultsUncheckedCreateInput[]) => {
   return await prisma.skill_map_results.createMany({
     data,
