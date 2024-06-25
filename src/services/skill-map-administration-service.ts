@@ -97,9 +97,13 @@ export const upload = async (user: UserToken, data: SkillMapAdministration, file
   const decodedFile = Buffer.from(base64String, "base64")
   const records = parse(decodedFile, { columns: true })
 
+  const successList: string[] = []
+  const errorList: string[] = []
+
   for (const record of records) {
     const submittedDate = record["Submitted Date"]
     const email = record["Email Address"]
+    const otherSkillData = record["Other technologies not listed, please enumerate."] as string
 
     const existingUser = await UserRepository.getByEmail(email)
 
@@ -108,6 +112,7 @@ export const upload = async (user: UserToken, data: SkillMapAdministration, file
         skill_map_administration_id: newSkillMapAdmin.id,
         user_id: existingUser.id,
         submitted_date: new Date(submittedDate),
+        comments: otherSkillData,
         status: SkillMapResultStatus.Closed,
         created_by_id: user.id,
       })
@@ -137,27 +142,23 @@ export const upload = async (user: UserToken, data: SkillMapAdministration, file
           }
         }
       }
-
-      const otherSkillData = record["Other technologies not listed, please enumerate."] as string
-      const otherSkills = otherSkillData.split(",")
-
-      for (const otherSkill of otherSkills) {
-        skillMapRatings.push({
-          skill_map_administration_id: newSkillMapAdmin.id,
-          skill_map_result_id: skillMapResult.id,
-          user_id: user.id,
-          other_skill_name: otherSkill,
-          status: SkillMapRatingStatus.Submitted,
-          created_at: currentDate,
-          updated_at: currentDate,
-        })
+      if (!successList.includes(email)) {
+        successList.push(email)
+      }
+    } else {
+      if (!errorList.includes(email)) {
+        errorList.push(email)
       }
     }
   }
 
   await SkillMapRatingRepository.createMany(skillMapRatings)
 
-  return newSkillMapAdmin
+  return {
+    data: newSkillMapAdmin,
+    successList,
+    errorList,
+  }
 }
 
 export const updateById = async (id: number, data: SkillMapAdministration) => {
