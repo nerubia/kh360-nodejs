@@ -12,3 +12,4 @@ migration_lock.toml
 
 #
 app.log
+.DS_Store
