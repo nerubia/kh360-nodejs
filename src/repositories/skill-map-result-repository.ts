@@ -61,6 +61,17 @@ export const updateStatusById = async (id: number, status: string) => {
   })
 }
 
+export const addComment = async (id: number, comment: string) => {
+  return await prisma.skill_map_results.update({
+    where: {
+      id,
+    },
+    data: {
+      comments: comment,
+    },
+  })
+}
+
 export const updateById = async (id: number, data: Prisma.skill_map_resultsUpdateInput) => {
   await prisma.skill_map_results.update({
     where: {
