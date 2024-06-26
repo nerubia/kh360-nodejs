@@ -164,9 +164,9 @@ export const submitSkillMapRatings = async (req: Request, res: Response) => {
   try {
     const user = req.user
     const { id } = req.params
-    const { skill_map_ratings } = req.body
+    const { skill_map_ratings, comment } = req.body
 
-    await UserService.submitSkillMapRatings(parseInt(id), user, skill_map_ratings)
+    await UserService.submitSkillMapRatings(parseInt(id), user, skill_map_ratings, comment)
 
     res.json({ id })
   } catch (error) {

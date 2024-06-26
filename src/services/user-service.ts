@@ -1187,7 +1187,8 @@ export const submitSurveyAnswers = async (
 export const submitSkillMapRatings = async (
   skill_map_administration_id: number,
   user: UserToken,
-  skill_map_ratings: SkillMapRating[]
+  skill_map_ratings: SkillMapRating[],
+  comment: string
 ) => {
   if (skill_map_ratings.length === 0) {
     throw new CustomError("Please add and rate atleast one skill.", 400)
@@ -1301,6 +1302,7 @@ export const submitSkillMapRatings = async (
 
   await SkillMapRatingRepository.createMany(skillMapRatings)
   await SkillMapResultRepository.updateStatusById(skillMapResult.id, SkillMapResultStatus.Submitted)
+  await SkillMapResultRepository.addComment(skillMapResult.id, comment)
 }
 
 export const getMySkillMap = async (userId: number) => {
