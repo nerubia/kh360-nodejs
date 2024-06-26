@@ -959,6 +959,7 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
     user_skill_map_ratings: userSkillMapRatings,
     skill_map_administration: skillMapAdministration,
     skill_map_result_status: skillMapResult.status,
+    comments: skillMapResult.comments,
   }
 }
 
