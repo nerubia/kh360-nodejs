@@ -147,6 +147,7 @@ export const create = async (data: SkillMapAdministration) => {
     },
   })
 }
+
 export const updateById = async (id: number, data: SkillMapAdministration) => {
   return await prisma.skill_map_administrations.update({
     where: {

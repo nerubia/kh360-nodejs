@@ -153,6 +153,10 @@ export const upload = async (user: UserToken, data: SkillMapAdministration, file
   }
 
   await SkillMapRatingRepository.createMany(skillMapRatings)
+  await SkillMapAdministrationRepository.updateStatusById(
+    newSkillMapAdmin.id,
+    SkillMapAdministrationStatus.Closed
+  )
 
   return {
     data: newSkillMapAdmin,
