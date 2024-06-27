@@ -19,6 +19,9 @@ export const getAllByFilters = async (
         in: [SkillMapResultStatus.Submitted, SkillMapResultStatus.Closed],
       },
     },
+    skill_id: {
+      not: null,
+    },
   }
 
   if (name !== undefined) {
