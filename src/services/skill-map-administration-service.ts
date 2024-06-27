@@ -120,13 +120,13 @@ export const upload = async (user: UserToken, data: SkillMapAdministration, file
       const jsonDataArray = Object.keys(record)
 
       for (const key of jsonDataArray) {
-        const parsedSkills = parseSkillMapData(key, record[key])
-        if (parsedSkills !== null) {
-          const skill = skills.find((skill) => skill.name === parsedSkills.skill)
-          const answerOption = answerOptions.find(
-            (answerOption) => answerOption.name === parsedSkills.rating
-          )
-          if (answerOption !== undefined) {
+        const value = record[key]
+        const answerOption = answerOptions.find((answerOption) => answerOption.name === value)
+        if (answerOption !== undefined) {
+          const parsedSkills = parseSkillMapData(key, record[key])
+          // NOTE: Valid format. Ex: Programming Language [Javascript]
+          if (parsedSkills !== null) {
+            const skill = skills.find((skill) => skill.name === parsedSkills.skill)
             skillMapRatings.push({
               skill_map_administration_id: newSkillMapAdmin.id,
               skill_map_result_id: skillMapResult.id,
@@ -134,6 +134,20 @@ export const upload = async (user: UserToken, data: SkillMapAdministration, file
               skill_id: skill !== undefined ? skill.id : null,
               skill_category_id: skill !== undefined ? skill.skill_category_id : null,
               other_skill_name: skill === undefined ? parsedSkills.skill : null,
+              answer_option_id: answerOption.id,
+              status: SkillMapRatingStatus.Submitted,
+              created_at: currentDate,
+              updated_at: currentDate,
+            })
+          } else {
+            // NOTE: Invalid format. Ex: Custom Skill
+            skillMapRatings.push({
+              skill_map_administration_id: newSkillMapAdmin.id,
+              skill_map_result_id: skillMapResult.id,
+              user_id: existingUser.id,
+              skill_id: null,
+              skill_category_id: null,
+              other_skill_name: key,
               answer_option_id: answerOption.id,
               status: SkillMapRatingStatus.Submitted,
               created_at: currentDate,
