@@ -31,6 +31,7 @@ router.post("/external-users", UserController.storeExternalUser)
 router.post("/survey-results", UserController.createSurveyResult)
 router.get("/survey-questions/", UserController.getSurveyQuestions)
 router.get("/survey-questions/companions/:survey_result_id", UserController.getCompanionQuestions)
+router.post("/survey-administrations/:id/save-as-draft", UserController.saveSurveyAnswersAsDraft)
 router.post("/survey-administrations/:id/submit-survey", UserController.submitSurveyAnswers)
 
 router.get("/skill-map-administrations", UserController.getSkillMapAdministrations)
