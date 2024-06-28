@@ -398,6 +398,40 @@ export const getSurveyQuestions = async (req: Request, res: Response) => {
 }
 
 /**
+ * Save answers and comments as draft by ID
+ * @param req.params.id - The unique ID of the survey result.
+ * @param req.body.survey_answers - Survey answers.
+ * @param req.body.is_external - Is external.
+ */
+
+export const saveSurveyAnswersAsDraft = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+    const { id } = req.params
+    const { survey_answers, is_external, survey_result_id } = req.body
+
+    await UserService.saveSurveyAnswersAsDraft(
+      parseInt(id),
+      user,
+      survey_answers,
+      is_external as boolean,
+      parseInt(survey_result_id)
+    )
+
+    res.json({ id })
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
  * Save answers and comments by ID
  * @param req.params.id - The unique ID of the survey result.
  * @param req.body.survey_answers - Survey answers.

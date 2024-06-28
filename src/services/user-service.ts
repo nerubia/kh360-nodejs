@@ -1074,6 +1074,117 @@ export const getSurveyQuestions = async (survey_administration_id: number, user:
   }
 }
 
+export const saveSurveyAnswersAsDraft = async (
+  survey_administration_id: number,
+  user: UserToken,
+  survey_answers: SurveyAnswer[],
+  is_external: boolean,
+  survey_result_id: number
+) => {
+  if (survey_answers.length === 0) {
+    throw new CustomError("Please select atleast one answer.", 400)
+  }
+
+  const surveyResult = await SurveyResultRepository.getByFilters({
+    id: is_external ? survey_result_id : undefined,
+    survey_administration_id,
+    user_id: user.id,
+  })
+
+  if (surveyResult === null) {
+    throw new CustomError("Invalid survey result.", 400)
+  }
+
+  if (
+    surveyResult.status !== SurveyResultStatus.Ongoing &&
+    surveyResult.status !== SurveyResultStatus.Open
+  ) {
+    throw new CustomError("Only ongoing or open statuses allowed.", 400)
+  }
+
+  const surveyAdministration =
+    await SurveyAdministrationRepository.getById(survey_administration_id)
+
+  if (surveyAdministration === null) {
+    throw new CustomError("Invalid survey administration.", 400)
+  }
+
+  const existingSurveyAnswers = await SurveyAnswerRepository.getAllByFilters({
+    survey_result_id: surveyResult.id,
+  })
+
+  for (const existingSurveyAnswer of existingSurveyAnswers) {
+    await SurveyAnswerRepository.deleteById(existingSurveyAnswer.id)
+  }
+
+  for (const surveyAnswer of survey_answers) {
+    const templateQuestionId = parseInt(surveyAnswer.survey_template_question_id as string)
+    const templateAnswerId = parseInt(surveyAnswer.survey_template_answer_id as string)
+
+    const surveyTemplateAnswer = await SurveyTemplateAnswerRepository.getById(
+      isNaN(templateAnswerId) ? 0 : templateAnswerId
+    )
+
+    const surveyQuestion = await SurveyTemplateQuestionRepository.getByFilters({
+      id: templateQuestionId,
+      is_active: true,
+    })
+
+    const surveyQuestionRules = await SurveyTemplateQuestionRuleRepository.getAllByFilters({
+      survey_template_question_id: surveyQuestion?.id,
+    })
+
+    if (surveyQuestionRules !== undefined) {
+      const maxLimitRule = surveyQuestionRules.find((rule) => rule.rule_key === "max_limit")
+
+      if (maxLimitRule !== undefined) {
+        const maxLimit = parseInt(maxLimitRule.rule_value as string)
+        if (
+          surveyTemplateAnswer?.amount !== null &&
+          surveyTemplateAnswer?.amount !== undefined &&
+          surveyTemplateAnswer.amount > maxLimit
+        ) {
+          throw new CustomError("Answer exceeded max limit.", 400)
+        }
+      }
+    }
+
+    const surveyAnswers: Prisma.survey_answersUncheckedCreateInput[] = []
+    const currentDate = new Date()
+
+    surveyAnswers.push({
+      survey_administration_id,
+      survey_result_id: surveyResult.id,
+      user_id: user.id,
+      external_user_id: is_external ? surveyResult.external_respondent_id : null,
+      survey_template_id: surveyAdministration.survey_template_id ?? 0,
+      survey_template_answer_id: templateAnswerId,
+      survey_template_question_id: templateQuestionId,
+      status: SurveyAnswerStatus.Draft,
+      created_by_id: user.id,
+      updated_by_id: user.id,
+      created_at: currentDate,
+      updated_at: currentDate,
+    })
+
+    await SurveyAnswerRepository.createMany(surveyAnswers)
+
+    const answersToQuestion = await SurveyAnswerRepository.countByFilters({
+      survey_template_question_id: surveyQuestion?.id,
+      survey_result_id: surveyResult.id,
+      survey_template_answer_id: {
+        not: null,
+      },
+    })
+
+    if (surveyQuestion?.is_required === true && answersToQuestion === 0) {
+      throw new CustomError("Must answer required questions.", 400)
+    }
+  }
+
+  await SurveyResultRepository.updateStatusById(surveyResult.id, SurveyResultStatus.Draft)
+}
+
 export const submitSurveyAnswers = async (
   survey_administration_id: number,
   user: UserToken,
