@@ -105,7 +105,11 @@ export const upload = async (user: UserToken, data: SkillMapAdministration, file
     const email = record["Email Address"]
     const otherSkillData = record["Other technologies not listed, please enumerate."] as string
 
-    if (email === undefined || submittedDate === undefined) {
+    if (email === undefined || email === "") {
+      throw new CustomError("Invalid data. Please contact admin for assistance.", 400)
+    }
+
+    if (submittedDate === undefined || submittedDate === "") {
       throw new CustomError("Invalid data. Please contact admin for assistance.", 400)
     }
 
