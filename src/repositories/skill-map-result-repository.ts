@@ -152,6 +152,11 @@ export const getLatestSkillMapRating = async (
           last_name: true,
         },
       },
+      skill_map_administrations: {
+        select: {
+          skill_map_period_end_date: true,
+        },
+      },
     },
     where,
     orderBy: {
