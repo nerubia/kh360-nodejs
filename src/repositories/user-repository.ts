@@ -126,6 +126,7 @@ export const getAllRecentRating = async (userId: number) => {
           },
         },
         select: {
+          comments: true,
           skill_map_ratings: {
             select: {
               skill_id: true,
