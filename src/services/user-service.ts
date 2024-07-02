@@ -1102,9 +1102,10 @@ export const saveSurveyAnswersAsDraft = async (
 
   if (
     surveyResult.status !== SurveyResultStatus.Ongoing &&
-    surveyResult.status !== SurveyResultStatus.Open
+    surveyResult.status !== SurveyResultStatus.Open &&
+    surveyResult.status !== SurveyResultStatus.Draft
   ) {
-    throw new CustomError("Only ongoing or open statuses allowed.", 400)
+    throw new CustomError("Only ongoing, open or draft statuses allowed.", 400)
   }
 
   const surveyAdministration =
@@ -1213,9 +1214,10 @@ export const submitSurveyAnswers = async (
 
   if (
     surveyResult.status !== SurveyResultStatus.Ongoing &&
-    surveyResult.status !== SurveyResultStatus.Open
+    surveyResult.status !== SurveyResultStatus.Open &&
+    surveyResult.status !== SurveyResultStatus.Draft
   ) {
-    throw new CustomError("Only ongoing or open statuses allowed.", 400)
+    throw new CustomError("Only ongoing, open or draft statuses allowed.", 400)
   }
 
   const surveyAdministration =

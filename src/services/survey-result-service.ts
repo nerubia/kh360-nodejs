@@ -589,6 +589,9 @@ export const getResultsByRespondent = async (id: number) => {
   const surveyResults = await SurveyResultRepository.getAllByFilters({
     survey_administration_id: id,
     external_respondent_id: null,
+    status: {
+      notIn: [SurveyResultStatus.Draft],
+    },
   })
 
   const companionResults = await SurveyResultRepository.getAllByFilters({
