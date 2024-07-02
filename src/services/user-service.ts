@@ -819,13 +819,14 @@ export const getSkillMapAdministrations = async (user: UserToken, page: number) 
   const skillMapAdministrationIds = skillMapResults.map(
     (result) => result.skill_map_administration_id
   )
+  const filterSkillMapAdministrationIds = skillMapAdministrationIds.filter((id) => id != null)
 
   const skillMapAdministrations = await SkillMapAdministrationRepository.paginateByFilters(
     (currentPage - 1) * itemsPerPage,
     itemsPerPage,
     {
       id: {
-        in: skillMapAdministrationIds as number[],
+        in: filterSkillMapAdministrationIds as number[],
       },
       status: {
         in: [SkillMapAdministrationStatus.Ongoing, SkillMapAdministrationStatus.Closed],
@@ -835,7 +836,7 @@ export const getSkillMapAdministrations = async (user: UserToken, page: number) 
 
   const totalItems = await SkillMapAdministrationRepository.countAllByFilters({
     id: {
-      in: skillMapAdministrationIds as number[],
+      in: filterSkillMapAdministrationIds as number[],
     },
     status: SkillMapAdministrationStatus.Ongoing,
   })
