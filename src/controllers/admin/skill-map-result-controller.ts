@@ -153,3 +153,15 @@ export const filterSkillMapResult = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+export const results = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const user = req.user
+
+    const skillMapResults = await SkillMapResultService.getResults(parseInt(id), user)
+    res.json(skillMapResults)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}

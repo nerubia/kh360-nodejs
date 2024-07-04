@@ -37,6 +37,8 @@ export const getAllByFilters = async (where: Prisma.skill_map_resultsWhereInput)
       },
       skill_map_administration_id: true,
       skill_map_ratings: true,
+      submitted_date: true,
+      comments: true,
     },
     where,
   })
