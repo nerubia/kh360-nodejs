@@ -378,8 +378,8 @@ export const getResults = async (id: number, user: UserToken) => {
   }))
 
   let userSkillMapRatings = []
-  const skillMapResults = []
-
+  const skill_map_results = []
+  const other_skills = []
   for (let i = 0; i < skillMapResultsIds.length; i++) {
     const userCurrentSkillMapRatings = await SkillMapRatingRepository.getAllByFilters({
       skill_map_result_id: skillMapResult[i].id,
@@ -419,7 +419,7 @@ export const getResults = async (id: number, user: UserToken) => {
         return {
           ...skill,
           skill_rating_id: skillMapRating.id,
-          other_skill_name: skillMapRating.other_skill_name,
+          other_skill_name: userCurrentSkillMapRatings[i].other_skill_name,
           previous_rating: previousAnswerOption,
           rating: answerOption,
           skill_map_result: {
@@ -430,10 +430,13 @@ export const getResults = async (id: number, user: UserToken) => {
         }
       })
     )
-    skillMapResults.push(userSkillMapRatings)
+    const getOtherSkills = userCurrentSkillMapRatings.filter((s) => s.skill_category_id === null)
+    skill_map_results.push(...userSkillMapRatings)
+    other_skills.push(...getOtherSkills)
   }
   return {
-    skillMapResults,
+    skill_map_results,
+    other_skills,
   }
 }
 
