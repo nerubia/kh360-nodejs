@@ -189,9 +189,15 @@ export const close = async (id: number) => {
   })
 
   for (const surveyResult of surveyResults) {
-    await SurveyResultRepository.updateById(surveyResult.id, {
-      status: SurveyResultStatus.Closed,
-    })
+    if (surveyResult.status === SurveyResultStatus.Draft) {
+      await SurveyResultRepository.updateById(surveyResult.id, {
+        status: SurveyResultStatus.NoResult,
+      })
+    } else {
+      await SurveyResultRepository.updateById(surveyResult.id, {
+        status: SurveyResultStatus.Closed,
+      })
+    }
   }
 
   for (const noAnswerSurveyResult of noAnswerSurveyResults) {
