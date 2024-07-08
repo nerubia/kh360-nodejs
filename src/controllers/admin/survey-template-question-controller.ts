@@ -1,6 +1,7 @@
 import { type Request, type Response } from "express"
 import * as SurveyTemplateQuestionService from "../../services/survey-template-question-service"
 import CustomError from "../../utils/custom-error"
+import logger from "../../utils/logger"
 
 /**
  * List survey template questions based on provided filters.
@@ -19,6 +20,7 @@ export const all = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }

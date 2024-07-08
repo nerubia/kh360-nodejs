@@ -2,6 +2,7 @@ import { type Request, type Response } from "express"
 import { EvaluationStatus } from "../../types/evaluation-type"
 import * as EvaluationService from "../../services/evaluation-service"
 import CustomError from "../../utils/custom-error"
+import logger from "../../utils/logger"
 
 /**
  * List evaluations based on provided filters.
@@ -34,6 +35,7 @@ export const index = async (req: Request, res: Response) => {
 
     res.json(evaluations)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -55,6 +57,7 @@ export const update = async (req: Request, res: Response) => {
     )
     res.json(updateEvaluation)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -72,6 +75,7 @@ export const destroy = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -92,6 +96,7 @@ export const setForEvaluations = async (req: Request, res: Response) => {
       for_evaluation,
     })
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -109,6 +114,7 @@ export const approve = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -126,6 +132,7 @@ export const decline = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }

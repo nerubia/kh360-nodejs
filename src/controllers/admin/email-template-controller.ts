@@ -5,12 +5,14 @@ import * as EmailTemplateService from "../../services/email-template-service"
 import { ValidationError } from "yup"
 import { addEmailTemplate } from "../../utils/validation/email-template-schema"
 import CustomError from "../../utils/custom-error"
+import logger from "../../utils/logger"
 
 export const getDefaultEmailTemplate = async (req: Request, res: Response) => {
   try {
     const emailTemplate = await EmailTemplateService.getDefault()
     res.json(emailTemplate)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -34,6 +36,7 @@ export const index = async (req: Request, res: Response) => {
 
     res.json(emailTemplates)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -76,6 +79,7 @@ export const store = async (req: Request, res: Response) => {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -93,6 +97,7 @@ export const show = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -137,6 +142,7 @@ export const update = async (req: Request, res: Response) => {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -156,6 +162,7 @@ export const destroy = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -168,6 +175,7 @@ export const listTemplateType = async (req: Request, res: Response) => {
     const emailTemplate = await EmailTemplateService.getTemplateTypes()
     res.json(emailTemplate)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }

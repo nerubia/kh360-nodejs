@@ -1,5 +1,6 @@
 import { type Request, type Response } from "express"
 import * as ProjectSkillService from "../../services/project-skill-service"
+import logger from "../../utils/logger"
 
 /**
  * List project skills based on provided filters.
@@ -21,6 +22,7 @@ export const index = async (req: Request, res: Response) => {
 
     res.json(skills)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }

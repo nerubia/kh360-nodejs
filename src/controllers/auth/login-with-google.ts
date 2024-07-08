@@ -3,6 +3,7 @@ import { OAuth2Client } from "google-auth-library"
 import jwt from "jsonwebtoken"
 import ms from "ms"
 import prisma from "../../utils/prisma"
+import logger from "../../utils/logger"
 
 const client = new OAuth2Client(
   process.env.GOOGLE_OAUTH_CLIENT_ID,
@@ -112,6 +113,7 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
       },
     })
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
