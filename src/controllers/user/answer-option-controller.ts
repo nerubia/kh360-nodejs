@@ -1,6 +1,7 @@
 import { type Request, type Response } from "express"
 import * as AnswerOptionService from "../../services/answer-option-service"
 import CustomError from "../../utils/custom-error"
+import logger from "../../utils/logger"
 
 /**
  * Get active answer options by answer name
@@ -17,6 +18,7 @@ export const active = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }

@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken"
 import ms from "ms"
 import * as ExternalUserService from "../../services/external-user-service"
 import CustomError from "../../utils/custom-error"
+import logger from "../../utils/logger"
 
 export const loginAsExternalUser = async (req: Request, res: Response) => {
   try {
@@ -35,6 +36,7 @@ export const loginAsExternalUser = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -48,6 +50,7 @@ export const resendCode = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -61,6 +64,7 @@ export const getExternalUserStatus = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }

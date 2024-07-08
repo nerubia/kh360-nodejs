@@ -7,6 +7,7 @@ import {
   uploadSkillMapAdministrationSchema,
 } from "../../utils/validation/skill-map-administration-schema"
 import { SkillMapAdministrationStatus } from "../../types/skill-map-administration-type"
+import logger from "../../utils/logger"
 
 /**
  *List skill map administrations
@@ -24,6 +25,7 @@ export const index = async (req: Request, res: Response) => {
     )
     res.json(skillMap)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -38,6 +40,7 @@ export const show = async (req: Request, res: Response) => {
     const skillMap = await SkillMapAdministrationService.getById(parseInt(id))
     res.json(skillMap)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -94,6 +97,7 @@ export const store = async (req: Request, res: Response) => {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -154,6 +158,7 @@ export const upload = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -213,6 +218,7 @@ export const update = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -231,6 +237,7 @@ export const destroy = async (req: Request, res: Response) => {
     await SkillMapAdministrationService.deleteById(parseInt(id))
     res.json({ id, message: "Skill Map deleted Successfully" })
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -248,6 +255,7 @@ export const close = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -265,6 +273,7 @@ export const cancel = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -282,6 +291,7 @@ export const reopen = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }

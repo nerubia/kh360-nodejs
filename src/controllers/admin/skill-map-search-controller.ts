@@ -1,5 +1,6 @@
 import { type Request, type Response } from "express"
 import * as SkillMapSearchService from "../../services/skill-map-search-service"
+import logger from "../../utils/logger"
 export const index = async (req: Request, res: Response) => {
   try {
     const { name, skill, sortBy, page } = req.query
@@ -11,6 +12,7 @@ export const index = async (req: Request, res: Response) => {
     )
     res.json(skillMapSearch)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }

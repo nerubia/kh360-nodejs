@@ -137,10 +137,10 @@ export const getSkillMapRatings = async (req: Request, res: Response) => {
 
     res.json(skillMapRatings)
   } catch (error) {
-    logger.error(error)
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -150,6 +150,7 @@ export const getLatestSkillMapResult = async (req: Request, res: Response) => {
     const response = await UserService.getLatestSkillMapRating()
     res.json(response)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -389,10 +390,10 @@ export const getSurveyQuestions = async (req: Request, res: Response) => {
 
     res.json(surveyQuestions)
   } catch (error) {
-    logger.error(error)
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -509,6 +510,7 @@ export const storeExternalUser = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -540,6 +542,7 @@ export const createSurveyResult = async (req: Request, res: Response) => {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -559,6 +562,7 @@ export const getCompanionQuestions = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -571,6 +575,7 @@ export const getProfile = async (req: Request, res: Response) => {
 
     res.json(userData)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -584,6 +589,7 @@ export const sendSampleMail = async (req: Request, res: Response) => {
       message: "Mail sent",
     })
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }

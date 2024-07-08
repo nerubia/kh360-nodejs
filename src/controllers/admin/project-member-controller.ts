@@ -5,6 +5,7 @@ import { ValidationError } from "yup"
 import { createProjectMemberSchema } from "../../utils/validation/project-member-schema"
 import * as ProjectService from "../../services/project-service"
 import { type SkillType } from "../../types/skill-type"
+import logger from "../../utils/logger"
 
 /**
  * Search project members based on provided filters.
@@ -31,6 +32,7 @@ export const search = async (req: Request, res: Response) => {
     )
     res.json(results)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -53,6 +55,7 @@ export const index = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -123,6 +126,7 @@ export const store = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -139,6 +143,7 @@ export const show = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -211,6 +216,7 @@ export const update = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -228,6 +234,7 @@ export const destroy = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }

@@ -3,6 +3,7 @@ import axios from "axios"
 import jwt from "jsonwebtoken"
 import ms from "ms"
 import prisma from "../../utils/prisma"
+import logger from "../../utils/logger"
 
 export const login = async (req: Request, res: Response) => {
   try {
@@ -112,6 +113,7 @@ export const login = async (req: Request, res: Response) => {
       },
     })
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }

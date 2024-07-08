@@ -3,6 +3,7 @@ import * as ProjectService from "../../services/project-service"
 import CustomError from "../../utils/custom-error"
 import { createProjectSchema } from "../../utils/validation/project-schema"
 import { ValidationError } from "yup"
+import logger from "../../utils/logger"
 
 /**
  * List all projects based on provided filters.
@@ -14,6 +15,7 @@ export const all = async (req: Request, res: Response) => {
     const results = await ProjectService.getAllByFilters(name as string)
     res.json(results)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -26,6 +28,7 @@ export const getAllStatus = async (req: Request, res: Response) => {
     const results = await ProjectService.getAllStatus()
     res.json(results)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -50,6 +53,7 @@ export const index = async (req: Request, res: Response) => {
     )
     res.json(results)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -97,6 +101,7 @@ export const store = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -114,6 +119,7 @@ export const show = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -164,6 +170,7 @@ export const update = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -181,6 +188,7 @@ export const destroy = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -198,6 +206,7 @@ export const close = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }

@@ -1,5 +1,6 @@
 import { type Request, type Response } from "express"
 import * as UserService from "../../services/user-service"
+import logger from "../../utils/logger"
 
 /**
  * List users based on provided filters.
@@ -19,6 +20,7 @@ export const index = async (req: Request, res: Response) => {
 
     res.json(users)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -29,6 +31,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
     res.json(employees)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -39,6 +42,7 @@ export const getUserSkillMap = async (req: Request, res: Response) => {
     const user_skill_map = await UserService.getUserSkillMap(parseInt(id))
     res.json(user_skill_map)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -52,6 +56,7 @@ export const getUserSkillMapBySkillId = async (req: Request, res: Response) => {
     )
     res.json(user_skill_map)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }

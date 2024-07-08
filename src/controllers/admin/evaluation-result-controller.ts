@@ -5,6 +5,7 @@ import { EvaluationStatus } from "../../types/evaluation-type"
 import { Decimal } from "@prisma/client/runtime/library"
 import CustomError from "../../utils/custom-error"
 import * as EvaluationResultService from "../../services/evaluation-result-service"
+import logger from "../../utils/logger"
 
 /**
  * List evaluation results based on provided filters.
@@ -36,6 +37,7 @@ export const index = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message, data: error.data })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -446,6 +448,7 @@ export const store = async (req: Request, res: Response) => {
 
     res.json(employee_ids)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -466,6 +469,7 @@ export const show = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message, data: error.data })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -485,6 +489,7 @@ export const destroy = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message, data: error.data })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -509,6 +514,7 @@ export const setStatus = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message, data: error.data })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -539,6 +545,7 @@ export const all = async (req: Request, res: Response) => {
 
     res.json(evaluationResults)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -558,6 +565,7 @@ export const getEvaluators = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message, data: error.data })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }

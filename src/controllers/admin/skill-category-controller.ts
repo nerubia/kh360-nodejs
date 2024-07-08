@@ -4,6 +4,7 @@ import { createSkillCategorySchema } from "../../utils/validation/skill-category
 import { ValidationError } from "yup"
 import CustomError from "../../utils/custom-error"
 import { type SkillCategory } from "../../types/skill-category-type"
+import logger from "../../utils/logger"
 
 /**
  * List skill categories based on provided filters.
@@ -21,6 +22,7 @@ export const index = async (req: Request, res: Response) => {
 
     res.json(skill_categories)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -34,6 +36,7 @@ export const getAll = async (req: Request, res: Response) => {
     const skill_categories = await SkillCategoryService.getAllSkillCategories(includes as string[])
     res.json(skill_categories)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -53,6 +56,7 @@ export const show = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -80,6 +84,7 @@ export const store = async (req: Request, res: Response) => {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -108,6 +113,7 @@ export const update = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -130,6 +136,7 @@ export const destroy = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -149,6 +156,7 @@ export const updateSequenceNumbers = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }

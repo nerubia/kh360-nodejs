@@ -3,6 +3,7 @@ import * as EvaluationTemplateService from "../../services/evaluation-template-s
 import { createEvaluationTemplate } from "../../utils/validation/evaluation-template-schema"
 import { ValidationError } from "yup"
 import CustomError from "../../utils/custom-error"
+import logger from "../../utils/logger"
 
 /**
  * List active evaluation templates.
@@ -12,6 +13,7 @@ export const active = async (req: Request, res: Response) => {
     const evaluationTemplates = await EvaluationTemplateService.getActiveTemplates()
     res.json(evaluationTemplates)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -24,6 +26,7 @@ export const getTemplateTypes = async (req: Request, res: Response) => {
     const evaluationTemplates = await EvaluationTemplateService.getTemplateTypes()
     res.json(evaluationTemplates)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -63,6 +66,7 @@ export const index = async (req: Request, res: Response) => {
     )
     res.json(evaluationTemplates)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -139,6 +143,7 @@ export const store = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -153,6 +158,7 @@ export const show = async (req: Request, res: Response) => {
     const evaluationTemplate = await EvaluationTemplateService.getById(parseInt(id))
     res.json(evaluationTemplate)
   } catch (error) {
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -232,6 +238,7 @@ export const update = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
@@ -249,6 +256,7 @@ export const destroy = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
 }
