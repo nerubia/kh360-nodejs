@@ -650,6 +650,9 @@ export const getResultsByAnswer = async (id: number) => {
   const surveyAnswers = await SurveyAnswerRepository.getAllDistinctByFilters(
     {
       survey_administration_id: id,
+      status: {
+        notIn: [SurveyAnswerStatus.Draft],
+      },
     },
     ["survey_template_answer_id"]
   )
