@@ -1,3 +1,4 @@
+import { SurveyAnswerStatus } from "../types/survey-answer-type"
 import prisma from "../utils/prisma"
 import { type Prisma } from "@prisma/client"
 
@@ -32,6 +33,11 @@ export const getAllByFilters = async (where: Prisma.survey_resultsWhereInput) =>
       },
       survey_administration_id: true,
       survey_answers: {
+        where: {
+          status: {
+            notIn: [SurveyAnswerStatus.Draft],
+          },
+        },
         include: {
           survey_template_answers: {
             include: {
