@@ -590,7 +590,7 @@ export const getResultsByRespondent = async (id: number) => {
     survey_administration_id: id,
     external_respondent_id: null,
     status: {
-      notIn: [SurveyResultStatus.Draft],
+      notIn: [SurveyResultStatus.Ongoing, SurveyResultStatus.Draft],
     },
   })
 
