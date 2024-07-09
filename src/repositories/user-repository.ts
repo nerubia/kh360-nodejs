@@ -113,6 +113,9 @@ export const getAllRecentRating = async (userId: number) => {
       skill_map_results: {
         some: {
           user_id: userId,
+          status: {
+            in: [SkillMapResultStatus.Submitted, SkillMapResultStatus.Closed],
+          },
         },
       },
     },
@@ -168,6 +171,9 @@ export const getUserSkillMapBySkillId = async (userId: number, skillId: number) 
       skill_map_results: {
         some: {
           user_id: userId,
+          status: {
+            in: [SkillMapResultStatus.Submitted, SkillMapResultStatus.Closed],
+          },
         },
       },
     },
