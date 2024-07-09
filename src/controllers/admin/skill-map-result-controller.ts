@@ -27,6 +27,17 @@ export const latest = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+export const results = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const { userId } = req.body
+
+    const skillMapRatings = await SkillMapResultService.getSkillMapRatings(parseInt(id), userId)
+    res.json(skillMapRatings)
+  } catch (error) {
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
 
 /**
  * List all skill map results based on provided filters.

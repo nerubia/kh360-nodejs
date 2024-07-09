@@ -1,4 +1,5 @@
 import { SkillMapResultStatus } from "../types/skill-map-result-type"
+import * as AnswerOptionRepository from "../repositories/answer-option-repository"
 import * as SkillMapResultRepository from "../repositories/skill-map-result-repository"
 import * as SkillMapAdministrationRepository from "../repositories/skill-map-administration-repository"
 import * as SkillMapRatingRepository from "../repositories/skill-map-rating-repository"
@@ -435,5 +436,111 @@ export const getByCustomFilters = async (
       totalPages,
       totalItems,
     },
+  }
+}
+
+export const getSkillMapRatings = async (skill_map_administration_id: number, user_id: number) => {
+  const skillMapAdministration = await SkillMapAdministrationRepository.getById(
+    skill_map_administration_id
+  )
+
+  if (skillMapAdministration === null) {
+    throw new CustomError("Skill map administration not found.", 400)
+  }
+
+  const skillMapResult = await SkillMapResultRepository.getByFilters({
+    skill_map_administration_id: skillMapAdministration.id,
+    user_id,
+    status: "Submitted",
+  })
+
+  if (skillMapResult === null) {
+    return {
+      user_skill_map_ratings: [],
+      comments: null,
+      skill_map_result_status: "",
+      skill_map_administration: "",
+    }
+  }
+
+  const userCurrentSkillMapRatings = await SkillMapRatingRepository.getAllByFilters({
+    skill_map_result_id: skillMapResult.id,
+    skill_map_results: {
+      user_id,
+    },
+  })
+
+  const previousSkillMapRating = await SkillMapRatingRepository.getPreviousSkillMapRating(
+    skillMapAdministration.id,
+    user_id,
+    new Date(skillMapAdministration.skill_map_period_end_date ?? new Date()),
+    new Date(skillMapResult.submitted_date ?? new Date())
+  )
+
+  const userPreviousSkillMapRatings = await SkillMapRatingRepository.getPreviousSkillMapRatings(
+    previousSkillMapRating?.skill_map_administration_id ?? 0,
+    previousSkillMapRating?.skill_map_result_id ?? 0
+  )
+
+  let userSkillMapRatings: unknown[] = []
+
+  const isOngoing = skillMapResult.status === SkillMapResultStatus.Ongoing
+  const isClosed = skillMapResult.status === SkillMapResultStatus.Closed
+  const isSubmitted = skillMapResult.status === SkillMapResultStatus.Submitted
+  const isReopened = isOngoing && userCurrentSkillMapRatings.length > 0
+
+  if (isClosed || isSubmitted || isReopened) {
+    userSkillMapRatings = await Promise.all(
+      userCurrentSkillMapRatings.map(async (skillMapRating) => {
+        const skill = await SkillRepository.getById(skillMapRating.skill_id ?? 0)
+        const previousSkillMapRating = userPreviousSkillMapRatings.find(
+          (uniqueSkillMapRating) => uniqueSkillMapRating.skill_id === skillMapRating.skill_id
+        )
+        const previousAnswerOption = await AnswerOptionRepository.getById(
+          previousSkillMapRating?.answer_option_id ?? 0
+        )
+        const answerOption = await AnswerOptionRepository.getById(
+          skillMapRating.answer_option_id ?? 0
+        )
+        return {
+          ...skill,
+          skill_rating_id: skillMapRating.id,
+          other_skill_name: skillMapRating.other_skill_name,
+          previous_rating: previousAnswerOption,
+          rating: answerOption,
+        }
+      })
+    )
+  }
+
+  if (isOngoing && !isReopened) {
+    userSkillMapRatings = await Promise.all(
+      userPreviousSkillMapRatings.map(async (skillMapRating) => {
+        const skill = await SkillRepository.getById(skillMapRating.skill_id ?? 0)
+        if (skill === null) {
+          return null
+        }
+        const answerOption = await AnswerOptionRepository.getById(
+          skillMapRating.answer_option_id ?? 0
+        )
+        return {
+          ...skill,
+          previous_rating: answerOption,
+          rating: answerOption,
+        }
+      })
+    )
+  }
+
+  return {
+    user_skill_map_ratings: userSkillMapRatings,
+    skill_map_administration: skillMapAdministration,
+    skill_map_result_status: skillMapResult.status,
+    skill_map_result: {
+      submitted_date: skillMapResult.submitted_date,
+      comments: skillMapResult.comments,
+      status: skillMapResult.status,
+    },
+    comments: skillMapResult.comments,
   }
 }
