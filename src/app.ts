@@ -42,7 +42,12 @@ import logger from "./utils/logger"
 
 const app: Application = express()
 
-app.use(cors({ credentials: true, origin: true }))
+app.use(
+  cors({
+    credentials: true,
+    origin: process.env.APP_URL,
+  })
+)
 app.use(bodyParser.json({ limit: "5mb" }))
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }))
 app.use(cookieParser())
