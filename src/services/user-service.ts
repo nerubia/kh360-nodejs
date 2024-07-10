@@ -1405,17 +1405,30 @@ export const submitSkillMapRatings = async (
           latestSubmittedSkillMapResult.skill_id === newSkillMapRating.skill_id
       )
       if (existingSkillMapRating === undefined) {
-        skillMapRatings.push({
-          skill_map_administration_id: latestSubmittedSkillMapResult.skill_map_administration_id,
-          skill_map_result_id: latestSubmittedSkillMapResult.id,
-          user_id: user.id,
-          skill_id: newSkillMapRating.skill_id,
-          skill_category_id: newSkillMapRating.skill_category_id as number,
-          answer_option_id: newSkillMapRating.answer_option_id as number,
-          status: SkillMapRatingStatus.Submitted,
-          created_at: currentDate,
-          updated_at: currentDate,
-        })
+        if (newSkillMapRating.skill_category_id !== undefined) {
+          skillMapRatings.push({
+            skill_map_administration_id: latestSubmittedSkillMapResult.skill_map_administration_id,
+            skill_map_result_id: latestSubmittedSkillMapResult.id,
+            user_id: user.id,
+            skill_id: newSkillMapRating.skill_id,
+            skill_category_id: newSkillMapRating.skill_category_id as number,
+            answer_option_id: newSkillMapRating.answer_option_id as number,
+            status: SkillMapRatingStatus.Submitted,
+            created_at: currentDate,
+            updated_at: currentDate,
+          })
+        } else {
+          skillMapRatings.push({
+            skill_map_administration_id: latestSubmittedSkillMapResult.skill_map_administration_id,
+            skill_map_result_id: latestSubmittedSkillMapResult.id,
+            user_id: user.id,
+            other_skill_name: newSkillMapRating.other_skill_name,
+            answer_option_id: newSkillMapRating.answer_option_id as number,
+            status: SkillMapRatingStatus.Submitted,
+            created_at: currentDate,
+            updated_at: currentDate,
+          })
+        }
       }
     }
   }
