@@ -37,6 +37,8 @@ import surveyResultRoute from "./routes/admin/survey-result-route"
 import surveyTemplateRoute from "./routes/admin/survey-template-route"
 import surveyTemplateQuestionRoute from "./routes/admin/survey-template-question-route"
 import skillMapSearchRoute from "./routes/admin/skill-map-search-route"
+import morgan from "morgan"
+import logger from "./utils/logger"
 
 const app: Application = express()
 
@@ -44,6 +46,15 @@ app.use(cors({ credentials: true, origin: true }))
 app.use(bodyParser.json({ limit: "5mb" }))
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }))
 app.use(cookieParser())
+app.use(
+  morgan("dev", {
+    stream: {
+      write: (message: string) => {
+        logger.info(message.trim())
+      },
+    },
+  })
+)
 
 declare global {
   namespace Express {
