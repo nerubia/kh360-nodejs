@@ -597,6 +597,9 @@ export const getResultsByRespondent = async (id: number) => {
   const companionResults = await SurveyResultRepository.getAllByFilters({
     survey_administration_id: id,
     is_external: true,
+    status: {
+      notIn: [SurveyResultStatus.Ongoing, SurveyResultStatus.Draft],
+    },
   })
 
   for (const result of surveyResults) {
