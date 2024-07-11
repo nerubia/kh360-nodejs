@@ -1417,17 +1417,6 @@ export const submitSkillMapRatings = async (
             created_at: currentDate,
             updated_at: currentDate,
           })
-        } else {
-          skillMapRatings.push({
-            skill_map_administration_id: latestSubmittedSkillMapResult.skill_map_administration_id,
-            skill_map_result_id: latestSubmittedSkillMapResult.id,
-            user_id: user.id,
-            other_skill_name: newSkillMapRating.other_skill_name,
-            answer_option_id: newSkillMapRating.answer_option_id as number,
-            status: SkillMapRatingStatus.Submitted,
-            created_at: currentDate,
-            updated_at: currentDate,
-          })
         }
       }
     }
