@@ -179,6 +179,7 @@ export const getUserSkillMapBySkillId = async (userId: number, skillId: number) 
     },
     select: {
       skill_map_period_end_date: true,
+      name: true,
       skill_map_results: {
         where: {
           user_id: userId,
