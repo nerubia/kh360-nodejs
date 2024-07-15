@@ -49,11 +49,6 @@ export const getLatestSkillMapRating = async (
   if (sortBy === SkillMapSearchSortOptions.SKILL_RATING_DESC) {
     orderBy = [
       {
-        skill_map_results: {
-          submitted_date: "desc",
-        },
-      },
-      {
         answer_options: {
           rate: "desc",
         },
@@ -82,11 +77,6 @@ export const getLatestSkillMapRating = async (
 
   if (sortBy === SkillMapSearchSortOptions.SKILL_RATING_ASC) {
     orderBy = [
-      {
-        skill_map_results: {
-          submitted_date: "desc",
-        },
-      },
       {
         answer_options: {
           rate: "asc",
@@ -118,11 +108,6 @@ export const getLatestSkillMapRating = async (
     orderBy = [
       {
         skill_map_results: {
-          submitted_date: "desc",
-        },
-      },
-      {
-        skill_map_results: {
           users: {
             last_name: "asc",
           },
@@ -145,11 +130,6 @@ export const getLatestSkillMapRating = async (
 
   if (sortBy === SkillMapSearchSortOptions.SKILL) {
     orderBy = [
-      {
-        skill_map_results: {
-          submitted_date: "desc",
-        },
-      },
       {
         skills: {
           name: "asc",
