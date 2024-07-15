@@ -160,7 +160,9 @@ export const getLatestSkillMapRating = async (
     },
     where,
     orderBy: {
-      submitted_date: "desc",
+      users: {
+        last_name: "asc",
+      },
     },
     distinct: ["user_id"],
   })
