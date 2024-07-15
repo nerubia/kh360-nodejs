@@ -451,7 +451,9 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
   const skillMapResult = await SkillMapResultRepository.getByFilters({
     skill_map_administration_id: skillMapAdministration.id,
     user_id,
-    status: "Submitted",
+    status: {
+      in: [SkillMapResultStatus.Submitted, SkillMapResultStatus.Closed],
+    },
   })
 
   if (skillMapResult === null) {
