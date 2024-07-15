@@ -11,6 +11,7 @@ import * as ProjectSkillRepository from "../repositories/project-skill-repositor
 import CustomError from "../utils/custom-error"
 import { type ProjectMember } from "../types/project-member-type"
 import { type SkillType } from "../types/skill-type"
+import { constructNameFilter } from "../utils/format-filter"
 
 export const getProjectMembers = async (
   evaluation_administration_id: number,
@@ -103,20 +104,9 @@ export const getAllByFilters = async (
   const projectRole = role === "all" ? undefined : role
 
   if (name !== undefined) {
-    const users = await UserRepository.getAllByFilters({
-      OR: [
-        {
-          first_name: {
-            contains: name,
-          },
-        },
-        {
-          last_name: {
-            contains: name,
-          },
-        },
-      ],
-    })
+    const where = constructNameFilter(name)
+    const users = await UserRepository.getAllByFilters(where)
+
     userIds = users.map((user) => user.id)
     if (userIds.length > 0) {
       Object.assign(filter, {
