@@ -111,8 +111,10 @@ export const upload = async (user: UserToken, data: SkillMapAdministration, file
     }
 
     if (submittedDate === undefined || submittedDate === "") {
-      await SkillMapAdministrationRepository.deleteById(newSkillMapAdmin.id)
-      throw new CustomError("Invalid data. Please contact admin for assistance.", 400)
+      if (!errorList.includes(email)) {
+        errorList.push(email)
+      }
+      continue
     }
 
     const existingUser = await UserRepository.getByEmail(email)
