@@ -106,8 +106,7 @@ export const upload = async (user: UserToken, data: SkillMapAdministration, file
     const otherSkillData = record["Other technologies not listed, please enumerate."] as string
 
     if (email === undefined || email === "") {
-      await SkillMapAdministrationRepository.deleteById(newSkillMapAdmin.id)
-      throw new CustomError("Invalid data. Please contact admin for assistance.", 400)
+      continue
     }
 
     if (submittedDate === undefined || submittedDate === "") {
