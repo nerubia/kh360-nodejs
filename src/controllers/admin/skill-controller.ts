@@ -69,7 +69,7 @@ export const store = async (req: Request, res: Response) => {
     })
 
     const newSkill = await SkillService.create({
-      name: name as string,
+      name: name.trim() as string,
       description: description as string,
       status: status as boolean,
       skill_category_id: parseInt(skill_category_id),
@@ -108,7 +108,7 @@ export const update = async (req: Request, res: Response) => {
     })
 
     const updateSkill = await SkillService.updateById(parseInt(id), {
-      name: name as string,
+      name: name.trim() as string,
       description: description as string,
       status: status as boolean,
       skill_category_id: parseInt(skill_category_id),
