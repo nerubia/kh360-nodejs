@@ -86,10 +86,14 @@ export const store = async (req: Request, res: Response) => {
 
     const projectDetails = await ProjectService.getById(parseInt(project_id))
 
-    // Check if the start_date and end_date of project-member are within the range
+    if (projectDetails.start_date === null || projectDetails.end_date === null) {
+      throw new CustomError(
+        "The selected project does not have a specified duration. Please update the project duration in the project list.",
+        400
+      )
+    }
+
     if (
-      projectDetails.start_date == null ||
-      projectDetails.end_date == null ||
       new Date(start_date) < new Date(projectDetails.start_date) ||
       new Date(end_date) > new Date(projectDetails.end_date)
     ) {
@@ -176,9 +180,14 @@ export const update = async (req: Request, res: Response) => {
     })
     const projectDetails = await ProjectService.getById(parseInt(project_id))
 
+    if (projectDetails.start_date === null || projectDetails.end_date === null) {
+      throw new CustomError(
+        "The selected project does not have a specified duration. Please update the project duration in the project list.",
+        400
+      )
+    }
+
     if (
-      projectDetails.start_date == null ||
-      projectDetails.end_date == null ||
       new Date(start_date) < new Date(projectDetails.start_date) ||
       new Date(end_date) > new Date(projectDetails.end_date)
     ) {
