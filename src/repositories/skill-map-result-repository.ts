@@ -35,6 +35,11 @@ export const getAllByFilters = async (where: Prisma.skill_map_resultsWhereInput)
           email: true,
         },
       },
+      skill_map_administrations: {
+        select: {
+          is_uploaded: true,
+        },
+      },
       skill_map_administration_id: true,
       skill_map_ratings: true,
     },

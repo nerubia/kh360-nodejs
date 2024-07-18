@@ -146,6 +146,7 @@ export const upload = async (req: Request, res: Response) => {
         skill_map_schedule_end_date: new Date(skill_map_schedule_end_date),
         remarks,
         status: SkillMapAdministrationStatus.Closed,
+        is_uploaded: true,
       },
       file
     )
