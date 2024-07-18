@@ -13,6 +13,14 @@ export const getById = async (id: number) => {
   })
 }
 
+export const getByName = async (name: string) => {
+  return await prisma.skill_map_administrations.findFirst({
+    where: {
+      name,
+    },
+  })
+}
+
 export const getPreviousSkillMapAdmin = async (endDate: Date) => {
   return await prisma.skill_map_administrations.findFirst({
     where: {

@@ -71,12 +71,30 @@ export const getAllByStatusAndEndDate = async (status: string, date: Date) => {
 }
 
 export const create = async (data: SkillMapAdministration) => {
+  const { name } = data
+  if (name == null) {
+    throw new CustomError("Name is required to create a SkillMapAdministration", 400)
+  }
+  const findName = await SkillMapAdministrationRepository.getByName(name)
+  if (findName !== null) {
+    throw new CustomError("Project name should be unique", 400)
+  }
   return await SkillMapAdministrationRepository.create(data)
 }
 
 export const upload = async (user: UserToken, data: SkillMapAdministration, file: string) => {
   if (file === undefined) {
     throw new CustomError("Invalid file", 400)
+  }
+
+  const { name } = data
+
+  if (name == null) {
+    throw new CustomError("Name is required to create a SkillMapAdministration", 400)
+  }
+  const findName = await SkillMapAdministrationRepository.getByName(name)
+  if (findName !== null) {
+    throw new CustomError("Project name should be unique", 400)
   }
 
   const newSkillMapAdmin = await SkillMapAdministrationRepository.create(data)
