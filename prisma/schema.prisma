@@ -1116,6 +1116,7 @@ model skill_map_administrations {
   remarks                       String?             @db.Text
   email_subject                 String?             @default("") @db.VarChar(255)
   email_content                 String?             @db.Text
+  is_uploaded                   Boolean?
   status                        String?             @default("") @db.VarChar(20)
   created_by_id                 Int?
   updated_by_id                 Int?
