@@ -14,11 +14,12 @@ import logger from "../../utils/logger"
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const { name, company, role, page } = req.query
+    const { name, company, userType, role, page } = req.query
 
     const externalUsers = await ExternalUserService.getAllByFilters(
       name as string,
       company as string,
+      userType as string,
       role as string,
       page as string
     )
