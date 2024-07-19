@@ -101,6 +101,17 @@ export const getById = async (id: number) => {
 }
 
 export const create = async (data: EvaluationAdministration) => {
+  const { name } = data
+
+  if (name == null) {
+    throw new CustomError("Evaluation Administration name is required", 400)
+  }
+
+  const evaluationAdmin = await EvaluationAdministrationRepository.getByName(name)
+  if (evaluationAdmin !== null) {
+    throw new CustomError("Evaluation Administration name should be unique", 400)
+  }
+
   return await EvaluationAdministrationRepository.create(data)
 }
 

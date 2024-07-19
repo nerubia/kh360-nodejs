@@ -43,6 +43,14 @@ export const getById = async (id: number) => {
   })
 }
 
+export const getByName = async (name: string) => {
+  return await prisma.evaluation_administrations.findFirst({
+    where: {
+      name,
+    },
+  })
+}
+
 export const create = async (data: EvaluationAdministration) => {
   return await prisma.evaluation_administrations.create({
     data,
