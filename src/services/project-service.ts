@@ -188,10 +188,24 @@ export const create = async (data: Project, skill_ids: string[]) => {
 }
 
 export const updateById = async (id: number, data: Project, skill_ids: number[]) => {
+  const { name } = data
+
+  if (name == null) {
+    throw new CustomError("Project name is required", 400)
+  }
+
   const project = await ProjectRepository.getById(id)
 
   if (project === null) {
     throw new CustomError("Project not found", 400)
+  }
+
+  const existingProject = await ProjectRepository.getByName(name)
+
+  if (existingProject !== null) {
+    if (project.id !== existingProject.id) {
+      throw new CustomError("Project name should be unique", 400)
+    }
   }
 
   const updatedProject = await ProjectRepository.updateById(project.id, data)
