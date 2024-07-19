@@ -111,6 +111,7 @@ export const getAll = async () => {
 export const getAllByFilters = async (
   name: string,
   company: string,
+  userType: string,
   role: string,
   page: string
 ) => {
@@ -121,6 +122,7 @@ export const getAllByFilters = async (
   const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
   const where = {
+    user_type: userType ?? "",
     role: {
       contains: evaluatorRole,
     },
