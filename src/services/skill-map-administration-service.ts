@@ -75,9 +75,9 @@ export const create = async (data: SkillMapAdministration) => {
   if (name == null) {
     throw new CustomError("Name is required to create a SkillMapAdministration", 400)
   }
-  const findName = await SkillMapAdministrationRepository.getByName(name)
-  if (findName !== null) {
-    throw new CustomError("Project name should be unique", 400)
+  const skillMapAdmin = await SkillMapAdministrationRepository.getByName(name)
+  if (skillMapAdmin !== null) {
+    throw new CustomError("Skill Map Admin name should be unique", 400)
   }
   return await SkillMapAdministrationRepository.create(data)
 }
@@ -92,9 +92,9 @@ export const upload = async (user: UserToken, data: SkillMapAdministration, file
   if (name == null) {
     throw new CustomError("Name is required to create a SkillMapAdministration", 400)
   }
-  const findName = await SkillMapAdministrationRepository.getByName(name)
-  if (findName !== null) {
-    throw new CustomError("Project name should be unique", 400)
+  const skillMapAdmin = await SkillMapAdministrationRepository.getByName(name)
+  if (skillMapAdmin !== null) {
+    throw new CustomError("Skill Map Admin name should be unique", 400)
   }
 
   const newSkillMapAdmin = await SkillMapAdministrationRepository.create(data)
