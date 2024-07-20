@@ -92,7 +92,7 @@ export const upload = async (user: UserToken, data: SkillMapAdministration, file
   if (name == null) {
     throw new CustomError("Name is required to create a SkillMapAdministration", 400)
   }
-  const skillMapAdmin = await SkillMapAdministrationRepository.getByName(name)
+  const skillMapAdmin = await SkillMapAdministrationRepository.getByName(name.trim())
   if (skillMapAdmin !== null) {
     throw new CustomError("Skill Map Admin name should be unique", 400)
   }
