@@ -1,4 +1,5 @@
 export interface Project {
+  id?: number
   name?: string | null
   client_id?: number | null
   start_date?: Date | string | null
