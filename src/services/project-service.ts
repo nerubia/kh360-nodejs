@@ -166,7 +166,7 @@ export const paginateByFilters = async (
 }
 
 export const create = async (data: Project, skill_ids: string[]) => {
-  const project = await ProjectRepository.getByName(data.name as string)
+  const project = await ProjectRepository.getByName(data.name?.trim() as string)
 
   if (project !== null) {
     throw new CustomError("Project name should be unique", 400)
@@ -200,7 +200,7 @@ export const updateById = async (id: number, data: Project, skill_ids: number[])
     throw new CustomError("Project not found", 400)
   }
 
-  const existingProject = await ProjectRepository.getByName(name)
+  const existingProject = await ProjectRepository.getByName(name.trim())
 
   if (existingProject !== null) {
     if (project.id !== existingProject.id) {
@@ -208,7 +208,12 @@ export const updateById = async (id: number, data: Project, skill_ids: number[])
     }
   }
 
-  const updatedProject = await ProjectRepository.updateById(project.id, data)
+  const removeExtraSpace = {
+    ...data,
+    name: name.trim(),
+  }
+
+  const updatedProject = await ProjectRepository.updateById(project.id, removeExtraSpace)
 
   const allProjectSkills = await ProjectSkillRepository.getAllByProjectId(project.id)
   const selectedSkills = await ProjectSkillRepository.getAllByFilters({
