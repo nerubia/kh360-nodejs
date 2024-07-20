@@ -74,7 +74,7 @@ export const store = async (req: Request, res: Response) => {
     })
 
     const newEvaluation = await EvaluationAdministrationService.create({
-      name,
+      name: name.trim(),
       eval_period_start_date: new Date(eval_period_start_date),
       eval_period_end_date: new Date(eval_period_end_date),
       eval_schedule_start_date: new Date(eval_schedule_start_date),
@@ -152,6 +152,7 @@ export const update = async (req: Request, res: Response) => {
     })
 
     const evaluationAdministration = await EvaluationAdministrationService.getById(parseInt(id))
+    const existingEvaluationAdmin = await EvaluationAdministrationService.getByName(name)
 
     if (evaluationAdministration === null) {
       return res.status(400).json({ message: "Invalid id." })
@@ -174,8 +175,13 @@ export const update = async (req: Request, res: Response) => {
       evaluationAdministration.status === EvaluationAdministrationStatus.Draft ||
       evaluationAdministration.status === EvaluationAdministrationStatus.Pending
     ) {
+      if (existingEvaluationAdmin !== null) {
+        if (evaluationAdministration.id !== existingEvaluationAdmin.id) {
+          throw new CustomError("Evaluation Administration name should be unique", 400)
+        }
+      }
       Object.assign(data, {
-        name,
+        name: name.trim(),
         eval_period_start_date: new Date(eval_period_start_date),
         eval_period_end_date: new Date(eval_period_end_date),
         email_subject,
@@ -193,6 +199,9 @@ export const update = async (req: Request, res: Response) => {
     res.json(updatedEvaluationAdministration)
   } catch (error) {
     if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    if (error instanceof CustomError) {
       return res.status(400).json(error)
     }
     logger.error(error)

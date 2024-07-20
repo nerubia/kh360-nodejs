@@ -100,6 +100,10 @@ export const getById = async (id: number) => {
   return await EvaluationAdministrationRepository.getById(id)
 }
 
+export const getByName = async (name: string) => {
+  return await EvaluationAdministrationRepository.getByName(name)
+}
+
 export const create = async (data: EvaluationAdministration) => {
   const { name } = data
 
@@ -111,8 +115,11 @@ export const create = async (data: EvaluationAdministration) => {
   if (evaluationAdmin !== null) {
     throw new CustomError("Evaluation Administration name should be unique", 400)
   }
-
-  return await EvaluationAdministrationRepository.create(data)
+  const removeExtraSpace = {
+    ...data,
+    name: data.name.trim(),
+  }
+  return await EvaluationAdministrationRepository.create(removeExtraSpace)
 }
 
 export const updateStatusById = async (id: number, status: string) => {
