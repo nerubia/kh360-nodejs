@@ -360,6 +360,15 @@ export const close = async (id: number) => {
 export const cancel = async (id: number) => {
   const skillMapAdministration = await SkillMapAdministrationRepository.getById(id)
 
+  if (skillMapAdministration !== null) {
+    if (skillMapAdministration?.is_uploaded !== null) {
+      await SkillMapAdministrationRepository.updateStatusById(
+        skillMapAdministration.id,
+        SkillMapAdministrationStatus.Ongoing
+      )
+    }
+  }
+
   if (skillMapAdministration === null) {
     throw new CustomError("Id not found", 400)
   }
