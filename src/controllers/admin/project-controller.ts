@@ -4,6 +4,7 @@ import CustomError from "../../utils/custom-error"
 import { createProjectSchema } from "../../utils/validation/project-schema"
 import { ValidationError } from "yup"
 import logger from "../../utils/logger"
+import { removeWhitespace } from "../../utils/format-string"
 
 /**
  * List all projects based on provided filters.
@@ -83,7 +84,7 @@ export const store = async (req: Request, res: Response) => {
 
     const newProject = await ProjectService.create(
       {
-        name: name as string,
+        name: removeWhitespace(name),
         client_id: parseInt(client_id as string),
         start_date: start_date !== undefined ? new Date(start_date) : null,
         end_date: end_date !== undefined ? new Date(end_date) : null,
@@ -152,7 +153,7 @@ export const update = async (req: Request, res: Response) => {
     const updatedProject = await ProjectService.updateById(
       parseInt(id),
       {
-        name: name as string,
+        name: removeWhitespace(name),
         client_id: parseInt(client_id as string),
         start_date: start_date !== undefined ? new Date(start_date) : null,
         end_date: end_date !== undefined ? new Date(end_date) : null,
