@@ -16,6 +16,7 @@ import {
   createEvaluationAdministrationSchema,
 } from "../../utils/validation/evaluation-administration-schema"
 import logger from "../../utils/logger"
+import { removeWhitespace } from "../../utils/format-string"
 
 /**
  * List evaluation administrations based on provided filters.
@@ -74,7 +75,7 @@ export const store = async (req: Request, res: Response) => {
     })
 
     const newEvaluation = await EvaluationAdministrationService.create({
-      name: name.trim(),
+      name: removeWhitespace(name),
       eval_period_start_date: new Date(eval_period_start_date),
       eval_period_end_date: new Date(eval_period_end_date),
       eval_schedule_start_date: new Date(eval_schedule_start_date),
@@ -152,7 +153,9 @@ export const update = async (req: Request, res: Response) => {
     })
 
     const evaluationAdministration = await EvaluationAdministrationService.getById(parseInt(id))
-    const existingEvaluationAdmin = await EvaluationAdministrationService.getByName(name)
+    const existingEvaluationAdmin = await EvaluationAdministrationService.getByName(
+      removeWhitespace(name)
+    )
 
     if (evaluationAdministration === null) {
       return res.status(400).json({ message: "Invalid id." })
@@ -181,7 +184,7 @@ export const update = async (req: Request, res: Response) => {
         }
       }
       Object.assign(data, {
-        name: name.trim(),
+        name: removeWhitespace(name),
         eval_period_start_date: new Date(eval_period_start_date),
         eval_period_end_date: new Date(eval_period_end_date),
         email_subject,

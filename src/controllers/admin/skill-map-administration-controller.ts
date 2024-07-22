@@ -8,6 +8,7 @@ import {
 } from "../../utils/validation/skill-map-administration-schema"
 import { SkillMapAdministrationStatus } from "../../types/skill-map-administration-type"
 import logger from "../../utils/logger"
+import { removeWhitespace } from "../../utils/format-string"
 
 /**
  *List skill map administrations
@@ -81,7 +82,7 @@ export const store = async (req: Request, res: Response) => {
     })
 
     const newSkillMap = await SkillMapAdministrationService.create({
-      name,
+      name: removeWhitespace(name),
       skill_map_period_start_date: new Date(skill_map_period_start_date),
       skill_map_period_end_date: new Date(skill_map_period_end_date),
       skill_map_schedule_start_date: new Date(skill_map_schedule_start_date),
@@ -142,7 +143,7 @@ export const upload = async (req: Request, res: Response) => {
     const newSkillMap = await SkillMapAdministrationService.upload(
       user,
       {
-        name,
+        name: removeWhitespace(name),
         skill_map_period_start_date: new Date(skill_map_period_start_date),
         skill_map_period_end_date: new Date(skill_map_period_end_date),
         skill_map_schedule_start_date: new Date(skill_map_schedule_start_date),

@@ -5,3 +5,9 @@ export const convertToSlug = (str: string) => {
   str = str.toLowerCase()
   return str
 }
+
+export const removeWhitespace = (str: string) => {
+  const trimmedString = str.trim()
+  const compactString = trimmedString.replace(/\s+/g, " ")
+  return compactString
+}
