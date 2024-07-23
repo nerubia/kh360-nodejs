@@ -158,15 +158,6 @@ export const upload = async (user: UserToken, data: SkillMapAdministration, file
     const existingUser = await UserRepository.getByEmail(email)
 
     if (existingUser !== null) {
-      const skillMapResult = await SkillMapResultRepository.create({
-        skill_map_administration_id: newSkillMapAdmin.id,
-        user_id: existingUser.id,
-        submitted_date: new Date(submittedDate),
-        comments: otherSkillData,
-        status: SkillMapResultStatus.Closed,
-        created_by_id: user.id,
-      })
-
       const latestSubmittedSkillMapResults = await SkillMapResultRepository.getAllByFilters({
         skill_map_administration_id: {
           in: latestSkillMapAdministrations.map(
@@ -174,7 +165,18 @@ export const upload = async (user: UserToken, data: SkillMapAdministration, file
           ),
         },
         user_id: existingUser.id,
-        status: SkillMapResultStatus.Submitted,
+        status: {
+          in: [SkillMapResultStatus.Closed, SkillMapResultStatus.Submitted],
+        },
+      })
+
+      const skillMapResult = await SkillMapResultRepository.create({
+        skill_map_administration_id: newSkillMapAdmin.id,
+        user_id: existingUser.id,
+        submitted_date: new Date(submittedDate),
+        comments: otherSkillData,
+        status: SkillMapResultStatus.Closed,
+        created_by_id: user.id,
       })
 
       const jsonDataArray = Object.keys(record)
