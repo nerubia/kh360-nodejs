@@ -1,3 +1,4 @@
+import * as AnswerRepository from "../repositories/answer-repository"
 import * as AnswerOptionRepository from "../repositories/answer-option-repository"
 import * as SkillMapAdministrationRepository from "../repositories/skill-map-administration-repository"
 import * as SkillMapResultRepository from "../repositories/skill-map-result-repository"
@@ -18,6 +19,7 @@ import { type UserToken } from "../types/user-token-type"
 import { type Prisma } from "@prisma/client"
 import { parse } from "csv-parse/sync"
 import { removeWhitespace } from "../utils/format-string"
+import { convertOldAnswer } from "../utils/answer"
 
 export const getAllByFilters = async (name: string, status: string, page: string) => {
   const itemsPerPage = 10
@@ -110,7 +112,16 @@ export const upload = async (user: UserToken, data: SkillMapAdministration, file
   const currentDate = new Date()
 
   const skills = await SkillRepository.getAllSkills({})
-  const answerOptions = await AnswerOptionRepository.getAllByFilters({})
+
+  const answer = await AnswerRepository.getByFilters({ name: "Skill Map Scale" })
+
+  if (answer === null) {
+    throw new CustomError("Answer not found", 400)
+  }
+
+  const answerOptions = await AnswerOptionRepository.getAllByFilters({
+    answer_id: answer.id,
+  })
 
   const base64String = file.replace(prefix, "")
   const decodedFile = Buffer.from(base64String, "base64")
@@ -118,6 +129,15 @@ export const upload = async (user: UserToken, data: SkillMapAdministration, file
 
   const successList: string[] = []
   const errorList: string[] = []
+
+  const latestSkillMapAdministrations = await SkillMapAdministrationRepository.getAllByFilters({
+    skill_map_period_end_date: {
+      gt: new Date(newSkillMapAdmin.skill_map_period_end_date ?? new Date()),
+    },
+    status: {
+      in: [SkillMapAdministrationStatus.Ongoing, SkillMapAdministrationStatus.Closed],
+    },
+  })
 
   for (const record of records) {
     const submittedDate = record["Submitted Date"]
@@ -147,11 +167,25 @@ export const upload = async (user: UserToken, data: SkillMapAdministration, file
         created_by_id: user.id,
       })
 
+      const latestSubmittedSkillMapResults = await SkillMapResultRepository.getAllByFilters({
+        skill_map_administration_id: {
+          in: latestSkillMapAdministrations.map(
+            (latestSkillMapAdministration) => latestSkillMapAdministration.id
+          ),
+        },
+        user_id: existingUser.id,
+        status: SkillMapResultStatus.Submitted,
+      })
+
       const jsonDataArray = Object.keys(record)
 
       for (const key of jsonDataArray) {
-        const value = record[key]
-        const answerOption = answerOptions.find((answerOption) => answerOption.name === value)
+        const answerOptionName = convertOldAnswer(record[key])
+
+        const answerOption = answerOptions.find(
+          (answerOption) => answerOption.name === answerOptionName
+        )
+
         if (answerOption !== undefined) {
           const parsedSkills = parseSkillMapData(key, record[key])
           // NOTE: Valid format. Ex: Programming Language [Javascript]
@@ -169,6 +203,29 @@ export const upload = async (user: UserToken, data: SkillMapAdministration, file
               created_at: currentDate,
               updated_at: currentDate,
             })
+
+            if (skill !== undefined) {
+              for (const latestSubmittedSkillMapResult of latestSubmittedSkillMapResults) {
+                const existingSkillMapRating = latestSubmittedSkillMapResult.skill_map_ratings.find(
+                  (latestSubmittedSkillMapResult) =>
+                    latestSubmittedSkillMapResult.skill_id === skill.id
+                )
+                if (existingSkillMapRating === undefined) {
+                  skillMapRatings.push({
+                    skill_map_administration_id:
+                      latestSubmittedSkillMapResult.skill_map_administration_id,
+                    skill_map_result_id: latestSubmittedSkillMapResult.id,
+                    user_id: existingUser.id,
+                    skill_id: skill.id,
+                    skill_category_id: skill.skill_category_id,
+                    answer_option_id: answerOption.id,
+                    status: SkillMapRatingStatus.Submitted,
+                    created_at: currentDate,
+                    updated_at: currentDate,
+                  })
+                }
+              }
+            }
           } else {
             // NOTE: Invalid format. Ex: Custom Skill
             skillMapRatings.push({
