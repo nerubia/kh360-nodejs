@@ -39,6 +39,7 @@ import surveyTemplateQuestionRoute from "./routes/admin/survey-template-question
 import skillMapSearchRoute from "./routes/admin/skill-map-search-route"
 import morgan from "morgan"
 import logger from "./utils/logger"
+import jsonSchemaRoute from "./routes/admin/json-schema-route"
 
 const app: Application = express()
 
@@ -108,5 +109,6 @@ app.use("/admin/survey-results", adminMiddleware, surveyResultRoute)
 app.use("/admin/survey-templates", adminMiddleware, surveyTemplateRoute)
 app.use("/admin/survey-template-questions", adminMiddleware, surveyTemplateQuestionRoute)
 app.use("/admin/users", adminMiddleware, usersRoute)
+app.use("/admin/json-schema", adminMiddleware, jsonSchemaRoute)
 
 export default app

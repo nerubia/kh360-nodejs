@@ -7,6 +7,11 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "skipLibCheck": true
-  }
+    "skipLibCheck": true,
+    "resolveJsonModule": true // Add this line
+  },
+  "include": [
+    "src/**/*",
+    "prisma/json-schema/**/*" // Include the directory if necessary
+  ]
 }
