@@ -11,7 +11,7 @@
     "resolveJsonModule": true // Add this line
   },
   "include": [
-    "src/**/*",
-    "prisma/json-schema/**/*" // Include the directory if necessary
+    "src",
+    "prisma" // Add this line to include the prisma directory
   ]
 }
