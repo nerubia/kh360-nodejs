@@ -60,7 +60,7 @@ export const updateById = async (id: number, data: SkillCategory) => {
     throw new CustomError("Skill Category not found", 400)
   }
 
-  const skillCategoryName = await SkillCategoryRepository.getByName(data.name)
+  const skillCategoryName = await SkillCategoryRepository.getByName(removeWhitespace(data.name))
 
   if (skillCategoryName != null && skillCategory.id !== skillCategoryName.id) {
     throw new CustomError("Skill Category name should be unique", 400)
