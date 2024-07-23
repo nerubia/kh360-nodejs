@@ -1,11 +1,12 @@
 export const convertOldAnswer = (value: string) => {
-  if (value === "Beginner") {
+  const trimmedValue = value.trim()
+  if (trimmedValue === "Beginner") {
     return "2"
   }
-  if (value === "Intermediate") {
+  if (trimmedValue === "Intermediate") {
     return "5"
   }
-  if (value === "Expert") {
+  if (trimmedValue === "Expert") {
     return "8"
   }
   return null
