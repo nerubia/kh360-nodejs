@@ -17,6 +17,7 @@ import { parseSkillMapData } from "../utils/skill-map-admin"
 import { type UserToken } from "../types/user-token-type"
 import { type Prisma } from "@prisma/client"
 import { parse } from "csv-parse/sync"
+import { removeWhitespace } from "../utils/format-string"
 
 export const getAllByFilters = async (name: string, status: string, page: string) => {
   const itemsPerPage = 10
@@ -209,7 +210,14 @@ export const updateById = async (id: number, data: SkillMapAdministration) => {
   if (skillMapAdministration === null) {
     throw new CustomError("Invalid Id.", 400)
   }
-
+  const existingSkillMapAdmin = await SkillMapAdministrationRepository.getByName(
+    removeWhitespace(data.name as string)
+  )
+  if (existingSkillMapAdmin !== null) {
+    if (skillMapAdministration.id !== existingSkillMapAdmin.id) {
+      throw new CustomError("Skill Map Admin name should be unique", 400)
+    }
+  }
   if (
     skillMapAdministration.status !== SkillMapAdministrationStatus.Draft &&
     skillMapAdministration.status !== SkillMapAdministrationStatus.Pending
@@ -230,7 +238,12 @@ export const updateById = async (id: number, data: SkillMapAdministration) => {
     )
   }
 
-  return await SkillMapAdministrationRepository.updateById(id, data)
+  const removeSpace = {
+    ...data,
+    name: removeWhitespace(data.name as string),
+  }
+
+  return await SkillMapAdministrationRepository.updateById(id, removeSpace)
 }
 
 export const getById = async (id: number) => {
