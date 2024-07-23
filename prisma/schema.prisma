@@ -4,6 +4,7 @@ generator client {
 
 generator jsonSchema {
   provider = "prisma-json-schema-generator"
+  output   = "../src/json-schema"
 }
 
 datasource db {

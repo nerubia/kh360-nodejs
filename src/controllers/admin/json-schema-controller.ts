@@ -1,6 +1,6 @@
 import { type Request, type Response } from "express"
 import logger from "../../utils/logger"
-import jsonSchema from "../../../prisma/json-schema/json-schema.json"
+import jsonSchema from "../../json-schema/json-schema.json"
 /**
  * Json Schema
  */

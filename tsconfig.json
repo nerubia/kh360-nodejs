@@ -9,6 +9,5 @@
     "strict": true,
     "skipLibCheck": true,
     "resolveJsonModule": true
-  },
-  "include": ["src/**/*.ts", "prisma/json-schema/**/*.json"]
+  }
 }
