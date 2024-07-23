@@ -738,6 +738,168 @@ const createSkills = async () => {
   }
 }
 
+const updateAnswerOptionsAndSkillRatings = async () => {
+  const answer = await prisma.answers.findFirst({
+    where: {
+      name: "Skill Map Scale",
+    },
+  })
+
+  if (answer !== null) {
+    const beginnerAnswerOption = await prisma.answer_options.findFirst({
+      where: {
+        answer_id: answer.id,
+        name: "Beginner",
+      },
+    })
+
+    const intermediateAnswerOption = await prisma.answer_options.findFirst({
+      where: {
+        answer_id: answer.id,
+        name: "Intermediate",
+      },
+    })
+
+    const expertAnswerOption = await prisma.answer_options.findFirst({
+      where: {
+        answer_id: answer.id,
+        name: "Expert",
+      },
+    })
+
+    if (
+      beginnerAnswerOption !== null &&
+      intermediateAnswerOption !== null &&
+      expertAnswerOption !== null
+    ) {
+      // get beginner skill_map_ratings
+      const beginnerSkillMapRatings = await prisma.skill_map_ratings.findMany({
+        where: {
+          answer_option_id: beginnerAnswerOption.id,
+        },
+      })
+
+      const intermediateSkillMapRatings = await prisma.skill_map_ratings.findMany({
+        where: {
+          answer_option_id: intermediateAnswerOption.id,
+        },
+      })
+
+      const expertSkillMapRatings = await prisma.skill_map_ratings.findMany({
+        where: {
+          answer_option_id: expertAnswerOption.id,
+        },
+      })
+
+      // update old answer_options
+      await prisma.answer_options.update({
+        where: {
+          id: beginnerAnswerOption.id,
+        },
+        data: {
+          sequence_no: 1,
+          name: "1",
+          display_name: "1",
+          rate: 1,
+        },
+      })
+
+      await prisma.answer_options.update({
+        where: {
+          id: intermediateAnswerOption.id,
+        },
+        data: {
+          sequence_no: 2,
+          name: "2",
+          display_name: "2",
+          rate: 2,
+        },
+      })
+
+      await prisma.answer_options.update({
+        where: {
+          id: expertAnswerOption.id,
+        },
+        data: {
+          sequence_no: 3,
+          name: "3",
+          display_name: "3",
+          rate: 3,
+        },
+      })
+
+      // add more answer_options
+      for (let s = 4; s <= 10; s++) {
+        await prisma.answer_options.create({
+          data: {
+            answer_id: answer.id,
+            sequence_no: s,
+            name: s.toString(),
+            display_name: s.toString(),
+            rate: s,
+          },
+        })
+      }
+
+      const newBeginner = await prisma.answer_options.findFirst({
+        where: {
+          answer_id: answer.id,
+          name: "2",
+        },
+      })
+
+      const newIntermediate = await prisma.answer_options.findFirst({
+        where: {
+          answer_id: answer.id,
+          name: "5",
+        },
+      })
+
+      const newExpert = await prisma.answer_options.findFirst({
+        where: {
+          answer_id: answer.id,
+          name: "8",
+        },
+      })
+
+      if (newBeginner !== null && newIntermediate !== null && newExpert !== null) {
+        await prisma.skill_map_ratings.updateMany({
+          where: {
+            id: {
+              in: beginnerSkillMapRatings.map((skillMapRating) => skillMapRating.id),
+            },
+          },
+          data: {
+            answer_option_id: newBeginner.id,
+          },
+        })
+
+        await prisma.skill_map_ratings.updateMany({
+          where: {
+            id: {
+              in: intermediateSkillMapRatings.map((skillMapRating) => skillMapRating.id),
+            },
+          },
+          data: {
+            answer_option_id: newIntermediate.id,
+          },
+        })
+
+        await prisma.skill_map_ratings.updateMany({
+          where: {
+            id: {
+              in: expertSkillMapRatings.map((skillMapRating) => skillMapRating.id),
+            },
+          },
+          data: {
+            answer_option_id: newExpert.id,
+          },
+        })
+      }
+    }
+  }
+}
+
 async function main() {
   if (process.env.APP_ENV === Environment.Production) {
     await createRoles()
@@ -757,6 +919,7 @@ async function main() {
     await createEvaluationResults()
   }
   await setAnswerTypes()
+  await updateAnswerOptionsAndSkillRatings()
 }
 
 main()
