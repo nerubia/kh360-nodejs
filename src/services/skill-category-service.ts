@@ -2,6 +2,7 @@ import * as SkillCategoryRepository from "../repositories/skill-category-reposit
 import { type SkillCategory } from "../types/skill-category-type"
 import CustomError from "../utils/custom-error"
 import * as SkilRepository from "../repositories/skill-repository"
+import { removeWhitespace } from "../utils/format-string"
 
 export const getAllSkillCategories = async (includes?: string[]) => {
   const include = {}
@@ -41,7 +42,7 @@ export const getByFilters = async (name: string, status: string) => {
 }
 
 export const create = async (data: SkillCategory) => {
-  const skillCategoryName = await SkillCategoryRepository.getByName(data.name)
+  const skillCategoryName = await SkillCategoryRepository.getByName(removeWhitespace(data.name))
   if (skillCategoryName != null) {
     throw new CustomError("Skill Category name should be unique", 400)
   }
