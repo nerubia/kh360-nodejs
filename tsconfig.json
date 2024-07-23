@@ -8,10 +8,7 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true // Add this line
+    "resolveJsonModule": true
   },
-  "include": [
-    "src",
-    "prisma" // Add this line to include the prisma directory
-  ]
+  "include": ["src/**/*.ts", "prisma/json-schema/**/*.json"]
 }
