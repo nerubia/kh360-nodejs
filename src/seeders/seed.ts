@@ -900,6 +900,54 @@ const updateAnswerOptionsAndSkillRatings = async () => {
   }
 }
 
+const createAnswers = async () => {
+  const answers = [
+    {
+      name: "Skill Map Scale",
+    },
+  ]
+  for (const answer of answers) {
+    const existingAnswer = await prisma.answers.findFirst({
+      where: {
+        name: answer.name,
+      },
+    })
+    if (existingAnswer === null) {
+      await prisma.answers.create({
+        data: answer,
+      })
+    }
+  }
+}
+
+const createAnswerOptions = async () => {
+  const answer = await prisma.answers.findFirst({
+    where: {
+      name: "Skill Map Scale",
+    },
+  })
+  if (answer !== null) {
+    const answerOptions = Array.from({ length: 10 }, (_, i) => ({
+      answer_id: answer.id,
+      sequence_no: i + 1,
+      name: `${i + 1}`,
+      display_name: `${i + 1}`,
+    }))
+    for (const answerOption of answerOptions) {
+      const existingAnswerOption = await prisma.answer_options.findFirst({
+        where: {
+          name: answerOption.name,
+        },
+      })
+      if (existingAnswerOption === null) {
+        await prisma.answer_options.create({
+          data: answerOption,
+        })
+      }
+    }
+  }
+}
+
 async function main() {
   if (process.env.APP_ENV === Environment.Production) {
     await createRoles()
@@ -919,7 +967,8 @@ async function main() {
     await createEvaluationResults()
   }
   await setAnswerTypes()
-  await updateAnswerOptionsAndSkillRatings()
+  await createAnswers()
+  await createAnswerOptions()
 }
 
 main()
