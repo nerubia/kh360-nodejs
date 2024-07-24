@@ -6,9 +6,16 @@ import { sendEvaluationEmailJob } from "../jobs/send-evaluation-email-job"
 import { sendSurveyEmailJob } from "../jobs/send-survey-email-job"
 import { sendSkillMapEmailJob } from "../jobs/send-skill-map-email-job"
 
+const everyDaySchedule =
+  typeof process.env.EVERY_DAY_SCHEDULE === "string" ? process.env.EVERY_DAY_SCHEDULE : "0 0 * * *"
+const everyHourSchedule =
+  typeof process.env.EVERY_HOUR_SCHEDULE === "string"
+    ? process.env.EVERY_HOUR_SCHEDULE
+    : "*/5 * * * *"
+
 // 12am UTC - (8am SGT) 0 0 * * *
 // (5 mins for now)
-const everyDay = schedule.scheduleJob("*/1 * * * *", async () => {
+const everyDayJob = schedule.scheduleJob(everyDaySchedule, async () => {
   await updateEvaluationAdministrationsJob()
   await updateSurveyAdministrationsJob()
   await updateSkillMapAdministrationsJob()
@@ -16,10 +23,10 @@ const everyDay = schedule.scheduleJob("*/1 * * * *", async () => {
 
 // every hour 0 * * * *
 // (5mins for now)
-const everyHour = schedule.scheduleJob("*/1 * * * *", async () => {
+const everyHourJob = schedule.scheduleJob(everyHourSchedule, async () => {
   await sendEvaluationEmailJob()
   await sendSurveyEmailJob()
   await sendSkillMapEmailJob()
 })
 
-export default { everyDay, everyHour }
+export default { everyDayJob, everyHourJob }
