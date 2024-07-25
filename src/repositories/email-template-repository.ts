@@ -10,7 +10,13 @@ export const getDefault = async () => {
     },
   })
 }
-
+export const getByName = async (name: string) => {
+  return await prisma.email_templates.findFirst({
+    where: {
+      name,
+    },
+  })
+}
 export const getByTemplateType = async (template_type: string) => {
   return await prisma.email_templates.findFirst({
     where: {

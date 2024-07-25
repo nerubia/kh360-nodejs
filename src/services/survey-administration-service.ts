@@ -11,6 +11,7 @@ import CustomError from "../utils/custom-error"
 import { format } from "date-fns"
 import { SurveyAnswerStatus } from "../types/survey-answer-type"
 import { SurveyResultStatus } from "../types/survey-result-type"
+import { removeWhitespace } from "../utils/format-string"
 
 export const getAllByFilters = async (name: string, status: string, page: string) => {
   const itemsPerPage = 10
@@ -65,6 +66,11 @@ export const getAllByStatusAndEndDate = async (status: string, date: Date) => {
 }
 
 export const create = async (data: SurveyAdministration) => {
+  const { name } = data
+  const existingSurveyAdmin = await SurveyAdministrationRepository.getByName(removeWhitespace(name))
+  if (existingSurveyAdmin !== null) {
+    throw new CustomError("Survey name should be unique", 400)
+  }
   return await SurveyAdministrationRepository.create(data)
 }
 
@@ -73,7 +79,14 @@ export const updateById = async (id: number, data: SurveyAdministration) => {
   if (surveyAdministration === null) {
     throw new CustomError("Invalid Id.", 400)
   }
-
+  const existingSurveyAdmin = await SurveyAdministrationRepository.getByName(
+    removeWhitespace(data.name)
+  )
+  if (existingSurveyAdmin !== null) {
+    if (surveyAdministration.id !== existingSurveyAdmin.id) {
+      throw new CustomError("Survey name should be unique", 400)
+    }
+  }
   if (
     surveyAdministration.status !== SurveyAdministrationStatus.Draft &&
     surveyAdministration.status !== SurveyAdministrationStatus.Pending
