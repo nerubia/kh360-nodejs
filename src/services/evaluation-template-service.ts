@@ -12,6 +12,7 @@ import CustomError from "../utils/custom-error"
 import { EvaluationStatus } from "../types/evaluation-type"
 import { EvaluationTemplateType } from "../types/evaluation-template-type"
 import { type EvaluationTemplateContent } from "../types/evaluation-template-content-type"
+import { removeWhitespace } from "../utils/format-string"
 
 export const getById = async (id: number) => {
   const evaluationTemplate = await EvaluationTemplateRepository.getById(id)
@@ -198,11 +199,16 @@ export const create = async (
   data: Prisma.evaluation_templatesCreateInput,
   evaluationTemplateContents: Prisma.evaluation_template_contentsCreateInput[]
 ) => {
+  const existingEvaluationTemplate = await EvaluationTemplateRepository.getByName(
+    removeWhitespace(data.name as string)
+  )
+  if (existingEvaluationTemplate !== null) {
+    throw new CustomError("Evaluation Template name should be unique", 400)
+  }
   const { evaluator_role_id, evaluee_role_id } = data
 
   const forProjectRole = await ProjectRoleRepository.getAllByFilters({ for_project: true })
   const forProjectRoleIds = forProjectRole.map((role) => role.id)
-
   if (
     data.template_type === EvaluationTemplateType.ProjectEvaluation &&
     (!forProjectRoleIds.includes(evaluator_role_id ?? 0) ||
@@ -240,6 +246,15 @@ export const updateById = async (
 
   if (evaluationTemplate === null) {
     throw new CustomError("Id not found", 400)
+  }
+
+  const existingEvaluationTemplate = await EvaluationTemplateRepository.getByName(
+    removeWhitespace(data.name as string)
+  )
+  if (existingEvaluationTemplate !== null) {
+    if (existingEvaluationTemplate.id !== evaluationTemplate.id) {
+      throw new CustomError("Evaluation Template name should be unique", 400)
+    }
   }
 
   const forProjectRole = await ProjectRoleRepository.getAllByFilters({ for_project: true })

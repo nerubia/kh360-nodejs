@@ -9,7 +9,13 @@ export const getById = async (id: number) => {
     },
   })
 }
-
+export const getByName = async (name: string) => {
+  return await prisma.survey_administrations.findFirst({
+    where: {
+      name,
+    },
+  })
+}
 export const getAllByFilters = async (where: Prisma.survey_administrationsWhereInput) => {
   return await prisma.survey_administrations.findMany({
     where,
