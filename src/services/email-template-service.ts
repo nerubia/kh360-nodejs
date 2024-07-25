@@ -1,6 +1,7 @@
 import * as EmailTemplateRepository from "../repositories/email-template-repository"
 import { type EmailTemplate } from "../types/email-template-type"
 import CustomError from "../utils/custom-error"
+import { removeWhitespace } from "../utils/format-string"
 
 export const getDefault = async () => {
   return await EmailTemplateRepository.getDefault()
@@ -74,6 +75,10 @@ export const getAllByFilters = async (
 }
 
 export const create = async (data: EmailTemplate) => {
+  const existingEmailTemplate = await EmailTemplateRepository.getByName(removeWhitespace(data.name))
+  if (existingEmailTemplate !== null) {
+    throw new CustomError("Message Template name should be unique", 400)
+  }
   return await EmailTemplateRepository.create(data)
 }
 
@@ -82,6 +87,13 @@ export const updateById = async (id: number, data: EmailTemplate) => {
 
   if (emailTemplate === null) {
     throw new CustomError("Invalid id.", 400)
+  }
+
+  const existingEmailTemplate = await EmailTemplateRepository.getByName(removeWhitespace(data.name))
+  if (existingEmailTemplate !== null) {
+    if (existingEmailTemplate.id !== emailTemplate.id) {
+      throw new CustomError("Message Template name should be unique", 400)
+    }
   }
 
   return await EmailTemplateRepository.updateById(id, data)

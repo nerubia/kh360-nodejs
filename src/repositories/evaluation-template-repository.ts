@@ -9,7 +9,13 @@ export const getById = async (id: number) => {
     },
   })
 }
-
+export const getByName = async (name: string) => {
+  return await prisma.evaluation_templates.findFirst({
+    where: {
+      name,
+    },
+  })
+}
 export const getAllByFilters = async (where: Prisma.evaluation_templatesWhereInput) => {
   return await prisma.evaluation_templates.findMany({
     where,
