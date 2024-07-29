@@ -3,9 +3,10 @@ import * as SkillMapSearchService from "../../services/skill-map-search-service"
 import logger from "../../utils/logger"
 export const index = async (req: Request, res: Response) => {
   try {
-    const { name, skill, sortBy, page } = req.query
+    const { name, status, skill, sortBy, page } = req.query
     const skillMapSearch = await SkillMapSearchService.getAllByFilters(
       name as string,
+      status as string,
       skill as string,
       sortBy as string,
       page as string
