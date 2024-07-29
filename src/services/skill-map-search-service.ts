@@ -5,6 +5,7 @@ import { constructNameFilter } from "../utils/format-filter"
 
 export const getAllByFilters = async (
   name: string,
+  status: string,
   skill: string,
   sortBy: string,
   page: string
@@ -44,13 +45,35 @@ export const getAllByFilters = async (
     })
   }
 
+  if (status !== undefined && status.toLowerCase() !== "all") {
+    const isActive = status.toLowerCase() === "active"
+    Object.assign(where, {
+      skill_map_results: {
+        ...where.skill_map_results,
+        users: {
+          ...where.skill_map_results?.users,
+          is_active: isActive,
+        },
+      },
+    })
+  } else {
+    Object.assign(where, {
+      skill_map_results: {
+        ...where.skill_map_results,
+        users: {
+          ...where.skill_map_results?.users,
+          is_active: true,
+        },
+      },
+    })
+  }
+
   const skillMapRatings = await SkillMapSearchRepository.getLatestSkillMapRating(
     (currentPage - 1) * itemsPerPage,
     itemsPerPage,
     where,
     sortBy
   )
-
   const totalItems = await SkillMapSearchRepository.countAllByFiltersDistinctBySkill(where)
   const totalPages = Math.ceil(totalItems / itemsPerPage)
 
