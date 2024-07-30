@@ -60,16 +60,6 @@ export const getAllByFilters = async (
         },
       },
     })
-  } else {
-    Object.assign(where, {
-      skill_map_results: {
-        ...where.skill_map_results,
-        users: {
-          ...where.skill_map_results?.users,
-          is_active: true,
-        },
-      },
-    })
   }
 
   const skillMapRatings = await SkillMapSearchRepository.getLatestSkillMapRating(
