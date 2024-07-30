@@ -786,6 +786,40 @@ const createAnswerOptions = async () => {
   }
 }
 
+const updateAnswerOptions = async () => {
+  const answer = await prisma.answers.findFirst({
+    where: {
+      name: "Skill Map Scale",
+    },
+  })
+
+  if (answer !== null) {
+    const answerOptions = await prisma.answer_options.findMany({
+      where: {
+        answer_id: answer.id,
+      },
+    })
+
+    for (const answerOption of answerOptions) {
+      if (
+        answerOption.sequence_no !== null &&
+        answerOption.sequence_no !== undefined &&
+        answerOption.rate === null
+      ) {
+        const newRate = answerOption.sequence_no.toFixed(2)
+        await prisma.answer_options.update({
+          where: {
+            id: answerOption.id,
+          },
+          data: {
+            rate: newRate,
+          },
+        })
+      }
+    }
+  }
+}
+
 async function main() {
   if (process.env.APP_ENV === Environment.Production) {
     await createRoles()
@@ -807,6 +841,7 @@ async function main() {
   await setAnswerTypes()
   await createAnswers()
   await createAnswerOptions()
+  await updateAnswerOptions()
 }
 
 main()
