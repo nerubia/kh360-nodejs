@@ -14,6 +14,10 @@ export const getAllByFilters = async (
   const parsedPage = parseInt(page)
   const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
+  if (status === undefined) {
+    status = "Active"
+  }
+
   const where: Prisma.skill_map_ratingsWhereInput = {
     skill_map_results: {
       status: {
@@ -64,6 +68,7 @@ export const getAllByFilters = async (
     where,
     sortBy
   )
+
   const totalItems = await SkillMapSearchRepository.countAllByFiltersDistinctBySkill(where)
   const totalPages = Math.ceil(totalItems / itemsPerPage)
 
