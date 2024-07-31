@@ -11,7 +11,7 @@ export const getAllByFilters = async (
   status: number,
   page: string
 ) => {
-  const itemsPerPage = 2
+  const itemsPerPage = 20
   const parsedPage = parseInt(page)
   const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
