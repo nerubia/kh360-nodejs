@@ -38,6 +38,7 @@ import surveyTemplateRoute from "./routes/admin/survey-template-route"
 import surveyTemplateQuestionRoute from "./routes/admin/survey-template-question-route"
 import skillMapSearchRoute from "./routes/admin/skill-map-search-route"
 
+import testSuiteRoute from "./routes/test-suite/test-suite-route"
 import testItemRoute from "./routes/test-suite/test-item-route"
 
 import morgan from "morgan"
@@ -116,6 +117,7 @@ app.use("/admin/users", adminMiddleware, usersRoute)
  * Test Suite routes
  */
 
+app.use("/test-suite", authMiddleware, testSuiteRoute)
 app.use("/test-suite/items", authMiddleware, testItemRoute)
 
 export default app
