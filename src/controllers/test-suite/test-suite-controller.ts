@@ -1,4 +1,4 @@
-import axios, { type AxiosInstance } from "axios"
+import axios, { AxiosError, type AxiosInstance } from "axios"
 import { type Request, type Response } from "express"
 
 export const executeTest = async (req: Request, res: Response) => {
@@ -19,6 +19,21 @@ export const executeTest = async (req: Request, res: Response) => {
 
     res.json(response.data)
   } catch (error) {
+    if (error instanceof AxiosError) {
+      if (error.response !== undefined) {
+        const status = error.response.status
+        if (status === 400) {
+          return res.status(status).json({
+            message: "Invalid request",
+          })
+        }
+        if (status === 401) {
+          return res.status(status).json({
+            message: "Unauthorized",
+          })
+        }
+      }
+    }
     res.status(500).json({ message: "Something went wrong" })
   }
 }
