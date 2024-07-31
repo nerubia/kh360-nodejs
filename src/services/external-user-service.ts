@@ -122,7 +122,9 @@ export const getAllByFilters = async (
   const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
   const where = {
-    user_type: userType ?? "",
+    user_type: userType ?? {
+      in: ["", "evaluation"],
+    },
     role: {
       contains: evaluatorRole,
     },
