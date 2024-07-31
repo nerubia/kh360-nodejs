@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { type Prisma } from "@prisma/client"
 import { format } from "date-fns"
 import bcrypt from "bcrypt"
