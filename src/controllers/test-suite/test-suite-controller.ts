@@ -3,7 +3,7 @@ import { type Request, type Response } from "express"
 
 export const executeTest = async (req: Request, res: Response) => {
   try {
-    const { baseUrl, apiKey, httpMethod, payload } = req.body
+    const { baseUrl, apiKey, http_method, payload } = req.body
 
     const customAxios = axios.create({
       baseURL: baseUrl,
@@ -15,7 +15,7 @@ export const executeTest = async (req: Request, res: Response) => {
       withCredentials: true,
     })
 
-    const response = await makeRequest(customAxios, httpMethod, payload)
+    const response = await makeRequest(customAxios, http_method, payload)
 
     res.json(response.data)
   } catch (error) {
@@ -38,8 +38,8 @@ export const executeTest = async (req: Request, res: Response) => {
   }
 }
 
-const makeRequest = async (customAxios: AxiosInstance, httpMethod: string, payload: unknown) => {
-  switch (httpMethod) {
+const makeRequest = async (customAxios: AxiosInstance, http_method: string, payload: unknown) => {
+  switch (http_method) {
     case "get":
       return await customAxios.get("")
     case "post":
