@@ -35,12 +35,13 @@ export const index = async (req: Request, res: Response) => {
  * @param req.body.payload - Payload.
  * @param req.body.response - Response.
  * @param req.body.description - Description.
+ * @param req.body.status - Status.
  */
 export const store = async (req: Request, res: Response) => {
   try {
     const user = req.user
 
-    const { apiId, httpMethod, payload, response, description } = req.body
+    const { apiId, httpMethod, payload, response, description, status } = req.body
 
     await createTestItemSchema.validate({
       apiId,
@@ -48,6 +49,7 @@ export const store = async (req: Request, res: Response) => {
       payload,
       response,
       description,
+      status,
     })
 
     const newTestItem = await TestItemService.create(user, {
@@ -56,7 +58,7 @@ export const store = async (req: Request, res: Response) => {
       payload,
       response,
       description,
-      status: true,
+      status: Boolean(status),
     })
 
     res.json(newTestItem)
