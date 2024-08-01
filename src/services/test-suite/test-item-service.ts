@@ -88,7 +88,7 @@ export const create = async (user: UserToken, data: TestItem) => {
 
   return await TestItemRepository.create({
     test_apis_id: testApi.id,
-    http_method: data.httpMethod as $Enums.http_method,
+    http_method: data.http_method as $Enums.http_method,
     payload: data.payload,
     response: data.response,
     description: data.description,
@@ -122,7 +122,7 @@ export const updateById = async (user: UserToken, id: number, data: TestItem) =>
 
   return await TestItemRepository.updateById(testItem.id, {
     test_apis_id: testApi.id,
-    http_method: data.httpMethod as $Enums.http_method,
+    http_method: data.http_method as $Enums.http_method,
     payload: data.payload,
     response: data.response,
     description: data.description,

@@ -1,6 +1,6 @@
 export interface TestItem {
   apiId: number
-  httpMethod: string
+  http_method: string
   payload: string
   response: string
   description?: string
