@@ -959,25 +959,19 @@ const updateAnswerOptions = async () => {
     const answerOptions = await prisma.answer_options.findMany({
       where: {
         answer_id: answer.id,
+        rate: 0.0,
       },
     })
 
     for (const answerOption of answerOptions) {
-      if (
-        answerOption.sequence_no !== null &&
-        answerOption.sequence_no !== undefined &&
-        answerOption.rate === null
-      ) {
-        const newRate = answerOption.sequence_no.toFixed(2)
-        await prisma.answer_options.update({
-          where: {
-            id: answerOption.id,
-          },
-          data: {
-            rate: newRate,
-          },
-        })
-      }
+      await prisma.answer_options.update({
+        where: {
+          id: answerOption.id,
+        },
+        data: {
+          rate: parseInt(answerOption.name as string),
+        },
+      })
     }
   }
 }
