@@ -6,6 +6,7 @@ import prisma from "../../utils/prisma"
 import CustomError from "../../utils/custom-error"
 
 export const getAllByFilters = async (
+  id: string,
   apiId: number,
   name: string,
   status: number,
@@ -20,6 +21,12 @@ export const getAllByFilters = async (
   if (!isNaN(apiId)) {
     Object.assign(where, {
       test_apis_id: apiId,
+    })
+  }
+
+  if (id !== undefined) {
+    Object.assign(where, {
+      id: parseInt(id),
     })
   }
 

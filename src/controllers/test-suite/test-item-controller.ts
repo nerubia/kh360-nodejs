@@ -14,8 +14,9 @@ import CustomError from "../../utils/custom-error"
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const { apiId, name, status, page } = req.query
+    const { id, apiId, name, status, page } = req.query
     const results = await TestItemService.getAllByFilters(
+      id as string,
       parseInt(apiId as string),
       name as string,
       parseInt(status as string),
