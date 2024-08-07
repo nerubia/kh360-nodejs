@@ -75,6 +75,28 @@ export const store = async (req: Request, res: Response) => {
 }
 
 /**
+ * Show single test item
+ * @param req.params.id - Test item id
+ * @returns test item
+ */
+export const show = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const testItem = await TestItemService.getById(parseInt(id))
+    res.json(testItem)
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
  * Updatte an existing test item.
  * @param req.params.id -The ID of the test item to be updated
  * @param req.body.apiId - Api ID.
