@@ -76,7 +76,7 @@ export const store = async (req: Request, res: Response) => {
 
 /**
  * Show single test item
- * @param req.params.id - test item id
+ * @param req.params.id - Test item id
  * @returns test item
  */
 export const show = async (req: Request, res: Response) => {
