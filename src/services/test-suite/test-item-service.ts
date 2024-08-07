@@ -100,6 +100,10 @@ export const create = async (user: UserToken, data: TestItem) => {
   })
 }
 
+export const getById = async (id: number) => {
+  return await TestItemRepository.getById(id)
+}
+
 export const updateById = async (user: UserToken, id: number, data: TestItem) => {
   const testItem = await TestItemRepository.getById(id)
 
