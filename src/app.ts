@@ -46,10 +46,12 @@ import logger from "./utils/logger"
 
 const app: Application = express()
 
+const whitelist = process.env.WHITELIST !== undefined ? process.env.WHITELIST.split(",") : []
+
 app.use(
   cors({
     credentials: true,
-    origin: process.env.APP_URL,
+    origin: whitelist,
   })
 )
 app.use(bodyParser.json({ limit: "5mb" }))
