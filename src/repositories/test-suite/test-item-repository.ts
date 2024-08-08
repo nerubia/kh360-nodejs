@@ -26,17 +26,17 @@ export const countAllByFilters = async (where: Prisma.test_itemsWhereInput) => {
   return count
 }
 
+export const create = async (data: Prisma.test_itemsUncheckedCreateInput) => {
+  return await prisma.test_items.create({
+    data,
+  })
+}
+
 export const getById = async (id: number) => {
   return await prisma.test_items.findFirst({
     where: {
       id,
     },
-  })
-}
-
-export const create = async (data: Prisma.test_itemsUncheckedCreateInput) => {
-  return await prisma.test_items.create({
-    data,
   })
 }
 

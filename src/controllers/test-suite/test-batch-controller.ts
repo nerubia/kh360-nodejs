@@ -1,22 +1,20 @@
 import { type Request, type Response } from "express"
 import logger from "../../utils/logger"
-import * as TestItemService from "../../services/test-suite/test-item-service"
-import { createTestItemSchema } from "../../utils/validation/test-item-schema"
+import * as TestBatchService from "../../services/test-suite/test-batch-service"
+import { createTestBatchSchema } from "../../utils/validation/test-batch-schema"
 import { ValidationError } from "yup"
 import CustomError from "../../utils/custom-error"
 
 /**
- * List test items based on provided filters.
- * @param req.query.apiId - Filter by api id.
+ * List test batches based on provided filters.
  * @param req.query.name - Filter by name.
  * @param req.query.status - Filter by status.
  * @param req.query.page - Page number for pagination.
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const { apiId, name, status, page } = req.query
-    const results = await TestItemService.getAllByFilters(
-      parseInt(apiId as string),
+    const { name, status, page } = req.query
+    const results = await TestBatchService.getAllByFilters(
       name as string,
       parseInt(status as string),
       page as string
@@ -29,11 +27,8 @@ export const index = async (req: Request, res: Response) => {
 }
 
 /**
- * Store a new test item.
- * @param req.body.apiId - Api ID.
- * @param req.body.http_method - Http method.
- * @param req.body.payload - Payload.
- * @param req.body.response - Response.
+ * Store a new test batch.
+ * @param req.body.name - Name.
  * @param req.body.description - Description.
  * @param req.body.status - Status.
  */
@@ -41,27 +36,21 @@ export const store = async (req: Request, res: Response) => {
   try {
     const user = req.user
 
-    const { apiId, http_method, payload, response, description, status } = req.body
+    const { name, description, status } = req.body
 
-    await createTestItemSchema.validate({
-      apiId,
-      http_method,
-      payload,
-      response,
+    await createTestBatchSchema.validate({
+      name,
       description,
       status,
     })
 
-    const newTestItem = await TestItemService.create(user, {
-      apiId: parseInt(apiId as string),
-      http_method,
-      payload,
-      response,
+    const newTestBatch = await TestBatchService.create(user, {
+      name,
       description,
       status: Boolean(status),
     })
 
-    res.json(newTestItem)
+    res.json(newTestBatch)
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
@@ -75,15 +64,14 @@ export const store = async (req: Request, res: Response) => {
 }
 
 /**
- * Get a specific test item by ID.
- * @param req.params.id - Test item id
- * @returns test item
+ * Get a specific test batch by ID.
+ * @param req.params.id - Test batch id
  */
 export const show = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const testItem = await TestItemService.getById(parseInt(id))
-    res.json(testItem)
+    const testBatch = await TestBatchService.getById(parseInt(id))
+    res.json(testBatch)
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
@@ -97,12 +85,9 @@ export const show = async (req: Request, res: Response) => {
 }
 
 /**
- * Update an existing test item.
- * @param req.params.id - The ID of the test item to be updated
- * @param req.body.apiId - Api ID.
- * @param req.body.http_method - Http method.
- * @param req.body.payload - Payload.
- * @param req.body.response - Response.
+ * Update an existing test batch.
+ * @param req.params.id - The ID of the test batch to be updated
+ * @param req.body.name - Name.
  * @param req.body.description - Description.
  */
 export const update = async (req: Request, res: Response) => {
@@ -110,27 +95,21 @@ export const update = async (req: Request, res: Response) => {
     const user = req.user
 
     const { id } = req.params
-    const { apiId, http_method, payload, response, description } = req.body
+    const { name, description, status } = req.body
 
-    await createTestItemSchema.validate({
-      apiId,
-      http_method,
-      payload,
-      response,
+    await createTestBatchSchema.validate({
+      name,
       description,
       status,
     })
 
-    const updatedTestItem = await TestItemService.updateById(user, parseInt(id), {
-      apiId: parseInt(apiId as string),
-      http_method,
-      payload,
-      response,
+    const updatedTestBatch = await TestBatchService.updateById(user, parseInt(id), {
+      name,
       description,
       status: Boolean(status),
     })
 
-    res.json(updatedTestItem)
+    res.json(updatedTestBatch)
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
@@ -144,14 +123,14 @@ export const update = async (req: Request, res: Response) => {
 }
 
 /**
- * Delete test item
- * @param req.params.id - The ID of the test item to be deleted
+ * Delete test batch
+ * @param req.params.id - The ID of the test batch to be deleted
  */
 export const destroy = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    await TestItemService.deleteById(parseInt(id))
-    res.json({ id, message: "Test item successfully deleted" })
+    await TestBatchService.deleteById(parseInt(id))
+    res.json({ id, message: "Test batch successfully deleted" })
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
