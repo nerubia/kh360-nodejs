@@ -1842,18 +1842,39 @@ model test_apis {
 }
 
 model test_items {
-  id           Int         @id @default(autoincrement())
+  id           Int                @id @default(autoincrement())
   test_apis_id Int?
   http_method  http_method
-  payload      String      @db.Text
-  response     String      @db.Text
-  description  String?     @db.Text
+  payload      String             @db.Text
+  response     String             @db.Text
+  description  String?            @db.Text
   status       Boolean
-  created_at   DateTime    @default(now()) @db.Timestamp(0)
+  created_at   DateTime           @default(now()) @db.Timestamp(0)
   created_by   Int
-  updated_at   DateTime    @default(now()) @db.Timestamp(0)
+  updated_at   DateTime           @default(now()) @db.Timestamp(0)
   updated_by   Int
-  test_apis    test_apis?  @relation(fields: [test_apis_id], references: [id])
+  test_apis    test_apis?         @relation(fields: [test_apis_id], references: [id])
+  test_batches test_batch_items[]
+}
+
+model test_batches {
+  id          Int                @id @default(autoincrement())
+  name        String             @db.VarChar(255)
+  description String             @db.Text
+  status      Boolean
+  created_at  DateTime           @default(now()) @db.Timestamp(0)
+  created_by  Int
+  updated_at  DateTime           @default(now()) @db.Timestamp(0)
+  updated_by  Int
+  test_items  test_batch_items[]
+}
+
+model test_batch_items {
+  id              Int           @id @default(autoincrement())
+  test_batches_id Int?
+  test_items_id   Int?
+  test_batches    test_batches? @relation(fields: [test_batches_id], references: [id])
+  test_items      test_items?   @relation(fields: [test_items_id], references: [id])
 }
 
 enum http_method {
