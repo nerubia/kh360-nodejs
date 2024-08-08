@@ -13,9 +13,6 @@ export const paginateByFilters = async (
     orderBy: {
       status: "desc",
     },
-    include: {
-      test_items: true,
-    },
   })
 }
 
