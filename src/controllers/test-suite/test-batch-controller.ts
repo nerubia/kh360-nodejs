@@ -36,18 +36,20 @@ export const store = async (req: Request, res: Response) => {
   try {
     const user = req.user
 
-    const { name, description, status } = req.body
+    const { name, description, status, itemIds } = req.body
 
     await createTestBatchSchema.validate({
       name,
       description,
       status,
+      itemIds,
     })
 
     const newTestBatch = await TestBatchService.create(user, {
       name,
       description,
       status: Boolean(status),
+      itemIds,
     })
 
     res.json(newTestBatch)
@@ -95,18 +97,20 @@ export const update = async (req: Request, res: Response) => {
     const user = req.user
 
     const { id } = req.params
-    const { name, description, status } = req.body
+    const { name, description, status, itemIds } = req.body
 
     await createTestBatchSchema.validate({
       name,
       description,
       status,
+      itemIds,
     })
 
     const updatedTestBatch = await TestBatchService.updateById(user, parseInt(id), {
       name,
       description,
       status: Boolean(status),
+      itemIds,
     })
 
     res.json(updatedTestBatch)

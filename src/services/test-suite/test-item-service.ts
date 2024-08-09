@@ -1,8 +1,8 @@
 import { type $Enums, type Prisma } from "@prisma/client"
 import * as TestItemRepository from "../../repositories/test-suite/test-item-repository"
+import * as TestApiRepository from "../../repositories/test-suite/test-api-repository"
 import { type TestItem } from "../../types/test-item-type"
 import { type UserToken } from "../../types/user-token-type"
-import prisma from "../../utils/prisma"
 import CustomError from "../../utils/custom-error"
 
 export const getAllByFilters = async (
@@ -73,12 +73,7 @@ export const getAllByFilters = async (
 }
 
 export const create = async (user: UserToken, data: TestItem) => {
-  // TODO: use test api repository
-  const testApi = await prisma.test_apis.findFirst({
-    where: {
-      id: data.apiId,
-    },
-  })
+  const testApi = await TestApiRepository.getById(data.apiId)
 
   if (testApi === null) {
     throw new CustomError("Test api not found", 400)
@@ -111,12 +106,7 @@ export const updateById = async (user: UserToken, id: number, data: TestItem) =>
     throw new CustomError("Test item not found", 400)
   }
 
-  // TODO: use test api repository
-  const testApi = await prisma.test_apis.findFirst({
-    where: {
-      id: data.apiId,
-    },
-  })
+  const testApi = await TestApiRepository.getById(data.apiId)
 
   if (testApi === null) {
     throw new CustomError("Test api not found", 400)
