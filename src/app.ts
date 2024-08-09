@@ -45,6 +45,7 @@ import testBatchRoute from "./routes/test-suite/test-batch-route"
 
 import morgan from "morgan"
 import logger from "./utils/logger"
+import jsonSchemaRoute from "./routes/admin/json-schema-route"
 
 const app: Application = express()
 
@@ -116,6 +117,7 @@ app.use("/admin/survey-results", adminMiddleware, surveyResultRoute)
 app.use("/admin/survey-templates", adminMiddleware, surveyTemplateRoute)
 app.use("/admin/survey-template-questions", adminMiddleware, surveyTemplateQuestionRoute)
 app.use("/admin/users", adminMiddleware, usersRoute)
+app.use("/admin/json-schema", adminMiddleware, jsonSchemaRoute)
 
 /**
  * Test Suite routes

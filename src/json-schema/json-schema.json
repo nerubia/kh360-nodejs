@@ -1,0 +1,5238 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "access_tokens": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "user_id": {
+          "type": "integer"
+        },
+        "token": {
+          "type": "string"
+        },
+        "has_expired": {
+          "type": "integer",
+          "default": 0
+        },
+        "expiry_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "admins": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "user_id": {
+          "type": ["integer", "null"]
+        },
+        "email": {
+          "type": "string",
+          "default": ""
+        },
+        "encrypted_password": {
+          "type": "string",
+          "default": ""
+        },
+        "reset_password_token": {
+          "type": ["string", "null"]
+        },
+        "reset_password_sent_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "remember_created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "sign_in_count": {
+          "type": "integer",
+          "default": 0
+        },
+        "current_sign_in_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "last_sign_in_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "current_sign_in_ip": {
+          "type": ["string", "null"]
+        },
+        "last_sign_in_ip": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "answer_options": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "answer_id": {
+          "type": ["integer", "null"]
+        },
+        "sequence_no": {
+          "type": ["integer", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "display_name": {
+          "type": ["string", "null"]
+        },
+        "answer_type": {
+          "type": ["string", "null"]
+        },
+        "rate": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "is_active": {
+          "type": ["boolean", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "skill_map_ratings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/skill_map_ratings"
+          }
+        }
+      }
+    },
+    "answers": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "is_active": {
+          "type": ["boolean", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "approval_manifest_logs": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "user_id": {
+          "type": ["integer", "null"]
+        },
+        "approval_manifest_id": {
+          "type": ["integer", "null"]
+        },
+        "approver_id": {
+          "type": ["integer", "null"]
+        },
+        "admin_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "approval_manifests": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "status": {
+          "type": "string",
+          "default": "active",
+          "enum": ["active", "inactive"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "approvers": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/approvers"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "users": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/users"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "approvers": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "status": {
+          "type": "string",
+          "default": "active",
+          "enum": ["active", "inactive"]
+        },
+        "approver_for": {
+          "type": "string",
+          "default": "leave",
+          "enum": ["leave", "overtime", "other"]
+        },
+        "other_status": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "approval_manifests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/approval_manifests"
+          }
+        },
+        "users": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/users"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "ar_internal_metadata": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "attendances": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "user_id": {
+          "type": ["integer", "null"]
+        },
+        "att_type": {
+          "type": ["integer", "null"],
+          "default": 0
+        },
+        "late_flag": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "hours_worked": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "hours_late": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "hours_ut": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "hours_unpaid": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "review_status": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "chairs": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "code": {
+          "type": ["string", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "location": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "occupants": {
+          "type": ["integer", "null"]
+        }
+      }
+    },
+    "cities": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "local_name": {
+          "type": ["string", "null"]
+        },
+        "slug": {
+          "type": ["string", "null"]
+        },
+        "state": {
+          "type": ["string", "null"]
+        },
+        "local_state": {
+          "type": ["string", "null"]
+        },
+        "zip": {
+          "type": ["string", "null"]
+        },
+        "country": {
+          "type": ["string", "null"]
+        },
+        "local_country": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "clients": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "display_name": {
+          "type": ["string", "null"]
+        },
+        "contact_first_name": {
+          "type": ["string", "null"]
+        },
+        "contact_last_name": {
+          "type": ["string", "null"]
+        },
+        "contact_no": {
+          "type": ["string", "null"]
+        },
+        "email": {
+          "type": ["string", "null"]
+        },
+        "address1": {
+          "type": ["string", "null"]
+        },
+        "address2": {
+          "type": ["string", "null"]
+        },
+        "city": {
+          "type": ["string", "null"]
+        },
+        "state": {
+          "type": ["string", "null"]
+        },
+        "country_id": {
+          "type": ["integer", "null"]
+        },
+        "postal_code": {
+          "type": ["integer", "null"]
+        },
+        "company_id": {
+          "type": ["integer", "null"]
+        },
+        "currency_id": {
+          "type": ["integer", "null"]
+        },
+        "payment_term_id": {
+          "type": ["integer", "null"]
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "status": {
+          "type": ["string", "null"],
+          "default": "Active"
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "is_delinquent": {
+          "type": ["boolean", "null"],
+          "default": false
+        }
+      }
+    },
+    "companies": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "shorthand": {
+          "type": ["string", "null"]
+        },
+        "slug": {
+          "type": "string"
+        },
+        "city": {
+          "type": ["string", "null"]
+        },
+        "state": {
+          "type": ["string", "null"]
+        },
+        "country": {
+          "type": ["string", "null"]
+        },
+        "zip": {
+          "type": ["string", "null"]
+        },
+        "moderator_id": {
+          "type": ["integer", "null"]
+        },
+        "public_url": {
+          "type": ["string", "null"]
+        },
+        "email": {
+          "type": ["string", "null"]
+        },
+        "phone": {
+          "type": ["string", "null"]
+        },
+        "street": {
+          "type": ["string", "null"]
+        },
+        "static_ip": {
+          "type": ["string", "null"]
+        },
+        "is_active": {
+          "type": ["boolean", "null"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "company_ip_addresses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/company_ip_addresses"
+          }
+        },
+        "company_teams": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/company_teams"
+          }
+        },
+        "company_users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/company_users"
+          }
+        },
+        "leave_periods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/leave_periods"
+          }
+        },
+        "leave_types": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/leave_types"
+          }
+        }
+      }
+    },
+    "company_ip_addresses": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "ip_address": {
+          "type": "string"
+        },
+        "companies": {
+          "$ref": "#/definitions/companies"
+        }
+      }
+    },
+    "company_teams": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "teams": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/teams"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "companies": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/companies"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "company_users": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "user_level": {
+          "type": "string",
+          "default": "user",
+          "enum": ["user", "admin", "root"]
+        },
+        "user_status": {
+          "type": "string",
+          "default": "Active",
+          "enum": [
+            "New",
+            "OnBoarding",
+            "Active",
+            "Inactive",
+            "Exiting",
+            "Resigned",
+            "Retired",
+            "Terminated"
+          ]
+        },
+        "uid": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "users": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/users"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "companies": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/companies"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "computers": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "code": {
+          "type": ["string", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "os": {
+          "type": ["string", "null"]
+        },
+        "processor": {
+          "type": ["string", "null"]
+        },
+        "ram": {
+          "type": ["string", "null"]
+        },
+        "storage": {
+          "type": ["string", "null"]
+        },
+        "gpu": {
+          "type": ["string", "null"]
+        },
+        "serial_number": {
+          "type": ["string", "null"]
+        },
+        "cd_key": {
+          "type": ["string", "null"]
+        },
+        "notes": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "contract_logs": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "contract_id": {
+          "type": ["integer", "null"]
+        },
+        "action": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "prev_status": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "new_status": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "user_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "contracts": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "client_id": {
+          "type": ["integer", "null"]
+        },
+        "company_id": {
+          "type": ["integer", "null"]
+        },
+        "project_id": {
+          "type": ["integer", "null"]
+        },
+        "contract_no": {
+          "type": ["string", "null"]
+        },
+        "parent_contract_id": {
+          "type": ["integer", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "contract_type": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "start_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "end_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "auto_renew": {
+          "type": ["boolean", "null"]
+        },
+        "addendum": {
+          "type": ["boolean", "null"],
+          "default": false
+        },
+        "addendum_sequence_no": {
+          "type": ["integer", "null"]
+        },
+        "client_liaison_id": {
+          "type": ["integer", "null"]
+        },
+        "currency_id": {
+          "type": ["integer", "null"]
+        },
+        "contract_amount": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "est_monthly_rate": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "est_monthly_mm": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "total_mm": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "payment_term_id": {
+          "type": ["integer", "null"]
+        },
+        "type": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "status": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "is_signed": {
+          "type": ["boolean", "null"]
+        },
+        "draft_google_link": {
+          "type": ["string", "null"]
+        },
+        "draft_filename": {
+          "type": ["string", "null"]
+        },
+        "contract_filename": {
+          "type": ["string", "null"]
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "countries": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "full_name": {
+          "type": ["string", "null"]
+        },
+        "capital": {
+          "type": ["string", "null"]
+        },
+        "citizenship": {
+          "type": ["string", "null"]
+        },
+        "currency": {
+          "type": ["string", "null"]
+        },
+        "currency_code": {
+          "type": ["string", "null"]
+        },
+        "currency_sub_unit": {
+          "type": ["string", "null"]
+        },
+        "iso_3166_2": {
+          "type": ["string", "null"]
+        },
+        "iso_3166_3": {
+          "type": ["string", "null"]
+        },
+        "country_code": {
+          "type": ["string", "null"]
+        },
+        "region_code": {
+          "type": ["string", "null"]
+        },
+        "sub_region_code": {
+          "type": ["string", "null"]
+        },
+        "eea": {
+          "type": ["integer", "null"]
+        },
+        "is_active": {
+          "type": ["boolean", "null"]
+        }
+      }
+    },
+    "currencies": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "code": {
+          "type": ["string", "null"]
+        },
+        "prefix": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "email_logs": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "email_type": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "user_id": {
+          "type": ["integer", "null"]
+        },
+        "email_address": {
+          "type": "string",
+          "default": ""
+        },
+        "sent_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "subject": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "content": {
+          "type": ["string", "null"]
+        },
+        "notes": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "mail_id": {
+          "type": "string",
+          "default": ""
+        },
+        "email_status": {
+          "type": "string",
+          "default": ""
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "email_recipients": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "email_type": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "email": {
+          "type": "string",
+          "default": ""
+        },
+        "status": {
+          "type": ["boolean", "null"],
+          "default": true
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "email_templates": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "template_type": {
+          "type": ["string", "null"]
+        },
+        "is_default": {
+          "type": ["boolean", "null"]
+        },
+        "subject": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "content": {
+          "type": ["string", "null"]
+        },
+        "created_by_id": {
+          "type": ["integer", "null"]
+        },
+        "updated_by_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "evaluation_administrations": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "eval_schedule_start_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "eval_schedule_end_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "eval_period_start_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "eval_period_end_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "email_subject": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "email_content": {
+          "type": ["string", "null"]
+        },
+        "status": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "created_by_id": {
+          "type": ["integer", "null"]
+        },
+        "updated_by_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "evaluation_ratings": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "evaluation_administration_id": {
+          "type": ["integer", "null"]
+        },
+        "evaluation_id": {
+          "type": ["integer", "null"]
+        },
+        "evaluation_template_id": {
+          "type": ["integer", "null"]
+        },
+        "evaluation_template_content_id": {
+          "type": ["integer", "null"]
+        },
+        "answer_option_id": {
+          "type": ["integer", "null"]
+        },
+        "rate": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "percentage": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "score": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "comments": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "evaluation_result_details": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "evaluation_administration_id": {
+          "type": ["integer", "null"]
+        },
+        "user_id": {
+          "type": ["integer", "null"]
+        },
+        "evaluation_result_id": {
+          "type": ["integer", "null"]
+        },
+        "evaluation_template_id": {
+          "type": ["integer", "null"]
+        },
+        "score": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "weight": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "zscore": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "weighted_score": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "weighted_zscore": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "banding": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "score_ratings": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/score_ratings"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "evaluation_results": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "evaluation_administration_id": {
+          "type": ["integer", "null"]
+        },
+        "score": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "zscore": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "banding": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "submitted_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "employee_comments": {
+          "type": ["string", "null"]
+        },
+        "cm_comments": {
+          "type": ["string", "null"]
+        },
+        "action_plans": {
+          "type": ["string", "null"]
+        },
+        "status": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "created_by_id": {
+          "type": ["integer", "null"]
+        },
+        "updated_by_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "users": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/users"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "score_ratings": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/score_ratings"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "evaluation_setups": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "evaluator_role_id": {
+          "type": ["integer", "null"]
+        },
+        "evaluee_role_id": {
+          "type": ["integer", "null"]
+        },
+        "evaluation_template_id": {
+          "type": ["integer", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "is_active": {
+          "type": ["boolean", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "evaluation_template_contents": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "evaluation_template_id": {
+          "type": ["integer", "null"]
+        },
+        "sequence_no": {
+          "type": ["integer", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "category": {
+          "type": ["string", "null"]
+        },
+        "rate": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "is_active": {
+          "type": ["boolean", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "evaluation_templates": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "display_name": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "template_type": {
+          "type": ["string", "null"]
+        },
+        "template_class": {
+          "type": ["string", "null"]
+        },
+        "with_recommendation": {
+          "type": ["boolean", "null"],
+          "default": false
+        },
+        "evaluator_role_id": {
+          "type": ["integer", "null"]
+        },
+        "evaluee_role_id": {
+          "type": ["integer", "null"]
+        },
+        "rate": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "answer_id": {
+          "type": ["integer", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "is_active": {
+          "type": ["boolean", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "evaluations": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "evaluation_template_id": {
+          "type": ["integer", "null"]
+        },
+        "evaluation_administration_id": {
+          "type": ["integer", "null"]
+        },
+        "evaluation_result_id": {
+          "type": ["integer", "null"]
+        },
+        "evaluator_id": {
+          "type": ["integer", "null"]
+        },
+        "evaluee_id": {
+          "type": ["integer", "null"]
+        },
+        "project_id": {
+          "type": ["integer", "null"]
+        },
+        "for_evaluation": {
+          "type": ["boolean", "null"],
+          "default": false
+        },
+        "eval_start_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "eval_end_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "percent_involvement": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "score": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "weight": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "weighted_score": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "zscore": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "weighted_zscore": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "comments": {
+          "type": ["string", "null"]
+        },
+        "recommendations": {
+          "type": ["string", "null"]
+        },
+        "status": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "batch_name": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "filename": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "submission_method": {
+          "type": ["string", "null"],
+          "default": "Manual"
+        },
+        "submitted_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "is_external": {
+          "type": ["boolean", "null"]
+        },
+        "external_evaluator_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "project_members": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/project_members"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "external_users": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "email": {
+          "type": "string",
+          "default": ""
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "middle_name": {
+          "type": ["string", "null"]
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "user_type": {
+          "type": "string"
+        },
+        "role": {
+          "type": ["string", "null"]
+        },
+        "company": {
+          "type": ["string", "null"]
+        },
+        "access_token": {
+          "type": ["string", "null"]
+        },
+        "code": {
+          "type": ["string", "null"]
+        },
+        "failed_attempts": {
+          "type": ["integer", "null"]
+        },
+        "locked_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "created_by_id": {
+          "type": ["integer", "null"]
+        },
+        "updated_by_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "holidays": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "holiday_type": {
+          "type": ["string", "null"]
+        },
+        "recurring": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "invoices": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "client_id": {
+          "type": ["integer", "null"]
+        },
+        "company_id": {
+          "type": ["integer", "null"]
+        },
+        "contract_id": {
+          "type": ["integer", "null"]
+        },
+        "currency_id": {
+          "type": ["integer", "null"]
+        },
+        "invoice_no": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "details": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "invoice_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "due_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "payment_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "invoice_amount": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "tax_amount": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "payment_amount": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "invoice_status": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "payment_status": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "item_assignments": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "item_id": {
+          "type": ["integer", "null"]
+        },
+        "user_id": {
+          "type": ["integer", "null"]
+        },
+        "start_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "end_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "status": {
+          "type": ["integer", "null"]
+        },
+        "notes": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "items": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "status": {
+          "type": ["integer", "null"]
+        },
+        "company_id": {
+          "type": ["integer", "null"]
+        },
+        "asset_code": {
+          "type": ["string", "null"]
+        },
+        "inventory_id": {
+          "type": ["integer", "null"]
+        },
+        "inventory_type": {
+          "type": ["string", "null"]
+        },
+        "inventory_category": {
+          "type": ["string", "null"]
+        },
+        "date_purchased": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "price": {
+          "type": ["number", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "leave_breakdowns": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "leave_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "duration": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "duration_type": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "leaves": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/leaves"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "users": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/users"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "leave_credit_logs": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "leave_credit_id": {
+          "type": ["integer", "null"]
+        },
+        "action": {
+          "type": ["string", "null"]
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "admin_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "leave_credits": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "carried_over": {
+          "type": ["number", "null"]
+        },
+        "remaining": {
+          "type": ["number", "null"]
+        },
+        "applied": {
+          "type": ["number", "null"]
+        },
+        "scheduled": {
+          "type": ["number", "null"]
+        },
+        "taken": {
+          "type": ["number", "null"]
+        },
+        "add_on": {
+          "type": ["number", "null"]
+        },
+        "default": {
+          "type": ["number", "null"]
+        },
+        "total": {
+          "type": ["number", "null"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "leave_types": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/leave_types"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "leave_periods": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/leave_periods"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "users": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/users"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "user_leaves": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/user_leaves"
+          }
+        }
+      }
+    },
+    "leave_logs": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "leave_id": {
+          "type": ["integer", "null"]
+        },
+        "action": {
+          "type": ["string", "null"]
+        },
+        "updated_by_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "leave_periods": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "from_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "to_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "leave_credits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/leave_credits"
+          }
+        },
+        "companies": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/companies"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "leave_types": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "leave_credits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/leave_credits"
+          }
+        },
+        "companies": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/companies"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "leaves": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "leave_type_id": {
+          "type": ["integer", "null"]
+        },
+        "starts_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "ends_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "status": {
+          "type": ["string", "null"],
+          "default": "default",
+          "enum": ["default", "pending", "approved", "denied", "expired", "taken", "canceled"]
+        },
+        "type_of_leave": {
+          "type": ["string", "null"],
+          "default": "vacation",
+          "enum": ["vacation", "sick", "emergency", "other"]
+        },
+        "comments": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "leave_breakdowns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/leave_breakdowns"
+          }
+        },
+        "users": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/users"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "user_leaves": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/user_leaves"
+          }
+        }
+      }
+    },
+    "memo_categories": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "no": {
+          "type": ["string", "null"]
+        },
+        "memo_group_id": {
+          "type": ["integer", "null"]
+        },
+        "memo_type_id": {
+          "type": ["integer", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "is_active": {
+          "type": ["boolean", "null"]
+        }
+      }
+    },
+    "memo_groups": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "no": {
+          "type": ["string", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "is_active": {
+          "type": ["boolean", "null"]
+        }
+      }
+    },
+    "memo_penalties": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "memo_type_id": {
+          "type": ["integer", "null"]
+        },
+        "offense_count": {
+          "type": ["integer", "null"]
+        },
+        "sequence_no": {
+          "type": ["integer", "null"]
+        },
+        "penalty": {
+          "type": ["string", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "is_active": {
+          "type": ["boolean", "null"]
+        }
+      }
+    },
+    "memo_types": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "is_active": {
+          "type": ["boolean", "null"]
+        }
+      }
+    },
+    "overtime_breakdown_logs": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "overtime_id": {
+          "type": ["integer", "null"]
+        },
+        "overtime_breakdown_id": {
+          "type": ["integer", "null"]
+        },
+        "user_id": {
+          "type": ["integer", "null"]
+        },
+        "status": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "overtime_breakdowns": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "overtime_id": {
+          "type": ["integer", "null"]
+        },
+        "total_hours": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "total_deductions": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "wd_no_prem": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "wd_no_prem_night": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "wd_regular": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "wd_premium": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "rd_regular": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "rd_premium": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "sh_regular": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "sh_premium": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "sh_on_rd_regular": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "sh_on_rd_premium": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "rh_regular": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "rh_premium": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "rh_on_rd_regular": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "rh_on_rd_premium": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "status": {
+          "type": ["string", "null"],
+          "enum": ["Reviewed", "For_Review", "Pending"]
+        }
+      }
+    },
+    "overtime_logs": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "overtime_id": {
+          "type": ["integer", "null"]
+        },
+        "user_id": {
+          "type": ["integer", "null"]
+        },
+        "action": {
+          "type": ["string", "null"]
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "overtimes": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "starts_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "ends_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "status": {
+          "type": ["string", "null"],
+          "default": "default",
+          "enum": ["default", "pending", "approved", "denied", "canceled"]
+        },
+        "notes": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "project_name": {
+          "type": ["string", "null"]
+        },
+        "with_meal_break": {
+          "type": ["boolean", "null"]
+        },
+        "users": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/users"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "payment_terms": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "sequence_no": {
+          "type": ["integer", "null"]
+        },
+        "no_of_days": {
+          "type": ["integer", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "is_active": {
+          "type": ["boolean", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "payroll_batches": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "payroll_batch": {
+          "type": ["string", "null"]
+        },
+        "payroll_period": {
+          "type": ["string", "null"]
+        },
+        "payroll_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "status": {
+          "type": ["boolean", "null"]
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "payslips": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "user_id": {
+          "type": ["integer", "null"]
+        },
+        "payroll_batch": {
+          "type": ["string", "null"]
+        },
+        "payroll_period": {
+          "type": ["string", "null"]
+        },
+        "payroll_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "days_vl": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "days_sl": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "days_el": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "days_ol": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "days_absent": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "hours_late": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "hours_ot": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "dec_basic": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "dec_vl": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "dec_sl": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "dec_el": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "dec_ol": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "dec_absences": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "dec_lates": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "dec_ot": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "dec_late_credits": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "dec_other_income": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "less_sss": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "less_ph": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "less_hdmf": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "less_tax": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "less_others": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "less_loan_sss_salary": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "less_loan_sss_calamity": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "less_loan_hdmf_salary": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "less_loan_hdmf_calamity": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "less_loan_co_salary": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "less_loan_co_gadget": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "less_loan_co_others": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "dec_net_pay": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "send_email": {
+          "type": ["boolean", "null"],
+          "default": false
+        },
+        "status": {
+          "type": ["string", "null"]
+        },
+        "filename": {
+          "type": ["string", "null"]
+        },
+        "payslip_sent_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "project_infos": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "git_url": {
+          "type": ["string", "null"]
+        },
+        "git_clone_link": {
+          "type": ["string", "null"]
+        },
+        "github": {
+          "type": ["string", "null"]
+        },
+        "bitbucket": {
+          "type": ["string", "null"]
+        },
+        "trello": {
+          "type": ["string", "null"]
+        },
+        "jira": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "projects": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/projects"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "project_member_skills": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "sequence_no": {
+          "type": ["integer", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "status": {
+          "type": ["boolean", "null"]
+        },
+        "start_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "end_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "project_member": {
+          "$ref": "#/definitions/project_members"
+        },
+        "skills": {
+          "$ref": "#/definitions/skills"
+        }
+      }
+    },
+    "project_members": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "project_id": {
+          "type": ["integer", "null"]
+        },
+        "user_id": {
+          "type": ["integer", "null"]
+        },
+        "project_role_id": {
+          "type": ["integer", "null"]
+        },
+        "start_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "end_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "allocation_rate": {
+          "type": ["number", "null"],
+          "default": 100
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "evaluations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/evaluations"
+          }
+        },
+        "project_member_skills": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/project_member_skills"
+          }
+        }
+      }
+    },
+    "project_skills": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "sequence_no": {
+          "type": ["integer", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "status": {
+          "type": ["boolean", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "projects": {
+          "$ref": "#/definitions/projects"
+        },
+        "skills": {
+          "$ref": "#/definitions/skills"
+        }
+      }
+    },
+    "project_roles": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "short_name": {
+          "type": ["string", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "is_evaluee": {
+          "type": ["boolean", "null"],
+          "default": false
+        },
+        "for_project": {
+          "type": ["boolean", "null"],
+          "default": false
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "project_tasks": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "projects": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/projects"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tasks": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/tasks"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "project_teams": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "teams": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/teams"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "projects": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/projects"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "projects": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "slug": {
+          "type": ["string", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "type": {
+          "type": ["string", "null"]
+        },
+        "client_id": {
+          "type": ["integer", "null"]
+        },
+        "start_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "end_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "status": {
+          "type": ["string", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "project_infos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/project_infos"
+          }
+        },
+        "project_tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/project_tasks"
+          }
+        },
+        "project_teams": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/project_teams"
+          }
+        },
+        "project_skills": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/project_skills"
+          }
+        }
+      }
+    },
+    "schema_migrations": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "score_ratings": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "display_name": {
+          "type": ["string", "null"]
+        },
+        "min_score": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "max_score": {
+          "type": ["number", "null"],
+          "default": 0
+        },
+        "result_description": {
+          "type": ["string", "null"]
+        },
+        "evaluee_description": {
+          "type": ["string", "null"]
+        },
+        "status": {
+          "type": ["boolean", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "evaluation_results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/evaluation_results"
+          }
+        },
+        "evaluation_result_details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/evaluation_result_details"
+          }
+        }
+      }
+    },
+    "skill_categories": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "sequence_no": {
+          "type": ["integer", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "status": {
+          "type": ["boolean", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/skills"
+          }
+        },
+        "skill_map_ratings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/skill_map_ratings"
+          }
+        }
+      }
+    },
+    "skills": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "sequence_no": {
+          "type": ["integer", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "status": {
+          "type": ["boolean", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "skill_categories": {
+          "$ref": "#/definitions/skill_categories"
+        },
+        "project_skills": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/project_skills"
+          }
+        },
+        "project_member_skills": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/project_member_skills"
+          }
+        },
+        "skill_map_ratings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/skill_map_ratings"
+          }
+        }
+      }
+    },
+    "skill_map_administrations": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "skill_map_schedule_start_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "skill_map_schedule_end_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "skill_map_period_start_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "skill_map_period_end_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "email_subject": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "email_content": {
+          "type": ["string", "null"]
+        },
+        "is_uploaded": {
+          "type": ["boolean", "null"]
+        },
+        "status": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "created_by_id": {
+          "type": ["integer", "null"]
+        },
+        "updated_by_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "skill_map_results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/skill_map_results"
+          }
+        },
+        "skill_map_ratings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/skill_map_ratings"
+          }
+        }
+      }
+    },
+    "skill_map_results": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "submitted_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "comments": {
+          "type": ["string", "null"]
+        },
+        "status": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "created_by_id": {
+          "type": ["integer", "null"]
+        },
+        "updated_by_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "users": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/users"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "skill_map_ratings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/skill_map_ratings"
+          }
+        },
+        "skill_map_administrations": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/skill_map_administrations"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "skill_map_ratings": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "other_skill_name": {
+          "type": ["string", "null"]
+        },
+        "comments": {
+          "type": ["string", "null"]
+        },
+        "status": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "skill_map_results": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/skill_map_results"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "skills": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/skills"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "skill_categories": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/skill_categories"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "skill_map_administrations": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/skill_map_administrations"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "answer_options": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/answer_options"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "users": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/users"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "system_settings": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "value": {
+          "type": ["string", "null"]
+        },
+        "details": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "tables": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "code": {
+          "type": ["string", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "location": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "occupants": {
+          "type": ["integer", "null"]
+        }
+      }
+    },
+    "task_assignments": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "due_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "hero_points": {
+          "type": ["integer", "null"]
+        },
+        "tasks": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/tasks"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "users": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/users"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "task_authors": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "tasks": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/tasks"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "users": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/users"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "task_logs": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "hours": {
+          "type": ["integer", "null"]
+        },
+        "minutes": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "tasks": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/tasks"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "time_entries": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/time_entries"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "users": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/users"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "tasks": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "priority": {
+          "type": "string",
+          "default": "medium",
+          "enum": ["critical", "high", "medium", "low", "lowest"]
+        },
+        "status": {
+          "type": "string",
+          "default": "pending",
+          "enum": ["pending", "in_progress", "completed", "re_opened", "closed", "deleted"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "project_tasks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/project_tasks"
+          }
+        },
+        "task_assignments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/task_assignments"
+          }
+        },
+        "task_authors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/task_authors"
+          }
+        },
+        "task_logs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/task_logs"
+          }
+        }
+      }
+    },
+    "team_members": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "hero_name": {
+          "type": ["string", "null"]
+        },
+        "role": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "teams": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/teams"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "users": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/users"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "teams": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "slug": {
+          "type": ["string", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "email": {
+          "type": ["string", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "company_teams": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/company_teams"
+          }
+        },
+        "project_teams": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/project_teams"
+          }
+        },
+        "team_members": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/team_members"
+          }
+        },
+        "users": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/users"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "time_entries": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "status": {
+          "type": ["string", "null"],
+          "default": "default",
+          "enum": ["default", "pending", "approved", "denied"]
+        },
+        "project_id": {
+          "type": ["integer", "null"]
+        },
+        "date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "starts_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "finish_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "timed_in_at_ip": {
+          "type": ["string", "null"]
+        },
+        "timed_out_at_ip": {
+          "type": ["string", "null"]
+        },
+        "should_start_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "should_finish_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "late_deduct_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "comments": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "parent_id": {
+          "type": ["integer", "null"]
+        },
+        "review_status": {
+          "type": ["string", "null"],
+          "default": "Pending"
+        },
+        "is_late": {
+          "type": ["boolean", "null"],
+          "default": false
+        },
+        "count_late": {
+          "type": ["boolean", "null"],
+          "default": false
+        },
+        "user_memo_id": {
+          "type": ["integer", "null"]
+        },
+        "task_logs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/task_logs"
+          }
+        },
+        "users": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/users"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "time_entry_logs": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "user_id": {
+          "type": ["integer", "null"]
+        },
+        "time_entry_id": {
+          "type": ["integer", "null"]
+        },
+        "date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "action": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "late_status": {
+          "type": ["string", "null"]
+        },
+        "is_late": {
+          "type": ["boolean", "null"]
+        },
+        "is_memo": {
+          "type": ["boolean", "null"]
+        },
+        "late_count": {
+          "type": ["integer", "null"]
+        },
+        "memo_count": {
+          "type": ["integer", "null"]
+        },
+        "remarks": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "admin_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "survey_templates": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "display_name": {
+          "type": ["string", "null"]
+        },
+        "survey_type": {
+          "type": ["string", "null"]
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "is_active": {
+          "type": ["boolean", "null"]
+        },
+        "created_by_id": {
+          "type": ["integer", "null"]
+        },
+        "updated_by_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "survey_template_categories": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/survey_template_categories"
+          }
+        },
+        "survey_template_question_rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/survey_template_question_rules"
+          }
+        },
+        "survey_template_questions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/survey_template_questions"
+          }
+        },
+        "survey_template_answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/survey_template_answers"
+          }
+        },
+        "survey_answer": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/survey_answers"
+          }
+        }
+      }
+    },
+    "survey_template_categories": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "sequence_no": {
+          "type": ["integer", "null"]
+        },
+        "category_type": {
+          "type": ["string", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "status": {
+          "type": ["boolean", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "survey_template_answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/survey_template_answers"
+          }
+        },
+        "survey_template_questions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/survey_template_questions"
+          }
+        },
+        "survey_templates": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/survey_templates"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "survey_template_questions": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "sequence_no": {
+          "type": ["integer", "null"]
+        },
+        "question_type": {
+          "type": ["string", "null"]
+        },
+        "question_text": {
+          "type": ["string", "null"]
+        },
+        "is_required": {
+          "type": ["boolean", "null"]
+        },
+        "is_active": {
+          "type": ["boolean", "null"]
+        },
+        "created_by_id": {
+          "type": ["integer", "null"]
+        },
+        "updated_by_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "survey_template_question_rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/survey_template_question_rules"
+          }
+        },
+        "survey_template_answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/survey_template_answers"
+          }
+        },
+        "survey_answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/survey_answers"
+          }
+        },
+        "survey_templates": {
+          "$ref": "#/definitions/survey_templates"
+        },
+        "survey_template_categories": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/survey_template_categories"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "survey_template_question_rules": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "rule_key": {
+          "type": ["string", "null"]
+        },
+        "rule_value": {
+          "type": ["string", "null"]
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "is_active": {
+          "type": ["boolean", "null"]
+        },
+        "created_by_id": {
+          "type": ["integer", "null"]
+        },
+        "updated_by_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "survey_templates": {
+          "$ref": "#/definitions/survey_templates"
+        },
+        "survey_template_questions": {
+          "$ref": "#/definitions/survey_template_questions"
+        }
+      }
+    },
+    "survey_template_answers": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "sequence_no": {
+          "type": ["integer", "null"]
+        },
+        "answer_text": {
+          "type": ["string", "null"]
+        },
+        "answer_description": {
+          "type": ["string", "null"]
+        },
+        "amount": {
+          "type": ["integer", "null"]
+        },
+        "answer_image": {
+          "type": ["string", "null"]
+        },
+        "is_active": {
+          "type": ["boolean", "null"]
+        },
+        "created_by_id": {
+          "type": ["integer", "null"]
+        },
+        "updated_by_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "survey_answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/survey_answers"
+          }
+        },
+        "survey_templates": {
+          "$ref": "#/definitions/survey_templates"
+        },
+        "survey_template_questions": {
+          "$ref": "#/definitions/survey_template_questions"
+        },
+        "survey_template_categories": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/survey_template_categories"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "survey_administrations": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "survey_start_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "survey_end_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "survey_template_id": {
+          "type": ["integer", "null"]
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "email_subject": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "email_content": {
+          "type": ["string", "null"]
+        },
+        "status": {
+          "type": ["string", "null"]
+        },
+        "created_by_id": {
+          "type": ["integer", "null"]
+        },
+        "updated_by_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "survey_results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/survey_results"
+          }
+        },
+        "survey_answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/survey_answers"
+          }
+        }
+      }
+    },
+    "survey_results": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "status": {
+          "type": ["string", "null"]
+        },
+        "is_external": {
+          "type": ["boolean", "null"]
+        },
+        "external_respondent_id": {
+          "type": ["integer", "null"]
+        },
+        "created_by_id": {
+          "type": ["integer", "null"]
+        },
+        "updated_by_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "survey_answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/survey_answers"
+          }
+        },
+        "survey_administrations": {
+          "$ref": "#/definitions/survey_administrations"
+        },
+        "users": {
+          "$ref": "#/definitions/users"
+        }
+      }
+    },
+    "survey_answers": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "external_user_id": {
+          "type": ["integer", "null"]
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "status": {
+          "type": ["string", "null"]
+        },
+        "created_by_id": {
+          "type": ["integer", "null"]
+        },
+        "updated_by_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "survey_administrations": {
+          "$ref": "#/definitions/survey_administrations"
+        },
+        "survey_results": {
+          "$ref": "#/definitions/survey_results"
+        },
+        "users": {
+          "$ref": "#/definitions/users"
+        },
+        "survey_templates": {
+          "$ref": "#/definitions/survey_templates"
+        },
+        "survey_template_questions": {
+          "$ref": "#/definitions/survey_template_questions"
+        },
+        "survey_template_answers": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/survey_template_answers"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "user_contact_informations": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "mobile": {
+          "type": ["string", "null"]
+        },
+        "phone": {
+          "type": ["string", "null"]
+        },
+        "personal_email": {
+          "type": ["string", "null"]
+        },
+        "street_address": {
+          "type": ["string", "null"]
+        },
+        "city": {
+          "type": ["string", "null"]
+        },
+        "state": {
+          "type": ["string", "null"]
+        },
+        "zip": {
+          "type": ["string", "null"]
+        },
+        "country": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "users": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/users"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "user_details": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "id_no": {
+          "type": ["string", "null"]
+        },
+        "user_type": {
+          "type": ["string", "null"],
+          "default": "probationary"
+        },
+        "user_position": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "cm_id": {
+          "type": ["integer", "null"]
+        },
+        "sss_number": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "hdmf_number": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "tin_number": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "philhealth_number": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "bank_account_no": {
+          "type": ["string", "null"]
+        },
+        "referred_by": {
+          "type": ["string", "null"]
+        },
+        "date_regularized": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "start_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "end_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "end_remarks": {
+          "type": ["string", "null"]
+        },
+        "update_by_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "users": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/users"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "user_healths": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "temperature": {
+          "type": ["number", "null"]
+        },
+        "cough": {
+          "type": ["boolean", "null"]
+        },
+        "sore_throat": {
+          "type": ["boolean", "null"]
+        },
+        "body_pain": {
+          "type": ["boolean", "null"]
+        },
+        "others": {
+          "type": ["string", "null"]
+        },
+        "recorded_at": {
+          "type": ["string", "null"]
+        },
+        "user_id": {
+          "type": ["integer", "null"]
+        },
+        "time_entry_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "user_late_credits": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "user_id": {
+          "type": ["integer", "null"]
+        },
+        "date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "credits_earned": {
+          "type": ["integer", "null"],
+          "default": 0
+        },
+        "credits_left": {
+          "type": ["integer", "null"],
+          "default": 0
+        },
+        "admin_id": {
+          "type": ["integer", "null"]
+        },
+        "status": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "availment": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "date_availed": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "time_entry_id": {
+          "type": ["integer", "null"]
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "user_leaves": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "leave_credits": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/leave_credits"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "leaves": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/leaves"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "users": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/users"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "user_memos": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "user_id": {
+          "type": ["integer", "null"]
+        },
+        "date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "memo_group_id": {
+          "type": ["integer", "null"]
+        },
+        "memo_category_id": {
+          "type": ["integer", "null"]
+        },
+        "offense_count": {
+          "type": ["integer", "null"]
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "status": {
+          "type": ["string", "null"]
+        },
+        "date_served": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "admin_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "user_profiles": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": ["integer", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "users": {
+          "$ref": "#/definitions/users"
+        }
+      }
+    },
+    "user_roles": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "user_id": {
+          "type": ["integer", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "user_setting_logs": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "user_id": {
+          "type": ["integer", "null"]
+        },
+        "admin_id": {
+          "type": ["integer", "null"]
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "user_settings": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "setting": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "users": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/users"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "users": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "slug": {
+          "type": ["string", "null"]
+        },
+        "email": {
+          "type": "string",
+          "default": ""
+        },
+        "encrypted_password": {
+          "type": "string",
+          "default": ""
+        },
+        "uid": {
+          "type": ["string", "null"]
+        },
+        "provider": {
+          "type": ["string", "null"]
+        },
+        "first_name": {
+          "type": ["string", "null"]
+        },
+        "middle_name": {
+          "type": ["string", "null"]
+        },
+        "last_name": {
+          "type": ["string", "null"]
+        },
+        "gender": {
+          "type": ["string", "null"],
+          "enum": ["male", "female"]
+        },
+        "birth_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "nationality": {
+          "type": ["string", "null"]
+        },
+        "picture": {
+          "type": ["string", "null"]
+        },
+        "authentication_token": {
+          "type": ["string", "null"]
+        },
+        "reset_password_token": {
+          "type": ["string", "null"]
+        },
+        "reset_password_sent_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "remember_created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "sign_in_count": {
+          "type": "integer",
+          "default": 0
+        },
+        "current_sign_in_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "last_sign_in_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "current_sign_in_ip": {
+          "type": ["string", "null"]
+        },
+        "last_sign_in_ip": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "py_company_id": {
+          "type": ["integer", "null"]
+        },
+        "is_active": {
+          "type": ["boolean", "null"]
+        },
+        "late_offense": {
+          "type": ["integer", "null"],
+          "default": 0
+        },
+        "late_count": {
+          "type": ["integer", "null"],
+          "default": 0
+        },
+        "for_memo": {
+          "type": ["boolean", "null"],
+          "default": false
+        },
+        "late_credits": {
+          "type": ["integer", "null"],
+          "default": 0
+        },
+        "approval_manifests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/approval_manifests"
+          }
+        },
+        "approvers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/approvers"
+          }
+        },
+        "company_users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/company_users"
+          }
+        },
+        "leave_breakdowns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/leave_breakdowns"
+          }
+        },
+        "leave_credits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/leave_credits"
+          }
+        },
+        "leaves": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/leaves"
+          }
+        },
+        "overtimes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/overtimes"
+          }
+        },
+        "task_assignments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/task_assignments"
+          }
+        },
+        "task_authors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/task_authors"
+          }
+        },
+        "task_logs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/task_logs"
+          }
+        },
+        "team_members": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/team_members"
+          }
+        },
+        "teams": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/teams"
+          }
+        },
+        "time_entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/time_entries"
+          }
+        },
+        "user_contact_informations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/user_contact_informations"
+          }
+        },
+        "user_leaves": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/user_leaves"
+          }
+        },
+        "user_profiles": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/user_profiles"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "user_settings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/user_settings"
+          }
+        },
+        "evaluation_results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/evaluation_results"
+          }
+        },
+        "user_details": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/user_details"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "survey_results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/survey_results"
+          }
+        },
+        "survey_answers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/survey_answers"
+          }
+        },
+        "skill_map_results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/skill_map_results"
+          }
+        },
+        "skill_map_ratings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/skill_map_ratings"
+          }
+        }
+      }
+    },
+    "worker_logs": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": ["string", "null"],
+          "default": ""
+        },
+        "remarks": {
+          "type": ["string", "null"]
+        },
+        "created_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+    "access_tokens": {
+      "$ref": "#/definitions/access_tokens"
+    },
+    "admins": {
+      "$ref": "#/definitions/admins"
+    },
+    "answer_options": {
+      "$ref": "#/definitions/answer_options"
+    },
+    "answers": {
+      "$ref": "#/definitions/answers"
+    },
+    "approval_manifest_logs": {
+      "$ref": "#/definitions/approval_manifest_logs"
+    },
+    "approval_manifests": {
+      "$ref": "#/definitions/approval_manifests"
+    },
+    "approvers": {
+      "$ref": "#/definitions/approvers"
+    },
+    "ar_internal_metadata": {
+      "$ref": "#/definitions/ar_internal_metadata"
+    },
+    "attendances": {
+      "$ref": "#/definitions/attendances"
+    },
+    "chairs": {
+      "$ref": "#/definitions/chairs"
+    },
+    "cities": {
+      "$ref": "#/definitions/cities"
+    },
+    "clients": {
+      "$ref": "#/definitions/clients"
+    },
+    "companies": {
+      "$ref": "#/definitions/companies"
+    },
+    "company_ip_addresses": {
+      "$ref": "#/definitions/company_ip_addresses"
+    },
+    "company_teams": {
+      "$ref": "#/definitions/company_teams"
+    },
+    "company_users": {
+      "$ref": "#/definitions/company_users"
+    },
+    "computers": {
+      "$ref": "#/definitions/computers"
+    },
+    "contract_logs": {
+      "$ref": "#/definitions/contract_logs"
+    },
+    "contracts": {
+      "$ref": "#/definitions/contracts"
+    },
+    "countries": {
+      "$ref": "#/definitions/countries"
+    },
+    "currencies": {
+      "$ref": "#/definitions/currencies"
+    },
+    "email_logs": {
+      "$ref": "#/definitions/email_logs"
+    },
+    "email_recipients": {
+      "$ref": "#/definitions/email_recipients"
+    },
+    "email_templates": {
+      "$ref": "#/definitions/email_templates"
+    },
+    "evaluation_administrations": {
+      "$ref": "#/definitions/evaluation_administrations"
+    },
+    "evaluation_ratings": {
+      "$ref": "#/definitions/evaluation_ratings"
+    },
+    "evaluation_result_details": {
+      "$ref": "#/definitions/evaluation_result_details"
+    },
+    "evaluation_results": {
+      "$ref": "#/definitions/evaluation_results"
+    },
+    "evaluation_setups": {
+      "$ref": "#/definitions/evaluation_setups"
+    },
+    "evaluation_template_contents": {
+      "$ref": "#/definitions/evaluation_template_contents"
+    },
+    "evaluation_templates": {
+      "$ref": "#/definitions/evaluation_templates"
+    },
+    "evaluations": {
+      "$ref": "#/definitions/evaluations"
+    },
+    "external_users": {
+      "$ref": "#/definitions/external_users"
+    },
+    "holidays": {
+      "$ref": "#/definitions/holidays"
+    },
+    "invoices": {
+      "$ref": "#/definitions/invoices"
+    },
+    "item_assignments": {
+      "$ref": "#/definitions/item_assignments"
+    },
+    "items": {
+      "$ref": "#/definitions/items"
+    },
+    "leave_breakdowns": {
+      "$ref": "#/definitions/leave_breakdowns"
+    },
+    "leave_credit_logs": {
+      "$ref": "#/definitions/leave_credit_logs"
+    },
+    "leave_credits": {
+      "$ref": "#/definitions/leave_credits"
+    },
+    "leave_logs": {
+      "$ref": "#/definitions/leave_logs"
+    },
+    "leave_periods": {
+      "$ref": "#/definitions/leave_periods"
+    },
+    "leave_types": {
+      "$ref": "#/definitions/leave_types"
+    },
+    "leaves": {
+      "$ref": "#/definitions/leaves"
+    },
+    "memo_categories": {
+      "$ref": "#/definitions/memo_categories"
+    },
+    "memo_groups": {
+      "$ref": "#/definitions/memo_groups"
+    },
+    "memo_penalties": {
+      "$ref": "#/definitions/memo_penalties"
+    },
+    "memo_types": {
+      "$ref": "#/definitions/memo_types"
+    },
+    "overtime_breakdown_logs": {
+      "$ref": "#/definitions/overtime_breakdown_logs"
+    },
+    "overtime_breakdowns": {
+      "$ref": "#/definitions/overtime_breakdowns"
+    },
+    "overtime_logs": {
+      "$ref": "#/definitions/overtime_logs"
+    },
+    "overtimes": {
+      "$ref": "#/definitions/overtimes"
+    },
+    "payment_terms": {
+      "$ref": "#/definitions/payment_terms"
+    },
+    "payroll_batches": {
+      "$ref": "#/definitions/payroll_batches"
+    },
+    "payslips": {
+      "$ref": "#/definitions/payslips"
+    },
+    "project_infos": {
+      "$ref": "#/definitions/project_infos"
+    },
+    "project_member_skills": {
+      "$ref": "#/definitions/project_member_skills"
+    },
+    "project_members": {
+      "$ref": "#/definitions/project_members"
+    },
+    "project_skills": {
+      "$ref": "#/definitions/project_skills"
+    },
+    "project_roles": {
+      "$ref": "#/definitions/project_roles"
+    },
+    "project_tasks": {
+      "$ref": "#/definitions/project_tasks"
+    },
+    "project_teams": {
+      "$ref": "#/definitions/project_teams"
+    },
+    "projects": {
+      "$ref": "#/definitions/projects"
+    },
+    "schema_migrations": {
+      "$ref": "#/definitions/schema_migrations"
+    },
+    "score_ratings": {
+      "$ref": "#/definitions/score_ratings"
+    },
+    "skill_categories": {
+      "$ref": "#/definitions/skill_categories"
+    },
+    "skills": {
+      "$ref": "#/definitions/skills"
+    },
+    "skill_map_administrations": {
+      "$ref": "#/definitions/skill_map_administrations"
+    },
+    "skill_map_results": {
+      "$ref": "#/definitions/skill_map_results"
+    },
+    "skill_map_ratings": {
+      "$ref": "#/definitions/skill_map_ratings"
+    },
+    "system_settings": {
+      "$ref": "#/definitions/system_settings"
+    },
+    "tables": {
+      "$ref": "#/definitions/tables"
+    },
+    "task_assignments": {
+      "$ref": "#/definitions/task_assignments"
+    },
+    "task_authors": {
+      "$ref": "#/definitions/task_authors"
+    },
+    "task_logs": {
+      "$ref": "#/definitions/task_logs"
+    },
+    "tasks": {
+      "$ref": "#/definitions/tasks"
+    },
+    "team_members": {
+      "$ref": "#/definitions/team_members"
+    },
+    "teams": {
+      "$ref": "#/definitions/teams"
+    },
+    "time_entries": {
+      "$ref": "#/definitions/time_entries"
+    },
+    "time_entry_logs": {
+      "$ref": "#/definitions/time_entry_logs"
+    },
+    "survey_templates": {
+      "$ref": "#/definitions/survey_templates"
+    },
+    "survey_template_categories": {
+      "$ref": "#/definitions/survey_template_categories"
+    },
+    "survey_template_questions": {
+      "$ref": "#/definitions/survey_template_questions"
+    },
+    "survey_template_question_rules": {
+      "$ref": "#/definitions/survey_template_question_rules"
+    },
+    "survey_template_answers": {
+      "$ref": "#/definitions/survey_template_answers"
+    },
+    "survey_administrations": {
+      "$ref": "#/definitions/survey_administrations"
+    },
+    "survey_results": {
+      "$ref": "#/definitions/survey_results"
+    },
+    "survey_answers": {
+      "$ref": "#/definitions/survey_answers"
+    },
+    "user_contact_informations": {
+      "$ref": "#/definitions/user_contact_informations"
+    },
+    "user_details": {
+      "$ref": "#/definitions/user_details"
+    },
+    "user_healths": {
+      "$ref": "#/definitions/user_healths"
+    },
+    "user_late_credits": {
+      "$ref": "#/definitions/user_late_credits"
+    },
+    "user_leaves": {
+      "$ref": "#/definitions/user_leaves"
+    },
+    "user_memos": {
+      "$ref": "#/definitions/user_memos"
+    },
+    "user_profiles": {
+      "$ref": "#/definitions/user_profiles"
+    },
+    "user_roles": {
+      "$ref": "#/definitions/user_roles"
+    },
+    "user_setting_logs": {
+      "$ref": "#/definitions/user_setting_logs"
+    },
+    "user_settings": {
+      "$ref": "#/definitions/user_settings"
+    },
+    "users": {
+      "$ref": "#/definitions/users"
+    },
+    "worker_logs": {
+      "$ref": "#/definitions/worker_logs"
+    }
+  }
+}
