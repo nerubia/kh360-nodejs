@@ -57,6 +57,11 @@ export const create = async (user: UserToken, data: TestBatch) => {
     created_by: user.id,
     updated_at: currentDate,
     updated_by: user.id,
+    test_items: {
+      create: data.itemIds.map((id) => ({
+        test_items_id: id,
+      })),
+    },
   })
 }
 
