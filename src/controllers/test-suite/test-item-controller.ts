@@ -110,7 +110,7 @@ export const update = async (req: Request, res: Response) => {
     const user = req.user
 
     const { id } = req.params
-    const { apiId, http_method, payload, response, description } = req.body
+    const { apiId, http_method, payload, response, description, status } = req.body
 
     await createTestItemSchema.validate({
       apiId,
