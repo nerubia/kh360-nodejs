@@ -49,6 +49,8 @@ export const getAllByFilters = async (name: string, status: number, page: string
 export const create = async (user: UserToken, data: TestBatch) => {
   const currentDate = new Date()
 
+  const newIds = data.itemIds ?? []
+
   return await TestBatchRepository.create({
     name: data.name,
     description: data.description,
@@ -58,7 +60,7 @@ export const create = async (user: UserToken, data: TestBatch) => {
     updated_at: currentDate,
     updated_by: user.id,
     test_items: {
-      create: data.itemIds.map((id) => ({
+      create: newIds.map((id) => ({
         test_items_id: id,
       })),
     },
@@ -78,12 +80,34 @@ export const updateById = async (user: UserToken, id: number, data: TestBatch) =
 
   const currentDate = new Date()
 
+  const existingIds: number[] = []
+  const newIds = data.itemIds ?? []
+
+  for (const item of testBatch.test_items) {
+    if (item !== null) {
+      existingIds.push(item.id)
+    }
+  }
+
+  const toDelete = existingIds.filter((itemId) => !newIds.includes(itemId))
+  const toAdd = newIds.filter((itemId) => !existingIds.includes(itemId))
+
   return await TestBatchRepository.updateById(testBatch.id, {
     name: data.name,
     description: data.description,
     status: data.status,
     updated_at: currentDate,
     updated_by: user.id,
+    test_items: {
+      create: toAdd.map((id) => ({
+        test_items_id: id,
+      })),
+      deleteMany: {
+        test_items_id: {
+          in: toDelete,
+        },
+      },
+    },
   })
 }
 
