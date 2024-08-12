@@ -29,16 +29,31 @@ export const create = async (data: Prisma.test_batchesUncheckedCreateInput) => {
   })
 }
 
+// NOTE: If we need to paginate test_items, simply use the test_items api
 export const getById = async (id: number) => {
-  return await prisma.test_batches.findFirst({
+  const testBatch = await prisma.test_batches.findFirst({
     where: {
       id,
     },
+    include: {
+      test_items: {
+        include: {
+          test_items: true,
+        },
+      },
+    },
   })
+  if (testBatch === null) {
+    return null
+  }
+  return {
+    ...testBatch,
+    test_items: testBatch.test_items.map((testItem) => testItem.test_items),
+  }
 }
 
 export const updateById = async (id: number, data: Prisma.test_batchesUncheckedUpdateInput) => {
-  return await prisma.test_batches.update({
+  const testBatch = await prisma.test_batches.update({
     where: {
       id,
     },
@@ -48,8 +63,18 @@ export const updateById = async (id: number, data: Prisma.test_batchesUncheckedU
       name: true,
       description: true,
       status: true,
+      test_items: {
+        include: {
+          test_items: true,
+        },
+      },
     },
   })
+
+  return {
+    ...testBatch,
+    test_items: testBatch.test_items.map((testItem) => testItem.test_items),
+  }
 }
 
 export const deleteById = async (id: number) => {
