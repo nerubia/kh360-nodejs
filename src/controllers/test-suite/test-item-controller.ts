@@ -31,7 +31,6 @@ export const index = async (req: Request, res: Response) => {
 /**
  * Store a new test item.
  * @param req.body.apiId - Api ID.
- * @param req.body.http_method - Http method.
  * @param req.body.payload - Payload.
  * @param req.body.response - Response.
  * @param req.body.description - Description.
@@ -41,11 +40,10 @@ export const store = async (req: Request, res: Response) => {
   try {
     const user = req.user
 
-    const { apiId, http_method, payload, response, description, status } = req.body
+    const { apiId, payload, response, description, status } = req.body
 
     await createTestItemSchema.validate({
       apiId,
-      http_method,
       payload,
       response,
       description,
@@ -54,7 +52,6 @@ export const store = async (req: Request, res: Response) => {
 
     const newTestItem = await TestItemService.create(user, {
       apiId: parseInt(apiId as string),
-      http_method,
       payload,
       response,
       description,
@@ -100,7 +97,6 @@ export const show = async (req: Request, res: Response) => {
  * Update an existing test item.
  * @param req.params.id - The ID of the test item to be updated
  * @param req.body.apiId - Api ID.
- * @param req.body.http_method - Http method.
  * @param req.body.payload - Payload.
  * @param req.body.response - Response.
  * @param req.body.description - Description.
@@ -110,11 +106,10 @@ export const update = async (req: Request, res: Response) => {
     const user = req.user
 
     const { id } = req.params
-    const { apiId, http_method, payload, response, description, status } = req.body
+    const { apiId, payload, response, description, status } = req.body
 
     await createTestItemSchema.validate({
       apiId,
-      http_method,
       payload,
       response,
       description,
@@ -123,7 +118,6 @@ export const update = async (req: Request, res: Response) => {
 
     const updatedTestItem = await TestItemService.updateById(user, parseInt(id), {
       apiId: parseInt(apiId as string),
-      http_method,
       payload,
       response,
       description,
