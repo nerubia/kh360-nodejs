@@ -46,6 +46,7 @@ export const updateById = async (id: number, data: Prisma.test_apisUncheckedUpda
     select: {
       id: true,
       name: true,
+      http_method: true,
       endpoint: true,
       env: true,
       description: true,

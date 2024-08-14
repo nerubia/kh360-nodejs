@@ -1,4 +1,4 @@
-import { type $Enums, type Prisma } from "@prisma/client"
+import { type Prisma } from "@prisma/client"
 import * as TestItemRepository from "../../repositories/test-suite/test-item-repository"
 import * as TestApiRepository from "../../repositories/test-suite/test-api-repository"
 import { type TestItem } from "../../types/test-item-type"
@@ -83,7 +83,6 @@ export const create = async (user: UserToken, data: TestItem) => {
 
   return await TestItemRepository.create({
     test_apis_id: testApi.id,
-    http_method: data.http_method as $Enums.http_method,
     payload: data.payload,
     response: data.response,
     description: data.description,
@@ -116,7 +115,6 @@ export const updateById = async (user: UserToken, id: number, data: TestItem) =>
 
   return await TestItemRepository.updateById(testItem.id, {
     test_apis_id: testApi.id,
-    http_method: data.http_method as $Enums.http_method,
     payload: data.payload,
     response: data.response,
     description: data.description,

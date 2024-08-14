@@ -36,6 +36,7 @@ export const index = async (req: Request, res: Response) => {
  * Store a new test api.
  * @param req.body.name - Name.
  * @param req.body.endpoint - Endpoint.
+ * @param req.body.http_method - Http method.
  * @param req.body.env - Env.
  * @param req.body.description - Description.
  * @param req.body.status - Status.
@@ -44,11 +45,12 @@ export const store = async (req: Request, res: Response) => {
   try {
     const user = req.user
 
-    const { name, endpoint, env, description, status } = req.body
+    const { name, endpoint, http_method, env, description, status } = req.body
 
     await createTestApiSchema.validate({
       name,
       endpoint,
+      http_method,
       env,
       description,
       status,
@@ -57,6 +59,7 @@ export const store = async (req: Request, res: Response) => {
     const newTestApi = await TestApiService.create(user, {
       name,
       endpoint,
+      http_method,
       env,
       description,
       status: Boolean(status),
@@ -102,6 +105,7 @@ export const show = async (req: Request, res: Response) => {
  * @param req.params.id - The ID of the test api to be updated
  * @param req.body.name - Name.
  * @param req.body.endpoint - Endpoint.
+ * @param req.body.http_method - Http method.
  * @param req.body.env - Env.
  * @param req.body.description - Description.
  * @param req.body.status - Status.
@@ -111,11 +115,12 @@ export const update = async (req: Request, res: Response) => {
     const user = req.user
 
     const { id } = req.params
-    const { name, endpoint, env, description, status } = req.body
+    const { name, endpoint, http_method, env, description, status } = req.body
 
     await createTestApiSchema.validate({
       name,
       endpoint,
+      http_method,
       env,
       description,
       status,
@@ -124,6 +129,7 @@ export const update = async (req: Request, res: Response) => {
     const updatedTestApi = await TestApiService.updateById(user, parseInt(id), {
       name,
       endpoint,
+      http_method,
       env,
       description,
       status: Boolean(status),

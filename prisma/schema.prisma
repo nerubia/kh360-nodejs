@@ -1831,6 +1831,7 @@ model test_apis {
   id          Int          @id @default(autoincrement())
   name        String       @db.VarChar(255)
   endpoint    String       @db.VarChar(255)
+  http_method http_method
   env         String       @db.VarChar(100)
   description String       @db.Text
   status      Boolean
@@ -1844,7 +1845,6 @@ model test_apis {
 model test_items {
   id           Int                @id @default(autoincrement())
   test_apis_id Int?
-  http_method  http_method
   payload      String             @db.Text
   response     String             @db.Text
   description  String?            @db.Text
