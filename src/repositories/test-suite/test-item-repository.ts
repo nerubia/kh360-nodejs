@@ -10,9 +10,21 @@ export const paginateByFilters = async (
     skip,
     take,
     where,
-    orderBy: {
-      status: "desc",
-    },
+    orderBy: [
+      {
+        updated_at: "desc",
+      },
+      {
+        test_apis: {
+          name: "asc",
+        },
+      },
+      {
+        test_apis: {
+          http_method: "asc",
+        },
+      },
+    ],
     include: {
       test_apis: true,
     },
@@ -26,17 +38,17 @@ export const countAllByFilters = async (where: Prisma.test_itemsWhereInput) => {
   return count
 }
 
+export const create = async (data: Prisma.test_itemsUncheckedCreateInput) => {
+  return await prisma.test_items.create({
+    data,
+  })
+}
+
 export const getById = async (id: number) => {
   return await prisma.test_items.findFirst({
     where: {
       id,
     },
-  })
-}
-
-export const create = async (data: Prisma.test_itemsUncheckedCreateInput) => {
-  return await prisma.test_items.create({
-    data,
   })
 }
 
@@ -48,7 +60,6 @@ export const updateById = async (id: number, data: Prisma.test_itemsUncheckedUpd
     data,
     select: {
       id: true,
-      http_method: true,
       payload: true,
       response: true,
       description: true,

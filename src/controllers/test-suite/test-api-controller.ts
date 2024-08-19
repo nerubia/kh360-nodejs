@@ -1,23 +1,27 @@
 import { type Request, type Response } from "express"
 import logger from "../../utils/logger"
-import * as TestItemService from "../../services/test-suite/test-item-service"
-import { createTestItemSchema } from "../../utils/validation/test-item-schema"
+import * as TestApiService from "../../services/test-suite/test-api-service"
+import { createTestApiSchema } from "../../utils/validation/test-api-schema"
 import { ValidationError } from "yup"
 import CustomError from "../../utils/custom-error"
 
 /**
- * List test items based on provided filters.
- * @param req.query.apiId - Filter by api id.
+ * List test apis based on provided filters.
+ * @param req.query.id - Filter by api id.
  * @param req.query.name - Filter by name.
+ * @param req.query.endpoint - Filter by endpoint.
+ * @param req.query.env - Filter by env.
  * @param req.query.status - Filter by status.
  * @param req.query.page - Page number for pagination.
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const { apiId, name, status, page } = req.query
-    const results = await TestItemService.getAllByFilters(
-      parseInt(apiId as string),
+    const { id, name, endpoint, env, status, page } = req.query
+    const results = await TestApiService.getAllByFilters(
+      parseInt(id as string),
       name as string,
+      endpoint as string,
+      env as string,
       parseInt(status as string),
       page as string
     )
@@ -29,10 +33,11 @@ export const index = async (req: Request, res: Response) => {
 }
 
 /**
- * Store a new test item.
- * @param req.body.apiId - Api ID.
- * @param req.body.payload - Payload.
- * @param req.body.response - Response.
+ * Store a new test api.
+ * @param req.body.name - Name.
+ * @param req.body.endpoint - Endpoint.
+ * @param req.body.http_method - Http method.
+ * @param req.body.env - Env.
  * @param req.body.description - Description.
  * @param req.body.status - Status.
  */
@@ -40,25 +45,27 @@ export const store = async (req: Request, res: Response) => {
   try {
     const user = req.user
 
-    const { apiId, payload, response, description, status } = req.body
+    const { name, endpoint, http_method, env, description, status } = req.body
 
-    await createTestItemSchema.validate({
-      apiId,
-      payload,
-      response,
+    await createTestApiSchema.validate({
+      name,
+      endpoint,
+      http_method,
+      env,
       description,
       status,
     })
 
-    const newTestItem = await TestItemService.create(user, {
-      apiId: parseInt(apiId as string),
-      payload,
-      response,
+    const newTestApi = await TestApiService.create(user, {
+      name,
+      endpoint,
+      http_method,
+      env,
       description,
       status: Boolean(status),
     })
 
-    res.json(newTestItem)
+    res.json(newTestApi)
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
@@ -72,15 +79,15 @@ export const store = async (req: Request, res: Response) => {
 }
 
 /**
- * Get a specific test item by ID.
- * @param req.params.id - Test item id
- * @returns test item
+ * Get a specific test api by ID.
+ * @param req.params.id - Test api id
+ * @returns test api
  */
 export const show = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const testItem = await TestItemService.getById(parseInt(id))
-    res.json(testItem)
+    const testApi = await TestApiService.getById(parseInt(id))
+    res.json(testApi)
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
@@ -94,37 +101,41 @@ export const show = async (req: Request, res: Response) => {
 }
 
 /**
- * Update an existing test item.
- * @param req.params.id - The ID of the test item to be updated
- * @param req.body.apiId - Api ID.
- * @param req.body.payload - Payload.
- * @param req.body.response - Response.
+ * Update an existing test api.
+ * @param req.params.id - The ID of the test api to be updated
+ * @param req.body.name - Name.
+ * @param req.body.endpoint - Endpoint.
+ * @param req.body.http_method - Http method.
+ * @param req.body.env - Env.
  * @param req.body.description - Description.
+ * @param req.body.status - Status.
  */
 export const update = async (req: Request, res: Response) => {
   try {
     const user = req.user
 
     const { id } = req.params
-    const { apiId, payload, response, description, status } = req.body
+    const { name, endpoint, http_method, env, description, status } = req.body
 
-    await createTestItemSchema.validate({
-      apiId,
-      payload,
-      response,
+    await createTestApiSchema.validate({
+      name,
+      endpoint,
+      http_method,
+      env,
       description,
       status,
     })
 
-    const updatedTestItem = await TestItemService.updateById(user, parseInt(id), {
-      apiId: parseInt(apiId as string),
-      payload,
-      response,
+    const updatedTestApi = await TestApiService.updateById(user, parseInt(id), {
+      name,
+      endpoint,
+      http_method,
+      env,
       description,
       status: Boolean(status),
     })
 
-    res.json(updatedTestItem)
+    res.json(updatedTestApi)
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
@@ -138,14 +149,14 @@ export const update = async (req: Request, res: Response) => {
 }
 
 /**
- * Delete test item
- * @param req.params.id - The ID of the test item to be deleted
+ * Delete test api
+ * @param req.params.id - The ID of the test api to be deleted
  */
 export const destroy = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    await TestItemService.deleteById(parseInt(id))
-    res.json({ id, message: "Test item successfully deleted" })
+    await TestApiService.deleteById(parseInt(id))
+    res.json({ id, message: "Test api successfully deleted" })
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)

@@ -39,7 +39,9 @@ import surveyTemplateQuestionRoute from "./routes/admin/survey-template-question
 import skillMapSearchRoute from "./routes/admin/skill-map-search-route"
 
 import testSuiteRoute from "./routes/test-suite/test-suite-route"
+import testApiRoute from "./routes/test-suite/test-api-route"
 import testItemRoute from "./routes/test-suite/test-item-route"
+import testBatchRoute from "./routes/test-suite/test-batch-route"
 
 import morgan from "morgan"
 import logger from "./utils/logger"
@@ -120,6 +122,8 @@ app.use("/admin/users", adminMiddleware, usersRoute)
  */
 
 app.use("/test-suite", authMiddleware, testSuiteRoute)
+app.use("/test-suite/apis", authMiddleware, testApiRoute)
 app.use("/test-suite/items", authMiddleware, testItemRoute)
+app.use("/test-suite/batches", authMiddleware, testBatchRoute)
 
 export default app
