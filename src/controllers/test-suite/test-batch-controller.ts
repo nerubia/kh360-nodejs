@@ -7,14 +7,16 @@ import CustomError from "../../utils/custom-error"
 
 /**
  * List test batches based on provided filters.
+ * @param req.query.apiId - Filter by api id.
  * @param req.query.name - Filter by name.
  * @param req.query.status - Filter by status.
  * @param req.query.page - Page number for pagination.
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const { name, status, page } = req.query
+    const { apiId, name, status, page } = req.query
     const results = await TestBatchService.getAllByFilters(
+      parseInt(apiId as string),
       name as string,
       parseInt(status as string),
       page as string
@@ -28,6 +30,7 @@ export const index = async (req: Request, res: Response) => {
 
 /**
  * Store a new test batch.
+ * @param req.body.apiId - Api ID.
  * @param req.body.name - Name.
  * @param req.body.description - Description.
  * @param req.body.status - Status.
@@ -36,9 +39,10 @@ export const store = async (req: Request, res: Response) => {
   try {
     const user = req.user
 
-    const { name, description, status, itemIds } = req.body
+    const { apiId, name, description, status, itemIds } = req.body
 
     await createTestBatchSchema.validate({
+      apiId,
       name,
       description,
       status,
@@ -46,6 +50,7 @@ export const store = async (req: Request, res: Response) => {
     })
 
     const newTestBatch = await TestBatchService.create(user, {
+      apiId: parseInt(apiId as string),
       name,
       description,
       status: Boolean(status),
@@ -89,6 +94,7 @@ export const show = async (req: Request, res: Response) => {
 /**
  * Update an existing test batch.
  * @param req.params.id - The ID of the test batch to be updated
+ * @param req.body.apiId - Api ID.
  * @param req.body.name - Name.
  * @param req.body.description - Description.
  */
@@ -97,9 +103,10 @@ export const update = async (req: Request, res: Response) => {
     const user = req.user
 
     const { id } = req.params
-    const { name, description, status, itemIds } = req.body
+    const { apiId, name, description, status, itemIds } = req.body
 
     await createTestBatchSchema.validate({
+      apiId,
       name,
       description,
       status,
@@ -107,6 +114,7 @@ export const update = async (req: Request, res: Response) => {
     })
 
     const updatedTestBatch = await TestBatchService.updateById(user, parseInt(id), {
+      apiId: parseInt(apiId as string),
       name,
       description,
       status: Boolean(status),
