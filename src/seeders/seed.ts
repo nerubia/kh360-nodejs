@@ -832,6 +832,7 @@ async function main() {
     await createUserDetails()
     await createEvaluationResults()
   }
+
   await setAnswerTypes()
   await createAnswers()
   await createAnswerOptions()
