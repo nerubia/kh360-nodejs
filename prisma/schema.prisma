@@ -1828,18 +1828,19 @@ enum overtime_breakdowns_status {
 //
 
 model test_apis {
-  id          Int          @id @default(autoincrement())
-  name        String       @db.VarChar(255)
-  endpoint    String       @db.VarChar(255)
-  http_method http_method
-  env         String       @db.VarChar(100)
-  description String       @db.Text
-  status      Boolean
-  created_at  DateTime     @default(now()) @db.Timestamp(0)
-  created_by  Int
-  updated_at  DateTime     @default(now()) @db.Timestamp(0)
-  updated_by  Int
-  test_items  test_items[]
+  id           Int            @id @default(autoincrement())
+  name         String         @db.VarChar(255)
+  endpoint     String         @db.VarChar(255)
+  http_method  http_method
+  env          String         @db.VarChar(100)
+  description  String         @db.Text
+  status       Boolean
+  created_at   DateTime       @default(now()) @db.Timestamp(0)
+  created_by   Int
+  updated_at   DateTime       @default(now()) @db.Timestamp(0)
+  updated_by   Int
+  test_items   test_items[]
+  test_batches test_batches[]
 }
 
 model test_items {
@@ -1858,15 +1859,17 @@ model test_items {
 }
 
 model test_batches {
-  id          Int                @id @default(autoincrement())
-  name        String             @db.VarChar(255)
-  description String             @db.Text
-  status      Boolean
-  created_at  DateTime           @default(now()) @db.Timestamp(0)
-  created_by  Int
-  updated_at  DateTime           @default(now()) @db.Timestamp(0)
-  updated_by  Int
-  test_items  test_batch_items[]
+  id           Int                @id @default(autoincrement())
+  test_apis_id Int?
+  name         String             @db.VarChar(255)
+  description  String             @db.Text
+  status       Boolean
+  created_at   DateTime           @default(now()) @db.Timestamp(0)
+  created_by   Int
+  updated_at   DateTime           @default(now()) @db.Timestamp(0)
+  updated_by   Int
+  test_apis    test_apis?         @relation(fields: [test_apis_id], references: [id], onDelete: Cascade)
+  test_items   test_batch_items[]
 }
 
 model test_batch_items {
