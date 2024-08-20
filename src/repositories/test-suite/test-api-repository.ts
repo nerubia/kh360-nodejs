@@ -11,7 +11,7 @@ export const paginateByFilters = async (
     take,
     where,
     orderBy: {
-      status: "desc",
+      created_at: "desc",
     },
   })
 }
