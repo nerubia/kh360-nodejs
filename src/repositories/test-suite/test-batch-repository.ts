@@ -60,6 +60,7 @@ export const updateById = async (id: number, data: Prisma.test_batchesUncheckedU
     data,
     select: {
       id: true,
+      test_apis_id: true,
       name: true,
       description: true,
       status: true,
