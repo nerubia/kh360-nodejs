@@ -1,15 +1,27 @@
 import { type Prisma } from "@prisma/client"
 import * as TestBatchRepository from "../../repositories/test-suite/test-batch-repository"
+import * as TestApiRepository from "../../repositories/test-suite/test-api-repository"
 import { type TestBatch } from "../../types/test-batch-type"
 import { type UserToken } from "../../types/user-token-type"
 import CustomError from "../../utils/custom-error"
 
-export const getAllByFilters = async (name: string, status: number, page: string) => {
+export const getAllByFilters = async (
+  apiId: number,
+  name: string,
+  status: number,
+  page: string
+) => {
   const itemsPerPage = 20
   const parsedPage = parseInt(page)
   const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
   const where: Prisma.test_batchesWhereInput = {}
+
+  if (!isNaN(apiId)) {
+    Object.assign(where, {
+      test_apis_id: apiId,
+    })
+  }
 
   if (name !== undefined) {
     Object.assign(where, {
@@ -47,11 +59,18 @@ export const getAllByFilters = async (name: string, status: number, page: string
 }
 
 export const create = async (user: UserToken, data: TestBatch) => {
+  const testApi = await TestApiRepository.getById(data.apiId)
+
+  if (testApi === null) {
+    throw new CustomError("Test api not found", 400)
+  }
+
   const currentDate = new Date()
 
   const newIds = data.itemIds ?? []
 
   return await TestBatchRepository.create({
+    test_apis_id: testApi.id,
     name: data.name,
     description: data.description,
     status: data.status,
@@ -78,6 +97,12 @@ export const updateById = async (user: UserToken, id: number, data: TestBatch) =
     throw new CustomError("Test batch not found", 400)
   }
 
+  const testApi = await TestApiRepository.getById(data.apiId)
+
+  if (testApi === null) {
+    throw new CustomError("Test api not found", 400)
+  }
+
   const currentDate = new Date()
 
   const existingIds: number[] = []
@@ -93,6 +118,7 @@ export const updateById = async (user: UserToken, id: number, data: TestBatch) =
   const toAdd = newIds.filter((itemId) => !existingIds.includes(itemId))
 
   return await TestBatchRepository.updateById(testBatch.id, {
+    test_apis_id: testApi.id,
     name: data.name,
     description: data.description,
     status: data.status,
