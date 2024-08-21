@@ -49,6 +49,9 @@ export const getById = async (id: number) => {
     where: {
       id,
     },
+    include: {
+      test_apis: true,
+    },
   })
 }
 
