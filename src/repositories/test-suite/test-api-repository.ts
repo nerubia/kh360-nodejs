@@ -10,9 +10,20 @@ export const paginateByFilters = async (
     skip,
     take,
     where,
-    orderBy: {
-      created_at: "desc",
-    },
+    orderBy: [
+      {
+        updated_at: "desc",
+      },
+      {
+        name: "asc",
+      },
+      {
+        http_method: "asc",
+      },
+      {
+        created_at: "desc",
+      },
+    ],
   })
 }
 
