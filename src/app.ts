@@ -43,6 +43,8 @@ import testApiRoute from "./routes/test-suite/test-api-route"
 import testItemRoute from "./routes/test-suite/test-item-route"
 import testBatchRoute from "./routes/test-suite/test-batch-route"
 
+import invoiceRoute from "./routes/khbooks/invoice-route"
+
 import morgan from "morgan"
 import logger from "./utils/logger"
 
@@ -125,5 +127,11 @@ app.use("/test-suite", authMiddleware, testSuiteRoute)
 app.use("/test-suite/apis", authMiddleware, testApiRoute)
 app.use("/test-suite/items", authMiddleware, testItemRoute)
 app.use("/test-suite/batches", authMiddleware, testBatchRoute)
+
+/**
+ * KH Books routes
+ */
+
+app.use("/khbooks/invoices", adminMiddleware, invoiceRoute)
 
 export default app

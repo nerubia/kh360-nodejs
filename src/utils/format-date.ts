@@ -1,5 +1,9 @@
 import { format, utcToZonedTime } from "date-fns-tz"
 
+export const formatDate = (date?: string) => {
+  return date?.split("T")[0]
+}
+
 export const formatDateRange = (startDate: Date, endDate: Date) => {
   const options: Intl.DateTimeFormatOptions = {
     month: "short",
