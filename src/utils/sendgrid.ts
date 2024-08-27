@@ -27,3 +27,30 @@ export const sendMultipleMail = async (to: string[], subject: string, content: s
     await sgMail.sendMultiple(msg)
   } catch (error) {}
 }
+
+export const sendMailWithAttachment = async (
+  to: string,
+  subject: string,
+  content: string,
+  pdfBuffer: Buffer
+) => {
+  try {
+    const msg = {
+      to,
+      from: process.env.SENDGRID_FROM_ADDRESS as string,
+      subject,
+      html: content,
+      attachments: [
+        {
+          content: pdfBuffer.toString("base64"),
+          filename: "invoice.pdf",
+          type: "application/pdf",
+          disposition: "attachment",
+        },
+      ],
+    }
+    return await sgMail.send(msg)
+  } catch (error) {
+    return null
+  }
+}
