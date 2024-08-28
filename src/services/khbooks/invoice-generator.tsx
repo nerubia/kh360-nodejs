@@ -1,7 +1,19 @@
-import { Document, Page, Text, View, StyleSheet, Image, Font } from "@react-pdf/renderer"
+// TODO: move to utils ??
+
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Image,
+  Font,
+  renderToStream,
+} from "@react-pdf/renderer"
 import { formatDate } from "../../utils/format-date"
 import React from "react"
 
+import { sendMailWithAttachment } from "../../utils/sendgrid"
 import path from "path"
 
 const logo = path.resolve(__dirname, "./assets/nerubia.png")
@@ -102,6 +114,18 @@ const invoiceData = {
     display_name: "John Doe",
     company_name: "Google LLC",
   },
+}
+
+export const generateAndSendInvoice = async (id: number) => {
+  const pdfStream = await renderToStream(<MyDocument />)
+
+  const buffers: Buffer[] = []
+
+  pdfStream.on("data", (chunk) => buffers.push(chunk))
+  pdfStream.on("end", async () => {
+    const pdfBuffer = Buffer.concat(buffers)
+    await sendMailWithAttachment("jlerit@nerubia.com", "Invoice", "Your invoice", pdfBuffer)
+  })
 }
 
 export const MyDocument: React.FC = () => {
