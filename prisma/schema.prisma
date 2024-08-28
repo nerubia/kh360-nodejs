@@ -164,27 +164,28 @@ model cities {
 }
 
 model clients {
-  id                 Int       @id @default(autoincrement())
-  name               String?   @db.VarChar(100)
-  display_name       String?   @db.VarChar(100)
-  contact_first_name String?   @db.VarChar(100)
-  contact_last_name  String?   @db.VarChar(100)
-  contact_no         String?   @db.VarChar(100)
-  email              String?   @db.VarChar(255)
-  address1           String?   @db.VarChar(100)
-  address2           String?   @db.VarChar(100)
-  city               String?   @db.VarChar(100)
-  state              String?   @db.VarChar(100)
+  id                 Int        @id @default(autoincrement())
+  name               String?    @db.VarChar(100)
+  display_name       String?    @db.VarChar(100)
+  contact_first_name String?    @db.VarChar(100)
+  contact_last_name  String?    @db.VarChar(100)
+  contact_no         String?    @db.VarChar(100)
+  email              String?    @db.VarChar(255)
+  address1           String?    @db.VarChar(100)
+  address2           String?    @db.VarChar(100)
+  city               String?    @db.VarChar(100)
+  state              String?    @db.VarChar(100)
   country_id         Int?
   postal_code        Int?
   company_id         Int?
   currency_id        Int?
   payment_term_id    Int?
-  remarks            String?   @db.Text
-  status             String?   @default("Active") @db.VarChar(20)
-  created_at         DateTime? @db.DateTime(0)
-  updated_at         DateTime? @db.DateTime(0)
-  is_delinquent      Boolean?  @default(false)
+  remarks            String?    @db.Text
+  status             String?    @default("Active") @db.VarChar(20)
+  created_at         DateTime?  @db.DateTime(0)
+  updated_at         DateTime?  @db.DateTime(0)
+  is_delinquent      Boolean?   @default(false)
+  invoices           invoices[]
 
   @@index([company_id], map: "index_clients_on_company_id")
   @@index([currency_id], map: "index_clients_on_currency_id")
@@ -458,6 +459,7 @@ model evaluation_result_details {
   @@index([evaluation_result_id], map: "index_evaluation_result_details_on_evaluation_result_id")
   @@index([evaluation_template_id], map: "index_evaluation_result_details_on_evaluation_template_id")
   @@index([user_id], map: "index_evaluation_result_details_on_user_id")
+  @@index([score_ratings_id], map: "evaluation_result_details_score_ratings_id_fkey")
 }
 
 model evaluation_results {
@@ -478,11 +480,12 @@ model evaluation_results {
   created_at                   DateTime?      @db.DateTime(0)
   updated_at                   DateTime?      @db.DateTime(0)
   deleted_at                   DateTime?      @db.DateTime(0)
-  users                        users?         @relation(fields: [user_id], references: [id])
   score_ratings                score_ratings? @relation(fields: [score_ratings_id], references: [id])
+  users                        users?         @relation(fields: [user_id], references: [id])
 
   @@index([evaluation_administration_id], map: "index_evaluation_results_on_evaluation_administration_id")
   @@index([user_id], map: "index_evaluation_results_on_user_id")
+  @@index([score_ratings_id], map: "evaluation_results_score_ratings_id_fkey")
 }
 
 model evaluation_setups {
@@ -568,6 +571,7 @@ model evaluations {
   @@index([evaluator_id], map: "index_evaluations_on_evaluator_id")
   @@index([evaluee_id], map: "index_evaluations_on_evaluee_id")
   @@index([project_id], map: "index_evaluations_on_project_id")
+  @@index([project_member_id], map: "evaluations_project_member_id_fkey")
 }
 
 model external_users {
@@ -601,28 +605,32 @@ model holidays {
 }
 
 model invoices {
-  id             Int       @id @default(autoincrement())
-  client_id      Int?
-  company_id     Int?
-  contract_id    Int?
-  currency_id    Int?
-  invoice_no     String?   @default("") @db.VarChar(20)
-  details        String?   @default("") @db.VarChar(255)
-  invoice_date   DateTime? @db.Date
-  due_date       DateTime? @db.Date
-  payment_date   DateTime? @db.Date
-  invoice_amount Decimal?  @default(0.00) @db.Decimal(8, 2)
-  tax_amount     Decimal?  @default(0.00) @db.Decimal(8, 2)
-  payment_amount Decimal?  @default(0.00) @db.Decimal(8, 2)
-  invoice_status String?   @default("") @db.VarChar(20)
-  payment_status String?   @default("") @db.VarChar(20)
-  remarks        String?   @db.Text
-  created_at     DateTime? @db.DateTime(0)
-  updated_at     DateTime? @db.DateTime(0)
+  id                  Int       @id @default(autoincrement())
+  client_id           Int?
+  company_id          Int?
+  currency_id         Int?
+  invoice_no          String?   @default("") @db.VarChar(20)
+  invoice_date        DateTime? @db.Date
+  due_date            DateTime? @db.Date
+  invoice_amount      Decimal?  @default(0.00) @db.Decimal(8, 2)
+  discount_amount     Decimal?  @default(0.00) @db.Decimal(8, 2)
+  tax_amount          Decimal?  @default(0.00) @db.Decimal(8, 2)
+  sub_total           Decimal?  @default(0.00) @db.Decimal(8, 2)
+  payment_amount      Decimal?  @default(0.00) @db.Decimal(8, 2)
+  tax_types_id        Int?
+  payment_accounts_id Int?
+  payment_terms_id    Int?
+  invoice_status      String?   @default("") @db.VarChar(20)
+  payment_status      String?   @default("") @db.VarChar(20)
+  remarks             String?   @db.Text
+  message             String?   @db.Text
+  created_at          DateTime? @db.DateTime(0)
+  updated_at          DateTime? @db.DateTime(0)
+  billing_address_id  Int?
+  clients             clients?  @relation(fields: [client_id], references: [id])
 
   @@index([client_id], map: "index_invoices_on_client_id")
   @@index([company_id], map: "index_invoices_on_company_id")
-  @@index([contract_id], map: "index_invoices_on_contract_id")
   @@index([currency_id], map: "index_invoices_on_currency_id")
 }
 
@@ -955,19 +963,21 @@ model project_infos {
 }
 
 model project_member_skills {
-  id                Int       @id @default(autoincrement())
+  id                Int             @id @default(autoincrement())
   project_member_id Int
   sequence_no       Int?
   skill_id          Int
-  description       String?   @db.Text
+  description       String?         @db.Text
   status            Boolean?
-  start_date        DateTime? @db.Date
-  end_date          DateTime? @db.Date
-  created_at        DateTime? @db.DateTime(0)
-  updated_at        DateTime? @db.DateTime(0)
+  start_date        DateTime?       @db.Date
+  end_date          DateTime?       @db.Date
+  created_at        DateTime?       @db.DateTime(0)
+  updated_at        DateTime?       @db.DateTime(0)
+  project_member    project_members @relation(fields: [project_member_id], references: [id], onDelete: NoAction)
+  skills            skills          @relation(fields: [skill_id], references: [id], onDelete: NoAction)
 
-  project_member project_members @relation(fields: [project_member_id], references: [id])
-  skills         skills          @relation(fields: [skill_id], references: [id])
+  @@index([project_member_id], map: "project_member_skills_project_member_id_fkey")
+  @@index([skill_id], map: "project_member_skills_skill_id_fkey")
 }
 
 model project_members {
@@ -998,9 +1008,11 @@ model project_skills {
   status      Boolean?
   created_at  DateTime? @db.DateTime(0)
   updated_at  DateTime? @db.DateTime(0)
+  projects    projects  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  skills      skills    @relation(fields: [skill_id], references: [id], onDelete: NoAction)
 
-  projects projects @relation(fields: [project_id], references: [id], onDelete: Cascade)
-  skills   skills   @relation(fields: [skill_id], references: [id])
+  @@index([project_id], map: "project_skills_project_id_fkey")
+  @@index([skill_id], map: "project_skills_skill_id_fkey")
 }
 
 model project_roles {
@@ -1052,9 +1064,9 @@ model projects {
   updated_at     DateTime         @db.DateTime(0)
   deleted_at     DateTime?        @db.DateTime(0)
   project_infos  project_infos[]
+  project_skills project_skills[]
   project_tasks  project_tasks[]
   project_teams  project_teams[]
-  project_skills project_skills[]
 
   @@index([client_id], map: "index_projects_on_client_id")
 }
@@ -1074,8 +1086,8 @@ model score_ratings {
   status                    Boolean?
   created_at                DateTime?                   @db.DateTime(0)
   updated_at                DateTime?                   @db.DateTime(0)
-  evaluation_results        evaluation_results[]
   evaluation_result_details evaluation_result_details[]
+  evaluation_results        evaluation_results[]
 }
 
 model skill_categories {
@@ -1086,24 +1098,25 @@ model skill_categories {
   status            Boolean?
   created_at        DateTime?           @db.DateTime(0)
   updated_at        DateTime?           @db.DateTime(0)
-  skills            skills[]
   skill_map_ratings skill_map_ratings[]
+  skills            skills[]
 }
 
 model skills {
-  id                Int       @id @default(autoincrement())
-  skill_category_id Int
-  name              String?   @db.VarChar(255)
-  sequence_no       Int?
-  description       String?   @db.Text
-  status            Boolean?
-  created_at        DateTime? @db.DateTime(0)
-  updated_at        DateTime? @db.DateTime(0)
-
-  skill_categories      skill_categories        @relation(fields: [skill_category_id], references: [id])
-  project_skills        project_skills[]
+  id                    Int                     @id @default(autoincrement())
+  skill_category_id     Int
+  name                  String?                 @db.VarChar(255)
+  sequence_no           Int?
+  description           String?                 @db.Text
+  status                Boolean?
+  created_at            DateTime?               @db.DateTime(0)
+  updated_at            DateTime?               @db.DateTime(0)
   project_member_skills project_member_skills[]
+  project_skills        project_skills[]
   skill_map_ratings     skill_map_ratings[]
+  skill_categories      skill_categories        @relation(fields: [skill_category_id], references: [id], onDelete: NoAction)
+
+  @@index([skill_category_id], map: "skills_skill_category_id_fkey")
 }
 
 model skill_map_administrations {
@@ -1116,14 +1129,14 @@ model skill_map_administrations {
   remarks                       String?             @db.Text
   email_subject                 String?             @default("") @db.VarChar(255)
   email_content                 String?             @db.Text
-  is_uploaded                   Boolean?
   status                        String?             @default("") @db.VarChar(20)
   created_by_id                 Int?
   updated_by_id                 Int?
   created_at                    DateTime?           @db.DateTime(0)
   updated_at                    DateTime?           @db.DateTime(0)
-  skill_map_results             skill_map_results[]
+  is_uploaded                   Boolean?
   skill_map_ratings             skill_map_ratings[]
+  skill_map_results             skill_map_results[]
 }
 
 model skill_map_results {
@@ -1138,9 +1151,9 @@ model skill_map_results {
   created_at                  DateTime?                  @db.DateTime(0)
   updated_at                  DateTime?                  @db.DateTime(0)
   deleted_at                  DateTime?                  @db.DateTime(0)
-  users                       users?                     @relation(fields: [user_id], references: [id])
   skill_map_ratings           skill_map_ratings[]
   skill_map_administrations   skill_map_administrations? @relation(fields: [skill_map_administration_id], references: [id])
+  users                       users?                     @relation(fields: [user_id], references: [id])
 
   @@index([skill_map_administration_id], map: "index_skill_map_results_on_skill_map_administration_id")
   @@index([user_id], map: "index_skill_map_results_on_user_id")
@@ -1156,15 +1169,15 @@ model skill_map_ratings {
   other_skill_name            String?
   answer_option_id            Int?
   comments                    String?                    @db.Text
-  status                      String?                    @db.VarChar(255)
   created_at                  DateTime?                  @db.DateTime(0)
   updated_at                  DateTime?                  @db.DateTime(0)
   deleted_at                  DateTime?                  @db.DateTime(0)
-  skill_map_results           skill_map_results?         @relation(fields: [skill_map_result_id], references: [id])
-  skills                      skills?                    @relation(fields: [skill_id], references: [id])
-  skill_categories            skill_categories?          @relation(fields: [skill_category_id], references: [id])
-  skill_map_administrations   skill_map_administrations? @relation(fields: [skill_map_administration_id], references: [id])
+  status                      String?                    @db.VarChar(255)
   answer_options              answer_options?            @relation(fields: [answer_option_id], references: [id])
+  skill_categories            skill_categories?          @relation(fields: [skill_category_id], references: [id])
+  skills                      skills?                    @relation(fields: [skill_id], references: [id])
+  skill_map_administrations   skill_map_administrations? @relation(fields: [skill_map_administration_id], references: [id])
+  skill_map_results           skill_map_results?         @relation(fields: [skill_map_result_id], references: [id])
   users                       users?                     @relation(fields: [user_id], references: [id])
 
   @@index([answer_option_id], map: "index_skill_map_ratings_on_answer_option_id")
@@ -1172,6 +1185,7 @@ model skill_map_ratings {
   @@index([skill_map_result_id], map: "index_skill_map_ratings_on_skill_map_result_id")
   @@index([skill_id], map: "index_skill_map_ratings_on_skill_id")
   @@index([skill_category_id], map: "index_skill_map_ratings_on_skill_category_id")
+  @@index([user_id], map: "skill_map_ratings_user_id_fkey")
 }
 
 model system_settings {
@@ -1342,147 +1356,153 @@ model time_entry_logs {
 }
 
 model survey_templates {
-  id            Int       @id @default(autoincrement())
-  name          String?   @db.VarChar(100)
-  display_name  String?   @db.VarChar(150)
-  survey_type   String?   @db.VarChar(150)
-  remarks       String?   @db.VarChar(255)
-  is_active     Boolean?
-  created_by_id Int?
-  updated_by_id Int?
-  created_at    DateTime? @db.DateTime(0)
-  updated_at    DateTime? @db.DateTime(0)
-  deleted_at    DateTime? @db.DateTime(0)
-
+  id                             Int                              @id @default(autoincrement())
+  name                           String?                          @db.VarChar(100)
+  display_name                   String?                          @db.VarChar(150)
+  survey_type                    String?                          @db.VarChar(150)
+  remarks                        String?                          @db.VarChar(255)
+  is_active                      Boolean?
+  created_by_id                  Int?
+  updated_by_id                  Int?
+  created_at                     DateTime?                        @db.DateTime(0)
+  updated_at                     DateTime?                        @db.DateTime(0)
+  deleted_at                     DateTime?                        @db.DateTime(0)
+  survey_answer                  survey_answers[]
+  survey_template_answers        survey_template_answers[]
   survey_template_categories     survey_template_categories[]
   survey_template_question_rules survey_template_question_rules[]
   survey_template_questions      survey_template_questions[]
-  survey_template_answers        survey_template_answers[]
-  survey_answer                  survey_answers[]
 }
 
 model survey_template_categories {
-  id                 Int       @id @default(autoincrement())
-  survey_template_id Int?
-  name               String?   @db.VarChar(255)
-  sequence_no        Int?
-  category_type      String?   @db.VarChar(255)
-  description        String?   @db.Text
-  status             Boolean?
-  created_at         DateTime? @db.DateTime(0)
-  updated_at         DateTime? @db.DateTime(0)
-
+  id                        Int                         @id @default(autoincrement())
+  survey_template_id        Int?
+  name                      String?                     @db.VarChar(255)
+  sequence_no               Int?
+  category_type             String?                     @db.VarChar(255)
+  description               String?                     @db.Text
+  status                    Boolean?
+  created_at                DateTime?                   @db.DateTime(0)
+  updated_at                DateTime?                   @db.DateTime(0)
   survey_template_answers   survey_template_answers[]
+  survey_templates          survey_templates?           @relation(fields: [survey_template_id], references: [id], onDelete: Cascade, map: "survey_templates_survey_template_id")
   survey_template_questions survey_template_questions[]
 
-  survey_templates survey_templates? @relation(fields: [survey_template_id], references: [id], onDelete: Cascade, map: "survey_templates_survey_template_id")
+  @@index([survey_template_id], map: "survey_templates_survey_template_id")
 }
 
 model survey_template_questions {
-  id                          Int       @id @default(autoincrement())
-  survey_template_id          Int
-  survey_template_category_id Int?
-  sequence_no                 Int?
-  question_type               String?   @db.VarChar(255)
-  question_text               String?   @db.Text
-  is_required                 Boolean?
-  is_active                   Boolean?
-  created_by_id               Int?
-  updated_by_id               Int?
-  created_at                  DateTime? @db.DateTime(0)
-  updated_at                  DateTime? @db.DateTime(0)
-  deleted_at                  DateTime? @db.DateTime(0)
-
-  survey_template_question_rules survey_template_question_rules[]
-  survey_template_answers        survey_template_answers[]
+  id                             Int                              @id @default(autoincrement())
+  survey_template_id             Int
+  survey_template_category_id    Int?
+  sequence_no                    Int?
+  question_type                  String?                          @db.VarChar(255)
+  question_text                  String?                          @db.Text
+  is_required                    Boolean?
+  is_active                      Boolean?
+  created_by_id                  Int?
+  updated_by_id                  Int?
+  created_at                     DateTime?                        @db.DateTime(0)
+  updated_at                     DateTime?                        @db.DateTime(0)
+  deleted_at                     DateTime?                        @db.DateTime(0)
   survey_answers                 survey_answers[]
+  survey_template_answers        survey_template_answers[]
+  survey_template_question_rules survey_template_question_rules[]
+  survey_template_categories     survey_template_categories?      @relation(fields: [survey_template_category_id], references: [id])
+  survey_templates               survey_templates                 @relation(fields: [survey_template_id], references: [id], onDelete: NoAction)
 
-  survey_templates           survey_templates            @relation(fields: [survey_template_id], references: [id])
-  survey_template_categories survey_template_categories? @relation(fields: [survey_template_category_id], references: [id])
+  @@index([survey_template_category_id], map: "survey_template_questions_survey_template_category_id_fkey")
+  @@index([survey_template_id], map: "survey_template_questions_survey_template_id_fkey")
 }
 
 model survey_template_question_rules {
-  id                          Int       @id @default(autoincrement())
+  id                          Int                       @id @default(autoincrement())
   survey_template_id          Int
   survey_template_question_id Int
-  rule_key                    String?   @db.VarChar(255)
-  rule_value                  String?   @db.VarChar(255)
+  rule_key                    String?                   @db.VarChar(255)
+  rule_value                  String?                   @db.VarChar(255)
   remarks                     String?
   is_active                   Boolean?
   created_by_id               Int?
   updated_by_id               Int?
-  created_at                  DateTime? @db.DateTime(0)
-  updated_at                  DateTime? @db.DateTime(0)
-  deleted_at                  DateTime? @db.DateTime(0)
+  created_at                  DateTime?                 @db.DateTime(0)
+  updated_at                  DateTime?                 @db.DateTime(0)
+  deleted_at                  DateTime?                 @db.DateTime(0)
+  survey_templates            survey_templates          @relation(fields: [survey_template_id], references: [id], onDelete: NoAction)
+  survey_template_questions   survey_template_questions @relation(fields: [survey_template_question_id], references: [id], onDelete: NoAction)
 
-  survey_templates          survey_templates          @relation(fields: [survey_template_id], references: [id])
-  survey_template_questions survey_template_questions @relation(fields: [survey_template_question_id], references: [id])
+  @@index([survey_template_id], map: "survey_template_question_rules_survey_template_id_fkey")
+  @@index([survey_template_question_id], map: "survey_template_question_rules_survey_template_question_id_fkey")
 }
 
 model survey_template_answers {
-  id                          Int              @id @default(autoincrement())
+  id                          Int                         @id @default(autoincrement())
   survey_template_id          Int
   survey_template_question_id Int
   survey_template_category_id Int?
   sequence_no                 Int?
-  answer_text                 String?          @db.LongText
-  answer_description          String?          @db.Text
+  answer_text                 String?                     @db.LongText
+  answer_description          String?                     @db.Text
   amount                      Int?
   answer_image                String?
   is_active                   Boolean?
   created_by_id               Int?
   updated_by_id               Int?
-  created_at                  DateTime?        @db.DateTime(0)
-  updated_at                  DateTime?        @db.DateTime(0)
-  deleted_at                  DateTime?        @db.DateTime(0)
+  created_at                  DateTime?                   @db.DateTime(0)
+  updated_at                  DateTime?                   @db.DateTime(0)
+  deleted_at                  DateTime?                   @db.DateTime(0)
   survey_answers              survey_answers[]
+  survey_template_categories  survey_template_categories? @relation(fields: [survey_template_category_id], references: [id])
+  survey_templates            survey_templates            @relation(fields: [survey_template_id], references: [id], onDelete: NoAction)
+  survey_template_questions   survey_template_questions   @relation(fields: [survey_template_question_id], references: [id], onDelete: NoAction)
 
-  survey_templates           survey_templates            @relation(fields: [survey_template_id], references: [id])
-  survey_template_questions  survey_template_questions   @relation(fields: [survey_template_question_id], references: [id])
-  survey_template_categories survey_template_categories? @relation(fields: [survey_template_category_id], references: [id])
+  @@index([survey_template_category_id], map: "survey_template_answers_survey_template_category_id_fkey")
+  @@index([survey_template_id], map: "survey_template_answers_survey_template_id_fkey")
+  @@index([survey_template_question_id], map: "survey_template_answers_survey_template_question_id_fkey")
 }
 
 model survey_administrations {
-  id                 Int       @id @default(autoincrement())
+  id                 Int              @id @default(autoincrement())
   name               String?
-  survey_start_date  DateTime? @db.Date
-  survey_end_date    DateTime? @db.Date
+  survey_start_date  DateTime?        @db.Date
+  survey_end_date    DateTime?        @db.Date
   survey_template_id Int?
-  remarks            String?   @db.VarChar(255)
-  email_subject      String?   @default("") @db.VarChar(255)
-  email_content      String?   @db.Text
-  status             String?   @db.VarChar(255)
+  remarks            String?          @db.VarChar(255)
+  email_subject      String?          @default("") @db.VarChar(255)
+  email_content      String?          @db.Text
+  status             String?          @db.VarChar(255)
   created_by_id      Int?
   updated_by_id      Int?
-  created_at         DateTime? @db.DateTime(0)
-  updated_at         DateTime? @db.DateTime(0)
-  deleted_at         DateTime? @db.DateTime(0)
-
-  survey_results survey_results[]
-  survey_answers survey_answers[]
+  created_at         DateTime?        @db.DateTime(0)
+  updated_at         DateTime?        @db.DateTime(0)
+  deleted_at         DateTime?        @db.DateTime(0)
+  survey_answers     survey_answers[]
+  survey_results     survey_results[]
 }
 
 model survey_results {
-  id                       Int              @id @default(autoincrement())
+  id                       Int                    @id @default(autoincrement())
   survey_administration_id Int
   user_id                  Int
-  remarks                  String?          @db.VarChar(255)
-  status                   String?          @db.VarChar(255)
+  remarks                  String?                @db.VarChar(255)
+  status                   String?                @db.VarChar(255)
   is_external              Boolean?
   external_respondent_id   Int?
   created_by_id            Int?
   updated_by_id            Int?
-  created_at               DateTime?        @db.DateTime(0)
-  updated_at               DateTime?        @db.DateTime(0)
-  deleted_at               DateTime?        @db.DateTime(0)
+  created_at               DateTime?              @db.DateTime(0)
+  updated_at               DateTime?              @db.DateTime(0)
+  deleted_at               DateTime?              @db.DateTime(0)
   survey_answers           survey_answers[]
+  survey_administrations   survey_administrations @relation(fields: [survey_administration_id], references: [id], onDelete: NoAction)
+  users                    users                  @relation(fields: [user_id], references: [id], onDelete: NoAction)
 
-  survey_administrations survey_administrations @relation(fields: [survey_administration_id], references: [id])
-  users                  users                  @relation(fields: [user_id], references: [id])
+  @@index([survey_administration_id], map: "survey_results_survey_administration_id_fkey")
+  @@index([user_id], map: "survey_results_user_id_fkey")
 }
 
 model survey_answers {
-  id                          Int       @id @default(autoincrement())
+  id                          Int                       @id @default(autoincrement())
   survey_administration_id    Int
   survey_result_id            Int
   user_id                     Int
@@ -1490,20 +1510,26 @@ model survey_answers {
   survey_template_id          Int
   survey_template_question_id Int
   survey_template_answer_id   Int?
-  remarks                     String?   @db.VarChar(255)
-  status                      String?   @db.VarChar(255)
+  remarks                     String?                   @db.VarChar(255)
+  status                      String?                   @db.VarChar(255)
   created_by_id               Int?
   updated_by_id               Int?
-  created_at                  DateTime? @db.DateTime(0)
-  updated_at                  DateTime? @db.DateTime(0)
-  deleted_at                  DateTime? @db.DateTime(0)
+  created_at                  DateTime?                 @db.DateTime(0)
+  updated_at                  DateTime?                 @db.DateTime(0)
+  deleted_at                  DateTime?                 @db.DateTime(0)
+  survey_administrations      survey_administrations    @relation(fields: [survey_administration_id], references: [id], onDelete: NoAction)
+  survey_results              survey_results            @relation(fields: [survey_result_id], references: [id], onDelete: NoAction)
+  survey_template_answers     survey_template_answers?  @relation(fields: [survey_template_answer_id], references: [id])
+  survey_templates            survey_templates          @relation(fields: [survey_template_id], references: [id], onDelete: NoAction)
+  survey_template_questions   survey_template_questions @relation(fields: [survey_template_question_id], references: [id], onDelete: NoAction)
+  users                       users                     @relation(fields: [user_id], references: [id], onDelete: NoAction)
 
-  survey_administrations    survey_administrations    @relation(fields: [survey_administration_id], references: [id])
-  survey_results            survey_results            @relation(fields: [survey_result_id], references: [id])
-  users                     users                     @relation(fields: [user_id], references: [id])
-  survey_templates          survey_templates          @relation(fields: [survey_template_id], references: [id])
-  survey_template_questions survey_template_questions @relation(fields: [survey_template_question_id], references: [id])
-  survey_template_answers   survey_template_answers?  @relation(fields: [survey_template_answer_id], references: [id])
+  @@index([survey_administration_id], map: "survey_answers_survey_administration_id_fkey")
+  @@index([survey_result_id], map: "survey_answers_survey_result_id_fkey")
+  @@index([survey_template_answer_id], map: "survey_answers_survey_template_answer_id_fkey")
+  @@index([survey_template_id], map: "survey_answers_survey_template_id_fkey")
+  @@index([survey_template_question_id], map: "survey_answers_survey_template_question_id_fkey")
+  @@index([user_id], map: "survey_answers_user_id_fkey")
 }
 
 model user_contact_informations {
@@ -1693,10 +1719,15 @@ model users {
   approval_manifests        approval_manifests[]
   approvers                 approvers[]
   company_users             company_users[]
+  evaluation_results        evaluation_results[]
   leave_breakdowns          leave_breakdowns[]
   leave_credits             leave_credits[]
   leaves                    leaves[]
   overtimes                 overtimes[]
+  skill_map_ratings         skill_map_ratings[]
+  skill_map_results         skill_map_results[]
+  survey_answers            survey_answers[]
+  survey_results            survey_results[]
   task_assignments          task_assignments[]
   task_authors              task_authors[]
   task_logs                 task_logs[]
@@ -1704,15 +1735,10 @@ model users {
   teams                     teams[]
   time_entries              time_entries[]
   user_contact_informations user_contact_informations[]
+  user_details              user_details?
   user_leaves               user_leaves[]
   user_profiles             user_profiles?
   user_settings             user_settings[]
-  evaluation_results        evaluation_results[]
-  user_details              user_details?
-  survey_results            survey_results[]
-  survey_answers            survey_answers[]
-  skill_map_results         skill_map_results[]
-  skill_map_ratings         skill_map_ratings[]
 
   @@index([birth_date], map: "index_users_on_birth_date")
   @@index([first_name, last_name], map: "index_users_on_first_name_and_last_name")
@@ -1728,6 +1754,219 @@ model worker_logs {
   remarks    String?   @db.Text
   created_at DateTime? @db.DateTime(0)
   updated_at DateTime? @db.DateTime(0)
+}
+
+model test_apis {
+  id           Int            @id @default(autoincrement())
+  name         String         @db.VarChar(255)
+  endpoint     String         @db.VarChar(255)
+  http_method  http_method
+  env          String         @db.VarChar(100)
+  description  String         @db.Text
+  status       Boolean
+  created_at   DateTime       @default(now()) @db.Timestamp(0)
+  created_by   Int
+  updated_at   DateTime       @default(now()) @db.Timestamp(0)
+  updated_by   Int
+  test_batches test_batches[]
+  test_items   test_items[]
+}
+
+model test_items {
+  id           Int                @id @default(autoincrement())
+  test_apis_id Int?
+  payload      String             @db.Text
+  response     String             @db.Text
+  description  String?            @db.Text
+  status       Boolean
+  created_at   DateTime           @default(now()) @db.Timestamp(0)
+  created_by   Int
+  updated_at   DateTime           @default(now()) @db.Timestamp(0)
+  updated_by   Int
+  test_batches test_batch_items[]
+  test_apis    test_apis?         @relation(fields: [test_apis_id], references: [id], onDelete: Cascade)
+
+  @@index([test_apis_id], map: "test_items_test_apis_id_fkey")
+}
+
+model test_batches {
+  id           Int                @id @default(autoincrement())
+  test_apis_id Int?
+  name         String             @db.VarChar(255)
+  description  String             @db.Text
+  status       Boolean
+  created_at   DateTime           @default(now()) @db.Timestamp(0)
+  created_by   Int
+  updated_at   DateTime           @default(now()) @db.Timestamp(0)
+  updated_by   Int
+  test_items   test_batch_items[]
+  test_apis    test_apis?         @relation(fields: [test_apis_id], references: [id], onDelete: Cascade)
+
+  @@index([test_apis_id], map: "test_batches_test_apis_id_fkey")
+}
+
+model test_batch_items {
+  id              Int           @id @default(autoincrement())
+  test_items_id   Int?
+  test_batches_id Int?
+  test_batches    test_batches? @relation(fields: [test_batches_id], references: [id], onDelete: Cascade)
+  test_items      test_items?   @relation(fields: [test_items_id], references: [id], onDelete: Cascade)
+
+  @@index([test_batches_id], map: "test_batch_items_test_batches_id_fkey")
+  @@index([test_items_id], map: "test_batch_items_test_items_id_fkey")
+}
+
+model addresses {
+  id          Int       @id @default(autoincrement())
+  address1    String?   @default("") @db.VarChar(255)
+  address2    String?   @default("") @db.VarChar(255)
+  city        String?   @default("") @db.VarChar(255)
+  state       String?   @default("") @db.VarChar(255)
+  country     String?   @default("") @db.VarChar(255)
+  postal_code String?   @default("") @db.VarChar(20)
+  description String?   @default("") @db.VarChar(255)
+  created_at  DateTime? @db.DateTime(0)
+  updated_at  DateTime? @db.DateTime(0)
+}
+
+model contract_billings {
+  id             Int       @id @default(autoincrement())
+  contract_id    Int?
+  company_id     Int?
+  client_id      Int?
+  currency_id    Int?
+  details        String?   @default("") @db.VarChar(255)
+  billing_amount Decimal?  @default(0.00) @db.Decimal(8, 2)
+  actual_amount  Decimal?  @default(0.00) @db.Decimal(8, 2)
+  bill_date      DateTime? @db.Date
+  due_date       DateTime? @db.Date
+  billing_status String?   @default("") @db.VarChar(20)
+  remarks        String?   @db.Text
+  created_at     DateTime? @db.DateTime(0)
+  updated_at     DateTime? @db.DateTime(0)
+
+  @@index([client_id], map: "index_contract_billings_on_client_id")
+  @@index([company_id], map: "index_contract_billings_on_company_id")
+  @@index([contract_id], map: "index_contract_billings_on_contract_id")
+  @@index([currency_id], map: "index_contract_billings_on_currency_id")
+}
+
+model invoice_attachments {
+  id          Int       @id @default(autoincrement())
+  invoice_id  Int?
+  sequence_no Int?
+  filename    String?   @default("") @db.VarChar(255)
+  description String?   @default("") @db.VarChar(255)
+  created_at  DateTime? @db.DateTime(0)
+  updated_at  DateTime? @db.DateTime(0)
+
+  @@index([invoice_id], map: "index_invoice_attachments_on_invoice_id")
+}
+
+model invoice_details {
+  id                  Int       @id @default(autoincrement())
+  invoice_id          Int?
+  contract_id         Int?
+  contract_billing_id Int?
+  offering_id         Int?
+  project_id          Int?
+  employee_id         Int?
+  period_start        DateTime? @db.Date
+  period_end          DateTime? @db.Date
+  details             String?   @db.Text
+  quantity            Decimal?  @default(0.00) @db.Decimal(8, 2)
+  uom_id              Int?
+  rate                Decimal?  @default(0.00) @db.Decimal(8, 2)
+  sub_total           Decimal?  @default(0.00) @db.Decimal(8, 2)
+  tax                 Decimal?  @default(0.00) @db.Decimal(8, 2)
+  total               Decimal?  @default(0.00) @db.Decimal(8, 2)
+  created_at          DateTime? @db.DateTime(0)
+  updated_at          DateTime? @db.DateTime(0)
+
+  @@index([contract_billing_id], map: "index_invoice_details_on_contract_billing_id")
+  @@index([contract_id], map: "index_invoice_details_on_contract_id")
+  @@index([employee_id], map: "index_invoice_details_on_employee_id")
+  @@index([invoice_id], map: "index_invoice_details_on_invoice_id")
+  @@index([offering_id], map: "index_invoice_details_on_offering_id")
+  @@index([project_id], map: "index_invoice_details_on_project_id")
+  @@index([uom_id], map: "index_invoice_details_on_uom_id")
+}
+
+model invoice_emails {
+  id            Int       @id @default(autoincrement())
+  invoice_id    Int?
+  sequence_no   Int?
+  email_type    String?   @default("") @db.VarChar(255)
+  email_address String?   @default("") @db.VarChar(255)
+  created_at    DateTime? @db.DateTime(0)
+  updated_at    DateTime? @db.DateTime(0)
+
+  @@index([invoice_id], map: "index_invoice_emails_on_invoice_id")
+}
+
+model offering_categories {
+  id            Int       @id @default(autoincrement())
+  name          String?   @db.VarChar(100)
+  offering_type String?   @db.VarChar(20)
+  description   String?   @db.Text
+  created_at    DateTime? @db.DateTime(0)
+  updated_at    DateTime? @db.DateTime(0)
+}
+
+model offerings {
+  id                   Int       @id @default(autoincrement())
+  name                 String?   @db.VarChar(100)
+  client_id            Int?
+  offering_category_id Int?
+  offering_type        String?   @db.VarChar(20)
+  sku                  String?   @db.VarChar(50)
+  currency_id          Int?
+  uom_id               Int?
+  price                Decimal?  @default(0.00) @db.Decimal(8, 2)
+  description          String?   @db.Text
+  created_at           DateTime? @db.DateTime(0)
+  updated_at           DateTime? @db.DateTime(0)
+
+  @@index([client_id], map: "index_offerings_on_client_id")
+  @@index([currency_id], map: "index_offerings_on_currency_id")
+  @@index([offering_category_id], map: "index_offerings_on_offering_category_id")
+  @@index([uom_id], map: "index_offerings_on_uom_id")
+}
+
+model payment_accounts {
+  id           Int       @id @default(autoincrement())
+  name         String?   @default("") @db.VarChar(255)
+  currency_id  Int?
+  account_name String?   @default("") @db.VarChar(255)
+  account_type String?   @default("") @db.VarChar(255)
+  account_no   String?   @default("") @db.VarChar(255)
+  bank_name    String?   @default("") @db.VarChar(255)
+  bank_branch  String?   @default("") @db.VarChar(255)
+  swift_code   String?   @default("") @db.VarChar(255)
+  description  String?   @default("") @db.VarChar(255)
+  created_at   DateTime? @db.DateTime(0)
+  updated_at   DateTime? @db.DateTime(0)
+
+  @@index([currency_id], map: "index_payment_accounts_on_currency_id")
+}
+
+model tax_types {
+  id          Int       @id @default(autoincrement())
+  name        String?   @db.VarChar(100)
+  short_name  String?   @db.VarChar(10)
+  rate        Decimal?  @default(0.00) @db.Decimal(5, 2)
+  description String?   @db.Text
+  created_at  DateTime? @db.DateTime(0)
+  updated_at  DateTime? @db.DateTime(0)
+}
+
+model uoms {
+  id          Int       @id @default(autoincrement())
+  name        String?   @db.VarChar(100)
+  short_name  String?   @db.VarChar(10)
+  description String?   @db.Text
+  created_at  DateTime? @db.DateTime(0)
+  updated_at  DateTime? @db.DateTime(0)
 }
 
 enum approvers_status {
@@ -1821,63 +2060,6 @@ enum overtime_breakdowns_status {
   Reviewed
   For_Review @map("For Review")
   Pending
-}
-
-//
-// Test Suites
-//
-
-model test_apis {
-  id           Int            @id @default(autoincrement())
-  name         String         @db.VarChar(255)
-  endpoint     String         @db.VarChar(255)
-  http_method  http_method
-  env          String         @db.VarChar(100)
-  description  String         @db.Text
-  status       Boolean
-  created_at   DateTime       @default(now()) @db.Timestamp(0)
-  created_by   Int
-  updated_at   DateTime       @default(now()) @db.Timestamp(0)
-  updated_by   Int
-  test_items   test_items[]
-  test_batches test_batches[]
-}
-
-model test_items {
-  id           Int                @id @default(autoincrement())
-  test_apis_id Int?
-  payload      String             @db.Text
-  response     String             @db.Text
-  description  String?            @db.Text
-  status       Boolean
-  created_at   DateTime           @default(now()) @db.Timestamp(0)
-  created_by   Int
-  updated_at   DateTime           @default(now()) @db.Timestamp(0)
-  updated_by   Int
-  test_apis    test_apis?         @relation(fields: [test_apis_id], references: [id], onDelete: Cascade)
-  test_batches test_batch_items[]
-}
-
-model test_batches {
-  id           Int                @id @default(autoincrement())
-  test_apis_id Int?
-  name         String             @db.VarChar(255)
-  description  String             @db.Text
-  status       Boolean
-  created_at   DateTime           @default(now()) @db.Timestamp(0)
-  created_by   Int
-  updated_at   DateTime           @default(now()) @db.Timestamp(0)
-  updated_by   Int
-  test_apis    test_apis?         @relation(fields: [test_apis_id], references: [id], onDelete: Cascade)
-  test_items   test_batch_items[]
-}
-
-model test_batch_items {
-  id              Int           @id @default(autoincrement())
-  test_batches_id Int?
-  test_items_id   Int?
-  test_batches    test_batches? @relation(fields: [test_batches_id], references: [id], onDelete: Cascade)
-  test_items      test_items?   @relation(fields: [test_items_id], references: [id], onDelete: Cascade)
 }
 
 enum http_method {
