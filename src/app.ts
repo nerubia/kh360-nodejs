@@ -44,6 +44,8 @@ import testItemRoute from "./routes/test-suite/test-item-route"
 import testBatchRoute from "./routes/test-suite/test-batch-route"
 
 import invoiceRoute from "./routes/khbooks/invoice-route"
+import offeringCategoryRoute from "./routes/khbooks/offering-category-route"
+import offeringRoute from "./routes/khbooks/offering-route"
 
 import morgan from "morgan"
 import logger from "./utils/logger"
@@ -133,5 +135,7 @@ app.use("/test-suite/batches", authMiddleware, testBatchRoute)
  */
 
 app.use("/khbooks/invoices", adminMiddleware, invoiceRoute)
+app.use("/khbooks/offering-categories", adminMiddleware, offeringCategoryRoute)
+app.use("/khbooks/offerings", adminMiddleware, offeringRoute)
 
 export default app

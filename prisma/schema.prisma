@@ -164,28 +164,29 @@ model cities {
 }
 
 model clients {
-  id                 Int        @id @default(autoincrement())
-  name               String?    @db.VarChar(100)
-  display_name       String?    @db.VarChar(100)
-  contact_first_name String?    @db.VarChar(100)
-  contact_last_name  String?    @db.VarChar(100)
-  contact_no         String?    @db.VarChar(100)
-  email              String?    @db.VarChar(255)
-  address1           String?    @db.VarChar(100)
-  address2           String?    @db.VarChar(100)
-  city               String?    @db.VarChar(100)
-  state              String?    @db.VarChar(100)
+  id                 Int         @id @default(autoincrement())
+  name               String?     @db.VarChar(100)
+  display_name       String?     @db.VarChar(100)
+  contact_first_name String?     @db.VarChar(100)
+  contact_last_name  String?     @db.VarChar(100)
+  contact_no         String?     @db.VarChar(100)
+  email              String?     @db.VarChar(255)
+  address1           String?     @db.VarChar(100)
+  address2           String?     @db.VarChar(100)
+  city               String?     @db.VarChar(100)
+  state              String?     @db.VarChar(100)
   country_id         Int?
   postal_code        Int?
   company_id         Int?
   currency_id        Int?
   payment_term_id    Int?
-  remarks            String?    @db.Text
-  status             String?    @default("Active") @db.VarChar(20)
-  created_at         DateTime?  @db.DateTime(0)
-  updated_at         DateTime?  @db.DateTime(0)
-  is_delinquent      Boolean?   @default(false)
+  remarks            String?     @db.Text
+  status             String?     @default("Active") @db.VarChar(20)
+  created_at         DateTime?   @db.DateTime(0)
+  updated_at         DateTime?   @db.DateTime(0)
+  is_delinquent      Boolean?    @default(false)
   invoices           invoices[]
+  offerings          offerings[]
 
   @@index([company_id], map: "index_clients_on_company_id")
   @@index([currency_id], map: "index_clients_on_currency_id")
@@ -1905,27 +1906,30 @@ model invoice_emails {
 }
 
 model offering_categories {
-  id            Int       @id @default(autoincrement())
-  name          String?   @db.VarChar(100)
-  offering_type String?   @db.VarChar(20)
-  description   String?   @db.Text
-  created_at    DateTime? @db.DateTime(0)
-  updated_at    DateTime? @db.DateTime(0)
+  id            Int         @id @default(autoincrement())
+  name          String?     @db.VarChar(100)
+  offering_type String?     @db.VarChar(20)
+  description   String?     @db.Text
+  created_at    DateTime?   @db.DateTime(0)
+  updated_at    DateTime?   @db.DateTime(0)
+  offerings     offerings[]
 }
 
 model offerings {
-  id                   Int       @id @default(autoincrement())
-  name                 String?   @db.VarChar(100)
+  id                   Int                  @id @default(autoincrement())
+  name                 String?              @db.VarChar(100)
   client_id            Int?
   offering_category_id Int?
-  offering_type        String?   @db.VarChar(20)
-  sku                  String?   @db.VarChar(50)
+  offering_type        String?              @db.VarChar(20)
+  sku                  String?              @db.VarChar(50)
   currency_id          Int?
   uom_id               Int?
-  price                Decimal?  @default(0.00) @db.Decimal(8, 2)
-  description          String?   @db.Text
-  created_at           DateTime? @db.DateTime(0)
-  updated_at           DateTime? @db.DateTime(0)
+  price                Decimal?             @default(0.00) @db.Decimal(8, 2)
+  description          String?              @db.Text
+  created_at           DateTime?            @db.DateTime(0)
+  updated_at           DateTime?            @db.DateTime(0)
+  clients              clients?             @relation(fields: [client_id], references: [id])
+  offering_categories  offering_categories? @relation(fields: [offering_category_id], references: [id])
 
   @@index([client_id], map: "index_offerings_on_client_id")
   @@index([currency_id], map: "index_offerings_on_currency_id")
