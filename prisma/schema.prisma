@@ -606,29 +606,29 @@ model holidays {
 }
 
 model invoices {
-  id                  Int       @id @default(autoincrement())
-  client_id           Int?
-  company_id          Int?
-  currency_id         Int?
-  invoice_no          String?   @default("") @db.VarChar(20)
-  invoice_date        DateTime? @db.Date
-  due_date            DateTime? @db.Date
-  invoice_amount      Decimal?  @default(0.00) @db.Decimal(8, 2)
-  discount_amount     Decimal?  @default(0.00) @db.Decimal(8, 2)
-  tax_amount          Decimal?  @default(0.00) @db.Decimal(8, 2)
-  sub_total           Decimal?  @default(0.00) @db.Decimal(8, 2)
-  payment_amount      Decimal?  @default(0.00) @db.Decimal(8, 2)
-  tax_types_id        Int?
-  payment_accounts_id Int?
-  payment_terms_id    Int?
-  invoice_status      String?   @default("") @db.VarChar(20)
-  payment_status      String?   @default("") @db.VarChar(20)
-  remarks             String?   @db.Text
-  message             String?   @db.Text
-  created_at          DateTime? @db.DateTime(0)
-  updated_at          DateTime? @db.DateTime(0)
-  billing_address_id  Int?
-  clients             clients?  @relation(fields: [client_id], references: [id])
+  id                 Int       @id @default(autoincrement())
+  client_id          Int?
+  company_id         Int?
+  currency_id        Int?
+  invoice_no         String?   @default("") @db.VarChar(20)
+  invoice_date       DateTime? @db.Date
+  due_date           DateTime? @db.Date
+  invoice_amount     Decimal?  @default(0.00) @db.Decimal(8, 2)
+  discount_amount    Decimal?  @default(0.00) @db.Decimal(8, 2)
+  tax_amount         Decimal?  @default(0.00) @db.Decimal(8, 2)
+  sub_total          Decimal?  @default(0.00) @db.Decimal(8, 2)
+  payment_amount     Decimal?  @default(0.00) @db.Decimal(8, 2)
+  tax_type_id        Int?
+  payment_account_id Int?
+  payment_term_id    Int?
+  billing_address_id Int?
+  invoice_status     String?   @default("") @db.VarChar(20)
+  payment_status     String?   @default("") @db.VarChar(20)
+  remarks            String?   @db.Text
+  message            String?   @db.Text
+  created_at         DateTime? @db.DateTime(0)
+  updated_at         DateTime? @db.DateTime(0)
+  clients            clients?  @relation(fields: [client_id], references: [id])
 
   @@index([client_id], map: "index_invoices_on_client_id")
   @@index([company_id], map: "index_invoices_on_company_id")
@@ -1971,6 +1971,17 @@ model uoms {
   description String?   @db.Text
   created_at  DateTime? @db.DateTime(0)
   updated_at  DateTime? @db.DateTime(0)
+}
+
+model invoice_activities {
+  id          Int       @id @default(autoincrement())
+  invoice_id  Int?
+  action      String?   @db.VarChar(20)
+  description String?   @default("") @db.VarChar(255)
+  created_at  DateTime? @db.DateTime(0)
+  updated_at  DateTime? @db.DateTime(0)
+
+  @@index([invoice_id], map: "index_invoice_activities_on_invoice_id")
 }
 
 enum approvers_status {
