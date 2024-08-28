@@ -69,5 +69,9 @@ export const deleteById = async (id: number) => {
     throw new CustomError("Offering not found", 400)
   }
 
+  if (offering.invoice_details.length > 0) {
+    throw new CustomError("Unable to delete. Used by invoice.", 400)
+  }
+
   await OfferingRepository.deleteById(id)
 }
