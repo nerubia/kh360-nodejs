@@ -1865,24 +1865,25 @@ model invoice_attachments {
 }
 
 model invoice_details {
-  id                  Int       @id @default(autoincrement())
+  id                  Int        @id @default(autoincrement())
   invoice_id          Int?
   contract_id         Int?
   contract_billing_id Int?
   offering_id         Int?
   project_id          Int?
   employee_id         Int?
-  period_start        DateTime? @db.Date
-  period_end          DateTime? @db.Date
-  details             String?   @db.Text
-  quantity            Decimal?  @default(0.00) @db.Decimal(8, 2)
+  period_start        DateTime?  @db.Date
+  period_end          DateTime?  @db.Date
+  details             String?    @db.Text
+  quantity            Decimal?   @default(0.00) @db.Decimal(8, 2)
   uom_id              Int?
-  rate                Decimal?  @default(0.00) @db.Decimal(8, 2)
-  sub_total           Decimal?  @default(0.00) @db.Decimal(8, 2)
-  tax                 Decimal?  @default(0.00) @db.Decimal(8, 2)
-  total               Decimal?  @default(0.00) @db.Decimal(8, 2)
-  created_at          DateTime? @db.DateTime(0)
-  updated_at          DateTime? @db.DateTime(0)
+  rate                Decimal?   @default(0.00) @db.Decimal(8, 2)
+  sub_total           Decimal?   @default(0.00) @db.Decimal(8, 2)
+  tax                 Decimal?   @default(0.00) @db.Decimal(8, 2)
+  total               Decimal?   @default(0.00) @db.Decimal(8, 2)
+  created_at          DateTime?  @db.DateTime(0)
+  updated_at          DateTime?  @db.DateTime(0)
+  offerings           offerings? @relation(fields: [offering_id], references: [id])
 
   @@index([contract_billing_id], map: "index_invoice_details_on_contract_billing_id")
   @@index([contract_id], map: "index_invoice_details_on_contract_id")
@@ -1930,6 +1931,7 @@ model offerings {
   updated_at           DateTime?            @db.DateTime(0)
   clients              clients?             @relation(fields: [client_id], references: [id])
   offering_categories  offering_categories? @relation(fields: [offering_category_id], references: [id])
+  invoice_details      invoice_details[]
 
   @@index([client_id], map: "index_offerings_on_client_id")
   @@index([currency_id], map: "index_offerings_on_currency_id")
