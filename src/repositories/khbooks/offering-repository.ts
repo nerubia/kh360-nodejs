@@ -42,6 +42,9 @@ export const getById = async (id: number) => {
     where: {
       id,
     },
+    include: {
+      invoice_details: true,
+    },
   })
 }
 
