@@ -1,6 +1,11 @@
 import { type Prisma } from "@prisma/client"
 import * as OfferingRepository from "../../repositories/khbooks/offering-repository"
+import * as OfferingCategoryRepository from "../../repositories/khbooks/offering-category-repository"
+import * as ClientRepository from "../../repositories/client-repository"
+import * as CurrencyRepository from "../../repositories/khbooks/currency-repository"
+import * as InvoiceDetailRepository from "../../repositories/khbooks/invoice-detail-repository"
 import CustomError from "../../utils/custom-error"
+import { type Offering } from "../../types/offering-type"
 
 export const getAllByFilters = async (
   name: string,
@@ -62,6 +67,34 @@ export const getAllByFilters = async (
   }
 }
 
+export const create = async (data: Offering) => {
+  const client = await ClientRepository.getById(data.client_id)
+
+  const offeringCategory = await OfferingCategoryRepository.getById(data.offering_category_id)
+  if (offeringCategory === null) {
+    throw new CustomError("Category not found", 400)
+  }
+
+  const currency = await CurrencyRepository.getById(data.currency_id)
+  if (client === null && currency === null) {
+    throw new CustomError("Currency not found", 400)
+  }
+
+  const currentDate = new Date()
+
+  return await OfferingRepository.create({
+    name: data.name,
+    client_id: client?.id ?? null,
+    offering_category_id: offeringCategory.id,
+    offering_type: "service",
+    currency_id: client !== null ? client.currencies?.id : currency?.id,
+    price: data.price,
+    description: data.description,
+    created_at: currentDate,
+    updated_at: currentDate,
+  })
+}
+
 export const deleteById = async (id: number) => {
   const offering = await OfferingRepository.getById(id)
 
@@ -69,7 +102,11 @@ export const deleteById = async (id: number) => {
     throw new CustomError("Offering not found", 400)
   }
 
-  if (offering.invoice_details.length > 0) {
+  const totalInvoiceDetails = await InvoiceDetailRepository.countAllByFilters({
+    offering_id: offering.id,
+  })
+
+  if (totalInvoiceDetails > 0) {
     throw new CustomError("Unable to delete. Used by invoice.", 400)
   }
 
