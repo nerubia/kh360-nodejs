@@ -4,9 +4,9 @@ import { type Prisma } from "@prisma/client"
 export const paginateByFilters = async (
   skip: number,
   take: number,
-  where: Prisma.offering_categoriesWhereInput
+  where: Prisma.currenciesWhereInput
 ) => {
-  return await prisma.offering_categories.findMany({
+  return await prisma.currencies.findMany({
     skip,
     take,
     where,
@@ -18,15 +18,15 @@ export const paginateByFilters = async (
   })
 }
 
-export const countAllByFilters = async (where: Prisma.offering_categoriesWhereInput) => {
-  const count = await prisma.offering_categories.count({
+export const countAllByFilters = async (where: Prisma.currenciesWhereInput) => {
+  const count = await prisma.currencies.count({
     where,
   })
   return count
 }
 
 export const getById = async (id: number) => {
-  return await prisma.offering_categories.findFirst({
+  return await prisma.currencies.findFirst({
     where: {
       id,
     },

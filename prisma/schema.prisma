@@ -187,6 +187,7 @@ model clients {
   is_delinquent      Boolean?    @default(false)
   invoices           invoices[]
   offerings          offerings[]
+  currencies         currencies? @relation(fields: [currency_id], references: [id])
 
   @@index([company_id], map: "index_clients_on_company_id")
   @@index([currency_id], map: "index_clients_on_currency_id")
@@ -358,6 +359,9 @@ model currencies {
   prefix     String?   @db.VarChar(10)
   created_at DateTime? @db.DateTime(0)
   updated_at DateTime? @db.DateTime(0)
+
+  clients   clients[]
+  offerings offerings[]
 }
 
 model email_logs {
@@ -1932,6 +1936,7 @@ model offerings {
   clients              clients?             @relation(fields: [client_id], references: [id])
   offering_categories  offering_categories? @relation(fields: [offering_category_id], references: [id])
   invoice_details      invoice_details[]
+  currencies           currencies?          @relation(fields: [currency_id], references: [id])
 
   @@index([client_id], map: "index_offerings_on_client_id")
   @@index([currency_id], map: "index_offerings_on_currency_id")
