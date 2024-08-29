@@ -25,6 +25,9 @@ export const paginateByFilters = async (
         },
       },
     ],
+    include: {
+      test_apis: true,
+    },
   })
 }
 
