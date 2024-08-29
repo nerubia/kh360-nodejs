@@ -56,6 +56,7 @@ export const getById = async (id: number) => {
           test_items: true,
         },
       },
+      test_apis: true,
     },
   })
   if (testBatch === null) {
