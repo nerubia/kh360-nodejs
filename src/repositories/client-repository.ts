@@ -6,6 +6,11 @@ export const getById = async (id: number) => {
     select: {
       id: true,
       name: true,
+      currencies: {
+        select: {
+          id: true,
+        },
+      },
     },
     where: {
       id,

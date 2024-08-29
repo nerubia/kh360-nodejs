@@ -26,6 +26,11 @@ export const paginateByFilters = async (
           name: true,
         },
       },
+      currencies: {
+        select: {
+          code: true,
+        },
+      },
     },
   })
 }
@@ -37,13 +42,16 @@ export const countAllByFilters = async (where: Prisma.offeringsWhereInput) => {
   return count
 }
 
+export const create = async (data: Prisma.offeringsUncheckedCreateInput) => {
+  return await prisma.offerings.create({
+    data,
+  })
+}
+
 export const getById = async (id: number) => {
   return await prisma.offerings.findFirst({
     where: {
       id,
-    },
-    include: {
-      invoice_details: true,
     },
   })
 }
