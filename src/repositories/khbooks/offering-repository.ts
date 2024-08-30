@@ -31,6 +31,11 @@ export const paginateByFilters = async (
           code: true,
         },
       },
+      _count: {
+        select: {
+          invoice_details: true,
+        },
+      },
     },
   })
 }
@@ -53,6 +58,40 @@ export const getById = async (id: number) => {
     where: {
       id,
     },
+    include: {
+      offering_categories: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      clients: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      currencies: {
+        select: {
+          id: true,
+          code: true,
+        },
+      },
+      _count: {
+        select: {
+          invoice_details: true,
+        },
+      },
+    },
+  })
+}
+
+export const updateById = async (id: number, data: Prisma.offeringsUncheckedUpdateInput) => {
+  return await prisma.offerings.update({
+    where: {
+      id,
+    },
+    data,
   })
 }
 
