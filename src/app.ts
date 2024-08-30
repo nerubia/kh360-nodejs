@@ -135,9 +135,9 @@ app.use("/test-suite/batches", authMiddleware, testBatchRoute)
  * KH Books routes
  */
 
-app.use("/khbooks/invoices", adminMiddleware, invoiceRoute)
-app.use("/khbooks/offering-categories", adminMiddleware, offeringCategoryRoute)
-app.use("/khbooks/offerings", adminMiddleware, offeringRoute)
-app.use("/khbooks/currencies", adminMiddleware, currencyRoute)
+app.use("/kh-books/invoices", adminMiddleware, invoiceRoute)
+app.use("/kh-books/offering-categories", adminMiddleware, offeringCategoryRoute)
+app.use("/kh-books/offerings", adminMiddleware, offeringRoute)
+app.use("/kh-books/currencies", adminMiddleware, currencyRoute)
 
 export default app
