@@ -75,6 +75,73 @@ export const store = async (req: Request, res: Response) => {
 }
 
 /**
+ * Get a specific offering by ID.
+ * @param req.params.id - Offering id
+ */
+export const show = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const offering = await OfferingService.getById(parseInt(id))
+    res.json(offering)
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Update an existing offering.
+ * @param req.params.id - The ID of the offering to be updated
+ * @param req.body.name - Name.
+ * @param req.body.client_id - Client id.
+ * @param req.body.offering_category_id - Offering category id.
+ * @param req.body.currency_id - Currency id.
+ * @param req.body.price - Price.
+ * @param req.body.description - Description.
+ */
+export const update = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const { name, client_id, offering_category_id, currency_id, price, description } = req.body
+
+    await createOfferingSchema.validate({
+      name,
+      client_id,
+      offering_category_id,
+      currency_id,
+      price,
+      description,
+    })
+
+    const updatedOffering = await OfferingService.updateById(parseInt(id), {
+      name,
+      client_id: parseInt(client_id as string),
+      offering_category_id: parseInt(offering_category_id as string),
+      currency_id: parseInt(currency_id as string),
+      price: parseInt(price as string),
+      description,
+    })
+
+    res.json(updatedOffering)
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    if (error instanceof CustomError) {
+      return res.status(400).json(error)
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
  * Delete offering
  * @param req.params.id - The ID of the offering to be deleted
  */
