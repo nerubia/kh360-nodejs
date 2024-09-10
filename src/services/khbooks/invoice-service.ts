@@ -1,5 +1,6 @@
 import { type Prisma } from "@prisma/client"
 import * as InvoiceRepository from "../../repositories/khbooks/invoice-repository"
+import * as InvoiceEmailRepository from "../../repositories/khbooks/invoice-email-repository"
 import * as InvoiceDetailRepository from "../../repositories/khbooks/invoice-detail-repository"
 import * as ClientRepository from "../../repositories/client-repository"
 import * as CurrencyRepository from "../../repositories/khbooks/currency-repository"
@@ -217,6 +218,30 @@ export const create = async (data: Invoice) => {
     updated_at: currentDate,
   })
 
+  if (data.to !== undefined && data.to.length > 0) {
+    await InvoiceEmailRepository.create({
+      invoice_id: newInvoice.id,
+      email_type: "to",
+      email_address: data.to,
+    })
+  }
+
+  if (data.cc !== undefined && data.cc.length > 0) {
+    await InvoiceEmailRepository.create({
+      invoice_id: newInvoice.id,
+      email_type: "cc",
+      email_address: data.cc,
+    })
+  }
+
+  if (data.bcc !== undefined && data.bcc.length > 0) {
+    await InvoiceEmailRepository.create({
+      invoice_id: newInvoice.id,
+      email_type: "bcc",
+      email_address: data.bcc,
+    })
+  }
+
   const invoiceDetails: Prisma.invoice_detailsCreateManyInput[] = data.invoice_details.map(
     (invoiceDetail) => {
       const periodStart =
@@ -282,5 +307,19 @@ export const sendInvoice = async (id: number) => {
     }),
   })
 
-  await sendMailWithAttachment("jlerit@nerubia.com", "Invoice", "Your invoice", pdfBuffer)
+  const to = invoice.invoice_emails.find((invoiceEmail) => invoiceEmail.email_type === "to")
+    ?.email_address
+  const cc = invoice.invoice_emails.find((invoiceEmail) => invoiceEmail.email_type === "cc")
+    ?.email_address
+  const bcc = invoice.invoice_emails.find((invoiceEmail) => invoiceEmail.email_type === "bcc")
+    ?.email_address
+
+  const ccEmails = cc?.split(",") ?? []
+  const bccEmails = bcc?.split(",") ?? []
+
+  if (to === undefined || to === null) {
+    throw new CustomError("Invoice email not found", 400)
+  }
+
+  await sendMailWithAttachment(to, ccEmails, bccEmails, "Invoice", "Your invoice", pdfBuffer)
 }
