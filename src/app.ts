@@ -47,6 +47,12 @@ import invoiceRoute from "./routes/khbooks/invoice-route"
 import offeringCategoryRoute from "./routes/khbooks/offering-category-route"
 import offeringRoute from "./routes/khbooks/offering-route"
 import currencyRoute from "./routes/khbooks/currency-route"
+import paymentTermRoute from "./routes/khbooks/payment-term-route"
+import taxTypeRoute from "./routes/khbooks/tax-type-route"
+import contractRoute from "./routes/khbooks/contract-route"
+import uomRoute from "./routes/khbooks/uom-route"
+import contractBillingRoute from "./routes/khbooks/contract-billing-route"
+import countryRoute from "./routes/khbooks/country-route"
 
 import morgan from "morgan"
 import logger from "./utils/logger"
@@ -139,5 +145,11 @@ app.use("/kh-books/invoices", adminMiddleware, invoiceRoute)
 app.use("/kh-books/offering-categories", adminMiddleware, offeringCategoryRoute)
 app.use("/kh-books/offerings", adminMiddleware, offeringRoute)
 app.use("/kh-books/currencies", adminMiddleware, currencyRoute)
+app.use("/kh-books/payment-terms", adminMiddleware, paymentTermRoute)
+app.use("/kh-books/tax-types", adminMiddleware, taxTypeRoute)
+app.use("/kh-books/contracts", adminMiddleware, contractRoute)
+app.use("/kh-books/uoms", adminMiddleware, uomRoute)
+app.use("/kh-books/contract-billings", adminMiddleware, contractBillingRoute)
+app.use("/kh-books/countries", adminMiddleware, countryRoute)
 
 export default app
