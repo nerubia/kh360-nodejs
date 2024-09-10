@@ -1,5 +1,3 @@
-// TODO: move to utils ??
-
 import {
   Document,
   Page,
@@ -10,11 +8,12 @@ import {
   Font,
   renderToStream,
 } from "@react-pdf/renderer"
-import { formatDate } from "../../utils/format-date"
-import React from "react"
+import { formatDate } from "./format-date"
 
-import { sendMailWithAttachment } from "../../utils/sendgrid"
 import path from "path"
+
+import { type InvoicePdf } from "../types/invoice-type"
+import { formatAmount } from "./format-amount"
 
 const logo = path.resolve(__dirname, "./assets/nerubia.png")
 const openSansRegularPath = path.resolve(__dirname, "./assets/fonts/OpenSans-Regular.ttf")
@@ -57,78 +56,30 @@ const styles = StyleSheet.create({
   },
 })
 
-const invoiceData = {
-  invoice: {
-    invoice_number: 1234,
-    currency: "PHP",
-    subtotal: 200.0,
-    tax: 0,
-    amount: 200.0,
-    issue_date: "2024-08-20T08:41:33.000Z",
-    due_date: "2024-08-20T08:41:33.000Z",
-    items: [
-      {
-        id: 1,
-        details: "Invoice details 1",
-        period: "Period",
-        project_name: "Project Name",
-        contract_number: "Contract Number",
-        other_details: "Other Details",
-        quantity: 1,
-        rate: 200,
-        amount: 100,
-      },
-      {
-        id: 2,
-        details: "Invoice details 2",
-        period: "Period",
-        project_name: "Project Name",
-        contract_number: "Contract Number",
-        other_details: "Other Details",
-        quantity: 1,
-        rate: 200,
-        amount: 100,
-      },
-    ],
-  },
-  company: {
-    display_name: "Nerubia Web Solutions, Inc.",
-    address: {
-      street: "1101 Park Centrale, Cebu IT Park",
-      city: "Cebu City, Cebu",
-      country: "Philippines",
-      postal_code: 6000,
-    },
-    account: {
-      name: "Jane Doe",
-      type: "Checking",
-      number: "123456789",
-    },
-    bank: {
-      name: "RCBC",
-      branch: "Cebu",
-      code: "1234",
-    },
-  },
-  client: {
-    display_name: "John Doe",
-    company_name: "Google LLC",
-  },
-}
+export const generateInvoice = async (invoice: InvoicePdf) => {
+  const pdfStream = await renderToStream(<MyDocument invoice={invoice} />)
 
-export const generateAndSendInvoice = async (id: number) => {
-  const pdfStream = await renderToStream(<MyDocument />)
+  return await new Promise<Buffer>((resolve, reject) => {
+    const buffers: Buffer[] = []
 
-  const buffers: Buffer[] = []
+    pdfStream.on("data", (chunk) => buffers.push(chunk))
 
-  pdfStream.on("data", (chunk) => buffers.push(chunk))
-  pdfStream.on("end", async () => {
-    const pdfBuffer = Buffer.concat(buffers)
-    await sendMailWithAttachment("jlerit@nerubia.com", "Invoice", "Your invoice", pdfBuffer)
+    pdfStream.on("end", () => {
+      const pdfBuffer = Buffer.concat(buffers)
+      resolve(pdfBuffer)
+    })
+
+    pdfStream.on("error", (err) => {
+      reject(err)
+    })
   })
 }
 
-export const MyDocument: React.FC = () => {
+interface InvoiceProps {
+  invoice: InvoicePdf
+}
+
+export const MyDocument = ({ invoice }: InvoiceProps) => {
   return (
     <Document>
       <Page size='A4' style={styles.page}>
@@ -149,17 +100,15 @@ export const MyDocument: React.FC = () => {
               }}
             />
             <View>
-              <Text style={{ fontWeight: "bold" }}>{invoiceData.company.display_name}</Text>
-              <Text>{invoiceData.company.address.street}</Text>
-              <Text>{invoiceData.company.address.city}</Text>
+              <Text style={{ fontWeight: "bold" }}>{invoice.companies?.name}</Text>
+              <Text>{invoice.companies?.street}</Text>
+              <Text>{invoice.companies?.city}</Text>
               <Text>
-                {invoiceData.company.address.country} {invoiceData.company.address.postal_code}
+                {invoice.companies?.country} {invoice.companies?.zip}
               </Text>
             </View>
           </View>
-          <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-            Invoice {invoiceData.invoice.invoice_number}
-          </Text>
+          <Text style={{ fontSize: 18, fontWeight: "bold" }}>Invoice {invoice.invoice_no}</Text>
         </View>
 
         {/* Divider */}
@@ -183,10 +132,25 @@ export const MyDocument: React.FC = () => {
         >
           <View>
             <Text style={{ fontSize: 10 }}>BILL TO</Text>
-            <Text style={{ fontWeight: "bold" }}>{invoiceData.client.display_name}</Text>
-            <Text style={{ fontSize: 10 }}>{invoiceData.client.company_name}</Text>
+            <View>
+              <Text style={{ fontWeight: "bold" }}>{invoice.clients?.display_name}</Text>
+              <Text>{invoice.billing_addresses?.address1}</Text>
+              <Text>{invoice.billing_addresses?.address2}</Text>
+              <Text>
+                {invoice.billing_addresses?.city}, {invoice.billing_addresses?.state}{" "}
+                {invoice.billing_addresses?.postal_code}
+              </Text>
+              <Text>{invoice.billing_addresses?.country}</Text>
+            </View>
           </View>
-          <View style={{ display: "flex", flexDirection: "row", fontSize: 10 }}>
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "flex-start",
+              fontSize: 10,
+            }}
+          >
             <View
               style={{
                 backgroundColor: "#e2e8f0",
@@ -196,7 +160,7 @@ export const MyDocument: React.FC = () => {
               }}
             >
               <Text>DATE</Text>
-              <Text>{formatDate(invoiceData.invoice.issue_date)}</Text>
+              <Text>{formatDate(invoice.invoice_date)}</Text>
             </View>
             <View
               style={{
@@ -209,7 +173,7 @@ export const MyDocument: React.FC = () => {
             >
               <Text>PLEASE PAY</Text>
               <Text>
-                {invoiceData.invoice.currency} {invoiceData.invoice.amount}
+                {invoice.currencies?.code} {formatAmount(invoice.invoice_amount)}
               </Text>
             </View>
             <View
@@ -221,7 +185,7 @@ export const MyDocument: React.FC = () => {
               }}
             >
               <Text>DUE DATE</Text>
-              <Text>{formatDate(invoiceData.invoice.due_date)}</Text>
+              <Text>{formatDate(invoice.due_date)}</Text>
             </View>
           </View>
         </View>
@@ -242,7 +206,7 @@ export const MyDocument: React.FC = () => {
             {/* Divider */}
             <Text style={{ borderTop: "1px", borderColor: "#e2e8f0" }} />
           </View>
-          {invoiceData.invoice.items.map((item) => (
+          {invoice.invoice_details.map((item) => (
             <View
               key={item.id}
               style={{
@@ -256,14 +220,18 @@ export const MyDocument: React.FC = () => {
             >
               <View style={{ width: "70%" }}>
                 <Text>{item.details}</Text>
-                <Text>{item.period}</Text>
-                <Text>{item.project_name}</Text>
-                <Text>{item.contract_number}</Text>
-                <Text>{item.other_details}</Text>
+                {item.period_start !== null && item.period_end !== null && (
+                  <Text>
+                    {formatDate(item.period_start)} - {formatDate(item.period_end)}
+                  </Text>
+                )}
+                <Text>{item.projects?.name}</Text>
+                <Text>{item.contracts?.contract_no}</Text>
+                <Text>{item.contracts?.description}</Text>
               </View>
               <Text style={{ width: "10%", textAlign: "right" }}>{item.quantity}</Text>
               <Text style={{ width: "10%", textAlign: "right" }}>{item.rate}</Text>
-              <Text style={{ width: "10%", textAlign: "right" }}>{item.amount}</Text>
+              <Text style={{ width: "10%", textAlign: "right" }}>{formatAmount(item.total)}</Text>
             </View>
           ))}
         </View>
@@ -284,14 +252,14 @@ export const MyDocument: React.FC = () => {
           <View style={{ display: "flex", gap: 8, fontSize: 10 }}>
             <Text style={{ fontWeight: "bold" }}>PLEASE DIRECT PAYMENT TO:</Text>
             <View>
-              <Text>Account Name: {invoiceData.company.account.name}</Text>
-              <Text>Account Type: {invoiceData.company.account.type}</Text>
-              <Text>Account Number: {invoiceData.company.account.number}</Text>
+              <Text>Account Name: {invoice.payment_accounts?.account_name}</Text>
+              <Text>Account Type: {invoice.payment_accounts?.account_type}</Text>
+              <Text>Account Number: {invoice.payment_accounts?.account_no}</Text>
             </View>
             <View>
-              <Text>Bank Name: {invoiceData.company.bank.name}</Text>
-              <Text>Bank Branch: {invoiceData.company.bank.branch}</Text>
-              <Text>Swift Code: {invoiceData.company.bank.code}</Text>
+              <Text>Bank Name: {invoice.payment_accounts?.bank_name}</Text>
+              <Text>Bank Branch: {invoice.payment_accounts?.bank_branch}</Text>
+              <Text>Swift Code: {invoice.payment_accounts?.swift_code}</Text>
             </View>
           </View>
           <View style={{ width: "40%", display: "flex", gap: 20 }}>
@@ -304,7 +272,7 @@ export const MyDocument: React.FC = () => {
                 }}
               >
                 <Text>SUBTOTAL</Text>
-                <Text>{invoiceData.invoice.subtotal}</Text>
+                <Text>{formatAmount(invoice.sub_total)}</Text>
               </View>
               <View
                 style={{
@@ -314,7 +282,7 @@ export const MyDocument: React.FC = () => {
                 }}
               >
                 <Text>TAX</Text>
-                <Text>{invoiceData.invoice.tax}</Text>
+                <Text>{invoice.tax_types?.rate?.toString()}%</Text>
               </View>
             </View>
             <View style={{ display: "flex", gap: 16 }}>
@@ -330,7 +298,7 @@ export const MyDocument: React.FC = () => {
               >
                 <Text style={{ fontWeight: "semibold" }}>TOTAL DUE</Text>
                 <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-                  {invoiceData.invoice.currency} {invoiceData.invoice.amount}
+                  {invoice.currencies?.code} {formatAmount(invoice.invoice_amount)}
                 </Text>
               </View>
               {/* Divider */}

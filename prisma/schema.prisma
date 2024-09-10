@@ -214,6 +214,7 @@ model companies {
   company_ip_addresses company_ip_addresses[]
   company_teams        company_teams[]
   company_users        company_users[]
+  invoices             invoices[]
   leave_periods        leave_periods[]
   leave_types          leave_types[]
 
@@ -296,36 +297,38 @@ model contract_logs {
 }
 
 model contracts {
-  id                   Int       @id @default(autoincrement())
+  id                   Int                 @id @default(autoincrement())
   client_id            Int?
   company_id           Int?
   project_id           Int?
-  contract_no          String?   @db.VarChar(20)
+  contract_no          String?             @db.VarChar(20)
   parent_contract_id   Int?
-  description          String?   @db.VarChar(255)
-  contract_type        String?   @default("") @db.VarChar(50)
-  start_date           DateTime? @db.Date
-  end_date             DateTime? @db.Date
+  description          String?             @db.VarChar(255)
+  contract_type        String?             @default("") @db.VarChar(50)
+  start_date           DateTime?           @db.Date
+  end_date             DateTime?           @db.Date
   auto_renew           Boolean?
-  addendum             Boolean?  @default(false)
+  addendum             Boolean?            @default(false)
   addendum_sequence_no Int?
   client_liaison_id    Int?
   currency_id          Int?
-  contract_amount      Decimal?  @default(0.00) @db.Decimal(8, 2)
-  est_monthly_rate     Decimal?  @default(0.00) @db.Decimal(8, 2)
-  est_monthly_mm       Decimal?  @default(0.00) @db.Decimal(8, 2)
-  total_mm             Decimal?  @default(0.00) @db.Decimal(8, 2)
+  contract_amount      Decimal?            @default(0.00) @db.Decimal(8, 2)
+  est_monthly_rate     Decimal?            @default(0.00) @db.Decimal(8, 2)
+  est_monthly_mm       Decimal?            @default(0.00) @db.Decimal(8, 2)
+  total_mm             Decimal?            @default(0.00) @db.Decimal(8, 2)
   payment_term_id      Int?
-  type                 String?   @default("") @db.VarChar(20)
-  status               String?   @default("") @db.VarChar(20)
+  type                 String?             @default("") @db.VarChar(20)
+  status               String?             @default("") @db.VarChar(20)
   is_signed            Boolean?
-  draft_google_link    String?   @db.VarChar(255)
-  draft_filename       String?   @db.VarChar(255)
-  contract_filename    String?   @db.VarChar(255)
-  remarks              String?   @db.Text
-  created_at           DateTime? @db.DateTime(0)
-  updated_at           DateTime? @db.DateTime(0)
-  deleted_at           DateTime? @db.DateTime(0)
+  draft_google_link    String?             @db.VarChar(255)
+  draft_filename       String?             @db.VarChar(255)
+  contract_filename    String?             @db.VarChar(255)
+  remarks              String?             @db.Text
+  created_at           DateTime?           @db.DateTime(0)
+  updated_at           DateTime?           @db.DateTime(0)
+  deleted_at           DateTime?           @db.DateTime(0)
+  contract_billings    contract_billings[]
+  invoice_details      invoice_details[]
 
   @@index([client_id], map: "index_contracts_on_client_id")
   @@index([client_liaison_id], map: "index_contracts_on_client_liaison_id")
@@ -353,15 +356,15 @@ model countries {
 }
 
 model currencies {
-  id         Int       @id @default(autoincrement())
-  name       String?   @db.VarChar(50)
-  code       String?   @db.VarChar(10)
-  prefix     String?   @db.VarChar(10)
-  created_at DateTime? @db.DateTime(0)
-  updated_at DateTime? @db.DateTime(0)
-
-  clients   clients[]
-  offerings offerings[]
+  id         Int         @id @default(autoincrement())
+  name       String?     @db.VarChar(50)
+  code       String?     @db.VarChar(10)
+  prefix     String?     @db.VarChar(10)
+  created_at DateTime?   @db.DateTime(0)
+  updated_at DateTime?   @db.DateTime(0)
+  clients    clients[]
+  invoices   invoices[]
+  offerings  offerings[]
 }
 
 model email_logs {
@@ -610,29 +613,35 @@ model holidays {
 }
 
 model invoices {
-  id                 Int       @id @default(autoincrement())
+  id                 Int               @id @default(autoincrement())
   client_id          Int?
   company_id         Int?
   currency_id        Int?
-  invoice_no         String?   @default("") @db.VarChar(20)
-  invoice_date       DateTime? @db.Date
-  due_date           DateTime? @db.Date
-  invoice_amount     Decimal?  @default(0.00) @db.Decimal(8, 2)
-  discount_amount    Decimal?  @default(0.00) @db.Decimal(8, 2)
-  tax_amount         Decimal?  @default(0.00) @db.Decimal(8, 2)
-  sub_total          Decimal?  @default(0.00) @db.Decimal(8, 2)
-  payment_amount     Decimal?  @default(0.00) @db.Decimal(8, 2)
+  invoice_no         String?           @default("") @db.VarChar(20)
+  invoice_date       DateTime?         @db.Date
+  due_date           DateTime?         @db.Date
+  invoice_amount     Decimal?          @default(0.00) @db.Decimal(8, 2)
+  discount_amount    Decimal?          @default(0.00) @db.Decimal(8, 2)
+  tax_amount         Decimal?          @default(0.00) @db.Decimal(8, 2)
+  sub_total          Decimal?          @default(0.00) @db.Decimal(8, 2)
+  payment_amount     Decimal?          @default(0.00) @db.Decimal(8, 2)
   tax_type_id        Int?
   payment_account_id Int?
   payment_term_id    Int?
   billing_address_id Int?
-  invoice_status     String?   @default("") @db.VarChar(20)
-  payment_status     String?   @default("") @db.VarChar(20)
-  remarks            String?   @db.Text
-  message            String?   @db.Text
-  created_at         DateTime? @db.DateTime(0)
-  updated_at         DateTime? @db.DateTime(0)
-  clients            clients?  @relation(fields: [client_id], references: [id])
+  invoice_status     String?           @default("") @db.VarChar(20)
+  payment_status     String?           @default("") @db.VarChar(20)
+  remarks            String?           @db.Text
+  message            String?           @db.Text
+  created_at         DateTime?         @db.DateTime(0)
+  updated_at         DateTime?         @db.DateTime(0)
+  clients            clients?          @relation(fields: [client_id], references: [id])
+  companies          companies?        @relation(fields: [company_id], references: [id])
+  currencies         currencies?       @relation(fields: [currency_id], references: [id])
+  tax_types          tax_types?        @relation(fields: [tax_type_id], references: [id])
+  payment_accounts   payment_accounts? @relation(fields: [payment_account_id], references: [id])
+  addresses          addresses?        @relation(fields: [billing_address_id], references: [id])
+  invoice_details    invoice_details[]
 
   @@index([client_id], map: "index_invoices_on_client_id")
   @@index([company_id], map: "index_invoices_on_company_id")
@@ -1056,22 +1065,23 @@ model project_teams {
 }
 
 model projects {
-  id             Int              @id @default(autoincrement())
-  slug           String?          @db.VarChar(80)
-  name           String?          @db.VarChar(255)
-  type           String?          @db.VarChar(100)
-  client_id      Int?
-  start_date     DateTime?        @db.Date
-  end_date       DateTime?        @db.Date
-  status         String?          @db.VarChar(50)
-  description    String?          @db.Text
-  created_at     DateTime         @db.DateTime(0)
-  updated_at     DateTime         @db.DateTime(0)
-  deleted_at     DateTime?        @db.DateTime(0)
-  project_infos  project_infos[]
-  project_skills project_skills[]
-  project_tasks  project_tasks[]
-  project_teams  project_teams[]
+  id              Int               @id @default(autoincrement())
+  slug            String?           @db.VarChar(80)
+  name            String?           @db.VarChar(255)
+  type            String?           @db.VarChar(100)
+  client_id       Int?
+  start_date      DateTime?         @db.Date
+  end_date        DateTime?         @db.Date
+  status          String?           @db.VarChar(50)
+  description     String?           @db.Text
+  created_at      DateTime          @db.DateTime(0)
+  updated_at      DateTime          @db.DateTime(0)
+  deleted_at      DateTime?         @db.DateTime(0)
+  invoice_details invoice_details[]
+  project_infos   project_infos[]
+  project_skills  project_skills[]
+  project_tasks   project_tasks[]
+  project_teams   project_teams[]
 
   @@index([client_id], map: "index_projects_on_client_id")
 }
@@ -1822,33 +1832,35 @@ model test_batch_items {
 }
 
 model addresses {
-  id          Int       @id @default(autoincrement())
-  address1    String?   @default("") @db.VarChar(255)
-  address2    String?   @default("") @db.VarChar(255)
-  city        String?   @default("") @db.VarChar(255)
-  state       String?   @default("") @db.VarChar(255)
-  country     String?   @default("") @db.VarChar(255)
-  postal_code String?   @default("") @db.VarChar(20)
-  description String?   @default("") @db.VarChar(255)
-  created_at  DateTime? @db.DateTime(0)
-  updated_at  DateTime? @db.DateTime(0)
+  id          Int        @id @default(autoincrement())
+  address1    String?    @default("") @db.VarChar(255)
+  address2    String?    @default("") @db.VarChar(255)
+  city        String?    @default("") @db.VarChar(255)
+  state       String?    @default("") @db.VarChar(255)
+  country     String?    @default("") @db.VarChar(255)
+  postal_code String?    @default("") @db.VarChar(20)
+  description String?    @default("") @db.VarChar(255)
+  created_at  DateTime?  @db.DateTime(0)
+  updated_at  DateTime?  @db.DateTime(0)
+  invoices    invoices[]
 }
 
 model contract_billings {
-  id             Int       @id @default(autoincrement())
+  id             Int        @id @default(autoincrement())
   contract_id    Int?
   company_id     Int?
   client_id      Int?
   currency_id    Int?
-  details        String?   @default("") @db.VarChar(255)
-  billing_amount Decimal?  @default(0.00) @db.Decimal(8, 2)
-  actual_amount  Decimal?  @default(0.00) @db.Decimal(8, 2)
-  bill_date      DateTime? @db.Date
-  due_date       DateTime? @db.Date
-  billing_status String?   @default("") @db.VarChar(20)
-  remarks        String?   @db.Text
-  created_at     DateTime? @db.DateTime(0)
-  updated_at     DateTime? @db.DateTime(0)
+  details        String?    @default("") @db.VarChar(255)
+  billing_amount Decimal?   @default(0.00) @db.Decimal(8, 2)
+  actual_amount  Decimal?   @default(0.00) @db.Decimal(8, 2)
+  bill_date      DateTime?  @db.Date
+  due_date       DateTime?  @db.Date
+  billing_status String?    @default("") @db.VarChar(20)
+  remarks        String?    @db.Text
+  created_at     DateTime?  @db.DateTime(0)
+  updated_at     DateTime?  @db.DateTime(0)
+  contracts      contracts? @relation(fields: [contract_id], references: [id])
 
   @@index([client_id], map: "index_contract_billings_on_client_id")
   @@index([company_id], map: "index_contract_billings_on_company_id")
@@ -1887,7 +1899,10 @@ model invoice_details {
   total               Decimal?   @default(0.00) @db.Decimal(8, 2)
   created_at          DateTime?  @db.DateTime(0)
   updated_at          DateTime?  @db.DateTime(0)
+  invoices            invoices?  @relation(fields: [invoice_id], references: [id])
+  contracts           contracts? @relation(fields: [contract_id], references: [id])
   offerings           offerings? @relation(fields: [offering_id], references: [id])
+  projects            projects?  @relation(fields: [project_id], references: [id])
 
   @@index([contract_billing_id], map: "index_invoice_details_on_contract_billing_id")
   @@index([contract_id], map: "index_invoice_details_on_contract_id")
@@ -1945,30 +1960,32 @@ model offerings {
 }
 
 model payment_accounts {
-  id           Int       @id @default(autoincrement())
-  name         String?   @default("") @db.VarChar(255)
+  id           Int        @id @default(autoincrement())
+  name         String?    @default("") @db.VarChar(255)
   currency_id  Int?
-  account_name String?   @default("") @db.VarChar(255)
-  account_type String?   @default("") @db.VarChar(255)
-  account_no   String?   @default("") @db.VarChar(255)
-  bank_name    String?   @default("") @db.VarChar(255)
-  bank_branch  String?   @default("") @db.VarChar(255)
-  swift_code   String?   @default("") @db.VarChar(255)
-  description  String?   @default("") @db.VarChar(255)
-  created_at   DateTime? @db.DateTime(0)
-  updated_at   DateTime? @db.DateTime(0)
+  account_name String?    @default("") @db.VarChar(255)
+  account_type String?    @default("") @db.VarChar(255)
+  account_no   String?    @default("") @db.VarChar(255)
+  bank_name    String?    @default("") @db.VarChar(255)
+  bank_branch  String?    @default("") @db.VarChar(255)
+  swift_code   String?    @default("") @db.VarChar(255)
+  description  String?    @default("") @db.VarChar(255)
+  created_at   DateTime?  @db.DateTime(0)
+  updated_at   DateTime?  @db.DateTime(0)
+  invoices     invoices[]
 
   @@index([currency_id], map: "index_payment_accounts_on_currency_id")
 }
 
 model tax_types {
-  id          Int       @id @default(autoincrement())
-  name        String?   @db.VarChar(100)
-  short_name  String?   @db.VarChar(10)
-  rate        Decimal?  @default(0.00) @db.Decimal(5, 2)
-  description String?   @db.Text
-  created_at  DateTime? @db.DateTime(0)
-  updated_at  DateTime? @db.DateTime(0)
+  id          Int        @id @default(autoincrement())
+  name        String?    @db.VarChar(100)
+  short_name  String?    @db.VarChar(10)
+  rate        Decimal?   @default(0.00) @db.Decimal(5, 2)
+  description String?    @db.Text
+  created_at  DateTime?  @db.DateTime(0)
+  updated_at  DateTime?  @db.DateTime(0)
+  invoices    invoices[]
 }
 
 model uoms {
