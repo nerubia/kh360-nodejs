@@ -1,12 +1,12 @@
+import prisma from "../../utils/prisma"
 import { type Prisma } from "@prisma/client"
-import prisma from "../utils/prisma"
 
 export const paginateByFilters = async (
   skip: number,
   take: number,
-  where: Prisma.contractsWhereInput
+  where: Prisma.uomsWhereInput
 ) => {
-  return await prisma.contracts.findMany({
+  return await prisma.uoms.findMany({
     skip,
     take,
     where,
@@ -18,8 +18,8 @@ export const paginateByFilters = async (
   })
 }
 
-export const countAllByFilters = async (where: Prisma.contractsWhereInput) => {
-  const count = await prisma.contracts.count({
+export const countAllByFilters = async (where: Prisma.uomsWhereInput) => {
+  const count = await prisma.uoms.count({
     where,
   })
   return count

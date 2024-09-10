@@ -1,12 +1,22 @@
 import { type Prisma } from "@prisma/client"
 import * as InvoiceRepository from "../../repositories/khbooks/invoice-repository"
+import * as InvoiceDetailRepository from "../../repositories/khbooks/invoice-detail-repository"
+import * as ClientRepository from "../../repositories/client-repository"
+import * as CurrencyRepository from "../../repositories/khbooks/currency-repository"
+import * as TaxTypeRepository from "../../repositories/khbooks/tax-type-repository"
+import * as PaymentTermRepository from "../../repositories/khbooks/payment-term-repository"
 import {
+  type Invoice,
   InvoiceDateFilter,
   InvoiceStatus,
   InvoiceStatusFilter,
   PaymentStatus,
 } from "../../types/invoice-type"
 import { subMonths } from "date-fns"
+import CustomError from "../../utils/custom-error"
+import { generateInvoice } from "../../utils/generate-invoice"
+import { sendMailWithAttachment } from "../../utils/sendgrid"
+import { type Contract } from "../../types/contract-type"
 
 export const getAllByFilters = async (
   invoice_date: string,
@@ -165,4 +175,112 @@ export const getAllByFilters = async (
       totalItems,
     },
   }
+}
+
+export const create = async (data: Invoice) => {
+  const client = await ClientRepository.getById(data.client_id)
+  if (client === null) {
+    throw new CustomError("Client not found", 400)
+  }
+
+  const currency = await CurrencyRepository.getById(data.currency_id)
+  if (currency === null) {
+    throw new CustomError("Currency not found", 400)
+  }
+
+  const taxType = await TaxTypeRepository.getById(data.tax_type_id)
+  if (taxType === null) {
+    throw new CustomError("Tax type not found", 400)
+  }
+
+  const paymentTerm = await PaymentTermRepository.getById(data.payment_term_id)
+  if (paymentTerm === null) {
+    throw new CustomError("Payment term not found", 400)
+  }
+
+  const currentDate = new Date()
+
+  const newInvoice = await InvoiceRepository.create({
+    client_id: client.id,
+    company_id: client.company_id,
+    currency_id: currency.id,
+    invoice_date: new Date(data.invoice_date),
+    due_date: new Date(data.due_date),
+    invoice_amount: data.invoice_amount,
+    sub_total: data.sub_total,
+    tax_type_id: taxType.id,
+    payment_term_id: paymentTerm.id,
+    billing_address_id: data.billing_address_id,
+    invoice_status: InvoiceStatus.DRAFT,
+    payment_status: PaymentStatus.OPEN,
+    created_at: currentDate,
+    updated_at: currentDate,
+  })
+
+  const invoiceDetails: Prisma.invoice_detailsCreateManyInput[] = data.invoice_details.map(
+    (invoiceDetail) => {
+      const periodStart =
+        invoiceDetail.period_start !== null ? new Date(invoiceDetail.period_start) : null
+      const periodEnd =
+        invoiceDetail.period_end !== null ? new Date(invoiceDetail.period_end) : null
+
+      return {
+        ...invoiceDetail,
+        invoice_id: newInvoice.id,
+        period_start: periodStart,
+        period_end: periodEnd,
+        created_at: currentDate,
+        updated_at: currentDate,
+      }
+    }
+  )
+
+  await InvoiceDetailRepository.createMany(invoiceDetails)
+
+  return newInvoice
+}
+
+export const sendInvoice = async (id: number) => {
+  const invoice = await InvoiceRepository.getById(id)
+
+  if (invoice === null) {
+    throw new CustomError("Invoice not found", 400)
+  }
+
+  const pdfBuffer = await generateInvoice({
+    invoice_no: invoice.invoice_no ?? "",
+    invoice_date: invoice.invoice_date?.toISOString() ?? "",
+    due_date: invoice.due_date?.toISOString() ?? "",
+    invoice_amount: invoice.invoice_amount?.toNumber(),
+    sub_total: invoice.sub_total?.toNumber(),
+    clients: invoice.clients,
+    companies: invoice.companies,
+    currencies: invoice.currencies,
+    tax_types: invoice.tax_types,
+    payment_accounts: invoice.payment_accounts,
+    billing_addresses: invoice.addresses,
+    invoice_details: invoice.invoice_details.map((invoiceDetail) => {
+      return {
+        id: invoiceDetail.id,
+        contract_id: null,
+        contract_billing_id: null,
+        offering_id: null,
+        project_id: null,
+        employee_id: null,
+        period_start: invoiceDetail.period_start?.toISOString() ?? null,
+        period_end: invoiceDetail.period_end?.toISOString() ?? null,
+        details: invoiceDetail.details,
+        quantity: invoiceDetail.quantity?.toNumber() ?? null,
+        uom_id: null,
+        rate: invoiceDetail.rate?.toString() ?? null,
+        sub_total: null,
+        tax: null,
+        total: invoiceDetail.total?.toNumber() ?? null,
+        contracts: (invoiceDetail.contracts as Contract) ?? undefined,
+        projects: invoiceDetail.projects ?? undefined,
+      }
+    }),
+  })
+
+  await sendMailWithAttachment("jlerit@nerubia.com", "Invoice", "Your invoice", pdfBuffer)
 }
