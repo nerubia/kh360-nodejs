@@ -36,6 +36,9 @@ export const index = async (req: Request, res: Response) => {
 /**
  * Store a new invoice.
  * @param req.body.client_id - Client id.
+ * @param req.body.to - To.
+ * @param req.body.cc - Cc.
+ * @param req.body.bcc - Bcc.
  * @param req.body.currency_id - Currency id.
  * @param req.body.invoice_date - Invoice date.
  * @param req.body.due_date - Due date.
@@ -55,9 +58,6 @@ export const index = async (req: Request, res: Response) => {
 
 // TODO: ???
 //
-// to
-// cc
-// bcc
 // account_name
 // account_type
 // account_no
@@ -69,6 +69,9 @@ export const store = async (req: Request, res: Response) => {
   try {
     const {
       client_id,
+      to,
+      cc,
+      bcc,
       currency_id,
       invoice_date,
       due_date,
@@ -97,6 +100,9 @@ export const store = async (req: Request, res: Response) => {
 
     await createInvoiceSchema.validate({
       client_id,
+      to,
+      cc,
+      bcc,
       currency_id,
       invoice_date,
       due_date,
@@ -120,6 +126,9 @@ export const store = async (req: Request, res: Response) => {
 
     const newInvoice = await InvoiceService.create({
       client_id: parseInt(client_id as string),
+      to,
+      cc,
+      bcc,
       currency_id: parseInt(currency_id as string),
       invoice_date,
       due_date,
