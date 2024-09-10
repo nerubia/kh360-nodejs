@@ -8,6 +8,9 @@ import { type TaxType } from "./tax-type"
 
 export interface Invoice {
   client_id: number
+  to?: string
+  cc?: string
+  bcc?: string
   company_id?: number
   currency_id: number
   invoice_no?: string

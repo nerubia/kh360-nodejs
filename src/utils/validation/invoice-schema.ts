@@ -19,6 +19,9 @@ const invoiceDetailSchema = object().shape({
 
 export const createInvoiceSchema = object().shape({
   client_id: number().required("Client is required"),
+  to: string().email().required("To is required"),
+  cc: string().email().optional(),
+  bcc: string().email().optional(),
   currency_id: number().required("Currency is required"),
   invoice_date: string().required("Invoice date is required"),
   due_date: string().required("Due date is required"),
