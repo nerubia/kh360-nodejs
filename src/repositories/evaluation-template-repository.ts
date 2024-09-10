@@ -16,6 +16,7 @@ export const getByName = async (name: string) => {
     },
   })
 }
+
 export const getAllByFilters = async (where: Prisma.evaluation_templatesWhereInput) => {
   return await prisma.evaluation_templates.findMany({
     where,
