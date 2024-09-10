@@ -80,6 +80,11 @@ export const getAllByFilters = async (
 }
 
 export const create = async (data: Offering) => {
+  const offering = await OfferingRepository.getByName(data.name)
+  if (offering !== null) {
+    throw new CustomError("Service name should be unique", 400)
+  }
+
   const client = await ClientRepository.getById(data.client_id)
 
   const offeringCategory = await OfferingCategoryRepository.getById(data.offering_category_id)

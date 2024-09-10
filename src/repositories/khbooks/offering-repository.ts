@@ -86,6 +86,14 @@ export const getById = async (id: number) => {
   })
 }
 
+export const getByName = async (name: string) => {
+  return await prisma.offerings.findFirst({
+    where: {
+      name,
+    },
+  })
+}
+
 export const updateById = async (id: number, data: Prisma.offeringsUncheckedUpdateInput) => {
   return await prisma.offerings.update({
     where: {
