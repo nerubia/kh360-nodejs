@@ -44,6 +44,16 @@ export const getById = async (id: number) => {
       id,
     },
     include: {
+      addresses: {
+        select: {
+          address1: true,
+          address2: true,
+          city: true,
+          state: true,
+          country: true,
+          postal_code: true,
+        },
+      },
       clients: {
         select: {
           id: true,
@@ -69,33 +79,6 @@ export const getById = async (id: number) => {
           prefix: true,
         },
       },
-      tax_types: {
-        select: {
-          id: true,
-          name: true,
-          rate: true,
-        },
-      },
-      payment_accounts: {
-        select: {
-          account_name: true,
-          account_type: true,
-          account_no: true,
-          bank_name: true,
-          bank_branch: true,
-          swift_code: true,
-        },
-      },
-      addresses: {
-        select: {
-          address1: true,
-          address2: true,
-          city: true,
-          state: true,
-          country: true,
-          postal_code: true,
-        },
-      },
       invoice_details: {
         select: {
           id: true,
@@ -116,6 +99,29 @@ export const getById = async (id: number) => {
               name: true,
             },
           },
+        },
+      },
+      invoice_emails: {
+        select: {
+          email_type: true,
+          email_address: true,
+        },
+      },
+      tax_types: {
+        select: {
+          id: true,
+          name: true,
+          rate: true,
+        },
+      },
+      payment_accounts: {
+        select: {
+          account_name: true,
+          account_type: true,
+          account_no: true,
+          bank_name: true,
+          bank_branch: true,
+          swift_code: true,
         },
       },
     },
