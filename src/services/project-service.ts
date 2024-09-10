@@ -319,7 +319,7 @@ export const deleteById = async (id: number) => {
     project_id: project.id,
   })
 
-  const contactCounts = await ContractRepository.countByFilters({
+  const contactCounts = await ContractRepository.countAllByFilters({
     project_id: project.id,
   })
 
