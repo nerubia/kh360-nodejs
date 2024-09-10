@@ -33,15 +33,28 @@ export const getAllByFilters = async (
     })
   }
 
-  if (!isNaN(client_id)) {
+  if (!isNaN(client_id) && !global) {
     Object.assign(where, {
       client_id,
     })
   }
 
-  if (global) {
+  if (isNaN(client_id) && global) {
     Object.assign(where, {
       client_id: null,
+    })
+  }
+
+  if (!isNaN(client_id) && global) {
+    Object.assign(where, {
+      OR: [
+        {
+          client_id,
+        },
+        {
+          client_id: null,
+        },
+      ],
     })
   }
 

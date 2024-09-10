@@ -7,3 +7,9 @@ export const countAllByFilters = async (where: Prisma.invoice_detailsWhereInput)
   })
   return count
 }
+
+export const createMany = async (data: Prisma.invoice_detailsCreateManyInput[]) => {
+  return await prisma.invoice_details.createMany({
+    data,
+  })
+}

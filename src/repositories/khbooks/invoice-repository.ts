@@ -31,3 +31,93 @@ export const countAllByFilters = async (where: Prisma.invoicesWhereInput) => {
   })
   return count
 }
+
+export const create = async (data: Prisma.invoicesUncheckedCreateInput) => {
+  return await prisma.invoices.create({
+    data,
+  })
+}
+
+export const getById = async (id: number) => {
+  return await prisma.invoices.findFirst({
+    where: {
+      id,
+    },
+    include: {
+      clients: {
+        select: {
+          id: true,
+          name: true,
+          display_name: true,
+        },
+      },
+      companies: {
+        select: {
+          name: true,
+          city: true,
+          state: true,
+          country: true,
+          zip: true,
+          street: true,
+        },
+      },
+      currencies: {
+        select: {
+          id: true,
+          name: true,
+          code: true,
+          prefix: true,
+        },
+      },
+      tax_types: {
+        select: {
+          id: true,
+          name: true,
+          rate: true,
+        },
+      },
+      payment_accounts: {
+        select: {
+          account_name: true,
+          account_type: true,
+          account_no: true,
+          bank_name: true,
+          bank_branch: true,
+          swift_code: true,
+        },
+      },
+      addresses: {
+        select: {
+          address1: true,
+          address2: true,
+          city: true,
+          state: true,
+          country: true,
+          postal_code: true,
+        },
+      },
+      invoice_details: {
+        select: {
+          id: true,
+          period_start: true,
+          period_end: true,
+          details: true,
+          quantity: true,
+          rate: true,
+          total: true,
+          contracts: {
+            select: {
+              contract_no: true,
+              description: true,
+            },
+          },
+          projects: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  })
+}
