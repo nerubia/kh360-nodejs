@@ -30,6 +30,8 @@ export const sendMultipleMail = async (to: string[], subject: string, content: s
 
 export const sendMailWithAttachment = async (
   to: string,
+  cc: string[],
+  bcc: string[],
   subject: string,
   content: string,
   pdfBuffer: Buffer
@@ -37,6 +39,8 @@ export const sendMailWithAttachment = async (
   try {
     const msg = {
       to,
+      cc,
+      bcc,
       from: process.env.SENDGRID_FROM_ADDRESS as string,
       subject,
       html: content,
@@ -49,6 +53,7 @@ export const sendMailWithAttachment = async (
         },
       ],
     }
+
     return await sgMail.send(msg)
   } catch (error) {
     return null
