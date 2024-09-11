@@ -151,7 +151,7 @@ export const store = async (req: Request, res: Response) => {
       return res.status(400).json(error)
     }
     if (error instanceof CustomError) {
-      return res.status(400).json(error)
+      return res.status(error.status).json({ message: error.message })
     }
     logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
@@ -159,16 +159,100 @@ export const store = async (req: Request, res: Response) => {
 }
 
 /**
- * Send invoice
+ * Delete invoice
+ * @param req.params.id - The ID of the invoice to be deleted
  */
-export const sendInvoice = async (req: Request, res: Response) => {
+export const destroy = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    res.json({ id, message: "Invoice successfully deleted" })
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Send
+ */
+export const send = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     await InvoiceService.sendInvoice(parseInt(id))
     res.json({ message: "Invoice sent" })
   } catch (error) {
     if (error instanceof CustomError) {
-      return res.status(400).json(error)
+      return res.status(error.status).json({ message: error.message })
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Send reminder
+ */
+export const sendReminder = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    res.json({ message: "Invoice reminder sent" })
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Duplicate
+ */
+export const duplicate = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    res.json({ message: "Invoice duplicated" })
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Download
+ */
+export const download = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    res.json({ message: "Invoice downloaded" })
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Cancel
+ */
+export const cancel = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    res.json({ message: "Invoice cancelled" })
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
     }
     logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
