@@ -180,14 +180,16 @@ model clients {
   company_id         Int?
   currency_id        Int?
   payment_term_id    Int?
+  payment_account_id Int?
+  tax_type_id        Int?
   remarks            String?     @db.Text
   status             String?     @default("Active") @db.VarChar(20)
   created_at         DateTime?   @db.DateTime(0)
   updated_at         DateTime?   @db.DateTime(0)
   is_delinquent      Boolean?    @default(false)
+  currencies         currencies? @relation(fields: [currency_id], references: [id])
   invoices           invoices[]
   offerings          offerings[]
-  currencies         currencies? @relation(fields: [currency_id], references: [id])
 
   @@index([company_id], map: "index_clients_on_company_id")
   @@index([currency_id], map: "index_clients_on_currency_id")
