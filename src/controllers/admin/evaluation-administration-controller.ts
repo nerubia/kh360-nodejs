@@ -92,7 +92,7 @@ export const store = async (req: Request, res: Response) => {
       return res.status(400).json(error)
     }
     if (error instanceof CustomError) {
-      return res.status(400).json(error)
+      return res.status(error.status).json({ message: error.message })
     }
     logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
@@ -205,7 +205,7 @@ export const update = async (req: Request, res: Response) => {
       return res.status(400).json(error)
     }
     if (error instanceof CustomError) {
-      return res.status(400).json(error)
+      return res.status(error.status).json({ message: error.message })
     }
     logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
@@ -478,11 +478,11 @@ export const generateUpdate = async (req: Request, res: Response) => {
 
     res.json({ evaluation_result_id })
   } catch (error) {
-    if (error instanceof CustomError) {
-      return res.status(error.status).json({ message: error.message })
-    }
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
+    }
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
     }
     logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
