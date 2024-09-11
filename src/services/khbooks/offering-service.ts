@@ -123,6 +123,11 @@ export const updateById = async (id: number, data: Offering) => {
     throw new CustomError("Offering not found", 400)
   }
 
+  const existingOffering = await OfferingRepository.getByName(data.name)
+  if (existingOffering !== null && offering.id !== existingOffering.id) {
+    throw new CustomError("Service name should be unique", 400)
+  }
+
   const client = await ClientRepository.getById(data.client_id)
 
   const offeringCategory = await OfferingCategoryRepository.getById(data.offering_category_id)
