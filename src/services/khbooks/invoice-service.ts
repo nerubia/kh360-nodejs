@@ -210,6 +210,7 @@ export const create = async (data: Invoice) => {
     invoice_amount: data.invoice_amount,
     sub_total: data.sub_total,
     tax_type_id: taxType.id,
+    payment_account_id: client.payment_account_id,
     payment_term_id: paymentTerm.id,
     billing_address_id: data.billing_address_id,
     invoice_status: InvoiceStatus.DRAFT,
