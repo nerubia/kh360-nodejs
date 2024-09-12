@@ -113,7 +113,7 @@ export const store = async (req: Request, res: Response) => {
       invoice_details,
     })
 
-    const country = await CountryService.getById(country_id)
+    const country = await CountryService.getById(country_id ?? 0)
 
     const address = await AddressService.create({
       address1,

@@ -7,6 +7,7 @@ export const getById = async (id: number) => {
       id: true,
       name: true,
       company_id: true,
+      payment_account_id: true,
       currencies: {
         select: {
           id: true,
@@ -34,15 +35,26 @@ export const getAllByFilters = async (where: Prisma.clientsWhereInput) => {
     select: {
       id: true,
       name: true,
-      email: true,
       display_name: true,
+      email: true,
       address1: true,
       address2: true,
       city: true,
       state: true,
       country_id: true,
       postal_code: true,
+      tax_type_id: true,
       status: true,
+      payment_accounts: {
+        select: {
+          account_name: true,
+          account_type: true,
+          account_no: true,
+          bank_name: true,
+          bank_branch: true,
+          swift_code: true,
+        },
+      },
     },
     where,
     orderBy: {
