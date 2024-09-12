@@ -164,17 +164,17 @@ model cities {
 }
 
 model clients {
-  id                 Int         @id @default(autoincrement())
-  name               String?     @db.VarChar(100)
-  display_name       String?     @db.VarChar(100)
-  contact_first_name String?     @db.VarChar(100)
-  contact_last_name  String?     @db.VarChar(100)
-  contact_no         String?     @db.VarChar(100)
-  email              String?     @db.VarChar(255)
-  address1           String?     @db.VarChar(100)
-  address2           String?     @db.VarChar(100)
-  city               String?     @db.VarChar(100)
-  state              String?     @db.VarChar(100)
+  id                 Int               @id @default(autoincrement())
+  name               String?           @db.VarChar(100)
+  display_name       String?           @db.VarChar(100)
+  contact_first_name String?           @db.VarChar(100)
+  contact_last_name  String?           @db.VarChar(100)
+  contact_no         String?           @db.VarChar(100)
+  email              String?           @db.VarChar(255)
+  address1           String?           @db.VarChar(100)
+  address2           String?           @db.VarChar(100)
+  city               String?           @db.VarChar(100)
+  state              String?           @db.VarChar(100)
   country_id         Int?
   postal_code        Int?
   company_id         Int?
@@ -182,14 +182,15 @@ model clients {
   payment_term_id    Int?
   payment_account_id Int?
   tax_type_id        Int?
-  remarks            String?     @db.Text
-  status             String?     @default("Active") @db.VarChar(20)
-  created_at         DateTime?   @db.DateTime(0)
-  updated_at         DateTime?   @db.DateTime(0)
-  is_delinquent      Boolean?    @default(false)
-  currencies         currencies? @relation(fields: [currency_id], references: [id])
+  remarks            String?           @db.Text
+  status             String?           @default("Active") @db.VarChar(20)
+  created_at         DateTime?         @db.DateTime(0)
+  updated_at         DateTime?         @db.DateTime(0)
+  is_delinquent      Boolean?          @default(false)
+  currencies         currencies?       @relation(fields: [currency_id], references: [id])
   invoices           invoices[]
   offerings          offerings[]
+  payment_accounts   payment_accounts? @relation(fields: [payment_account_id], references: [id])
 
   @@index([company_id], map: "index_clients_on_company_id")
   @@index([currency_id], map: "index_clients_on_currency_id")
@@ -1976,6 +1977,7 @@ model payment_accounts {
   description  String?    @default("") @db.VarChar(255)
   created_at   DateTime?  @db.DateTime(0)
   updated_at   DateTime?  @db.DateTime(0)
+  clients      clients[]
   invoices     invoices[]
 
   @@index([currency_id], map: "index_payment_accounts_on_currency_id")
