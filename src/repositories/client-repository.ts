@@ -43,6 +43,8 @@ export const getAllByFilters = async (where: Prisma.clientsWhereInput) => {
       state: true,
       country_id: true,
       postal_code: true,
+      currency_id: true,
+      payment_term_id: true,
       tax_type_id: true,
       status: true,
       payment_accounts: {
