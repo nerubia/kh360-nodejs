@@ -5,6 +5,7 @@ import * as ClientRepository from "../../repositories/client-repository"
 import * as CurrencyRepository from "../../repositories/khbooks/currency-repository"
 import CustomError from "../../utils/custom-error"
 import { type Offering } from "../../types/offering-type"
+import { removeWhitespace } from "../../utils/format-string"
 
 export const getAllByFilters = async (
   name: string,
@@ -80,7 +81,7 @@ export const getAllByFilters = async (
 }
 
 export const create = async (data: Offering) => {
-  const offering = await OfferingRepository.getByName(data.name)
+  const offering = await OfferingRepository.getByName(removeWhitespace(data.name))
   if (offering !== null) {
     throw new CustomError("Service name should be unique", 400)
   }
@@ -123,7 +124,7 @@ export const updateById = async (id: number, data: Offering) => {
     throw new CustomError("Offering not found", 400)
   }
 
-  const existingOffering = await OfferingRepository.getByName(data.name)
+  const existingOffering = await OfferingRepository.getByName(removeWhitespace(data.name))
   if (existingOffering !== null && offering.id !== existingOffering.id) {
     throw new CustomError("Service name should be unique", 400)
   }
