@@ -1,5 +1,6 @@
 import express from "express"
 import * as InvoiceController from "../../controllers/khbooks/invoice-controller"
+import { uploadMiddleware } from "../../middlewares/upload-middleware"
 
 const router = express.Router()
 
@@ -9,6 +10,11 @@ router.post("/", InvoiceController.store)
 // router.put("/:id", InvoiceController.update)
 router.delete("/:id", InvoiceController.destroy)
 
+router.post(
+  "/:id/attachments",
+  uploadMiddleware.array("files"),
+  InvoiceController.uploadAttachments
+)
 router.post("/:id/send", InvoiceController.send)
 router.post("/:id/send-reminder", InvoiceController.sendReminder)
 router.post("/:id/duplicate", InvoiceController.duplicate)

@@ -7,6 +7,7 @@ import { type UserToken } from "./types/user-token-type"
 
 import { authMiddleware } from "./middlewares/auth-middleware"
 import { adminMiddleware } from "./middlewares/admin-middleware"
+import { errorMiddleware } from "./middlewares/error-middleware"
 
 import homeRoute from "./routes/home-route"
 import authRoute from "./routes/auth-route"
@@ -151,5 +152,11 @@ app.use("/kh-books/contracts", adminMiddleware, contractRoute)
 app.use("/kh-books/uoms", adminMiddleware, uomRoute)
 app.use("/kh-books/contract-billings", adminMiddleware, contractBillingRoute)
 app.use("/kh-books/countries", adminMiddleware, countryRoute)
+
+/**
+ * Global error
+ */
+
+app.use(errorMiddleware)
 
 export default app
