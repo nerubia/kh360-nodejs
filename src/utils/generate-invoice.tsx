@@ -15,12 +15,21 @@ import path from "path"
 import { type InvoicePdf } from "../types/invoice-type"
 import { formatAmount } from "./format-amount"
 
-const logo = path.resolve(__dirname, "./assets/nerubia.png")
-const openSansRegularPath = path.resolve(__dirname, "./assets/fonts/OpenSans-Regular.ttf")
-const openSansMediumPath = path.resolve(__dirname, "./assets/fonts/OpenSans-Medium.ttf")
-const openSansSemiBoldPath = path.resolve(__dirname, "./assets/fonts/OpenSans-SemiBold.ttf")
-const openSansBoldPath = path.resolve(__dirname, "./assets/fonts/OpenSans-Bold.ttf")
-const openSansExtraBoldPath = path.resolve(__dirname, "./assets/fonts/OpenSans-ExtraBold.ttf")
+const logo = path.resolve(__dirname, "../../public/assets/nerubia.png")
+const openSansRegularPath = path.resolve(
+  __dirname,
+  "../../public/assets/fonts/OpenSans-Regular.ttf"
+)
+const openSansMediumPath = path.resolve(__dirname, "../../public/assets/fonts/OpenSans-Medium.ttf")
+const openSansSemiBoldPath = path.resolve(
+  __dirname,
+  "../../public/assets/fonts/OpenSans-SemiBold.ttf"
+)
+const openSansBoldPath = path.resolve(__dirname, "../../public/assets/fonts/OpenSans-Bold.ttf")
+const openSansExtraBoldPath = path.resolve(
+  __dirname,
+  "../../public/assets/fonts/OpenSans-ExtraBold.ttf"
+)
 
 Font.register({
   family: "Open Sans",
