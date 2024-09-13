@@ -1,5 +1,6 @@
 import { type Prisma } from "@prisma/client"
 import * as InvoiceRepository from "../../repositories/khbooks/invoice-repository"
+import * as InvoiceAttachmentRepository from "../../repositories/khbooks/invoice-attachment-repository"
 import * as InvoiceEmailRepository from "../../repositories/khbooks/invoice-email-repository"
 import * as InvoiceDetailRepository from "../../repositories/khbooks/invoice-detail-repository"
 import * as ClientRepository from "../../repositories/client-repository"
@@ -18,6 +19,7 @@ import CustomError from "../../utils/custom-error"
 import { generateInvoice } from "../../utils/generate-invoice"
 import { sendMailWithAttachment } from "../../utils/sendgrid"
 import { type Contract } from "../../types/contract-type"
+import { type S3File } from "../../types/s3-file-type"
 
 export const getAllByFilters = async (
   invoice_date: string,
@@ -264,6 +266,25 @@ export const create = async (data: Invoice) => {
   await InvoiceDetailRepository.createMany(invoiceDetails)
 
   return newInvoice
+}
+
+export const uploadAttachments = async (id: number, files: S3File[]) => {
+  const invoice = await InvoiceRepository.getById(id)
+
+  if (invoice === null) {
+    throw new CustomError("Invoice not found", 400)
+  }
+
+  const currentDate = new Date()
+
+  const invoiceAttachments: Prisma.invoice_attachmentsCreateInput[] = files.map((file) => ({
+    invoice_id: invoice.id,
+    filename: file.key,
+    created_at: currentDate,
+    updated_at: currentDate,
+  }))
+
+  await InvoiceAttachmentRepository.createMany(invoiceAttachments)
 }
 
 export const sendInvoice = async (id: number) => {

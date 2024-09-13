@@ -7,6 +7,7 @@ import { ValidationError } from "yup"
 import CustomError from "../../utils/custom-error"
 import { createInvoiceSchema } from "../../utils/validation/invoice-schema"
 import { createAddressSchema } from "../../utils/validation/address-schema"
+import { type S3File } from "../../types/s3-file-type"
 
 /**
  * List invoices based on provided filters.
@@ -170,6 +171,23 @@ export const destroy = async (req: Request, res: Response) => {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
     }
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Upload attachments
+ */
+export const uploadAttachments = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    await InvoiceService.uploadAttachments(parseInt(id), req.files as S3File[])
+    res.json({ message: "Invoice attachments have been successfully saved" })
+  } catch (error) {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
