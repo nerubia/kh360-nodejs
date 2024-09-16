@@ -94,7 +94,7 @@ export const create = async (data: Offering) => {
   }
 
   const currency = await CurrencyRepository.getById(data.currency_id)
-  if (client === null && currency === null) {
+  if (currency === null) {
     throw new CustomError("Currency not found", 400)
   }
 
@@ -105,7 +105,7 @@ export const create = async (data: Offering) => {
     client_id: client?.id ?? null,
     offering_category_id: offeringCategory.id,
     offering_type: "service",
-    currency_id: client !== null ? client.currencies?.id : currency?.id,
+    currency_id: currency.id,
     price: data.price,
     description: data.description,
     created_at: currentDate,
