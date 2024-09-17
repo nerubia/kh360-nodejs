@@ -125,23 +125,27 @@ export const store = async (req: Request, res: Response) => {
       postal_code,
     })
 
-    const newInvoice = await InvoiceService.create({
-      client_id: parseInt(client_id as string),
-      to,
-      cc,
-      bcc,
-      currency_id: parseInt(currency_id as string),
-      invoice_date,
-      due_date,
-      invoice_amount: parseFloat(invoice_amount as string),
-      sub_total: parseFloat(sub_total as string),
-      tax_type_id: parseInt(tax_type_id as string),
-      payment_term_id: parseInt(payment_term_id as string),
-      billing_address_id: address.id,
-      invoice_details,
-    })
-
     const shouldSendInvoice = Boolean(send_invoice)
+
+    const newInvoice = await InvoiceService.create(
+      {
+        client_id: parseInt(client_id as string),
+        to,
+        cc,
+        bcc,
+        currency_id: parseInt(currency_id as string),
+        invoice_date,
+        due_date,
+        invoice_amount: parseFloat(invoice_amount as string),
+        sub_total: parseFloat(sub_total as string),
+        tax_type_id: parseInt(tax_type_id as string),
+        payment_term_id: parseInt(payment_term_id as string),
+        billing_address_id: address.id,
+        invoice_details,
+      },
+      shouldSendInvoice
+    )
+
     if (shouldSendInvoice) {
       await InvoiceService.sendInvoice(newInvoice.id)
     }
