@@ -2,6 +2,7 @@ import { type Prisma } from "@prisma/client"
 import * as ContractBillingRepository from "../../repositories/khbooks/contract-billing-repository"
 
 export const getAllByFilters = async (
+  client_id: number,
   start_date: string,
   end_date: string,
   contract_no: string,
@@ -18,6 +19,12 @@ export const getAllByFilters = async (
   const endDate = end_date !== undefined ? new Date(end_date) : undefined
 
   const where: Prisma.contract_billingsWhereInput = {}
+
+  if (!isNaN(client_id)) {
+    Object.assign(where, {
+      client_id,
+    })
+  }
 
   if (startDate !== undefined && endDate !== undefined) {
     Object.assign(where, {
