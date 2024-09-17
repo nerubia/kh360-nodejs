@@ -268,6 +268,10 @@ export const create = async (data: Invoice, shouldSendInvoice: boolean) => {
   return newInvoice
 }
 
+export const show = async (id: number) => {
+  return await InvoiceRepository.getById(id)
+}
+
 export const uploadAttachments = async (id: number, files: S3File[]) => {
   const invoice = await InvoiceRepository.getById(id)
 

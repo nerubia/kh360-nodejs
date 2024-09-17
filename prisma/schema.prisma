@@ -616,36 +616,38 @@ model holidays {
 }
 
 model invoices {
-  id                 Int               @id @default(autoincrement())
-  client_id          Int?
-  company_id         Int?
-  currency_id        Int?
-  invoice_no         String?           @default("") @db.VarChar(20)
-  invoice_date       DateTime?         @db.Date
-  due_date           DateTime?         @db.Date
-  invoice_amount     Decimal?          @default(0.00) @db.Decimal(8, 2)
-  discount_amount    Decimal?          @default(0.00) @db.Decimal(8, 2)
-  tax_amount         Decimal?          @default(0.00) @db.Decimal(8, 2)
-  sub_total          Decimal?          @default(0.00) @db.Decimal(8, 2)
-  payment_amount     Decimal?          @default(0.00) @db.Decimal(8, 2)
-  tax_type_id        Int?
-  payment_account_id Int?
-  payment_term_id    Int?
-  billing_address_id Int?
-  invoice_status     String?           @default("") @db.VarChar(20)
-  payment_status     String?           @default("") @db.VarChar(20)
-  remarks            String?           @db.Text
-  message            String?           @db.Text
-  created_at         DateTime?         @db.DateTime(0)
-  updated_at         DateTime?         @db.DateTime(0)
-  clients            clients?          @relation(fields: [client_id], references: [id])
-  companies          companies?        @relation(fields: [company_id], references: [id])
-  currencies         currencies?       @relation(fields: [currency_id], references: [id])
-  tax_types          tax_types?        @relation(fields: [tax_type_id], references: [id])
-  payment_accounts   payment_accounts? @relation(fields: [payment_account_id], references: [id])
-  addresses          addresses?        @relation(fields: [billing_address_id], references: [id])
-  invoice_details    invoice_details[]
-  invoice_emails     invoice_emails[]
+  id                  Int                   @id @default(autoincrement())
+  client_id           Int?
+  company_id          Int?
+  currency_id         Int?
+  invoice_no          String?               @default("") @db.VarChar(20)
+  invoice_date        DateTime?             @db.Date
+  due_date            DateTime?             @db.Date
+  invoice_amount      Decimal?              @default(0.00) @db.Decimal(8, 2)
+  discount_amount     Decimal?              @default(0.00) @db.Decimal(8, 2)
+  tax_amount          Decimal?              @default(0.00) @db.Decimal(8, 2)
+  sub_total           Decimal?              @default(0.00) @db.Decimal(8, 2)
+  payment_amount      Decimal?              @default(0.00) @db.Decimal(8, 2)
+  tax_type_id         Int?
+  payment_account_id  Int?
+  payment_term_id     Int?
+  billing_address_id  Int?
+  invoice_status      String?               @default("") @db.VarChar(20)
+  payment_status      String?               @default("") @db.VarChar(20)
+  remarks             String?               @db.Text
+  message             String?               @db.Text
+  created_at          DateTime?             @db.DateTime(0)
+  updated_at          DateTime?             @db.DateTime(0)
+  clients             clients?              @relation(fields: [client_id], references: [id])
+  companies           companies?            @relation(fields: [company_id], references: [id])
+  currencies          currencies?           @relation(fields: [currency_id], references: [id])
+  tax_types           tax_types?            @relation(fields: [tax_type_id], references: [id])
+  payment_accounts    payment_accounts?     @relation(fields: [payment_account_id], references: [id])
+  addresses           addresses?            @relation(fields: [billing_address_id], references: [id])
+  payment_terms       payment_terms?        @relation(fields: [payment_term_id], references: [id])
+  invoice_details     invoice_details[]
+  invoice_emails      invoice_emails[]
+  invoice_attachments invoice_attachments[]
 
   @@index([client_id], map: "index_invoices_on_client_id")
   @@index([company_id], map: "index_invoices_on_company_id")
@@ -896,14 +898,15 @@ model overtimes {
 }
 
 model payment_terms {
-  id          Int       @id @default(autoincrement())
-  name        String?   @db.VarChar(20)
+  id          Int        @id @default(autoincrement())
+  name        String?    @db.VarChar(20)
   sequence_no Int?
   no_of_days  Int?
-  description String?   @db.VarChar(255)
+  description String?    @db.VarChar(255)
   is_active   Boolean?
-  created_at  DateTime? @db.DateTime(0)
-  updated_at  DateTime? @db.DateTime(0)
+  created_at  DateTime?  @db.DateTime(0)
+  updated_at  DateTime?  @db.DateTime(0)
+  invoices    invoices[]
 }
 
 model payroll_batches {
@@ -1880,6 +1883,8 @@ model invoice_attachments {
   description String?   @default("") @db.VarChar(255)
   created_at  DateTime? @db.DateTime(0)
   updated_at  DateTime? @db.DateTime(0)
+
+  invoice invoices? @relation(fields: [invoice_id], references: [id])
 
   @@index([invoice_id], map: "index_invoice_attachments_on_invoice_id")
 }
