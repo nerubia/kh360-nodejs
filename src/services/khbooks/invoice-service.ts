@@ -180,7 +180,7 @@ export const getAllByFilters = async (
   }
 }
 
-export const create = async (data: Invoice) => {
+export const create = async (data: Invoice, shouldSendInvoice: boolean) => {
   const client = await ClientRepository.getById(data.client_id)
   if (client === null) {
     throw new CustomError("Client not found", 400)
@@ -215,7 +215,7 @@ export const create = async (data: Invoice) => {
     payment_account_id: client.payment_account_id,
     payment_term_id: paymentTerm.id,
     billing_address_id: data.billing_address_id,
-    invoice_status: InvoiceStatus.DRAFT,
+    invoice_status: shouldSendInvoice ? InvoiceStatus.BILLED : InvoiceStatus.DRAFT,
     payment_status: PaymentStatus.OPEN,
     created_at: currentDate,
     updated_at: currentDate,
