@@ -291,7 +291,7 @@ export const MyDocument = ({ invoice }: InvoiceProps) => {
                 }}
               >
                 <Text>TAX</Text>
-                <Text>{invoice.tax_types?.rate?.toString()}%</Text>
+                <Text>{formatAmount(invoice.tax_amount)}</Text>
               </View>
             </View>
             <View style={{ display: "flex", gap: 16 }}>
