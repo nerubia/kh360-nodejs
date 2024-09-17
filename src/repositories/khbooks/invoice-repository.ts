@@ -67,6 +67,8 @@ export const getById = async (id: number) => {
           id: true,
           name: true,
           display_name: true,
+          contact_no: true,
+          status: true,
         },
       },
       companies: {
@@ -96,6 +98,14 @@ export const getById = async (id: number) => {
           quantity: true,
           rate: true,
           total: true,
+          uom_id: true,
+          sub_total: true,
+          offerings: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
           contracts: {
             select: {
               contract_no: true,
@@ -115,6 +125,14 @@ export const getById = async (id: number) => {
           email_address: true,
         },
       },
+      invoice_attachments: {
+        select: {
+          id: true,
+          sequence_no: true,
+          filename: true,
+          description: true,
+        },
+      },
       tax_types: {
         select: {
           id: true,
@@ -130,6 +148,11 @@ export const getById = async (id: number) => {
           bank_name: true,
           bank_branch: true,
           swift_code: true,
+        },
+      },
+      payment_terms: {
+        select: {
+          name: true,
         },
       },
     },

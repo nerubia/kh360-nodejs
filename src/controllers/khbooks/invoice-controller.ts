@@ -34,6 +34,17 @@ export const index = async (req: Request, res: Response) => {
   }
 }
 
+export const show = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const invoice = await InvoiceService.show(parseInt(id))
+    res.json(invoice)
+  } catch (error) {
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
 /**
  * Store a new invoice.
  * @param req.body.client_id - Client id.
