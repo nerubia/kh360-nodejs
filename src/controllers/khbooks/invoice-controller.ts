@@ -45,7 +45,9 @@ export const index = async (req: Request, res: Response) => {
  * @param req.body.due_date - Due date.
  * @param req.body.invoice_amount - Invoice amount.
  * @param req.body.sub_total - Sub total.
+ * @param req.body.tax_amount - Tax amount.
  * @param req.body.tax_type_id - Tax type id.
+ * @param req.body.payment_account_id - Payment account id.
  * @param req.body.payment_term_id - Payment term id.
  * @param req.body.address1 - Address 1.
  * @param req.body.address2 - Address 2.
@@ -56,15 +58,6 @@ export const index = async (req: Request, res: Response) => {
  * @param req.body.invoice_details - Invoice details.
  * @param req.body.send_invoice - Send invoice.
  */
-
-// TODO: ???
-//
-// account_name
-// account_type
-// account_no
-// bank_name
-// bank_branch
-// swift_code
 
 export const store = async (req: Request, res: Response) => {
   try {
@@ -78,7 +71,9 @@ export const store = async (req: Request, res: Response) => {
       due_date,
       invoice_amount,
       sub_total,
+      tax_amount,
       tax_type_id,
+      payment_account_id,
       payment_term_id,
       invoice_details,
       address1,
@@ -109,7 +104,9 @@ export const store = async (req: Request, res: Response) => {
       due_date,
       invoice_amount,
       sub_total,
+      tax_amount,
       tax_type_id,
+      payment_account_id,
       payment_term_id,
       invoice_details,
     })
@@ -138,7 +135,9 @@ export const store = async (req: Request, res: Response) => {
         due_date,
         invoice_amount: parseFloat(invoice_amount as string),
         sub_total: parseFloat(sub_total as string),
+        tax_amount: parseFloat(tax_amount as string),
         tax_type_id: parseInt(tax_type_id as string),
+        payment_account_id: parseInt(payment_account_id as string),
         payment_term_id: parseInt(payment_term_id as string),
         billing_address_id: address.id,
         invoice_details,

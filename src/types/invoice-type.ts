@@ -4,7 +4,6 @@ import { type Company } from "./company-type"
 import { type Currency } from "./currency-type"
 import { type InvoiceDetail } from "./invoice-detail-type"
 import { type PaymentAccount } from "./payment-account-type"
-import { type TaxType } from "./tax-type"
 
 export interface Invoice {
   client_id: number
@@ -18,7 +17,9 @@ export interface Invoice {
   due_date: string
   invoice_amount?: number
   sub_total?: number
+  tax_amount?: number
   tax_type_id: number
+  payment_account_id: number
   payment_term_id: number
   billing_address_id: number
   clients?: Client
@@ -33,10 +34,10 @@ export interface InvoicePdf {
   due_date: string
   invoice_amount?: number
   sub_total?: number
+  tax_amount?: number
   clients?: Client | null
   companies?: Company | null
   currencies?: Currency | null
-  tax_types: TaxType | null
   billing_addresses: Address | null
   payment_accounts: PaymentAccount | null
   invoice_details: InvoiceDetail[]

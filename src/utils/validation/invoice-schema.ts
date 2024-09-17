@@ -27,7 +27,9 @@ export const createInvoiceSchema = object().shape({
   due_date: string().required("Due date is required"),
   invoice_amount: number().required("Invoice amount is required"),
   sub_total: number().required("Sub total is required"),
+  tax_amount: number().required("Tax amount is required"),
   tax_type_id: number().required("Tax type is required"),
+  payment_account_id: number().required("Payment account is required"),
   payment_term_id: number().required("Payment term is required"),
   invoice_details: array().of(invoiceDetailSchema),
 })
