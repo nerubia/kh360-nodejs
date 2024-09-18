@@ -332,6 +332,7 @@ model contracts {
   deleted_at           DateTime?           @db.DateTime(0)
   contract_billings    contract_billings[]
   invoice_details      invoice_details[]
+  projects             projects?           @relation(fields: [project_id], references: [id])
 
   @@index([client_id], map: "index_contracts_on_client_id")
   @@index([client_liaison_id], map: "index_contracts_on_client_liaison_id")
@@ -1081,6 +1082,7 @@ model projects {
   created_at      DateTime          @db.DateTime(0)
   updated_at      DateTime          @db.DateTime(0)
   deleted_at      DateTime?         @db.DateTime(0)
+  contracts       contracts[]
   invoice_details invoice_details[]
   project_infos   project_infos[]
   project_skills  project_skills[]
