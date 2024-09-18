@@ -54,10 +54,10 @@ export const store = async (req: Request, res: Response) => {
 
     const newOffering = await OfferingService.create({
       name,
-      client_id: parseInt(client_id as string),
-      offering_category_id: parseInt(offering_category_id as string),
-      currency_id: parseInt(currency_id as string),
-      price: parseInt(price as string),
+      client_id: Number(client_id),
+      offering_category_id: Number(offering_category_id),
+      currency_id: Number(currency_id),
+      price: Number(price),
       description,
     })
 
@@ -121,10 +121,10 @@ export const update = async (req: Request, res: Response) => {
 
     const updatedOffering = await OfferingService.updateById(parseInt(id), {
       name,
-      client_id: parseInt(client_id as string),
-      offering_category_id: parseInt(offering_category_id as string),
-      currency_id: parseInt(currency_id as string),
-      price: parseInt(price as string),
+      client_id: Number(client_id),
+      offering_category_id: Number(offering_category_id),
+      currency_id: Number(currency_id),
+      price: Number(price),
       description,
     })
 
