@@ -100,6 +100,7 @@ export const getById = async (id: number) => {
           total: true,
           uom_id: true,
           sub_total: true,
+          tax: true,
           offerings: {
             select: {
               id: true,
