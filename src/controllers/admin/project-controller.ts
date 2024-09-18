@@ -9,11 +9,15 @@ import { removeWhitespace } from "../../utils/format-string"
 /**
  * List all projects based on provided filters.
  * @param req.query.name - Filter by name.
+ * @param req.query.client_id - Filter by client_id.
  */
 export const all = async (req: Request, res: Response) => {
   try {
-    const { name } = req.query
-    const results = await ProjectService.getAllByFilters(name as string)
+    const { name, client_id } = req.query
+    const results = await ProjectService.getAllByFilters(
+      name as string,
+      parseInt(client_id as string)
+    )
     res.json(results)
   } catch (error) {
     logger.error(error)

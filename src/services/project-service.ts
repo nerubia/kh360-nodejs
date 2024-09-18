@@ -70,12 +70,19 @@ export const getById = async (id: number) => {
   }
 }
 
-export const getAllByFilters = async (name: string) => {
-  const where = {
+export const getAllByFilters = async (name: string, client_id: number) => {
+  const where: Prisma.projectsWhereInput = {
     name: {
       contains: name,
     },
   }
+
+  if (!isNaN(client_id)) {
+    Object.assign(where, {
+      client_id,
+    })
+  }
+
   return await ProjectRepository.getAllByFilters(where)
 }
 
