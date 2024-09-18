@@ -15,6 +15,20 @@ export const paginateByFilters = async (
         created_at: "desc",
       },
     ],
+    include: {
+      contracts: {
+        select: {
+          id: true,
+          contract_no: true,
+          projects: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+    },
   })
 }
 
