@@ -32,4 +32,5 @@ export const createInvoiceSchema = object().shape({
   payment_account_id: number().required("Payment account is required"),
   payment_term_id: number().required("Payment term is required"),
   invoice_details: array().of(invoiceDetailSchema),
+  invoice_attachment_ids: array().of(number()).optional(),
 })

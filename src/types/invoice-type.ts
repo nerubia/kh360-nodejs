@@ -6,12 +6,12 @@ import { type InvoiceDetail } from "./invoice-detail-type"
 import { type PaymentAccount } from "./payment-account-type"
 
 export interface Invoice {
-  client_id: number
+  client_id?: number
   to?: string
   cc?: string
   bcc?: string
   company_id?: number
-  currency_id: number
+  currency_id?: number
   invoice_no?: string
   invoice_date: string
   due_date: string
@@ -21,11 +21,12 @@ export interface Invoice {
   tax_type_id: number
   payment_account_id: number
   payment_term_id: number
-  billing_address_id: number
+  billing_address_id?: number
   clients?: Client
   companies?: Company
   currencies?: Currency
   invoice_details: InvoiceDetail[]
+  invoice_attachment_ids?: number[]
 }
 
 export interface InvoicePdf {

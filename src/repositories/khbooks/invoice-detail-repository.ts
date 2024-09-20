@@ -13,3 +13,22 @@ export const createMany = async (data: Prisma.invoice_detailsCreateManyInput[]) 
     data,
   })
 }
+
+export const updateById = async (id: number, data: Prisma.invoice_detailsUncheckedUpdateInput) => {
+  return await prisma.invoice_details.update({
+    where: {
+      id,
+    },
+    data,
+  })
+}
+
+export const deleteMany = async (ids: number[]) => {
+  return await prisma.invoice_details.deleteMany({
+    where: {
+      id: {
+        in: ids,
+      },
+    },
+  })
+}
