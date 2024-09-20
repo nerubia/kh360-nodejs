@@ -2,11 +2,12 @@ import { type Prisma } from "@prisma/client"
 import * as InvoiceRepository from "../../repositories/khbooks/invoice-repository"
 import * as InvoiceAttachmentRepository from "../../repositories/khbooks/invoice-attachment-repository"
 import * as InvoiceEmailRepository from "../../repositories/khbooks/invoice-email-repository"
-import * as InvoiceDetailRepository from "../../repositories/khbooks/invoice-detail-repository"
 import * as ClientRepository from "../../repositories/client-repository"
 import * as CurrencyRepository from "../../repositories/khbooks/currency-repository"
 import * as TaxTypeRepository from "../../repositories/khbooks/tax-type-repository"
 import * as PaymentTermRepository from "../../repositories/khbooks/payment-term-repository"
+import * as InvoiceDetailService from "../khbooks/invoice-detail-service"
+import * as InvoiceAttachmentService from "../khbooks/invoice-attachment-service"
 import {
   type Invoice,
   InvoiceDateFilter,
@@ -181,12 +182,12 @@ export const getAllByFilters = async (
 }
 
 export const create = async (data: Invoice, shouldSendInvoice: boolean) => {
-  const client = await ClientRepository.getById(data.client_id)
+  const client = await ClientRepository.getById(data.client_id ?? 0)
   if (client === null) {
     throw new CustomError("Client not found", 400)
   }
 
-  const currency = await CurrencyRepository.getById(data.currency_id)
+  const currency = await CurrencyRepository.getById(data.currency_id ?? 0)
   if (currency === null) {
     throw new CustomError("Currency not found", 400)
   }
@@ -246,42 +247,101 @@ export const create = async (data: Invoice, shouldSendInvoice: boolean) => {
     })
   }
 
-  const invoiceDetails: Prisma.invoice_detailsCreateManyInput[] = data.invoice_details.map(
-    (invoiceDetail) => {
-      const periodStart =
-        invoiceDetail.period_start !== null ? new Date(invoiceDetail.period_start) : null
-      const periodEnd =
-        invoiceDetail.period_end !== null ? new Date(invoiceDetail.period_end) : null
-
-      return {
-        invoice_id: newInvoice.id,
-        contract_id: invoiceDetail.contract_id,
-        contract_billing_id: invoiceDetail.contract_billing_id,
-        offering_id: invoiceDetail.offering_id,
-        project_id: invoiceDetail.project_id,
-        employee_id: invoiceDetail.employee_id,
-        period_start: periodStart,
-        period_end: periodEnd,
-        details: invoiceDetail.details,
-        quantity: invoiceDetail.quantity,
-        uom_id: invoiceDetail.uom_id,
-        rate: invoiceDetail.rate,
-        sub_total: invoiceDetail.sub_total,
-        tax: invoiceDetail.tax,
-        total: invoiceDetail.total,
-        created_at: currentDate,
-        updated_at: currentDate,
-      }
-    }
-  )
-
-  await InvoiceDetailRepository.createMany(invoiceDetails)
+  await InvoiceDetailService.updateByInvoiceId(newInvoice.id, data.invoice_details)
 
   return newInvoice
 }
 
 export const show = async (id: number) => {
   return await InvoiceRepository.getById(id)
+}
+
+export const update = async (id: number, data: Invoice) => {
+  const invoice = await InvoiceRepository.getById(id)
+  if (invoice === null) {
+    throw new CustomError("Invoice not found", 400)
+  }
+
+  const taxType = await TaxTypeRepository.getById(data.tax_type_id)
+  if (taxType === null) {
+    throw new CustomError("Tax type not found", 400)
+  }
+
+  const paymentTerm = await PaymentTermRepository.getById(data.payment_term_id)
+  if (paymentTerm === null) {
+    throw new CustomError("Payment term not found", 400)
+  }
+
+  const invoiceEmails = invoice.invoice_emails
+
+  const currentDate = new Date()
+
+  if (data.to !== undefined && data.to.length > 0) {
+    const to = invoiceEmails.find((invoiceEmail) => invoiceEmail.email_type === "to")
+    if (to !== undefined) {
+      await InvoiceEmailRepository.updateById(to.id, {
+        email_address: data.to,
+      })
+    } else {
+      await InvoiceEmailRepository.create({
+        invoice_id: invoice.id,
+        email_type: "to",
+        email_address: data.to,
+      })
+    }
+  }
+
+  if (data.cc !== undefined && data.cc.length > 0) {
+    const cc = invoiceEmails.find((invoiceEmail) => invoiceEmail.email_type === "cc")
+    if (cc !== undefined) {
+      await InvoiceEmailRepository.updateById(cc.id, {
+        email_address: data.cc,
+      })
+    } else {
+      await InvoiceEmailRepository.create({
+        invoice_id: invoice.id,
+        email_type: "cc",
+        email_address: data.cc,
+      })
+    }
+  }
+
+  if (data.bcc !== undefined && data.bcc.length > 0) {
+    const bcc = invoiceEmails.find((invoiceEmail) => invoiceEmail.email_type === "bcc")
+    if (bcc !== undefined) {
+      await InvoiceEmailRepository.updateById(bcc.id, {
+        email_address: data.bcc,
+      })
+    } else {
+      await InvoiceEmailRepository.create({
+        invoice_id: invoice.id,
+        email_type: "bcc",
+        email_address: data.bcc,
+      })
+    }
+  }
+
+  await InvoiceDetailService.updateByInvoiceId(invoice.id, data.invoice_details)
+
+  if (data.invoice_attachment_ids !== undefined) {
+    const existingIds = invoice.invoice_attachments.map((attachment) => attachment.id)
+    const newIds = data.invoice_attachment_ids
+    const toDelete = existingIds.filter((itemId) => !newIds.includes(itemId))
+
+    await InvoiceAttachmentService.deleteMany(toDelete)
+  }
+
+  return await InvoiceRepository.updateById(id, {
+    invoice_date: new Date(data.invoice_date),
+    due_date: new Date(data.due_date),
+    invoice_amount: data.invoice_amount,
+    sub_total: data.sub_total,
+    tax_amount: data.tax_amount,
+    tax_type_id: taxType.id,
+    payment_account_id: data.payment_account_id,
+    payment_term_id: paymentTerm.id,
+    updated_at: currentDate,
+  })
 }
 
 export const uploadAttachments = async (id: number, files: S3File[]) => {

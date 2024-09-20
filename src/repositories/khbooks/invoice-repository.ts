@@ -92,6 +92,7 @@ export const getById = async (id: number) => {
       invoice_details: {
         select: {
           id: true,
+          contract_billing_id: true,
           period_start: true,
           period_end: true,
           details: true,
@@ -121,6 +122,7 @@ export const getById = async (id: number) => {
       },
       invoice_emails: {
         select: {
+          id: true,
           email_type: true,
           email_address: true,
         },
@@ -156,5 +158,14 @@ export const getById = async (id: number) => {
         },
       },
     },
+  })
+}
+
+export const updateById = async (id: number, data: Prisma.invoicesUncheckedUpdateInput) => {
+  return await prisma.invoices.update({
+    where: {
+      id,
+    },
+    data,
   })
 }

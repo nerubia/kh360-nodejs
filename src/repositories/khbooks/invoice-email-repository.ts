@@ -6,3 +6,12 @@ export const create = async (data: Prisma.invoice_emailsUncheckedCreateInput) =>
     data,
   })
 }
+
+export const updateById = async (id: number, data: Prisma.invoice_emailsUncheckedUpdateInput) => {
+  return await prisma.invoice_emails.update({
+    where: {
+      id,
+    },
+    data,
+  })
+}
