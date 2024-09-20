@@ -34,17 +34,6 @@ export const index = async (req: Request, res: Response) => {
   }
 }
 
-export const show = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params
-    const invoice = await InvoiceService.show(parseInt(id))
-    res.json(invoice)
-  } catch (error) {
-    logger.error(error)
-    res.status(500).json({ message: "Something went wrong" })
-  }
-}
-
 /**
  * Store a new invoice.
  * @param req.body.client_id - Client id.
@@ -161,6 +150,116 @@ export const store = async (req: Request, res: Response) => {
     }
 
     res.json(newInvoice)
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Get a specific invoice by ID.
+ * @param req.params.id - Invoice id
+ */
+export const show = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const invoice = await InvoiceService.show(parseInt(id))
+    res.json(invoice)
+  } catch (error) {
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Update an existing invoice.
+ * @param req.params.id - The ID of the invoice to be updated
+ * @param req.body.client_id - Client id.
+ * @param req.body.to - To.
+ * @param req.body.cc - Cc.
+ * @param req.body.bcc - Bcc.
+ * @param req.body.currency_id - Currency id.
+ * @param req.body.invoice_date - Invoice date.
+ * @param req.body.due_date - Due date.
+ * @param req.body.invoice_amount - Invoice amount.
+ * @param req.body.sub_total - Sub total.
+ * @param req.body.tax_amount - Tax amount.
+ * @param req.body.tax_type_id - Tax type id.
+ * @param req.body.payment_account_id - Payment account id.
+ * @param req.body.payment_term_id - Payment term id.
+ * @param req.body.invoice_details - Invoice details.
+ * @param req.body.invoice_attachment_ids - Invoice attachment ids.
+ * @param req.body.send_invoice - Send invoice.
+ */
+export const update = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const {
+      client_id,
+      to,
+      cc,
+      bcc,
+      currency_id,
+      invoice_date,
+      due_date,
+      invoice_amount,
+      sub_total,
+      tax_amount,
+      tax_type_id,
+      payment_account_id,
+      payment_term_id,
+      invoice_details,
+      invoice_attachment_ids,
+      send_invoice,
+    } = req.body
+
+    await createInvoiceSchema.validate({
+      client_id,
+      to,
+      cc,
+      bcc,
+      currency_id,
+      invoice_date,
+      due_date,
+      invoice_amount,
+      sub_total,
+      tax_amount,
+      tax_type_id,
+      payment_account_id,
+      payment_term_id,
+      invoice_details,
+      invoice_attachment_ids,
+    })
+
+    const shouldSendInvoice = Boolean(send_invoice)
+
+    const updatedInvoice = await InvoiceService.update(Number(id), {
+      to,
+      cc,
+      bcc,
+      invoice_date,
+      due_date,
+      invoice_amount: Number(invoice_amount),
+      sub_total: Number(sub_total),
+      tax_amount: Number(tax_amount),
+      tax_type_id: Number(tax_type_id),
+      payment_account_id: Number(payment_account_id),
+      payment_term_id: Number(payment_term_id),
+      invoice_details,
+      invoice_attachment_ids,
+    })
+
+    if (shouldSendInvoice) {
+      await InvoiceService.sendInvoice(updatedInvoice.id)
+    }
+
+    res.json(updatedInvoice)
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
