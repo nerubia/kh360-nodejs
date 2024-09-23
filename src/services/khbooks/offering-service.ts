@@ -30,7 +30,7 @@ export const getAllByFilters = async (
 
   if (!isNaN(category_id)) {
     Object.assign(where, {
-      category_id,
+      offering_category_id: category_id,
     })
   }
 
