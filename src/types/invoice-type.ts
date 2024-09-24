@@ -29,7 +29,7 @@ export interface Invoice {
   invoice_attachment_ids?: number[]
 }
 
-export interface InvoicePdf {
+export interface EmailInvoiceContent {
   invoice_no?: string
   invoice_date: string
   due_date: string

@@ -21,6 +21,7 @@ import { generateInvoice } from "../../utils/generate-invoice"
 import { sendMailWithAttachment } from "../../utils/sendgrid"
 import { type Contract } from "../../types/contract-type"
 import { type S3File } from "../../types/s3-file-type"
+import { generateInvoiceEmailContent } from "../../utils/generate-invoice-email-content"
 
 export const getAllByFilters = async (
   invoice_date: string,
@@ -203,7 +204,6 @@ export const create = async (data: Invoice, shouldSendInvoice: boolean) => {
   }
 
   const currentDate = new Date()
-
   const newInvoice = await InvoiceRepository.create({
     client_id: client.id,
     company_id: client.company_id,
@@ -419,5 +419,40 @@ export const sendInvoice = async (id: number) => {
     throw new CustomError("Invoice email not found", 400)
   }
 
-  await sendMailWithAttachment(to, ccEmails, bccEmails, "Invoice", "Your invoice", pdfBuffer)
+  const invoiceContent = await generateInvoiceEmailContent({
+    invoice_no: invoice.invoice_no ?? "",
+    invoice_date: invoice.invoice_date?.toISOString() ?? "",
+    due_date: invoice.due_date?.toISOString() ?? "",
+    invoice_amount: invoice.invoice_amount?.toNumber(),
+    sub_total: invoice.sub_total?.toNumber(),
+    tax_amount: invoice.tax_amount?.toNumber(),
+    clients: invoice.clients,
+    companies: invoice.companies,
+    currencies: invoice.currencies,
+    payment_accounts: invoice.payment_accounts,
+    billing_addresses: invoice.addresses,
+    invoice_details: invoice.invoice_details.map((invoiceDetail) => {
+      return {
+        id: invoiceDetail.id,
+        contract_id: null,
+        contract_billing_id: null,
+        offering_id: null,
+        project_id: null,
+        employee_id: null,
+        period_start: invoiceDetail.period_start?.toISOString() ?? null,
+        period_end: invoiceDetail.period_end?.toISOString() ?? null,
+        details: invoiceDetail.details,
+        quantity: invoiceDetail.quantity?.toNumber() ?? null,
+        uom_id: null,
+        rate: invoiceDetail.rate?.toString() ?? null,
+        sub_total: null,
+        tax: null,
+        total: invoiceDetail.total?.toNumber() ?? null,
+        contracts: (invoiceDetail.contracts as Contract) ?? undefined,
+        projects: invoiceDetail.projects ?? undefined,
+      }
+    }),
+  })
+
+  await sendMailWithAttachment(to, ccEmails, bccEmails, "Invoice", invoiceContent, pdfBuffer)
 }
