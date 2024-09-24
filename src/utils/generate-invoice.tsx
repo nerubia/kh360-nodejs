@@ -12,7 +12,7 @@ import { formatDate } from "./format-date"
 
 import path from "path"
 
-import { type InvoicePdf } from "../types/invoice-type"
+import { type EmailInvoiceContent } from "../types/invoice-type"
 import { formatAmount } from "./format-amount"
 
 const logo = path.resolve(__dirname, "../../public/assets/nerubia.png")
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
   },
 })
 
-export const generateInvoice = async (invoice: InvoicePdf) => {
+export const generateInvoice = async (invoice: EmailInvoiceContent) => {
   const pdfStream = await renderToStream(<MyDocument invoice={invoice} />)
 
   return await new Promise<Buffer>((resolve, reject) => {
@@ -85,7 +85,7 @@ export const generateInvoice = async (invoice: InvoicePdf) => {
 }
 
 interface InvoiceProps {
-  invoice: InvoicePdf
+  invoice: EmailInvoiceContent
 }
 
 export const MyDocument = ({ invoice }: InvoiceProps) => {
