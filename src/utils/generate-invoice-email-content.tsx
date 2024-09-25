@@ -1,6 +1,7 @@
 import { Body, Container, Text, Html, Img, render, Section } from "@react-email/components"
 import { formatDate } from "./format-date"
 import { type EmailInvoiceContent } from "../types/invoice-type"
+import { formatAmount } from "./format-amount"
 
 const logo =
   "https://scontent.fceb1-2.fna.fbcdn.net/v/t39.30808-6/305456072_504047941725461_5917402848048936618_n.png?_nc_cat=108&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=PtGQnTbKwZMQ7kNvgHDQpQa&_nc_ht=scontent.fceb1-2.fna&_nc_gid=Ay8SDtgTEFjSf-OFEtPINiS&oh=00_AYAFZ9YuSVnNZcsz9OvPTfeW69BBn4-Mp8nzq1vL-yPUCA&oe=66F70176"
@@ -64,7 +65,7 @@ export default function EmailContent({ invoice }: { invoice: EmailInvoiceContent
               <Text style={dueDateStyle}>DUE {formatDate(invoice.due_date)}</Text>
 
               <Text style={amount}>
-                {invoice.currencies?.code} {invoice.invoice_amount}
+                {invoice.currencies?.code} {formatAmount(invoice.invoice_amount)}
               </Text>
 
               <Container style={emailSection}>
