@@ -12,6 +12,12 @@ export const paginateByFilters = async (
     where,
     orderBy: [
       {
+        invoice_no: "desc",
+      },
+      {
+        created_at: "desc",
+      },
+      {
         invoice_date: "desc",
       },
     ],
