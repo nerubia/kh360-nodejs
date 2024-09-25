@@ -332,6 +332,7 @@ export const send = async (req: Request, res: Response) => {
 export const sendReminder = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
+    await InvoiceService.sendInvoice(parseInt(id))
     res.json({ message: "Invoice reminder sent" })
   } catch (error) {
     if (error instanceof CustomError) {
