@@ -29,7 +29,7 @@ const logger = winston.createLogger({
     }),
     new winston.transports.File({
       filename: path.join(rootDir, "app.log"),
-      format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+      format: winston.format.combine(winston.format.uncolorize(), winston.format.json()),
     }),
   ],
 })
