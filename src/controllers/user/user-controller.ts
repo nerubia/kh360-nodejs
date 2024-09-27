@@ -584,7 +584,7 @@ export const getProfile = async (req: Request, res: Response) => {
 export const sendSampleMail = async (req: Request, res: Response) => {
   try {
     const user = req.user
-    await sendMail(user.email, "Sample subject", "Hello")
+    await sendMail({ to: [user.email], subject: "Sample subject", content: "Hello" })
     res.json({
       message: "Mail sent",
     })

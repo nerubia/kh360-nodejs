@@ -362,11 +362,11 @@ export const sendSkillMapEmailById = async (id: number) => {
           "{{respondent_first_name}}",
           `${respondent.first_name}`
         )
-        await sendMail(
-          respondent.email,
-          skillMapAdministration.email_subject ?? "",
-          modifiedContent
-        )
+        await sendMail({
+          to: [respondent.email],
+          subject: skillMapAdministration.email_subject ?? "",
+          content: modifiedContent,
+        })
       }
     }
   }

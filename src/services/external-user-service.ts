@@ -81,7 +81,11 @@ export const resendCodeByAccessToken = async (token: string) => {
     let modifiedContent =
       emailTemplate.content?.replace("{{verification_code}}", `<b>${code}</b>`) ?? ""
     modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
-    await sendMail(externalUser.email, emailTemplate.subject ?? "", modifiedContent)
+    await sendMail({
+      to: [externalUser.email],
+      subject: emailTemplate.subject ?? "",
+      content: modifiedContent,
+    })
   }
 }
 
