@@ -167,6 +167,21 @@ export const getById = async (id: number) => {
   })
 }
 
+export const getLatest = async () => {
+  const invoices = await prisma.invoices.findMany({
+    orderBy: {
+      id: "desc",
+    },
+    take: 1,
+  })
+
+  if (invoices.length === 0) {
+    return null
+  }
+
+  return invoices[0]
+}
+
 export const updateById = async (id: number, data: Prisma.invoicesUncheckedUpdateInput) => {
   return await prisma.invoices.update({
     where: {
