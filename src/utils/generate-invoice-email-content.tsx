@@ -1,4 +1,4 @@
-import { Body, Container, Text, Html, Img, render, Section } from "@react-email/components"
+import { Body, Container, Text, Html, Img, render, Section, Link } from "@react-email/components"
 import { formatDate } from "./format-date"
 import { type EmailInvoiceContent } from "../types/invoice-type"
 import { formatAmount } from "./format-amount"
@@ -70,7 +70,11 @@ export default function EmailContent({ invoice }: { invoice: EmailInvoiceContent
 
               <Container style={emailSection}>
                 <Text style={emailTitle}>Dear {invoice.clients?.display_name},</Text>
-                <Text style={emailBody}>Here’s your invoice! We appreciate your payment.</Text>
+                <Text style={emailBody}>
+                  Here’s your{" "}
+                  <Link href={`${process.env.HOST_NAME}/invoices/${invoice.token}`}>invoice</Link>!
+                  We appreciate your payment.
+                </Text>
                 <Text style={emailBody}>
                   Thanks for your business!
                   <br />

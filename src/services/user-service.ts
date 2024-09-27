@@ -329,7 +329,11 @@ export const submitEvaluation = async (
         const emailRecipients = await EmailRecipientRepository.getAllByEmailType("KH360 Admin")
 
         for (const emailRecipient of emailRecipients) {
-          await sendMail(emailRecipient.email, modifiedSubject, modifiedContent)
+          await sendMail({
+            to: [emailRecipient.email],
+            subject: modifiedSubject,
+            content: modifiedContent,
+          })
         }
       }
     }
@@ -739,7 +743,11 @@ export const sendRequestToRemove = async (evaluation_id: number, comment: string
   }
 
   for (const emailRecipient of emailRecipients) {
-    await sendMail(emailRecipient.email, emailTemplate.subject ?? "", modifiedContent)
+    await sendMail({
+      to: [emailRecipient.email],
+      subject: emailTemplate.subject ?? "",
+      content: modifiedContent,
+    })
   }
 }
 
@@ -826,7 +834,7 @@ export const getSkillMapAdministrations = async (user: UserToken, page: number) 
     itemsPerPage,
     {
       id: {
-        in: filterSkillMapAdministrationIds as number[],
+        in: filterSkillMapAdministrationIds,
       },
       status: {
         in: [SkillMapAdministrationStatus.Ongoing, SkillMapAdministrationStatus.Closed],
@@ -836,7 +844,7 @@ export const getSkillMapAdministrations = async (user: UserToken, page: number) 
 
   const totalItems = await SkillMapAdministrationRepository.countAllByFilters({
     id: {
-      in: filterSkillMapAdministrationIds as number[],
+      in: filterSkillMapAdministrationIds,
     },
     status: SkillMapAdministrationStatus.Ongoing,
   })
