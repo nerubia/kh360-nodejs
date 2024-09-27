@@ -649,6 +649,7 @@ model invoices {
   invoice_details     invoice_details[]
   invoice_emails      invoice_emails[]
   invoice_attachments invoice_attachments[]
+  invoice_links       invoice_links[]
 
   @@index([client_id], map: "index_invoices_on_client_id")
   @@index([company_id], map: "index_invoices_on_company_id")
@@ -1935,6 +1936,16 @@ model invoice_emails {
   invoices      invoices? @relation(fields: [invoice_id], references: [id])
 
   @@index([invoice_id], map: "index_invoice_emails_on_invoice_id")
+}
+
+model invoice_links {
+  id         Int       @id @default(autoincrement())
+  invoice_id Int?
+  token      String?   @db.VarChar(255)
+  expires_at DateTime? @db.DateTime(0)
+  created_at DateTime? @db.DateTime(0)
+  updated_at DateTime? @db.DateTime(0)
+  invoices   invoices? @relation(fields: [invoice_id], references: [id])
 }
 
 model offering_categories {
