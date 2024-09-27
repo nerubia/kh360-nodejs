@@ -343,7 +343,11 @@ export const sendReminderByRespondent = async (
   }
 
   if (respondent !== null) {
-    const sgResp = await sendMail(respondent.email, emailTemplate.subject ?? "", modifiedContent)
+    const sgResp = await sendMail({
+      to: [respondent.email],
+      subject: emailTemplate.subject ?? "",
+      content: modifiedContent,
+    })
     if (sgResp !== null && sgResp !== undefined) {
       const mailId = sgResp[0].headers["x-message-id"]
       emailLogData.mail_id = mailId
@@ -395,7 +399,11 @@ export const sendSurveyEmailByRespondentId = async (
         "{{respondent_first_name}}",
         `${respondent.first_name}`
       )
-      await sendMail(respondent.email, surveyAdministration.email_subject ?? "", modifiedContent)
+      await sendMail({
+        to: [respondent.email],
+        subject: surveyAdministration.email_subject ?? "",
+        content: modifiedContent,
+      })
     }
   }
 }

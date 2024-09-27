@@ -41,6 +41,7 @@ export interface EmailInvoiceContent {
   currencies?: Currency | null
   billing_addresses: Address | null
   payment_accounts: PaymentAccount | null
+  token?: string
   invoice_details: InvoiceDetail[]
 }
 

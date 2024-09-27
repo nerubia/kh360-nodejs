@@ -637,6 +637,7 @@ model invoices {
   payment_status      String?               @default("") @db.VarChar(20)
   remarks             String?               @db.Text
   message             String?               @db.Text
+  pdf_link            String?               @db.VarChar(255)
   created_at          DateTime?             @db.DateTime(0)
   updated_at          DateTime?             @db.DateTime(0)
   clients             clients?              @relation(fields: [client_id], references: [id])

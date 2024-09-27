@@ -448,7 +448,7 @@ export const approve = async (id: number) => {
   })
   modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
 
-  await sendMail(evaluator.email, modifiedSubject, modifiedContent)
+  await sendMail({ to: [evaluator.email], subject: modifiedSubject, content: modifiedContent })
 
   await EvaluationRepository.updateStatusById(evaluation.id, EvaluationStatus.Removed)
   await EvaluationRatingRepository.resetByEvaluationId(evaluation.id)
@@ -521,7 +521,11 @@ export const approve = async (id: number) => {
       const emailRecipients = await EmailRecipientRepository.getAllByEmailType("KH360 Admin")
 
       for (const emailRecipient of emailRecipients) {
-        await sendMail(emailRecipient.email, modifiedSubject, modifiedContent)
+        await sendMail({
+          to: [emailRecipient.email],
+          subject: modifiedSubject,
+          content: modifiedContent,
+        })
       }
     }
 
@@ -541,7 +545,7 @@ export const approve = async (id: number) => {
     modifiedContent = emailContent.concat(`\n\nThanks and Best Regards,\nKH360 Admin`)
     modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
 
-    await sendMail(evaluator.email, emailSubject, modifiedContent)
+    await sendMail({ to: [evaluator.email], subject: emailSubject, content: modifiedContent })
   }
 }
 
@@ -621,7 +625,7 @@ export const decline = async (id: number) => {
   })
   modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
 
-  await sendMail(evaluator.email, modifiedSubject, modifiedContent)
+  await sendMail({ to: [evaluator.email], subject: modifiedSubject, content: modifiedContent })
 
   await EvaluationRepository.updateStatusById(evaluation.id, EvaluationStatus.Ongoing)
 }

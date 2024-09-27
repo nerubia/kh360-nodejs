@@ -192,11 +192,11 @@ export const sendEvaluationEmailById = async (id: number) => {
       )
       modifiedContent = modifiedContent.replace("{{passcode}}", "")
       if (evaluator !== null) {
-        await sendMail(
-          evaluator.email,
-          evaluationAdministration.email_subject ?? "",
-          modifiedContent
-        )
+        await sendMail({
+          to: [evaluator.email],
+          subject: evaluationAdministration.email_subject ?? "",
+          content: modifiedContent,
+        })
       }
     }
 
@@ -235,11 +235,11 @@ export const sendEvaluationEmailById = async (id: number) => {
           "{{passcode}}",
           `The password to access the evaluation form is <b>${code}</b>`
         )
-        await sendMail(
-          evaluator.email,
-          evaluationAdministration.email_subject ?? "",
-          modifiedContent
-        )
+        await sendMail({
+          to: [evaluator.email],
+          subject: evaluationAdministration.email_subject ?? "",
+          content: modifiedContent,
+        })
       }
     }
 
@@ -381,7 +381,11 @@ export const generateUpdate = async (evaluation_result_id: number) => {
       )
       modifiedContent = modifiedContent.replace("{{passcode}}", "")
       if (evaluator !== null) {
-        await sendMail(evaluator.email, emailTemplate?.subject ?? "", modifiedContent)
+        await sendMail({
+          to: [evaluator.email],
+          subject: emailTemplate?.subject ?? "",
+          content: modifiedContent,
+        })
       }
       await EvaluationRepository.updateById(evaluation.id, {
         status:
@@ -428,11 +432,11 @@ export const generateUpdate = async (evaluation_result_id: number) => {
           "{{passcode}}",
           `The password to access the evaluation form is <b>${code}</b>`
         )
-        await sendMail(
-          evaluator.email,
-          evaluationAdministration.email_subject ?? "",
-          modifiedContent
-        )
+        await sendMail({
+          to: [evaluator.email],
+          subject: evaluationAdministration.email_subject ?? "",
+          content: modifiedContent,
+        })
       }
       await EvaluationRepository.updateById(evaluation.id, {
         status:
@@ -573,7 +577,11 @@ export const publish = async (id: number) => {
         `<a href='${process.env.APP_URL}/my-evaluations/${evaluationAdministration.id}'>link</a>`
       )
       modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
-      await sendMail(evaluee.email, emailTemplate.subject ?? "", modifiedContent)
+      await sendMail({
+        to: [evaluee.email],
+        subject: emailTemplate.subject ?? "",
+        content: modifiedContent,
+      })
     }
   }
 
@@ -814,7 +822,11 @@ export const sendReminderByEvaluator = async (
       user_id: evaluator.id,
     }
 
-    const sgResp = await sendMail(evaluator.email, emailTemplate.subject ?? "", modifiedContent)
+    const sgResp = await sendMail({
+      to: [evaluator.email],
+      subject: emailTemplate.subject ?? "",
+      content: modifiedContent,
+    })
     if (sgResp !== null && sgResp !== undefined) {
       const mailId = sgResp[0].headers["x-message-id"]
       emailLogData.mail_id = mailId
@@ -894,7 +906,11 @@ export const sendReminders = async (id: number) => {
 
       modifiedContent = modifiedContent.replace("{{evaluation_end_date}}", scheduleEndDate)
 
-      await sendMail(evaluator.email, emailTemplate.subject ?? "", modifiedContent)
+      await sendMail({
+        to: [evaluator.email],
+        subject: emailTemplate.subject ?? "",
+        content: modifiedContent,
+      })
     }
   }
 
@@ -943,7 +959,11 @@ export const sendReminders = async (id: number) => {
 
       modifiedContent = modifiedContent.replace("{{evaluation_end_date}}", scheduleEndDate)
 
-      await sendMail(evaluator.email, emailTemplate.subject ?? "", modifiedContent)
+      await sendMail({
+        to: [evaluator.email],
+        subject: emailTemplate.subject ?? "",
+        content: modifiedContent,
+      })
     }
   }
 }
