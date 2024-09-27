@@ -1,5 +1,6 @@
 import { type Prisma } from "@prisma/client"
 import * as InvoiceRepository from "../../repositories/khbooks/invoice-repository"
+import * as InvoiceLinkRepository from "../../repositories/khbooks/invoice-link-repository"
 import * as InvoiceAttachmentRepository from "../../repositories/khbooks/invoice-attachment-repository"
 import * as InvoiceEmailRepository from "../../repositories/khbooks/invoice-email-repository"
 import * as ClientRepository from "../../repositories/client-repository"
@@ -15,13 +16,14 @@ import {
   InvoiceStatusFilter,
   PaymentStatus,
 } from "../../types/invoice-type"
-import { subMonths } from "date-fns"
+import { addDays, subMonths } from "date-fns"
 import CustomError from "../../utils/custom-error"
 import { generateInvoice } from "../../utils/generate-invoice"
 import { sendMailWithAttachment } from "../../utils/sendgrid"
 import { type Contract } from "../../types/contract-type"
 import { type S3File } from "../../types/s3-file-type"
 import { generateInvoiceEmailContent } from "../../utils/generate-invoice-email-content"
+import { v4 as uuidv4 } from "uuid"
 
 export const getAllByFilters = async (
   invoice_date: string,
@@ -455,4 +457,36 @@ export const sendInvoice = async (id: number) => {
   })
 
   await sendMailWithAttachment(to, ccEmails, bccEmails, "Invoice", invoiceContent, pdfBuffer)
+}
+
+export const getLink = async (id: number) => {
+  const invoice = await InvoiceRepository.getById(id)
+
+  if (invoice === null) {
+    throw new CustomError("Invoice not found", 400)
+  }
+
+  let invoiceLink = await InvoiceLinkRepository.getLatestByInvoiceId(invoice.id)
+
+  if (invoiceLink === null) {
+    const currentDate = new Date()
+
+    invoiceLink = await InvoiceLinkRepository.create({
+      invoice_id: invoice.id,
+      token: await generateToken(),
+      expires_at: addDays(currentDate, Number(process.env.INVOICE_LINK_TOKEN_EXPIRATION ?? 0)),
+      created_at: currentDate,
+      updated_at: currentDate,
+    })
+  }
+
+  return invoiceLink
+}
+
+export const generateToken = async () => {
+  let uuid
+  do {
+    uuid = uuidv4()
+  } while ((await InvoiceLinkRepository.getByToken(uuid)) != null)
+  return uuid
 }

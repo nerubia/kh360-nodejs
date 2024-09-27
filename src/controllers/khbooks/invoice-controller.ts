@@ -390,3 +390,20 @@ export const cancel = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+/**
+ * Get link
+ */
+export const getLink = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const invoiceLink = await InvoiceService.getLink(Number(id))
+    res.json(invoiceLink)
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
