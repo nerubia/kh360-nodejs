@@ -19,11 +19,12 @@ import {
 import { addDays, subMonths } from "date-fns"
 import CustomError from "../../utils/custom-error"
 import { generateInvoice } from "../../utils/generate-invoice"
-import { sendMailWithAttachment } from "../../utils/sendgrid"
+import { sendMail } from "../../utils/sendgrid"
 import { type Contract } from "../../types/contract-type"
 import { type S3File } from "../../types/s3-file-type"
 import { generateInvoiceEmailContent } from "../../utils/generate-invoice-email-content"
 import { v4 as uuidv4 } from "uuid"
+import { uploadFile } from "../../utils/s3"
 
 export const getAllByFilters = async (
   invoice_date: string,
@@ -372,62 +373,13 @@ export const sendInvoice = async (id: number) => {
     throw new CustomError("Invoice not found", 400)
   }
 
-  const pdfBuffer = await generateInvoice({
-    invoice_no: invoice.invoice_no ?? "",
-    invoice_date: invoice.invoice_date?.toISOString() ?? "",
-    due_date: invoice.due_date?.toISOString() ?? "",
-    invoice_amount: invoice.invoice_amount?.toNumber(),
-    sub_total: invoice.sub_total?.toNumber(),
-    tax_amount: invoice.tax_amount?.toNumber(),
-    clients: invoice.clients,
-    companies: invoice.companies,
-    currencies: invoice.currencies,
-    payment_accounts: invoice.payment_accounts,
-    billing_addresses: invoice.addresses,
-    invoice_details: invoice.invoice_details.map((invoiceDetail) => {
-      return {
-        id: invoiceDetail.id,
-        contract_id: null,
-        contract_billing_id: null,
-        offering_id: null,
-        project_id: null,
-        employee_id: null,
-        period_start: invoiceDetail.period_start?.toISOString() ?? null,
-        period_end: invoiceDetail.period_end?.toISOString() ?? null,
-        details: invoiceDetail.details,
-        quantity: invoiceDetail.quantity?.toNumber() ?? null,
-        uom_id: null,
-        rate: invoiceDetail.rate?.toString() ?? null,
-        sub_total: null,
-        tax: null,
-        total: invoiceDetail.total?.toNumber() ?? null,
-        contracts: (invoiceDetail.contracts as Contract) ?? undefined,
-        projects: invoiceDetail.projects ?? undefined,
-      }
-    }),
-  })
-
-  const to = invoice.invoice_emails.find((invoiceEmail) => invoiceEmail.email_type === "to")
-    ?.email_address
-  const cc = invoice.invoice_emails.find((invoiceEmail) => invoiceEmail.email_type === "cc")
-    ?.email_address
-  const bcc = invoice.invoice_emails.find((invoiceEmail) => invoiceEmail.email_type === "bcc")
-    ?.email_address
-
-  const ccEmails = cc?.split(",") ?? []
-  const bccEmails = bcc?.split(",") ?? []
-
-  if (to === undefined || to === null) {
-    throw new CustomError("Invoice email not found", 400)
-  }
-
   let invoiceNo = invoice.invoice_no ?? ""
 
   if (invoiceNo.length === 0) {
     invoiceNo = await InvoiceRepository.generateInvoiceNumberById(invoice.id)
   }
 
-  const invoiceContent = await generateInvoiceEmailContent({
+  const pdfBuffer = await generateInvoice({
     invoice_no: invoiceNo,
     invoice_date: invoice.invoice_date?.toISOString() ?? "",
     due_date: invoice.due_date?.toISOString() ?? "",
@@ -462,7 +414,90 @@ export const sendInvoice = async (id: number) => {
     }),
   })
 
-  await sendMailWithAttachment(to, ccEmails, bccEmails, "Invoice", invoiceContent, pdfBuffer)
+  const to = invoice.invoice_emails.find(
+    (invoiceEmail) => invoiceEmail.email_type === "to"
+  )?.email_address
+  const cc = invoice.invoice_emails.find(
+    (invoiceEmail) => invoiceEmail.email_type === "cc"
+  )?.email_address
+  const bcc = invoice.invoice_emails.find(
+    (invoiceEmail) => invoiceEmail.email_type === "bcc"
+  )?.email_address
+
+  const ccEmails = cc?.split(",") ?? []
+  const bccEmails = bcc?.split(",") ?? []
+
+  if (to === undefined || to === null) {
+    throw new CustomError("Invoice email not found", 400)
+  }
+
+  const token = await generateToken()
+
+  const invoiceContent = await generateInvoiceEmailContent({
+    invoice_no: invoiceNo,
+    invoice_date: invoice.invoice_date?.toISOString() ?? "",
+    due_date: invoice.due_date?.toISOString() ?? "",
+    invoice_amount: invoice.invoice_amount?.toNumber(),
+    sub_total: invoice.sub_total?.toNumber(),
+    tax_amount: invoice.tax_amount?.toNumber(),
+    clients: invoice.clients,
+    companies: invoice.companies,
+    currencies: invoice.currencies,
+    payment_accounts: invoice.payment_accounts,
+    billing_addresses: invoice.addresses,
+    invoice_details: invoice.invoice_details.map((invoiceDetail) => {
+      return {
+        id: invoiceDetail.id,
+        contract_id: null,
+        contract_billing_id: null,
+        offering_id: null,
+        project_id: null,
+        employee_id: null,
+        period_start: invoiceDetail.period_start?.toISOString() ?? null,
+        period_end: invoiceDetail.period_end?.toISOString() ?? null,
+        details: invoiceDetail.details,
+        quantity: invoiceDetail.quantity?.toNumber() ?? null,
+        uom_id: null,
+        rate: invoiceDetail.rate?.toString() ?? null,
+        sub_total: null,
+        tax: null,
+        total: invoiceDetail.total?.toNumber() ?? null,
+        contracts: (invoiceDetail.contracts as Contract) ?? undefined,
+        projects: invoiceDetail.projects ?? undefined,
+      }
+    }),
+    token,
+  })
+
+  const location = "invoices"
+  const filename = token + ".pdf"
+
+  await uploadFile({
+    buffer: pdfBuffer,
+    filename,
+    location,
+  })
+
+  await InvoiceRepository.updateById(id, {
+    pdf_link: location + "/" + filename,
+  })
+
+  const currentDate = new Date()
+  await InvoiceLinkRepository.create({
+    invoice_id: invoice.id,
+    token,
+    expires_at: addDays(currentDate, Number(process.env.INVOICE_LINK_TOKEN_EXPIRATION ?? 0)),
+    created_at: currentDate,
+    updated_at: currentDate,
+  })
+
+  await sendMail({
+    to: [to],
+    cc: ccEmails,
+    bcc: bccEmails,
+    subject: "Invoice",
+    content: invoiceContent,
+  })
 }
 
 export const getLink = async (id: number) => {
@@ -495,4 +530,9 @@ export const generateToken = async () => {
     uuid = uuidv4()
   } while ((await InvoiceLinkRepository.getByToken(uuid)) != null)
   return uuid
+}
+
+export const getInvoiceFromToken = async (token: string) => {
+  const invoiceLink = await InvoiceLinkRepository.getByToken(token)
+  return await InvoiceRepository.getById(invoiceLink?.invoice_id ?? 0)
 }

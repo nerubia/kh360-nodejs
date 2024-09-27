@@ -45,6 +45,7 @@ import testItemRoute from "./routes/test-suite/test-item-route"
 import testBatchRoute from "./routes/test-suite/test-batch-route"
 
 import invoiceRoute from "./routes/khbooks/invoice-route"
+import invoiceActivityRoute from "./routes/khbooks/invoice-activity-route"
 import offeringCategoryRoute from "./routes/khbooks/offering-category-route"
 import offeringRoute from "./routes/khbooks/offering-route"
 import currencyRoute from "./routes/khbooks/currency-route"
@@ -92,6 +93,7 @@ declare global {
 
 app.use("/", homeRoute)
 app.use("/auth", authRoute)
+app.use("/invoices", invoiceActivityRoute)
 
 /**
  * User routes

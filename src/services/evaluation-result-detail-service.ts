@@ -50,7 +50,7 @@ export const calculateScore = async (evaluation_result_id: number) => {
         .filter((id) => id !== null)
       const answerOptions = await AnswerOptionRepository.getAllByFilters({
         id: {
-          in: answerOptionIds as number[],
+          in: answerOptionIds,
         },
       })
       const answerTypes = answerOptions.map((answerOption) => answerOption.answer_type)

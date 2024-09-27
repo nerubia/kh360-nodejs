@@ -2,10 +2,20 @@ import sgMail from "@sendgrid/mail"
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY as string)
 
-export const sendMail = async (to: string, subject: string, content: string) => {
+interface MailProps {
+  to: string[]
+  cc?: string[]
+  bcc?: string[]
+  subject: string
+  content: string
+}
+
+export const sendMail = async ({ to, cc, bcc, subject, content }: MailProps) => {
   try {
     const msg = {
       to,
+      cc,
+      bcc,
       from: process.env.SENDGRID_FROM_ADDRESS as string,
       subject,
       html: content,
@@ -16,7 +26,7 @@ export const sendMail = async (to: string, subject: string, content: string) => 
   }
 }
 
-export const sendMultipleMail = async (to: string[], subject: string, content: string) => {
+export const sendMultipleMail = async ({ to, subject, content }: MailProps) => {
   try {
     const msg = {
       to,
@@ -28,14 +38,14 @@ export const sendMultipleMail = async (to: string[], subject: string, content: s
   } catch (error) {}
 }
 
-export const sendMailWithAttachment = async (
-  to: string,
-  cc: string[],
-  bcc: string[],
-  subject: string,
-  content: string,
-  pdfBuffer: Buffer
-) => {
+export const sendMailWithAttachment = async ({
+  to,
+  cc,
+  bcc,
+  subject,
+  content,
+  pdfBuffer,
+}: MailProps & { pdfBuffer: Buffer }) => {
   try {
     const msg = {
       to,
