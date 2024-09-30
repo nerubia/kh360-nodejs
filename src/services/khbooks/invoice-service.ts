@@ -210,7 +210,6 @@ export const create = async (data: Invoice, shouldSendInvoice: boolean) => {
     client_id: client.id,
     company_id: client.company_id,
     currency_id: currency.id,
-    invoice_no: await generateInvoiceNumber(),
     invoice_date: new Date(data.invoice_date),
     due_date: new Date(data.due_date),
     invoice_amount: data.invoice_amount,
@@ -422,8 +421,10 @@ export const sendInvoice = async (id: number) => {
     throw new CustomError("Invoice email not found", 400)
   }
 
+  const invoiceNo = await InvoiceRepository.generateInvoiceNumberById(invoice.id)
+
   const invoiceContent = await generateInvoiceEmailContent({
-    invoice_no: invoice.invoice_no ?? "",
+    invoice_no: invoiceNo,
     invoice_date: invoice.invoice_date?.toISOString() ?? "",
     due_date: invoice.due_date?.toISOString() ?? "",
     invoice_amount: invoice.invoice_amount?.toNumber(),
@@ -482,18 +483,6 @@ export const getLink = async (id: number) => {
   }
 
   return invoiceLink
-}
-
-export const generateInvoiceNumber = async () => {
-  const latestInvoice = await InvoiceRepository.getLatest()
-
-  let invoiceNo = Number(process.env.INVOICE_NO_OFFSET ?? 0)
-
-  if (latestInvoice !== null) {
-    invoiceNo = Number(latestInvoice.invoice_no) + 1
-  }
-
-  return invoiceNo.toString().padStart(4, "0")
 }
 
 export const generateToken = async () => {
