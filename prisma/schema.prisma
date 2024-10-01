@@ -1970,6 +1970,7 @@ model offerings {
   uom_id               Int?
   price                Decimal?             @default(0.00) @db.Decimal(8, 2)
   description          String?              @db.Text
+  is_active            Boolean?
   created_at           DateTime?            @db.DateTime(0)
   updated_at           DateTime?            @db.DateTime(0)
   clients              clients?             @relation(fields: [client_id], references: [id])
