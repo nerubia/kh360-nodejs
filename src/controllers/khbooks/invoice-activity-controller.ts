@@ -1,7 +1,6 @@
 import { type Request, type Response } from "express"
 import logger from "../../utils/logger"
 import CustomError from "../../utils/custom-error"
-import { getFileUrl } from "../../utils/s3"
 import { getInvoiceFromToken } from "../../services/khbooks/invoice-service"
 import * as InvoiceActivityService from "../../services/khbooks/invoice-activity-service"
 import * as InvoiceService from "../../services/khbooks/invoice-service"
@@ -23,7 +22,7 @@ export const captureAndShow = async (req: Request, res: Response) => {
         await InvoiceService.updateInvoiceStatusById(invoice.id, InvoiceStatus.VIEWED)
       }
     }
-    res.redirect(await getFileUrl(invoice?.pdf_link ?? ""))
+    res.json(invoice)
   } catch (error) {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
