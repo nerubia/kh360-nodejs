@@ -421,7 +421,11 @@ export const sendInvoice = async (id: number) => {
     throw new CustomError("Invoice email not found", 400)
   }
 
-  const invoiceNo = await InvoiceRepository.generateInvoiceNumberById(invoice.id)
+  let invoiceNo = invoice.invoice_no ?? ""
+
+  if (invoiceNo.length === 0) {
+    invoiceNo = await InvoiceRepository.generateInvoiceNumberById(invoice.id)
+  }
 
   const invoiceContent = await generateInvoiceEmailContent({
     invoice_no: invoiceNo,
