@@ -94,7 +94,6 @@ declare global {
 
 app.use("/", homeRoute)
 app.use("/auth", authRoute)
-app.use("/invoices", invoiceActivityRoute)
 
 /**
  * User routes
@@ -159,6 +158,7 @@ app.use("/kh-books/countries", adminMiddleware, countryRoute)
 app.use("/kh-books/payment-accounts", adminMiddleware, paymentAccountRoute)
 
 app.use("/kh-books/public/invoices", publicInvoiceRoute)
+app.use("/kh-books/client/invoices", invoiceActivityRoute)
 
 /**
  * Global error
