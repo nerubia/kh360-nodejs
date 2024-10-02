@@ -407,3 +407,21 @@ export const getLink = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+/**
+ * Get a specific invoice by token.
+ * @param req.params.token - Token
+ */
+export const getInvoiceByToken = async (req: Request, res: Response) => {
+  try {
+    const { token } = req.params
+    const invoice = await InvoiceService.getInvoiceByToken(token)
+    res.json(invoice)
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
