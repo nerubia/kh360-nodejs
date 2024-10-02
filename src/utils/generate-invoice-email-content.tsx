@@ -3,8 +3,7 @@ import { formatDate } from "./format-date"
 import { type EmailInvoiceContent } from "../types/invoice-type"
 import { formatAmount } from "./format-amount"
 
-const logo =
-  "https://scontent.fceb1-2.fna.fbcdn.net/v/t39.30808-6/305456072_504047941725461_5917402848048936618_n.png?_nc_cat=108&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=PtGQnTbKwZMQ7kNvgHDQpQa&_nc_ht=scontent.fceb1-2.fna&_nc_gid=Ay8SDtgTEFjSf-OFEtPINiS&oh=00_AYAFZ9YuSVnNZcsz9OvPTfeW69BBn4-Mp8nzq1vL-yPUCA&oe=66F70176"
+const logo = "https://drive.google.com/uc?export=view&id=1nBqgLU0-mSLkqgSLrhhVEG-E6_cwxjTE"
 
 export const generateInvoiceEmailContent = async (invoice: EmailInvoiceContent) => {
   return await render(<EmailContent invoice={invoice} />)
@@ -18,7 +17,7 @@ const container = {
 }
 
 const text = {
-  fontWeight: "bold",
+  fontSize: "11px",
   color: "#000000",
   textAlign: "center" as const,
   lineHeight: "normal",
@@ -28,9 +27,9 @@ const imgStyle = {
   marginLeft: "200px",
 }
 
-const companyText = { color: "#000000", fontSize: "20px", textAlign: "center" as const }
+const companyText = { color: "#000000", fontSize: "18px", textAlign: "center" as const }
 const dueDateStyle = {
-  fontWeight: "bold",
+  fontSize: "11px",
   color: "#000000",
   textAlign: "center" as const,
 }
@@ -57,8 +56,15 @@ export default function EmailContent({ invoice }: { invoice: EmailInvoiceContent
         <Body style={main}>
           <Container style={container}>
             <Section>
-              <Text style={text}>Invoice no. {invoice.invoice_no}</Text>
-              <Img src={logo} width='50' height='50' alt='Nerubia logo' style={imgStyle} />
+              <Text style={text}>INVOICE NO. {invoice.invoice_no}</Text>
+              <Img
+                title='company logo'
+                src={logo}
+                width='50'
+                height='50'
+                alt='Nerubia logo'
+                style={imgStyle}
+              />
 
               <Text style={companyText}>Nerubia Web Solutions, Inc.</Text>
 
@@ -73,17 +79,17 @@ export default function EmailContent({ invoice }: { invoice: EmailInvoiceContent
                 <Text style={emailBody}>
                   Here’s your{" "}
                   <Link href={`${process.env.HOST_NAME}/invoices/${invoice.token}`}>invoice</Link>!
-                  We appreciate your payment.
+                  We appreciate your prompt payment.
                 </Text>
                 <Text style={emailBody}>
                   Thanks for your business!
                   <br />
-                  Nerubia Web Solutions, Inc
+                  Nerubia Web Solutions, Inc.
                 </Text>
               </Container>
               <hr style={{ marginTop: "16px", width: "90%" }} />
               <Text style={footerFontSize}>
-                Nerubia Web Solutions, Inc
+                Nerubia Web Solutions, Inc.
                 <br />
                 1101 Park Centrale, Cebu IT Park Cebu City, Cebu 6000 PH
                 <br />
