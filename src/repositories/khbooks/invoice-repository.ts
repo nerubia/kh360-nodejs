@@ -225,7 +225,7 @@ export const generateInvoiceNumberById = async (id: number) => {
       invoiceNo = Number(invoices[0].invoice_no) + 1
     }
 
-    const formattedInvoiceNo = invoiceNo.toString().padStart(4, "0")
+    const formattedInvoiceNo = invoiceNo.toString().padStart(6, "0")
 
     await tx.invoices.update({
       where: {
