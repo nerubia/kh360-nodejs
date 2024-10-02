@@ -28,6 +28,27 @@ export const getLatestByInvoiceId = async (invoiceId: number) => {
   return invoiceLinks[0]
 }
 
+export const getLatestByToken = async (token: string) => {
+  const invoiceLinks = await prisma.invoice_links.findMany({
+    where: {
+      token,
+      expires_at: {
+        gte: new Date(),
+      },
+    },
+    orderBy: {
+      id: "desc",
+    },
+    take: 1,
+  })
+
+  if (invoiceLinks.length === 0) {
+    return null
+  }
+
+  return invoiceLinks[0]
+}
+
 export const getByToken = async (token: string) => {
   return await prisma.invoice_links.findFirst({
     where: {
