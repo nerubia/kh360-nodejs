@@ -45,6 +45,7 @@ import testItemRoute from "./routes/test-suite/test-item-route"
 import testBatchRoute from "./routes/test-suite/test-batch-route"
 
 import invoiceRoute from "./routes/khbooks/invoice-route"
+import publicInvoiceRoute from "./routes/khbooks/public-invoice-route"
 import invoiceActivityRoute from "./routes/khbooks/invoice-activity-route"
 import offeringCategoryRoute from "./routes/khbooks/offering-category-route"
 import offeringRoute from "./routes/khbooks/offering-route"
@@ -156,6 +157,8 @@ app.use("/kh-books/uoms", adminMiddleware, uomRoute)
 app.use("/kh-books/contract-billings", adminMiddleware, contractBillingRoute)
 app.use("/kh-books/countries", adminMiddleware, countryRoute)
 app.use("/kh-books/payment-accounts", adminMiddleware, paymentAccountRoute)
+
+app.use("/kh-books/public/invoices", publicInvoiceRoute)
 
 /**
  * Global error
