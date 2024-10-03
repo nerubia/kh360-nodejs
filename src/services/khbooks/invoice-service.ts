@@ -347,6 +347,16 @@ export const update = async (id: number, data: Invoice) => {
   })
 }
 
+export const updateInvoiceStatusById = async (id: number, status: InvoiceStatus) => {
+  const invoice = await InvoiceRepository.getById(id)
+
+  if (invoice === null) {
+    throw new CustomError("Invoice not found", 400)
+  }
+
+  return await InvoiceRepository.updateInvoiceStatusById(id, status)
+}
+
 export const uploadAttachments = async (id: number, files: S3File[]) => {
   const invoice = await InvoiceRepository.getById(id)
 
@@ -377,6 +387,10 @@ export const sendInvoice = async (id: number) => {
 
   if (invoiceNo.length === 0) {
     invoiceNo = await InvoiceRepository.generateInvoiceNumberById(invoice.id)
+  }
+
+  if (invoice.invoice_status === InvoiceStatus.DRAFT) {
+    await InvoiceRepository.updateInvoiceStatusById(invoice.id, InvoiceStatus.BILLED)
   }
 
   const pdfBuffer = await generateInvoice({
