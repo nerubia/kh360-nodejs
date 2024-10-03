@@ -651,6 +651,7 @@ model invoices {
   invoice_emails      invoice_emails[]
   invoice_attachments invoice_attachments[]
   invoice_links       invoice_links[]
+  invoice_activities  invoice_activities[]
 
   @@index([client_id], map: "index_invoices_on_client_id")
   @@index([company_id], map: "index_invoices_on_company_id")
@@ -2030,6 +2031,7 @@ model invoice_activities {
   description String?   @default("") @db.VarChar(255)
   created_at  DateTime? @db.DateTime(0)
   updated_at  DateTime? @db.DateTime(0)
+  invoices    invoices? @relation(fields: [invoice_id], references: [id])
 
   @@index([invoice_id], map: "index_invoice_activities_on_invoice_id")
 }
