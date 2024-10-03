@@ -1,3 +1,5 @@
+import { InvoiceActivityAction } from "../../types/invoice-activity-type"
+import { type InvoiceStatus } from "../../types/invoice-type"
 import prisma from "../../utils/prisma"
 import { type Prisma } from "@prisma/client"
 
@@ -34,6 +36,19 @@ export const paginateByFilters = async (
           code: true,
           prefix: true,
         },
+      },
+      invoice_activities: {
+        where: {
+          action: InvoiceActivityAction.VIEWED,
+        },
+        select: {
+          action: true,
+          created_at: true,
+        },
+        orderBy: {
+          id: "desc",
+        },
+        take: 1,
       },
     },
   })
@@ -188,6 +203,18 @@ export const updateById = async (id: number, data: Prisma.invoicesUncheckedUpdat
       id,
     },
     data,
+  })
+}
+
+export const updateInvoiceStatusById = async (id: number, status: InvoiceStatus) => {
+  return await prisma.invoices.update({
+    where: {
+      id,
+    },
+    data: {
+      invoice_status: status,
+      updated_at: new Date(),
+    },
   })
 }
 
