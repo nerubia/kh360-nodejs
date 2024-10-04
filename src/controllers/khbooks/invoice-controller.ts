@@ -381,7 +381,8 @@ export const download = async (req: Request, res: Response) => {
 export const cancel = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    res.json({ message: "Invoice cancelled" })
+    await InvoiceService.cancelInvoice(parseInt(id))
+    res.json({ message: "Invoice has been cancelled" })
   } catch (error) {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })

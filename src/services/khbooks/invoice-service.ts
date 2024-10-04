@@ -514,6 +514,23 @@ export const sendInvoice = async (id: number) => {
   })
 }
 
+export const cancelInvoice = async (id: number) => {
+  const invoice = await InvoiceRepository.getById(id)
+
+  if (invoice === null) {
+    throw new CustomError("Invoice not found", 400)
+  }
+
+  if (
+    invoice.invoice_status !== InvoiceStatus.BILLED &&
+    invoice.invoice_status !== InvoiceStatus.VIEWED
+  ) {
+    throw new CustomError("Only invoices that have been billed or viewed can be cancelled", 400)
+  }
+
+  await InvoiceRepository.updateInvoiceStatusById(invoice.id, InvoiceStatus.CANCELLED)
+}
+
 export const getLink = async (id: number) => {
   const invoice = await InvoiceRepository.getById(id)
 
