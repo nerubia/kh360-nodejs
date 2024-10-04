@@ -119,6 +119,7 @@ export const getById = async (id: number) => {
           details: true,
           quantity: true,
           rate: true,
+          tax: true,
           total: true,
           uom_id: true,
           sub_total: true,
