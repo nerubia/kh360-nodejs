@@ -1,5 +1,6 @@
 import { type Prisma } from "@prisma/client"
 import * as ContractBillingRepository from "../../repositories/khbooks/contract-billing-repository"
+import { ContractStatus } from "../../types/contract-type"
 
 export const getAllByFilters = async (
   client_id: number,
@@ -9,6 +10,7 @@ export const getAllByFilters = async (
   project_id: number,
   description: string,
   status: string,
+  active_contract: boolean,
   page: string
 ) => {
   const itemsPerPage = 20
@@ -66,6 +68,16 @@ export const getAllByFilters = async (
   if (status !== undefined && status !== "all") {
     Object.assign(where, {
       billing_status: status,
+    })
+  }
+
+  if (active_contract) {
+    Object.assign(where, {
+      contracts: {
+        status: {
+          notIn: [ContractStatus.DRAFT, ContractStatus.NO_GO, ContractStatus.CANCELLED],
+        },
+      },
     })
   }
 
