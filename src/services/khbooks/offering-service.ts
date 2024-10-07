@@ -3,15 +3,18 @@ import * as OfferingRepository from "../../repositories/khbooks/offering-reposit
 import * as OfferingCategoryRepository from "../../repositories/khbooks/offering-category-repository"
 import * as ClientRepository from "../../repositories/client-repository"
 import * as CurrencyRepository from "../../repositories/khbooks/currency-repository"
+import * as InvoiceRepository from "../../repositories/khbooks/invoice-repository"
 import CustomError from "../../utils/custom-error"
 import { type Offering } from "../../types/offering-type"
 import { removeWhitespace } from "../../utils/format-string"
+import { InvoiceStatus } from "../../types/invoice-type"
 
 export const getAllByFilters = async (
   name: string,
   category_id: number,
   client_id: number,
   global: boolean,
+  is_active: boolean,
   page: string
 ) => {
   const itemsPerPage = 20
@@ -56,6 +59,12 @@ export const getAllByFilters = async (
           client_id: null,
         },
       ],
+    })
+  }
+
+  if (is_active) {
+    Object.assign(where, {
+      is_active: true,
     })
   }
 
@@ -108,6 +117,7 @@ export const create = async (data: Offering) => {
     currency_id: currency.id,
     price: data.price,
     description: data.description,
+    is_active: data.is_active,
     created_at: currentDate,
     updated_at: currentDate,
   })
@@ -141,6 +151,26 @@ export const updateById = async (id: number, data: Offering) => {
     throw new CustomError("Currency not found", 400)
   }
 
+  if (offering.is_active === true && !data.is_active) {
+    const totalInvoices = await InvoiceRepository.countAllByFilters({
+      invoice_status: {
+        in: [InvoiceStatus.DRAFT, InvoiceStatus.BILLED, InvoiceStatus.VIEWED],
+      },
+      invoice_details: {
+        some: {
+          offering_id: offering.id,
+        },
+      },
+    })
+
+    if (totalInvoices > 0) {
+      throw new CustomError(
+        "Unable to update. This item is currently referenced in invoices that are in draft, billed, or viewed status.",
+        400
+      )
+    }
+  }
+
   const currentDate = new Date()
 
   return await OfferingRepository.updateById(offering.id, {
@@ -151,6 +181,7 @@ export const updateById = async (id: number, data: Offering) => {
     currency_id: client !== null ? client.currencies?.id : currency?.id,
     price: data.price,
     description: data.description,
+    is_active: data.is_active,
     updated_at: currentDate,
   })
 }

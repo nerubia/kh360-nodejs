@@ -11,16 +11,18 @@ import { createOfferingSchema } from "../../utils/validation/offering-schema"
  * @param req.query.category_id - Filter by category_id.
  * @param req.query.client_id - Filter by client_id.
  * @param req.query.global - Filter by global.
+ * @param req.query.is_active - Filter by is active.
  * @param req.query.page - Page number for pagination.
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const { name, category_id, client_id, global, page } = req.query
+    const { name, category_id, client_id, global, is_active, page } = req.query
     const results = await OfferingService.getAllByFilters(
       name as string,
       parseInt(category_id as string),
       parseInt(client_id as string),
       Boolean(parseInt(global as string)),
+      Boolean(parseInt(is_active as string)),
       page as string
     )
     res.json(results)
@@ -38,27 +40,31 @@ export const index = async (req: Request, res: Response) => {
  * @param req.body.currency_id - Currency id.
  * @param req.body.price - Price.
  * @param req.body.description - Description.
+ * @param req.body.is_active - Is active.
  */
 export const store = async (req: Request, res: Response) => {
   try {
-    const { name, client_id, offering_category_id, currency_id, price, description } = req.body
+    const { name, client_id, offering_category_id, currency_id, price, description, is_active } =
+      req.body
 
-    await createOfferingSchema.validate({
+    const parsedData = await createOfferingSchema.validate({
       name,
       client_id,
       offering_category_id,
       currency_id,
       price,
       description,
+      is_active,
     })
 
     const newOffering = await OfferingService.create({
       name,
-      client_id: Number(client_id),
-      offering_category_id: Number(offering_category_id),
-      currency_id: Number(currency_id),
-      price: Number(price),
+      client_id: parsedData.client_id,
+      offering_category_id: parsedData.offering_category_id,
+      currency_id: parsedData.currency_id,
+      price: parsedData.price,
       description,
+      is_active: parsedData.is_active,
     })
 
     res.json(newOffering)
@@ -104,28 +110,32 @@ export const show = async (req: Request, res: Response) => {
  * @param req.body.currency_id - Currency id.
  * @param req.body.price - Price.
  * @param req.body.description - Description.
+ * @param req.body.is_active - Is active.
  */
 export const update = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    const { name, client_id, offering_category_id, currency_id, price, description } = req.body
+    const { name, client_id, offering_category_id, currency_id, price, description, is_active } =
+      req.body
 
-    await createOfferingSchema.validate({
+    const parsedData = await createOfferingSchema.validate({
       name,
       client_id,
       offering_category_id,
       currency_id,
       price,
       description,
+      is_active,
     })
 
     const updatedOffering = await OfferingService.updateById(parseInt(id), {
       name,
-      client_id: Number(client_id),
-      offering_category_id: Number(offering_category_id),
-      currency_id: Number(currency_id),
-      price: Number(price),
+      client_id: parsedData.client_id,
+      offering_category_id: parsedData.offering_category_id,
+      currency_id: parsedData.currency_id,
+      price: parsedData.price,
       description,
+      is_active: parsedData.is_active,
     })
 
     res.json(updatedOffering)
