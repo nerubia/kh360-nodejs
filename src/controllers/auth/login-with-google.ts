@@ -13,7 +13,7 @@ const client = new OAuth2Client(
 
 export const loginWithGoogle = async (req: Request, res: Response) => {
   try {
-    const { code } = req.body
+    const { app, code } = req.body
 
     const tokenResponse = await client.getToken(code)
 
@@ -62,6 +62,10 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
     })
 
     const roles = userRoles.map((role) => role.name)
+
+    if (app === "khbooks" && !roles.includes("khbooks")) {
+      return res.status(400).json({ message: "Your account does not have the necessary role." })
+    }
 
     const access_token = jwt.sign(
       {
