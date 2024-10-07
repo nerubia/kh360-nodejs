@@ -347,6 +347,14 @@ export const update = async (id: number, data: Invoice) => {
   })
 }
 
+export const deleteById = async (id: number) => {
+  const invoice = await InvoiceRepository.getById(id)
+  if (invoice === null) {
+    throw new CustomError("Invoice not found", 400)
+  }
+  await InvoiceRepository.deleteById(id)
+}
+
 export const updateInvoiceStatusById = async (id: number, status: InvoiceStatus) => {
   const invoice = await InvoiceRepository.getById(id)
 

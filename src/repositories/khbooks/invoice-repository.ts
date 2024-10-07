@@ -268,3 +268,11 @@ export const generateInvoiceNumberById = async (id: number) => {
     return formattedInvoiceNo
   })
 }
+
+export const deleteById = async (id: number) => {
+  await prisma.invoices.delete({
+    where: {
+      id,
+    },
+  })
+}
