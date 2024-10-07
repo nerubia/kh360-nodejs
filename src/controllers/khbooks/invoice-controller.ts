@@ -124,7 +124,7 @@ export const store = async (req: Request, res: Response) => {
       postal_code,
     })
 
-    const shouldSendInvoice = Boolean(send_invoice)
+    const shouldSendInvoice = send_invoice === "true"
 
     const newInvoice = await InvoiceService.create(
       {
@@ -243,7 +243,7 @@ export const update = async (req: Request, res: Response) => {
       invoice_attachment_ids: JSON.parse(invoice_attachment_ids),
     })
 
-    const shouldSendInvoice = Boolean(send_invoice)
+    const shouldSendInvoice = send_invoice === "true"
 
     const updatedInvoice = await InvoiceService.update(Number(id), {
       to,

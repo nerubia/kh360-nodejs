@@ -1,4 +1,4 @@
-import { number, object, string } from "yup"
+import { boolean, number, object, string } from "yup"
 
 export const createOfferingSchema = object().shape({
   name: string().required("Name is required"),
@@ -7,4 +7,5 @@ export const createOfferingSchema = object().shape({
   currency_id: number().required("Currency is required"),
   price: number().required("Price is required"),
   description: string().optional(),
+  is_active: boolean().required(),
 })
