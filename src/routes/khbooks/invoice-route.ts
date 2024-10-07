@@ -5,9 +5,9 @@ import { uploadMiddleware } from "../../middlewares/upload-middleware"
 const router = express.Router()
 
 router.get("/", InvoiceController.index)
-router.post("/", InvoiceController.store)
+router.post("/", uploadMiddleware.array("files"), InvoiceController.store)
 router.get("/:id", InvoiceController.show)
-router.put("/:id", InvoiceController.update)
+router.put("/:id", uploadMiddleware.array("files"), InvoiceController.update)
 router.delete("/:id", InvoiceController.destroy)
 
 router.post(
