@@ -24,7 +24,7 @@ import { type Contract } from "../../types/contract-type"
 import { type S3File } from "../../types/s3-file-type"
 import { generateInvoiceEmailContent } from "../../utils/generate-invoice-email-content"
 import { v4 as uuidv4 } from "uuid"
-import { uploadFile } from "../../utils/s3"
+import { getFile, uploadFile } from "../../utils/s3"
 
 export const getAllByFilters = async (
   invoice_date: string,
@@ -505,12 +505,29 @@ export const sendInvoice = async (id: number) => {
     updated_at: currentDate,
   })
 
+  const attachments = await Promise.all(
+    invoice.invoice_attachments.map(async (invoiceAttachment) => {
+      const filename = invoiceAttachment.filename ?? ""
+      const file = await getFile(filename)
+      if (file === null) {
+        return null
+      }
+      const cleanedFilename = filename.replace(/^\d+-/, "")
+      return {
+        content: file,
+        filename: cleanedFilename,
+        disposition: "attachment",
+      }
+    })
+  )
+
   await sendMail({
     to: [to],
     cc: ccEmails,
     bcc: bccEmails,
     subject: "Invoice",
     content: invoiceContent,
+    attachments: attachments.filter((attachment) => attachment !== null),
   })
 }
 
