@@ -5,4 +5,5 @@ export interface Offering {
   currency_id: number
   price: number
   description: string
+  is_active: boolean
 }
