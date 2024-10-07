@@ -85,6 +85,8 @@ export const store = async (req: Request, res: Response) => {
       send_invoice,
     } = req.body
 
+    const files = req.files as S3File[]
+
     await createAddressSchema.validate({
       address1,
       address2,
@@ -108,10 +110,10 @@ export const store = async (req: Request, res: Response) => {
       tax_type_id,
       payment_account_id,
       payment_term_id,
-      invoice_details,
+      invoice_details: JSON.parse(invoice_details),
     })
 
-    const country = await CountryService.getById(country_id ?? 0)
+    const country = await CountryService.getById(parseInt(country_id ?? "0"))
 
     const address = await AddressService.create({
       address1,
@@ -140,10 +142,12 @@ export const store = async (req: Request, res: Response) => {
         payment_account_id: parseInt(payment_account_id as string),
         payment_term_id: parseInt(payment_term_id as string),
         billing_address_id: address.id,
-        invoice_details,
+        invoice_details: JSON.parse(invoice_details),
       },
       shouldSendInvoice
     )
+
+    await InvoiceService.uploadAttachments(newInvoice.id, files)
 
     if (shouldSendInvoice) {
       await InvoiceService.sendInvoice(newInvoice.id)
@@ -219,6 +223,8 @@ export const update = async (req: Request, res: Response) => {
       send_invoice,
     } = req.body
 
+    const files = req.files as S3File[]
+
     await createInvoiceSchema.validate({
       client_id,
       to,
@@ -233,8 +239,8 @@ export const update = async (req: Request, res: Response) => {
       tax_type_id,
       payment_account_id,
       payment_term_id,
-      invoice_details,
-      invoice_attachment_ids,
+      invoice_details: JSON.parse(invoice_details),
+      invoice_attachment_ids: JSON.parse(invoice_attachment_ids),
     })
 
     const shouldSendInvoice = Boolean(send_invoice)
@@ -251,9 +257,11 @@ export const update = async (req: Request, res: Response) => {
       tax_type_id: Number(tax_type_id),
       payment_account_id: Number(payment_account_id),
       payment_term_id: Number(payment_term_id),
-      invoice_details,
-      invoice_attachment_ids,
+      invoice_details: JSON.parse(invoice_details),
+      invoice_attachment_ids: JSON.parse(invoice_attachment_ids),
     })
+
+    await InvoiceService.uploadAttachments(updatedInvoice.id, files)
 
     if (shouldSendInvoice) {
       await InvoiceService.sendInvoice(updatedInvoice.id)

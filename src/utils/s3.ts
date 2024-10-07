@@ -74,3 +74,27 @@ export const getFileUrl = async (key: string) => {
   const url = await getSignedUrl(s3, command, { expiresIn: 3600 })
   return url
 }
+
+export const getFile = async (key: string) => {
+  const command = new GetObjectCommand({
+    Bucket: process.env.AWS_S3_BUCKET_NAME ?? "",
+    Key: key,
+  })
+  const data = await s3.send(command)
+  const stream = data.Body?.transformToWebStream()
+
+  if (stream === undefined) return null
+
+  const reader = stream.getReader()
+  const chunks: Uint8Array[] = []
+
+  while (true) {
+    const { value, done } = await reader.read()
+    if (done) break
+    chunks.push(value)
+  }
+
+  const buffer = Buffer.concat(chunks.map((chunk) => Buffer.from(chunk)))
+
+  return buffer.toString("base64")
+}
