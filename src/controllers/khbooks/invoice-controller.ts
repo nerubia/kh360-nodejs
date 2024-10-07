@@ -287,6 +287,7 @@ export const update = async (req: Request, res: Response) => {
 export const destroy = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
+    await InvoiceService.deleteById(parseInt(id))
     res.json({ id, message: "Invoice successfully deleted" })
   } catch (error) {
     if (error instanceof ValidationError) {
