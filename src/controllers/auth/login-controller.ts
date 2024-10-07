@@ -7,7 +7,7 @@ import logger from "../../utils/logger"
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email } = req.body
+    const { app, email } = req.body
 
     let data = {
       email,
@@ -62,6 +62,10 @@ export const login = async (req: Request, res: Response) => {
     })
 
     const roles = userRoles.map((role) => role.name)
+
+    if (app === "khbooks" && !roles.includes("khbooks")) {
+      return res.status(400).json({ message: "Your account does not have the necessary role." })
+    }
 
     const access_token = jwt.sign(
       {
