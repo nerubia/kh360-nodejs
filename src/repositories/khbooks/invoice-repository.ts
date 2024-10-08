@@ -141,6 +141,11 @@ export const getById = async (id: number) => {
               name: true,
             },
           },
+          uoms: {
+            select: {
+              name: true,
+            },
+          },
         },
       },
       invoice_emails: {
