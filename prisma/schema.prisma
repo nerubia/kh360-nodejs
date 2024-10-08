@@ -1917,6 +1917,7 @@ model invoice_details {
   contracts           contracts? @relation(fields: [contract_id], references: [id])
   offerings           offerings? @relation(fields: [offering_id], references: [id])
   projects            projects?  @relation(fields: [project_id], references: [id])
+  uoms                uoms?      @relation(fields: [uom_id], references: [id])
 
   @@index([contract_billing_id], map: "index_invoice_details_on_contract_billing_id")
   @@index([contract_id], map: "index_invoice_details_on_contract_id")
@@ -2022,6 +2023,8 @@ model uoms {
   description String?   @db.Text
   created_at  DateTime? @db.DateTime(0)
   updated_at  DateTime? @db.DateTime(0)
+
+  invoice_details invoice_details[]
 }
 
 model invoice_activities {
