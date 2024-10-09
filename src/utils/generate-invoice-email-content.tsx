@@ -78,8 +78,10 @@ export default function EmailContent({ invoice }: { invoice: EmailInvoiceContent
                 <Text style={emailTitle}>Dear {invoice.clients?.display_name},</Text>
                 <Text style={emailBody}>
                   Here’s your{" "}
-                  <Link href={`${process.env.APP_URL}/client/invoices/${invoice.token}`}>invoice</Link>!
-                  We appreciate your prompt payment.
+                  <Link href={`${process.env.KHBOOKS_URL}/client/invoices/${invoice.token}`}>
+                    invoice
+                  </Link>
+                  ! We appreciate your prompt payment.
                 </Text>
                 <Text style={emailBody}>
                   Thanks for your business!
