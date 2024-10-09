@@ -1,5 +1,5 @@
 import { InvoiceActivityAction } from "../../types/invoice-activity-type"
-import { type InvoiceStatus } from "../../types/invoice-type"
+import { type PaymentStatus, type InvoiceStatus } from "../../types/invoice-type"
 import prisma from "../../utils/prisma"
 import { type Prisma } from "@prisma/client"
 
@@ -221,6 +221,20 @@ export const updateInvoiceStatusById = async (id: number, status: InvoiceStatus)
     },
     data: {
       invoice_status: status,
+      updated_at: new Date(),
+    },
+  })
+}
+
+export const updateInvoicePaymentStatusByIds = async (ids: number[], status: PaymentStatus) => {
+  return await prisma.invoices.updateMany({
+    where: {
+      id: {
+        in: ids,
+      },
+    },
+    data: {
+      payment_status: status,
       updated_at: new Date(),
     },
   })
