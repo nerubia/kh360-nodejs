@@ -66,10 +66,11 @@ export const uploadFile = async (file: FileObject) => {
   await uploadFilesToS3([file])
 }
 
-export const getFileUrl = async (key: string) => {
+export const getFileUrl = async (key: string, mimeType = "application/octet-stream") => {
   const command = new GetObjectCommand({
     Bucket: process.env.AWS_S3_BUCKET_NAME ?? "",
     Key: key,
+    ResponseContentType: mimeType,
   })
   const url = await getSignedUrl(s3, command, { expiresIn: 3600 })
   return url

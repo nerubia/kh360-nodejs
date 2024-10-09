@@ -160,6 +160,7 @@ export const getById = async (id: number) => {
           id: true,
           sequence_no: true,
           filename: true,
+          mime_type: true,
           description: true,
         },
       },
