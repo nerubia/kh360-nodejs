@@ -1,10 +1,11 @@
 import schedule from "node-schedule"
-import { updateEvaluationAdministrationsJob } from "../jobs/update-evaluation-administrations-job"
-import { updateSurveyAdministrationsJob } from "../jobs/update-survey-administrations-job"
-import { updateSkillMapAdministrationsJob } from "../jobs/update-skill-map-administrations-job"
 import { sendEvaluationEmailJob } from "../jobs/send-evaluation-email-job"
-import { sendSurveyEmailJob } from "../jobs/send-survey-email-job"
 import { sendSkillMapEmailJob } from "../jobs/send-skill-map-email-job"
+import { sendSurveyEmailJob } from "../jobs/send-survey-email-job"
+import { updateEvaluationAdministrationsJob } from "../jobs/update-evaluation-administrations-job"
+import { updateInvoiceJob } from "../jobs/update-invoice-job"
+import { updateSkillMapAdministrationsJob } from "../jobs/update-skill-map-administrations-job"
+import { updateSurveyAdministrationsJob } from "../jobs/update-survey-administrations-job"
 
 const everyDaySchedule =
   typeof process.env.EVERY_DAY_SCHEDULE === "string" ? process.env.EVERY_DAY_SCHEDULE : "0 0 * * *"
@@ -19,6 +20,7 @@ const everyDayJob = schedule.scheduleJob(everyDaySchedule, async () => {
   await updateEvaluationAdministrationsJob()
   await updateSurveyAdministrationsJob()
   await updateSkillMapAdministrationsJob()
+  await updateInvoiceJob()
 })
 
 // every hour 0 * * * *

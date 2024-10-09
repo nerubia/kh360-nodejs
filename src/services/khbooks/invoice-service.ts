@@ -609,3 +609,17 @@ export const getInvoiceFromToken = async (token: string) => {
   const invoiceLink = await InvoiceLinkRepository.getByToken(token)
   return await InvoiceRepository.getById(invoiceLink?.invoice_id ?? 0)
 }
+
+export const updateOverdueInvoices = async () => {
+  const overdueInvoices = await InvoiceRepository.paginateByFilters(0, 50, {
+    due_date: {
+      lte: new Date(),
+    },
+    payment_status: PaymentStatus.OPEN,
+  })
+
+  await InvoiceRepository.updateInvoicePaymentStatusByIds(
+    overdueInvoices.map((invoice) => invoice.id),
+    PaymentStatus.OVERDUE
+  )
+}
