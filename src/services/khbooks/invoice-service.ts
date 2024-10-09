@@ -377,6 +377,7 @@ export const uploadAttachments = async (id: number, files: S3File[]) => {
   const invoiceAttachments: Prisma.invoice_attachmentsCreateInput[] = files.map((file) => ({
     invoice_id: invoice.id,
     filename: file.key,
+    mime_type: file.mimetype,
     created_at: currentDate,
     updated_at: currentDate,
   }))

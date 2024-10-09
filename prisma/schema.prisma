@@ -1885,6 +1885,7 @@ model invoice_attachments {
   invoice_id  Int?
   sequence_no Int?
   filename    String?   @default("") @db.VarChar(255)
+  mime_type   String?   @db.VarChar(50)
   description String?   @default("") @db.VarChar(255)
   created_at  DateTime? @db.DateTime(0)
   updated_at  DateTime? @db.DateTime(0)
