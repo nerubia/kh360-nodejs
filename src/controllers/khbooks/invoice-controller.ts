@@ -8,6 +8,8 @@ import CustomError from "../../utils/custom-error"
 import { createInvoiceSchema } from "../../utils/validation/invoice-schema"
 import { createAddressSchema } from "../../utils/validation/address-schema"
 import { type S3File } from "../../types/s3-file-type"
+import { getFileUrl } from "../../utils/s3"
+import { type InvoiceAttachment } from "../../types/invoice-attachment-type"
 
 /**
  * List invoices based on provided filters.
@@ -174,7 +176,27 @@ export const show = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
     const invoice = await InvoiceService.show(parseInt(id))
-    res.json(invoice)
+
+    let invoiceAttachments: InvoiceAttachment[] = []
+
+    if (invoice?.invoice_attachments !== undefined) {
+      invoiceAttachments = await Promise.all(
+        invoice.invoice_attachments.map(async (invoiceAttachment) => {
+          return {
+            ...invoiceAttachment,
+            url: await getFileUrl(
+              invoiceAttachment.filename ?? "",
+              invoiceAttachment.mime_type ?? ""
+            ),
+          }
+        })
+      )
+    }
+
+    res.json({
+      ...invoice,
+      invoice_attachments: invoiceAttachments,
+    })
   } catch (error) {
     logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
@@ -426,7 +448,27 @@ export const getInvoiceByToken = async (req: Request, res: Response) => {
   try {
     const { token } = req.params
     const invoice = await InvoiceService.getInvoiceByToken(token)
-    res.json(invoice)
+
+    let invoiceAttachments: InvoiceAttachment[] = []
+
+    if (invoice?.invoice_attachments !== undefined) {
+      invoiceAttachments = await Promise.all(
+        invoice.invoice_attachments.map(async (invoiceAttachment) => {
+          return {
+            ...invoiceAttachment,
+            url: await getFileUrl(
+              invoiceAttachment.filename ?? "",
+              invoiceAttachment.mime_type ?? ""
+            ),
+          }
+        })
+      )
+    }
+
+    res.json({
+      ...invoice,
+      invoice_attachments: invoiceAttachments,
+    })
   } catch (error) {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
