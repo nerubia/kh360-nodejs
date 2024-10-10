@@ -1,4 +1,4 @@
-import { Body, Container, Text, Html, Img, render, Section, Link } from "@react-email/components"
+import { Body, Container, Text, Html, Img, render, Section, Button } from "@react-email/components"
 import { formatDate } from "./format-date"
 import { type EmailInvoiceContent } from "../types/invoice-type"
 import { formatAmount } from "./format-amount"
@@ -43,6 +43,19 @@ const amount = {
 const emailTitle = { padding: "0 20px", color: "#000000" }
 const emailBody = { padding: "0 20px", marginTop: "30px", color: "#000000" }
 
+const sectionStyle = {
+  textAlign: "center" as const,
+}
+
+const buttonStyle = {
+  fontSize: "14px",
+  textAlign: "center" as const,
+  backgroundColor: "#a78ec8",
+  color: "#ffffff",
+  padding: "12px 24px",
+  borderRadius: "8px",
+}
+
 const footerFontSize = {
   fontSize: "10px",
   textAlign: "center" as const,
@@ -84,18 +97,22 @@ export default function EmailContent({ invoice, type }: EmailContentProps) {
                 <Text style={emailTitle}>Dear {invoice.clients?.display_name},</Text>
                 {type === SendInvoiceType.Invoice ? (
                   <Text style={emailBody}>
-                    Here’s your{" "}
-                    <Link href={`${process.env.KHBOOKS_URL}/client/invoices/${invoice.token}`}>
-                      invoice
-                    </Link>
-                    ! We appreciate your prompt payment.{" "}
+                    Here’s your invoice! We appreciate your prompt payment.
                   </Text>
                 ) : (
                   <Text style={emailBody}>
-                    Just a reminder that we have not recieved a payment for this invoice yet. Let us
-                    know if your have question.
+                    Just a reminder that we have not received a payment for this invoice yet. Let us
+                    know if you have questions.
                   </Text>
                 )}
+                <Section style={sectionStyle}>
+                  <Button
+                    style={buttonStyle}
+                    href={`${process.env.KHBOOKS_URL}/client/invoices/${invoice.token}`}
+                  >
+                    View Invoice
+                  </Button>
+                </Section>
                 <Text style={emailBody}>
                   Thanks for your business!
                   <br />
