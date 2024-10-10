@@ -25,6 +25,7 @@ import { type S3File } from "../../types/s3-file-type"
 import { generateInvoiceEmailContent } from "../../utils/generate-invoice-email-content"
 import { v4 as uuidv4 } from "uuid"
 import { getFile, uploadFile } from "../../utils/s3"
+import { SendInvoiceType } from "../../types/send-invoice-type"
 
 export const getAllByFilters = async (
   invoice_date: string,
@@ -385,7 +386,7 @@ export const uploadAttachments = async (id: number, files: S3File[]) => {
   await InvoiceAttachmentRepository.createMany(invoiceAttachments)
 }
 
-export const sendInvoice = async (id: number) => {
+export const sendInvoice = async (id: number, type: string = SendInvoiceType.Invoice) => {
   const invoice = await InvoiceRepository.getById(id)
 
   if (invoice === null) {
@@ -456,41 +457,44 @@ export const sendInvoice = async (id: number) => {
 
   const token = await generateToken()
 
-  const invoiceContent = await generateInvoiceEmailContent({
-    invoice_no: invoiceNo,
-    invoice_date: invoice.invoice_date?.toISOString() ?? "",
-    due_date: invoice.due_date?.toISOString() ?? "",
-    invoice_amount: invoice.invoice_amount?.toNumber(),
-    sub_total: invoice.sub_total?.toNumber(),
-    tax_amount: invoice.tax_amount?.toNumber(),
-    clients: invoice.clients,
-    companies: invoice.companies,
-    currencies: invoice.currencies,
-    payment_accounts: invoice.payment_accounts,
-    billing_addresses: invoice.addresses,
-    invoice_details: invoice.invoice_details.map((invoiceDetail) => {
-      return {
-        id: invoiceDetail.id,
-        contract_id: null,
-        contract_billing_id: null,
-        offering_id: null,
-        project_id: null,
-        employee_id: null,
-        period_start: invoiceDetail.period_start?.toISOString() ?? null,
-        period_end: invoiceDetail.period_end?.toISOString() ?? null,
-        details: invoiceDetail.details,
-        quantity: invoiceDetail.quantity?.toNumber() ?? null,
-        uom_id: null,
-        rate: invoiceDetail.rate?.toString() ?? null,
-        sub_total: null,
-        tax: null,
-        total: invoiceDetail.total?.toNumber() ?? null,
-        contracts: (invoiceDetail.contracts as Contract) ?? undefined,
-        projects: invoiceDetail.projects ?? undefined,
-      }
-    }),
-    token,
-  })
+  const invoiceContent = await generateInvoiceEmailContent(
+    {
+      invoice_no: invoiceNo,
+      invoice_date: invoice.invoice_date?.toISOString() ?? "",
+      due_date: invoice.due_date?.toISOString() ?? "",
+      invoice_amount: invoice.invoice_amount?.toNumber(),
+      sub_total: invoice.sub_total?.toNumber(),
+      tax_amount: invoice.tax_amount?.toNumber(),
+      clients: invoice.clients,
+      companies: invoice.companies,
+      currencies: invoice.currencies,
+      payment_accounts: invoice.payment_accounts,
+      billing_addresses: invoice.addresses,
+      invoice_details: invoice.invoice_details.map((invoiceDetail) => {
+        return {
+          id: invoiceDetail.id,
+          contract_id: null,
+          contract_billing_id: null,
+          offering_id: null,
+          project_id: null,
+          employee_id: null,
+          period_start: invoiceDetail.period_start?.toISOString() ?? null,
+          period_end: invoiceDetail.period_end?.toISOString() ?? null,
+          details: invoiceDetail.details,
+          quantity: invoiceDetail.quantity?.toNumber() ?? null,
+          uom_id: null,
+          rate: invoiceDetail.rate?.toString() ?? null,
+          sub_total: null,
+          tax: null,
+          total: invoiceDetail.total?.toNumber() ?? null,
+          contracts: (invoiceDetail.contracts as Contract) ?? undefined,
+          projects: invoiceDetail.projects ?? undefined,
+        }
+      }),
+      token,
+    },
+    type
+  )
 
   const location = "invoices"
   const filename = token + ".pdf"
@@ -534,7 +538,7 @@ export const sendInvoice = async (id: number) => {
     to: [to],
     cc: ccEmails,
     bcc: bccEmails,
-    subject: "Invoice",
+    subject: type,
     content: invoiceContent,
     attachments: attachments.filter((attachment) => attachment !== null),
   })
