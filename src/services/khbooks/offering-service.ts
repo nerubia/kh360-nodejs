@@ -194,7 +194,7 @@ export const deleteById = async (id: number) => {
   }
 
   if (offering._count.invoice_details > 0) {
-    throw new CustomError("Unable to delete. Used by invoice.", 400)
+    throw new CustomError("This service is linked to an invoice and cannot be deleted.", 400)
   }
 
   await OfferingRepository.deleteById(id)
