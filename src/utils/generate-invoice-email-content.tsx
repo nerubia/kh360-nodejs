@@ -2,11 +2,12 @@ import { Body, Container, Text, Html, Img, render, Section, Link } from "@react-
 import { formatDate } from "./format-date"
 import { type EmailInvoiceContent } from "../types/invoice-type"
 import { formatAmount } from "./format-amount"
+import { SendInvoiceType } from "../types/send-invoice-type"
 
 const logo = "https://drive.google.com/uc?export=view&id=1nBqgLU0-mSLkqgSLrhhVEG-E6_cwxjTE"
 
-export const generateInvoiceEmailContent = async (invoice: EmailInvoiceContent) => {
-  return await render(<EmailContent invoice={invoice} />)
+export const generateInvoiceEmailContent = async (invoice: EmailInvoiceContent, type: string) => {
+  return await render(<EmailContent invoice={invoice} type={type} />)
 }
 
 const main = { backgroundColor: "#525659", padding: "20px" }
@@ -49,7 +50,12 @@ const footerFontSize = {
 }
 const emailSection = { width: "100%" }
 
-export default function EmailContent({ invoice }: { invoice: EmailInvoiceContent }) {
+interface EmailContentProps {
+  invoice: EmailInvoiceContent
+  type: string
+}
+
+export default function EmailContent({ invoice, type }: EmailContentProps) {
   return (
     <>
       <Html>
@@ -76,13 +82,20 @@ export default function EmailContent({ invoice }: { invoice: EmailInvoiceContent
 
               <Container style={emailSection}>
                 <Text style={emailTitle}>Dear {invoice.clients?.display_name},</Text>
-                <Text style={emailBody}>
-                  Here’s your{" "}
-                  <Link href={`${process.env.KHBOOKS_URL}/client/invoices/${invoice.token}`}>
-                    invoice
-                  </Link>
-                  ! We appreciate your prompt payment.
-                </Text>
+                {type === SendInvoiceType.Invoice ? (
+                  <Text style={emailBody}>
+                    Here’s your{" "}
+                    <Link href={`${process.env.KHBOOKS_URL}/client/invoices/${invoice.token}`}>
+                      invoice
+                    </Link>
+                    ! We appreciate your prompt payment.{" "}
+                  </Text>
+                ) : (
+                  <Text style={emailBody}>
+                    Just a reminder that we have not recieved a payment for this invoice yet. Let us
+                    know if your have question.
+                  </Text>
+                )}
                 <Text style={emailBody}>
                   Thanks for your business!
                   <br />
