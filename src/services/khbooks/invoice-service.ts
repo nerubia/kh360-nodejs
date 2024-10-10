@@ -1,14 +1,16 @@
 import { type Prisma } from "@prisma/client"
-import * as InvoiceRepository from "../../repositories/khbooks/invoice-repository"
-import * as InvoiceLinkRepository from "../../repositories/khbooks/invoice-link-repository"
-import * as InvoiceAttachmentRepository from "../../repositories/khbooks/invoice-attachment-repository"
-import * as InvoiceEmailRepository from "../../repositories/khbooks/invoice-email-repository"
+import { addDays, subMonths } from "date-fns"
+import { v4 as uuidv4 } from "uuid"
 import * as ClientRepository from "../../repositories/client-repository"
 import * as CurrencyRepository from "../../repositories/khbooks/currency-repository"
-import * as TaxTypeRepository from "../../repositories/khbooks/tax-type-repository"
+import * as InvoiceActivityRepository from "../../repositories/khbooks/invoice-activity-repository"
+import * as InvoiceAttachmentRepository from "../../repositories/khbooks/invoice-attachment-repository"
+import * as InvoiceEmailRepository from "../../repositories/khbooks/invoice-email-repository"
+import * as InvoiceLinkRepository from "../../repositories/khbooks/invoice-link-repository"
+import * as InvoiceRepository from "../../repositories/khbooks/invoice-repository"
 import * as PaymentTermRepository from "../../repositories/khbooks/payment-term-repository"
-import * as InvoiceDetailService from "../khbooks/invoice-detail-service"
-import * as InvoiceAttachmentService from "../khbooks/invoice-attachment-service"
+import * as TaxTypeRepository from "../../repositories/khbooks/tax-type-repository"
+import { type Contract } from "../../types/contract-type"
 import {
   type Invoice,
   InvoiceDateFilter,
@@ -16,16 +18,16 @@ import {
   InvoiceStatusFilter,
   PaymentStatus,
 } from "../../types/invoice-type"
-import { addDays, subMonths } from "date-fns"
+import { type S3File } from "../../types/s3-file-type"
+import { SendInvoiceType } from "../../types/send-invoice-type"
 import CustomError from "../../utils/custom-error"
 import { generateInvoice } from "../../utils/generate-invoice"
-import { sendMail } from "../../utils/sendgrid"
-import { type Contract } from "../../types/contract-type"
-import { type S3File } from "../../types/s3-file-type"
 import { generateInvoiceEmailContent } from "../../utils/generate-invoice-email-content"
-import { v4 as uuidv4 } from "uuid"
 import { getFile, uploadFile } from "../../utils/s3"
-import { SendInvoiceType } from "../../types/send-invoice-type"
+import { sendMail } from "../../utils/sendgrid"
+import * as InvoiceAttachmentService from "../khbooks/invoice-attachment-service"
+import * as InvoiceDetailService from "../khbooks/invoice-detail-service"
+import { InvoiceActivityAction } from "../../types/invoice-activity-type"
 
 export const getAllByFilters = async (
   invoice_date: string,
@@ -533,6 +535,15 @@ export const sendInvoice = async (id: number, type: string = SendInvoiceType.Inv
       }
     })
   )
+
+  if (type === SendInvoiceType.Reminder) {
+    await InvoiceActivityRepository.create({
+      invoice_id: invoice.id,
+      action: InvoiceActivityAction.REMINDER_SENT,
+      created_at: currentDate,
+      updated_at: currentDate,
+    })
+  }
 
   await sendMail({
     to: [to],
