@@ -10,6 +10,7 @@ import { createAddressSchema } from "../../utils/validation/address-schema"
 import { type S3File } from "../../types/s3-file-type"
 import { getFileUrl } from "../../utils/s3"
 import { type InvoiceAttachment } from "../../types/invoice-attachment-type"
+import { SendInvoiceType } from "../../types/send-invoice-type"
 
 /**
  * List invoices based on provided filters.
@@ -363,7 +364,7 @@ export const send = async (req: Request, res: Response) => {
 export const sendReminder = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    await InvoiceService.sendInvoice(parseInt(id))
+    await InvoiceService.sendInvoice(parseInt(id), SendInvoiceType.Reminder)
     res.json({ message: "Invoice reminder sent" })
   } catch (error) {
     if (error instanceof CustomError) {
