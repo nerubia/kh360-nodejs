@@ -209,6 +209,9 @@ export const create = async (data: Invoice, shouldSendInvoice: boolean) => {
     throw new CustomError("Payment term not found", 400)
   }
 
+  const isPaymentOpen =
+    new Date(data.due_date).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)
+
   const currentDate = new Date()
   const newInvoice = await InvoiceRepository.create({
     client_id: client.id,
@@ -224,7 +227,7 @@ export const create = async (data: Invoice, shouldSendInvoice: boolean) => {
     payment_term_id: paymentTerm.id,
     billing_address_id: data.billing_address_id,
     invoice_status: shouldSendInvoice ? InvoiceStatus.BILLED : InvoiceStatus.DRAFT,
-    payment_status: PaymentStatus.OPEN,
+    payment_status: isPaymentOpen ? PaymentStatus.OPEN : PaymentStatus.OVERDUE,
     created_at: currentDate,
     updated_at: currentDate,
   })
