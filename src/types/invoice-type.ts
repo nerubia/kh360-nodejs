@@ -75,3 +75,9 @@ export enum PaymentStatus {
   PAID = "paid",
   CANCELLED = "cancelled",
 }
+
+export enum SendInvoiceAction {
+  NONE = "none",
+  BILLED = "billed",
+  SEND = "send",
+}

@@ -5,6 +5,7 @@ export interface InvoiceActivity {
 }
 
 export enum InvoiceActivityAction {
+  BILLED = "billed",
   VIEWED = "viewed",
   REMINDER_SENT = "reminder_sent",
 }
