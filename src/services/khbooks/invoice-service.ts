@@ -17,6 +17,7 @@ import {
   InvoiceStatus,
   InvoiceStatusFilter,
   PaymentStatus,
+  SendInvoiceAction,
 } from "../../types/invoice-type"
 import { type S3File } from "../../types/s3-file-type"
 import { SendInvoiceType } from "../../types/send-invoice-type"
@@ -188,7 +189,7 @@ export const getAllByFilters = async (
   }
 }
 
-export const create = async (data: Invoice, shouldSendInvoice: boolean) => {
+export const create = async (data: Invoice, sendInvoiceAction: SendInvoiceAction) => {
   const client = await ClientRepository.getById(data.client_id ?? 0)
   if (client === null) {
     throw new CustomError("Client not found", 400)
@@ -213,6 +214,7 @@ export const create = async (data: Invoice, shouldSendInvoice: boolean) => {
     new Date(data.due_date).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)
 
   const currentDate = new Date()
+
   const newInvoice = await InvoiceRepository.create({
     client_id: client.id,
     company_id: client.company_id,
@@ -226,7 +228,8 @@ export const create = async (data: Invoice, shouldSendInvoice: boolean) => {
     payment_account_id: data.payment_account_id,
     payment_term_id: paymentTerm.id,
     billing_address_id: data.billing_address_id,
-    invoice_status: shouldSendInvoice ? InvoiceStatus.BILLED : InvoiceStatus.DRAFT,
+    invoice_status:
+      sendInvoiceAction === SendInvoiceAction.BILLED ? InvoiceStatus.BILLED : InvoiceStatus.DRAFT,
     payment_status: isPaymentOpen ? PaymentStatus.OPEN : PaymentStatus.OVERDUE,
     created_at: currentDate,
     updated_at: currentDate,
@@ -258,6 +261,15 @@ export const create = async (data: Invoice, shouldSendInvoice: boolean) => {
 
   await InvoiceDetailService.updateByInvoiceId(newInvoice.id, data.invoice_details)
 
+  if (sendInvoiceAction === SendInvoiceAction.BILLED) {
+    await InvoiceActivityRepository.create({
+      invoice_id: newInvoice.id,
+      action: InvoiceActivityAction.BILLED,
+      created_at: currentDate,
+      updated_at: currentDate,
+    })
+  }
+
   return newInvoice
 }
 
@@ -265,7 +277,7 @@ export const show = async (id: number) => {
   return await InvoiceRepository.getById(id)
 }
 
-export const update = async (id: number, data: Invoice) => {
+export const update = async (id: number, data: Invoice, sendInvoiceAction: SendInvoiceAction) => {
   const invoice = await InvoiceRepository.getById(id)
   if (invoice === null) {
     throw new CustomError("Invoice not found", 400)
@@ -340,6 +352,22 @@ export const update = async (id: number, data: Invoice) => {
     await InvoiceAttachmentService.deleteMany(toDelete)
   }
 
+  let currentInvoiceStatus = invoice.invoice_status
+
+  if (
+    currentInvoiceStatus === InvoiceStatus.DRAFT &&
+    sendInvoiceAction === SendInvoiceAction.BILLED
+  ) {
+    currentInvoiceStatus = InvoiceStatus.BILLED
+
+    await InvoiceActivityRepository.create({
+      invoice_id: id,
+      action: InvoiceActivityAction.BILLED,
+      created_at: currentDate,
+      updated_at: currentDate,
+    })
+  }
+
   return await InvoiceRepository.updateById(id, {
     invoice_date: new Date(data.invoice_date),
     due_date: new Date(data.due_date),
@@ -349,6 +377,7 @@ export const update = async (id: number, data: Invoice) => {
     tax_type_id: taxType.id,
     payment_account_id: data.payment_account_id,
     payment_term_id: paymentTerm.id,
+    invoice_status: currentInvoiceStatus,
     updated_at: currentDate,
   })
 }

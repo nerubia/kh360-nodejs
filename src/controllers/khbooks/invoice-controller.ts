@@ -11,6 +11,7 @@ import { type S3File } from "../../types/s3-file-type"
 import { getFileUrl } from "../../utils/s3"
 import { type InvoiceAttachment } from "../../types/invoice-attachment-type"
 import { SendInvoiceType } from "../../types/send-invoice-type"
+import { SendInvoiceAction } from "../../types/invoice-type"
 
 /**
  * List invoices based on provided filters.
@@ -59,7 +60,7 @@ export const index = async (req: Request, res: Response) => {
  * @param req.body.country_id - Country id.
  * @param req.body.postal_code - Postal code.
  * @param req.body.invoice_details - Invoice details.
- * @param req.body.send_invoice - Send invoice.
+ * @param req.body.send_invoice_action - Send invoice action.
  */
 
 export const store = async (req: Request, res: Response) => {
@@ -85,7 +86,7 @@ export const store = async (req: Request, res: Response) => {
       state,
       country_id,
       postal_code,
-      send_invoice,
+      send_invoice_action,
     } = req.body
 
     const files = req.files as S3File[]
@@ -127,8 +128,6 @@ export const store = async (req: Request, res: Response) => {
       postal_code,
     })
 
-    const shouldSendInvoice = send_invoice === "true"
-
     const newInvoice = await InvoiceService.create(
       {
         client_id: parseInt(client_id as string),
@@ -147,12 +146,12 @@ export const store = async (req: Request, res: Response) => {
         billing_address_id: address.id,
         invoice_details: JSON.parse(invoice_details),
       },
-      shouldSendInvoice
+      send_invoice_action as SendInvoiceAction
     )
 
     await InvoiceService.uploadAttachments(newInvoice.id, files)
 
-    if (shouldSendInvoice) {
+    if (send_invoice_action === SendInvoiceAction.SEND) {
       await InvoiceService.sendInvoice(newInvoice.id)
     }
 
@@ -222,7 +221,7 @@ export const show = async (req: Request, res: Response) => {
  * @param req.body.payment_term_id - Payment term id.
  * @param req.body.invoice_details - Invoice details.
  * @param req.body.invoice_attachment_ids - Invoice attachment ids.
- * @param req.body.send_invoice - Send invoice.
+ * @param req.body.send_invoice_action - Send invoice action.
  */
 export const update = async (req: Request, res: Response) => {
   try {
@@ -243,7 +242,7 @@ export const update = async (req: Request, res: Response) => {
       payment_term_id,
       invoice_details,
       invoice_attachment_ids,
-      send_invoice,
+      send_invoice_action,
     } = req.body
 
     const files = req.files as S3File[]
@@ -266,27 +265,29 @@ export const update = async (req: Request, res: Response) => {
       invoice_attachment_ids: JSON.parse(invoice_attachment_ids),
     })
 
-    const shouldSendInvoice = send_invoice === "true"
-
-    const updatedInvoice = await InvoiceService.update(Number(id), {
-      to,
-      cc,
-      bcc,
-      invoice_date,
-      due_date,
-      invoice_amount: Number(invoice_amount),
-      sub_total: Number(sub_total),
-      tax_amount: Number(tax_amount),
-      tax_type_id: Number(tax_type_id),
-      payment_account_id: Number(payment_account_id),
-      payment_term_id: Number(payment_term_id),
-      invoice_details: JSON.parse(invoice_details),
-      invoice_attachment_ids: JSON.parse(invoice_attachment_ids),
-    })
+    const updatedInvoice = await InvoiceService.update(
+      Number(id),
+      {
+        to,
+        cc,
+        bcc,
+        invoice_date,
+        due_date,
+        invoice_amount: Number(invoice_amount),
+        sub_total: Number(sub_total),
+        tax_amount: Number(tax_amount),
+        tax_type_id: Number(tax_type_id),
+        payment_account_id: Number(payment_account_id),
+        payment_term_id: Number(payment_term_id),
+        invoice_details: JSON.parse(invoice_details),
+        invoice_attachment_ids: JSON.parse(invoice_attachment_ids),
+      },
+      send_invoice_action as SendInvoiceAction
+    )
 
     await InvoiceService.uploadAttachments(updatedInvoice.id, files)
 
-    if (shouldSendInvoice) {
+    if (send_invoice_action === SendInvoiceAction.SEND) {
       await InvoiceService.sendInvoice(updatedInvoice.id)
     }
 
