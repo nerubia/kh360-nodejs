@@ -1,5 +1,5 @@
 import { type Prisma } from "@prisma/client"
-import { addDays, subMonths } from "date-fns"
+import { addDays, startOfDay, subMonths } from "date-fns"
 import { v4 as uuidv4 } from "uuid"
 import * as ClientRepository from "../../repositories/client-repository"
 import * as CurrencyRepository from "../../repositories/khbooks/currency-repository"
@@ -660,7 +660,7 @@ export const getInvoiceFromToken = async (token: string) => {
 export const updateOverdueInvoices = async () => {
   const overdueInvoices = await InvoiceRepository.paginateByFilters(0, 50, {
     due_date: {
-      lte: new Date(),
+      lte: startOfDay(new Date()),
     },
     payment_status: PaymentStatus.OPEN,
   })
