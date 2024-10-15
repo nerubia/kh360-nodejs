@@ -1,4 +1,4 @@
-import { array, number, object, string } from "yup"
+import { array, boolean, number, object, string } from "yup"
 
 const invoiceDetailSchema = object().shape({
   contract_id: number().optional().nullable(),
@@ -29,6 +29,7 @@ export const createInvoiceSchema = object().shape({
   sub_total: number().required("Sub total is required"),
   tax_amount: number().required("Tax amount is required"),
   tax_type_id: number().required("Tax type is required"),
+  tax_toggle: boolean().required("Tax toggle is requried"),
   payment_account_id: number().required("Payment account is required"),
   payment_term_id: number().required("Payment term is required"),
   invoice_details: array().of(invoiceDetailSchema),

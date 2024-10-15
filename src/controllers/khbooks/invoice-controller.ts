@@ -51,6 +51,7 @@ export const index = async (req: Request, res: Response) => {
  * @param req.body.sub_total - Sub total.
  * @param req.body.tax_amount - Tax amount.
  * @param req.body.tax_type_id - Tax type id.
+ * @param req.body.tax_toggle - Tax toggle.
  * @param req.body.payment_account_id - Payment account id.
  * @param req.body.payment_term_id - Payment term id.
  * @param req.body.address1 - Address 1.
@@ -77,6 +78,7 @@ export const store = async (req: Request, res: Response) => {
       sub_total,
       tax_amount,
       tax_type_id,
+      tax_toggle,
       payment_account_id,
       payment_term_id,
       invoice_details,
@@ -112,6 +114,7 @@ export const store = async (req: Request, res: Response) => {
       sub_total,
       tax_amount,
       tax_type_id,
+      tax_toggle,
       payment_account_id,
       payment_term_id,
       invoice_details: JSON.parse(invoice_details),
@@ -141,6 +144,7 @@ export const store = async (req: Request, res: Response) => {
         sub_total: parseFloat(sub_total as string),
         tax_amount: parseFloat(tax_amount as string),
         tax_type_id: parseInt(tax_type_id as string),
+        tax_toggle: Boolean(Number(tax_toggle)),
         payment_account_id: parseInt(payment_account_id as string),
         payment_term_id: parseInt(payment_term_id as string),
         billing_address_id: address.id,
@@ -217,6 +221,7 @@ export const show = async (req: Request, res: Response) => {
  * @param req.body.sub_total - Sub total.
  * @param req.body.tax_amount - Tax amount.
  * @param req.body.tax_type_id - Tax type id.
+ * @param req.body.tax_toggle - Tax toggle.
  * @param req.body.payment_account_id - Payment account id.
  * @param req.body.payment_term_id - Payment term id.
  * @param req.body.invoice_details - Invoice details.
@@ -238,6 +243,7 @@ export const update = async (req: Request, res: Response) => {
       sub_total,
       tax_amount,
       tax_type_id,
+      tax_toggle,
       payment_account_id,
       payment_term_id,
       invoice_details,
@@ -259,6 +265,7 @@ export const update = async (req: Request, res: Response) => {
       sub_total,
       tax_amount,
       tax_type_id,
+      tax_toggle,
       payment_account_id,
       payment_term_id,
       invoice_details: JSON.parse(invoice_details),
@@ -277,6 +284,7 @@ export const update = async (req: Request, res: Response) => {
         sub_total: Number(sub_total),
         tax_amount: Number(tax_amount),
         tax_type_id: Number(tax_type_id),
+        tax_toggle: Boolean(Number(tax_toggle)),
         payment_account_id: Number(payment_account_id),
         payment_term_id: Number(payment_term_id),
         invoice_details: JSON.parse(invoice_details),
