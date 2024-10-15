@@ -19,6 +19,7 @@ export interface Invoice {
   sub_total?: number
   tax_amount?: number
   tax_type_id: number
+  tax_toggle: boolean
   payment_account_id: number
   payment_term_id: number
   billing_address_id?: number
