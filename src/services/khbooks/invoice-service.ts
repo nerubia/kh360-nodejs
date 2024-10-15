@@ -235,6 +235,8 @@ export const create = async (data: Invoice, sendInvoiceAction: SendInvoiceAction
     updated_at: currentDate,
   })
 
+  await InvoiceRepository.generateInvoiceNumberById(newInvoice.id)
+
   if (data.to !== undefined && data.to.length > 0) {
     await InvoiceEmailRepository.create({
       invoice_id: newInvoice.id,
