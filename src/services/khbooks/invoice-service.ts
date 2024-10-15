@@ -660,7 +660,7 @@ export const getInvoiceFromToken = async (token: string) => {
 export const updateOverdueInvoices = async () => {
   const overdueInvoices = await InvoiceRepository.paginateByFilters(0, 50, {
     due_date: {
-      lte: startOfDay(new Date()),
+      lt: startOfDay(new Date()),
     },
     payment_status: PaymentStatus.OPEN,
   })
