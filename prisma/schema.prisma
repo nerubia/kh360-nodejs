@@ -624,12 +624,13 @@ model invoices {
   invoice_no          String?               @default("") @db.VarChar(20)
   invoice_date        DateTime?             @db.Date
   due_date            DateTime?             @db.Date
-  invoice_amount      Decimal?              @default(0.00) @db.Decimal(8, 2)
-  discount_amount     Decimal?              @default(0.00) @db.Decimal(8, 2)
-  tax_amount          Decimal?              @default(0.00) @db.Decimal(8, 2)
-  sub_total           Decimal?              @default(0.00) @db.Decimal(8, 2)
-  payment_amount      Decimal?              @default(0.00) @db.Decimal(8, 2)
+  invoice_amount      Decimal?              @default(0.00) @db.Decimal(12, 2)
+  discount_amount     Decimal?              @default(0.00) @db.Decimal(12, 2)
+  tax_amount          Decimal?              @default(0.00) @db.Decimal(12, 2)
+  sub_total           Decimal?              @default(0.00) @db.Decimal(12, 2)
+  payment_amount      Decimal?              @default(0.00) @db.Decimal(12, 2)
   tax_type_id         Int?
+  tax_toggle          Boolean?
   payment_account_id  Int?
   payment_term_id     Int?
   billing_address_id  Int?
@@ -1906,12 +1907,12 @@ model invoice_details {
   period_start        DateTime?  @db.Date
   period_end          DateTime?  @db.Date
   details             String?    @db.Text
-  quantity            Decimal?   @default(0.00) @db.Decimal(8, 2)
+  quantity            Decimal?   @default(0.00) @db.Decimal(12, 2)
   uom_id              Int?
-  rate                Decimal?   @default(0.00) @db.Decimal(8, 2)
-  sub_total           Decimal?   @default(0.00) @db.Decimal(8, 2)
-  tax                 Decimal?   @default(0.00) @db.Decimal(8, 2)
-  total               Decimal?   @default(0.00) @db.Decimal(8, 2)
+  rate                Decimal?   @default(0.00) @db.Decimal(12, 2)
+  sub_total           Decimal?   @default(0.00) @db.Decimal(12, 2)
+  tax                 Decimal?   @default(0.00) @db.Decimal(12, 2)
+  total               Decimal?   @default(0.00) @db.Decimal(12, 2)
   created_at          DateTime?  @db.DateTime(0)
   updated_at          DateTime?  @db.DateTime(0)
   invoices            invoices?  @relation(fields: [invoice_id], references: [id])
@@ -1971,7 +1972,7 @@ model offerings {
   sku                  String?              @db.VarChar(50)
   currency_id          Int?
   uom_id               Int?
-  price                Decimal?             @default(0.00) @db.Decimal(8, 2)
+  price                Decimal?             @default(0.00) @db.Decimal(12, 2)
   description          String?              @db.Text
   is_active            Boolean?
   created_at           DateTime?            @db.DateTime(0)
@@ -2038,6 +2039,44 @@ model invoice_activities {
   invoices    invoices? @relation(fields: [invoice_id], references: [id])
 
   @@index([invoice_id], map: "index_invoice_activities_on_invoice_id")
+}
+
+model payment_attachments {
+  id Int @id @default(autoincrement())
+}
+
+model payment_details {
+  id             Int       @id @default(autoincrement())
+  invoice_id     Int?
+  payment_amount Decimal?  @default(0.00) @db.Decimal(12, 2)
+  created_at     DateTime? @db.DateTime(0)
+  updated_at     DateTime? @db.DateTime(0)
+
+  @@index([invoice_id], map: "index_payment_details_on_invoice_id")
+}
+
+model payment_emails {
+  id Int @id @default(autoincrement())
+}
+
+model payments {
+  id                   Int       @id @default(autoincrement())
+  client_id            Int?
+  company_id           Int?
+  currency_id          Int?
+  payment_date         DateTime? @db.Date
+  payment_reference_no String?   @default("") @db.VarChar(255)
+  payment_account_id   Int?
+  payment_amount       Decimal?  @default(0.00) @db.Decimal(12, 2)
+  payment_amount_php   Decimal?  @default(0.00) @db.Decimal(12, 2)
+  payment_status       String?   @default("") @db.VarChar(20)
+  remarks              String?   @db.Text
+  created_at           DateTime? @db.DateTime(0)
+  updated_at           DateTime? @db.DateTime(0)
+
+  @@index([client_id], map: "index_payments_on_client_id")
+  @@index([company_id], map: "index_payments_on_company_id")
+  @@index([currency_id], map: "index_payments_on_currency_id")
 }
 
 enum approvers_status {
