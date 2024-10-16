@@ -3,6 +3,6 @@ import * as InvoiceActivityController from "../../controllers/khbooks/invoice-ac
 
 const router = express.Router()
 
-router.get("/", InvoiceActivityController.index)
+router.get("/:token", InvoiceActivityController.captureAndShow)
 
 export default router
