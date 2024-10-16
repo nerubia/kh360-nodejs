@@ -14,7 +14,7 @@ export const getAllByFilters = async (
   category_id: number,
   client_id: number,
   global: boolean,
-  is_active: boolean,
+  is_active: string,
   page: string
 ) => {
   const itemsPerPage = 20
@@ -62,9 +62,9 @@ export const getAllByFilters = async (
     })
   }
 
-  if (is_active) {
+  if (is_active !== undefined) {
     Object.assign(where, {
-      is_active: true,
+      is_active: Boolean(parseInt(is_active)),
     })
   }
 
