@@ -22,7 +22,7 @@ export const index = async (req: Request, res: Response) => {
       parseInt(category_id as string),
       parseInt(client_id as string),
       Boolean(parseInt(global as string)),
-      Boolean(parseInt(is_active as string)),
+      is_active as string,
       page as string
     )
     res.json(results)
