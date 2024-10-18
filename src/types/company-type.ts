@@ -5,4 +5,6 @@ export interface Company {
   country: string | null
   zip: string | null
   street: string | null
+  public_url: string | null
+  shorthand: string | null
 }

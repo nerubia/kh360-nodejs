@@ -100,6 +100,8 @@ export const getById = async (id: number) => {
           country: true,
           zip: true,
           street: true,
+          public_url: true,
+          shorthand: true,
         },
       },
       currencies: {

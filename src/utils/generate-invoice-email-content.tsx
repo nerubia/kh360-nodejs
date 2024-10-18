@@ -4,7 +4,8 @@ import { type EmailInvoiceContent } from "../types/invoice-type"
 import { formatAmount } from "./format-amount"
 import { SendInvoiceType } from "../types/send-invoice-type"
 
-const logo = "https://drive.google.com/uc?export=view&id=1nBqgLU0-mSLkqgSLrhhVEG-E6_cwxjTE"
+const nerubiaLogo = "https://drive.google.com/uc?export=view&id=1nBqgLU0-mSLkqgSLrhhVEG-E6_cwxjTE"
+const ideaRobinLogo = "https://drive.google.com/uc?export=view&id=1-w2Y3YQcw6oc_6zl0YmqfErWeKchCfHV"
 
 export const generateInvoiceEmailContent = async (invoice: EmailInvoiceContent, type: string) => {
   return await render(<EmailContent invoice={invoice} type={type} />)
@@ -78,14 +79,14 @@ export default function EmailContent({ invoice, type }: EmailContentProps) {
               <Text style={text}>INVOICE NO. {invoice.invoice_no}</Text>
               <Img
                 title='company logo'
-                src={logo}
+                src={invoice.companies?.shorthand === "NRB" ? nerubiaLogo : ideaRobinLogo}
                 width='50'
                 height='50'
-                alt='Nerubia logo'
+                alt='logo'
                 style={imgStyle}
               />
 
-              <Text style={companyText}>Nerubia Web Solutions, Inc.</Text>
+              <Text style={companyText}>{invoice.companies?.name}</Text>
 
               <Text style={dueDateStyle}>DUE {formatDate(invoice.due_date)}</Text>
 
@@ -94,7 +95,7 @@ export default function EmailContent({ invoice, type }: EmailContentProps) {
               </Text>
 
               <Container style={emailSection}>
-                <Text style={emailTitle}>Dear {invoice.clients?.display_name},</Text>
+                <Text style={emailTitle}>Dear {invoice.clients?.name},</Text>
                 {type === SendInvoiceType.Invoice ? (
                   <Text style={emailBody}>
                     Here’s your invoice! We appreciate your prompt payment.
@@ -116,16 +117,17 @@ export default function EmailContent({ invoice, type }: EmailContentProps) {
                 <Text style={emailBody}>
                   Thanks for your business!
                   <br />
-                  Nerubia Web Solutions, Inc.
+                  {invoice.companies?.name}
                 </Text>
               </Container>
               <hr style={{ marginTop: "16px", width: "90%" }} />
               <Text style={footerFontSize}>
-                Nerubia Web Solutions, Inc.
+                {invoice.companies?.name}
                 <br />
-                1101 Park Centrale, Cebu IT Park Cebu City, Cebu 6000 PH
+                {invoice.companies?.street} {invoice.companies?.city}, {invoice.companies?.state}{" "}
+                {invoice.companies?.zip} {invoice.companies?.country}
                 <br />
-                www.nerubia.com
+                {invoice.companies?.public_url}
               </Text>
             </Section>
           </Container>
