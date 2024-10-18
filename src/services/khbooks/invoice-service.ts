@@ -357,6 +357,15 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
 
   let currentInvoiceStatus = invoice.invoice_status
 
+  if (sendInvoiceAction === SendInvoiceAction.NONE) {
+    await InvoiceActivityRepository.create({
+      invoice_id: id,
+      action: InvoiceActivityAction.EDITED,
+      created_at: currentDate,
+      updated_at: currentDate,
+    })
+  }
+
   if (
     currentInvoiceStatus === InvoiceStatus.DRAFT &&
     sendInvoiceAction === SendInvoiceAction.BILLED
@@ -571,6 +580,21 @@ export const sendInvoice = async (id: number, type: string = SendInvoiceType.Inv
       }
     })
   )
+
+  if (type === SendInvoiceType.Invoice) {
+    const totalSentActions = await InvoiceActivityRepository.countAllByFilters({
+      invoice_id: invoice.id,
+      action: InvoiceActivityAction.SENT_MAIL,
+    })
+
+    await InvoiceActivityRepository.create({
+      invoice_id: invoice.id,
+      action:
+        totalSentActions === 0 ? InvoiceActivityAction.SENT_MAIL : InvoiceActivityAction.RESENT,
+      created_at: currentDate,
+      updated_at: currentDate,
+    })
+  }
 
   if (type === SendInvoiceType.Reminder) {
     await InvoiceActivityRepository.create({
