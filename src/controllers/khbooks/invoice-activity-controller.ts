@@ -31,11 +31,17 @@ export const captureAndShow = async (req: Request, res: Response) => {
     const { token } = req.params
     const invoice = await getInvoiceFromToken(token)
     if (invoice !== null) {
-      await InvoiceActivityService.create({
-        action: InvoiceActivityAction.VIEWED,
-        description: "",
-        invoice_id: invoice.id,
-      })
+      const total = await InvoiceActivityService.countLatestActivitiesByInvoiceId(
+        invoice.id,
+        InvoiceActivityAction.VIEWED
+      )
+      if (total === 0) {
+        await InvoiceActivityService.create({
+          action: InvoiceActivityAction.VIEWED,
+          description: "",
+          invoice_id: invoice.id,
+        })
+      }
 
       if (invoice.invoice_status === InvoiceStatus.BILLED) {
         await InvoiceService.updateInvoiceStatusById(invoice.id, InvoiceStatus.VIEWED)

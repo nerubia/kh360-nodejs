@@ -1,6 +1,7 @@
-import { type InvoiceActivity } from "../../types/invoice-activity-type"
+import { type InvoiceActivityAction, type InvoiceActivity } from "../../types/invoice-activity-type"
 import * as InvoiceActivityRepository from "../../repositories/khbooks/invoice-activity-repository"
 import { type Prisma } from "@prisma/client"
+import { subMinutes } from "date-fns"
 
 export const getAllByFilters = async (invoice_id: number, page: string) => {
   const itemsPerPage = 20
@@ -41,5 +42,18 @@ export const create = async (data: InvoiceActivity) => {
     ...data,
     created_at: currentDate,
     updated_at: currentDate,
+  })
+}
+
+export const countLatestActivitiesByInvoiceId = async (
+  invoice_id: number,
+  action: InvoiceActivityAction
+) => {
+  return await InvoiceActivityRepository.countAllByFilters({
+    invoice_id,
+    action,
+    created_at: {
+      gte: subMinutes(new Date(), 1),
+    },
   })
 }
