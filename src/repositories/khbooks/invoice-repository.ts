@@ -144,6 +144,7 @@ export const getById = async (id: number) => {
           uoms: {
             select: {
               name: true,
+              short_name: true,
             },
           },
         },
