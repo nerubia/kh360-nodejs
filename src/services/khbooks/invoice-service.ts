@@ -366,6 +366,9 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
     })
   }
 
+  const isPaymentOpen =
+    new Date(data.due_date).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)
+
   if (
     currentInvoiceStatus === InvoiceStatus.DRAFT &&
     sendInvoiceAction === SendInvoiceAction.BILLED
@@ -390,6 +393,7 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
     tax_toggle: data.tax_toggle,
     payment_account_id: data.payment_account_id,
     payment_term_id: paymentTerm.id,
+    payment_status: isPaymentOpen ? PaymentStatus.OPEN : PaymentStatus.OVERDUE,
     invoice_status: currentInvoiceStatus,
     updated_at: currentDate,
   })
