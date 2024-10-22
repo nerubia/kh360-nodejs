@@ -499,10 +499,11 @@ export const sendInvoice = async (id: number, type: string = SendInvoiceType.Inv
     (invoiceEmail) => invoiceEmail.email_type === "bcc"
   )?.email_address
 
+  const toEmails = to?.split(",") ?? []
   const ccEmails = cc?.split(",") ?? []
   const bccEmails = bcc?.split(",") ?? []
 
-  if (to === undefined || to === null) {
+  if (toEmails.length === 0) {
     throw new CustomError("Invoice email not found", 400)
   }
 
@@ -610,7 +611,7 @@ export const sendInvoice = async (id: number, type: string = SendInvoiceType.Inv
   }
 
   await sendMail({
-    to: [to],
+    to: toEmails,
     cc: ccEmails,
     bcc: bccEmails,
     subject: type,
