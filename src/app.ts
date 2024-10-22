@@ -16,6 +16,7 @@ import userRoute from "./routes/user/user-route"
 import answerRoute from "./routes/user/answer-route"
 import answerOptionRoute from "./routes/user/answer-option-route"
 import clientRoute from "./routes/admin/client-route"
+import companyRoute from "./routes/admin/company-route"
 import emailTemplateRoute from "./routes/admin/email-template-route"
 import evaluationAdministrationRoute from "./routes/admin/evaluation-administration-route"
 import evaluationResultRoute from "./routes/admin/evaluation-result-route"
@@ -111,6 +112,7 @@ app.use("/user/answer-options", authMiddleware, answerOptionRoute)
 
 app.use("/admin/answers", adminMiddleware, answerRoute)
 app.use("/admin/clients", adminMiddleware, clientRoute)
+app.use("/admin/companies", adminMiddleware, companyRoute)
 app.use("/admin/email-templates", adminMiddleware, emailTemplateRoute)
 app.use("/admin/evaluation-administrations", adminMiddleware, evaluationAdministrationRoute)
 app.use("/admin/evaluation-results", adminMiddleware, evaluationResultRoute)
