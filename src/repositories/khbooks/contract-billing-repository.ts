@@ -12,7 +12,22 @@ export const paginateByFilters = async (
     where,
     orderBy: [
       {
-        created_at: "desc",
+        bill_date: "desc",
+      },
+      {
+        contracts: {
+          contract_no: "asc",
+        },
+      },
+      {
+        contracts: {
+          projects: {
+            name: "asc",
+          },
+        },
+      },
+      {
+        details: "asc",
       },
     ],
     include: {
