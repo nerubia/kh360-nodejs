@@ -1,5 +1,11 @@
 import { array, boolean, number, object, string } from "yup"
 
+const emailSchema = string().test("valid-emails", "Some emails are invalid", (value) => {
+  if (value === undefined) return false
+  const emails = value.split(",").map((email) => email.trim())
+  return emails.every((email) => string().email().isValidSync(email))
+})
+
 const invoiceDetailSchema = object().shape({
   contract_id: number().optional().nullable(),
   contract_billing_id: number().optional().nullable(),
@@ -19,9 +25,9 @@ const invoiceDetailSchema = object().shape({
 
 export const createInvoiceSchema = object().shape({
   client_id: number().required("Client is required"),
-  to: string().email().required("To is required"),
-  cc: string().email().optional(),
-  bcc: string().email().optional(),
+  to: emailSchema.required(`Client's E-mail is required`),
+  cc: emailSchema.optional(),
+  bcc: emailSchema.optional(),
   currency_id: number().required("Currency is required"),
   invoice_date: string().required("Invoice date is required"),
   due_date: string().required("Due date is required"),
