@@ -10,6 +10,13 @@ export const paginateByFilters = async (
     skip,
     take,
     where,
+    include: {
+      countries: {
+        select: {
+          name: true,
+        },
+      },
+    },
     orderBy: [
       {
         created_at: "desc",

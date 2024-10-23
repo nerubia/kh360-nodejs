@@ -1,0 +1,9 @@
+-- AlterTable
+ALTER TABLE `payment_accounts` ADD COLUMN `address1` VARCHAR(255) NULL DEFAULT '',
+    ADD COLUMN `address2` VARCHAR(255) NULL DEFAULT '',
+    ADD COLUMN `bank_code` VARCHAR(50) NULL DEFAULT '',
+    ADD COLUMN `city` VARCHAR(255) NULL DEFAULT '',
+    ADD COLUMN `country_id` INTEGER NULL,
+    ADD COLUMN `payment_network` VARCHAR(100) NULL DEFAULT '',
+    ADD COLUMN `postal_code` VARCHAR(255) NULL DEFAULT '',
+    ADD COLUMN `state` VARCHAR(255) NULL DEFAULT '';
