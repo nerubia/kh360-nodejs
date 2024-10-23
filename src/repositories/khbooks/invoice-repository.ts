@@ -181,7 +181,18 @@ export const getById = async (id: number) => {
           account_no: true,
           bank_name: true,
           bank_branch: true,
+          bank_code: true,
           swift_code: true,
+          address1: true,
+          address2: true,
+          country_id: true,
+          postal_code: true,
+          payment_network: true,
+          countries: {
+            select: {
+              name: true,
+            },
+          },
         },
       },
       payment_terms: {
