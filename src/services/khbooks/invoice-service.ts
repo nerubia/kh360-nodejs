@@ -2,6 +2,7 @@ import { type Prisma } from "@prisma/client"
 import { addDays, startOfDay, subMonths } from "date-fns"
 import { v4 as uuidv4 } from "uuid"
 import * as ClientRepository from "../../repositories/client-repository"
+import * as CompanyRepository from "../../repositories/company-repository"
 import * as CurrencyRepository from "../../repositories/khbooks/currency-repository"
 import * as InvoiceActivityRepository from "../../repositories/khbooks/invoice-activity-repository"
 import * as InvoiceAttachmentRepository from "../../repositories/khbooks/invoice-attachment-repository"
@@ -454,6 +455,12 @@ export const sendInvoice = async (id: number, type: string = SendInvoiceType.Inv
     await InvoiceRepository.updateInvoiceStatusById(invoice.id, InvoiceStatus.BILLED)
   }
 
+  let company = invoice.companies
+
+  if (company === null) {
+    company = await CompanyRepository.getById(1)
+  }
+
   const pdfBuffer = await generateInvoice({
     invoice_no: invoiceNo,
     invoice_date: invoice.invoice_date?.toISOString() ?? "",
@@ -462,7 +469,7 @@ export const sendInvoice = async (id: number, type: string = SendInvoiceType.Inv
     sub_total: invoice.sub_total?.toNumber(),
     tax_amount: invoice.tax_amount?.toNumber(),
     clients: invoice.clients,
-    companies: invoice.companies,
+    companies: company,
     currencies: invoice.currencies,
     payment_accounts: invoice.payment_accounts,
     billing_addresses: invoice.addresses,
@@ -518,7 +525,7 @@ export const sendInvoice = async (id: number, type: string = SendInvoiceType.Inv
       sub_total: invoice.sub_total?.toNumber(),
       tax_amount: invoice.tax_amount?.toNumber(),
       clients: invoice.clients,
-      companies: invoice.companies,
+      companies: company,
       currencies: invoice.currencies,
       payment_accounts: invoice.payment_accounts,
       billing_addresses: invoice.addresses,
@@ -687,7 +694,13 @@ export const generateToken = async () => {
 
 export const getInvoiceFromToken = async (token: string) => {
   const invoiceLink = await InvoiceLinkRepository.getByToken(token)
-  return await InvoiceRepository.getById(invoiceLink?.invoice_id ?? 0)
+  const invoice = await InvoiceRepository.getById(invoiceLink?.invoice_id ?? 0)
+
+  if (invoice?.companies === null) {
+    invoice.companies = await CompanyRepository.getById(1)
+  }
+
+  return invoice
 }
 
 export const updateOverdueInvoices = async () => {
