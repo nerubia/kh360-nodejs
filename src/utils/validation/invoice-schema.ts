@@ -31,7 +31,12 @@ export const createInvoiceSchema = object().shape({
   currency_id: number().required("Currency is required"),
   invoice_date: string().required("Invoice date is required"),
   due_date: string().required("Due date is required"),
-  invoice_amount: number().required("Invoice amount is required"),
+  invoice_amount: number()
+    .required("Invoice amount is required")
+    .test("is-valid", "Max supported amount per invoice is only 9,999,999,999.", (value) => {
+      const invoiceAmount = String(value)
+      return invoiceAmount.length <= 10
+    }),
   sub_total: number().required("Sub total is required"),
   tax_amount: number().required("Tax amount is required"),
   tax_type_id: number().required("Tax type is required"),
