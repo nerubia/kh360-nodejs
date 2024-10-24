@@ -190,6 +190,7 @@ model clients {
   currencies         currencies?       @relation(fields: [currency_id], references: [id])
   invoices           invoices[]
   offerings          offerings[]
+  payments           payments[]
   payment_accounts   payment_accounts? @relation(fields: [payment_account_id], references: [id])
 
   @@index([company_id], map: "index_clients_on_company_id")
@@ -2084,6 +2085,7 @@ model payments {
   remarks              String?   @db.Text
   created_at           DateTime? @db.DateTime(0)
   updated_at           DateTime? @db.DateTime(0)
+  clients              clients?  @relation(fields: [client_id], references: [id])
 
   @@index([client_id], map: "index_payments_on_client_id")
   @@index([company_id], map: "index_payments_on_company_id")

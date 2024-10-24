@@ -59,6 +59,7 @@ import uomRoute from "./routes/khbooks/uom-route"
 import contractBillingRoute from "./routes/khbooks/contract-billing-route"
 import countryRoute from "./routes/khbooks/country-route"
 import paymentAccountRoute from "./routes/khbooks/payment-account-route"
+import paymentRoute from "./routes/khbooks/payment-route"
 
 import morgan from "morgan"
 import logger from "./utils/logger"
@@ -160,6 +161,7 @@ app.use("/kh-books/uoms", adminMiddleware, uomRoute)
 app.use("/kh-books/contract-billings", adminMiddleware, contractBillingRoute)
 app.use("/kh-books/countries", adminMiddleware, countryRoute)
 app.use("/kh-books/payment-accounts", adminMiddleware, paymentAccountRoute)
+app.use("/kh-books/payments", adminMiddleware, paymentRoute)
 
 app.use("/kh-books/public/invoices", publicInvoiceRoute)
 app.use("/kh-books/client/invoices", publicInvoiceActivityRoute)
