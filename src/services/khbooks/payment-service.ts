@@ -7,7 +7,7 @@ export const getAllByFilters = async (
   payment_date: string,
   client_id: number,
   invoice_no: string,
-  payment_reference_no: string,
+  payment_no: string,
   status: string,
   page: string
 ) => {
@@ -54,17 +54,24 @@ export const getAllByFilters = async (
     })
   }
 
-  // TODO: filter by invoice no
   if (invoice_no !== undefined) {
-    // Object.assign(where, {
-    //   payment_status: status,
-    // })
+    Object.assign(where, {
+      payment_details: {
+        some: {
+          invoices: {
+            invoice_no: {
+              contains: invoice_no,
+            },
+          },
+        },
+      },
+    })
   }
 
-  if (payment_reference_no !== undefined) {
+  if (payment_no !== undefined) {
     Object.assign(where, {
-      payment_reference_no: {
-        contains: payment_reference_no,
+      payment_no: {
+        contains: payment_no,
       },
     })
   }
