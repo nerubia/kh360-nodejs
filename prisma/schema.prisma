@@ -221,6 +221,7 @@ model companies {
   invoices             invoices[]
   leave_periods        leave_periods[]
   leave_types          leave_types[]
+  payments             payments[]
 
   @@index([city], map: "index_companies_on_city")
   @@index([country], map: "index_companies_on_country")
@@ -372,6 +373,7 @@ model currencies {
   clients    clients[]
   invoices   invoices[]
   offerings  offerings[]
+  payments   payments[]
 }
 
 model email_logs {
@@ -656,6 +658,7 @@ model invoices {
   invoice_attachments invoice_attachments[]
   invoice_links       invoice_links[]
   invoice_activities  invoice_activities[]
+  payment_details     payment_details[]
 
   @@index([client_id], map: "index_invoices_on_client_id")
   @@index([company_id], map: "index_invoices_on_company_id")
@@ -2063,6 +2066,8 @@ model payment_attachments {
   created_at  DateTime? @db.DateTime(0)
   updated_at  DateTime? @db.DateTime(0)
 
+  payment payments? @relation(fields: [payment_id], references: [id])
+
   @@index([payment_id], map: "index_payment_attachments_on_payment_id")
 }
 
@@ -2073,7 +2078,10 @@ model payment_details {
   payment_amount Decimal?  @default(0.00) @db.Decimal(12, 2)
   created_at     DateTime? @db.DateTime(0)
   updated_at     DateTime? @db.DateTime(0)
+  payments       payments? @relation(fields: [payment_id], references: [id])
+  invoices       invoices? @relation(fields: [invoice_id], references: [id])
 
+  @@index([payment_id], map: "index_payment_details_on_payment_id")
   @@index([invoice_id], map: "index_payment_details_on_invoice_id")
 }
 
@@ -2085,27 +2093,33 @@ model payment_emails {
   email_address String?   @default("") @db.VarChar(255)
   created_at    DateTime? @db.DateTime(0)
   updated_at    DateTime? @db.DateTime(0)
+  payments      payments? @relation(fields: [payment_id], references: [id])
 
   @@index([payment_id], map: "index_payment_emails_on_payment_id")
 }
 
 model payments {
-  id                   Int       @id @default(autoincrement())
+  id                   Int                   @id @default(autoincrement())
   client_id            Int?
   company_id           Int?
   currency_id          Int?
-  payment_date         DateTime? @db.Date
-  payment_no           String?   @default("") @db.VarChar(255)
-  or_no                String?   @default("") @db.VarChar(255)
-  payment_reference_no String?   @default("") @db.VarChar(255)
+  payment_date         DateTime?             @db.Date
+  or_no                String?               @default("") @db.VarChar(255)
+  payment_no           String?               @default("") @db.VarChar(255)
+  payment_reference_no String?               @default("") @db.VarChar(255)
   payment_account_id   Int?
-  payment_amount       Decimal?  @default(0.00) @db.Decimal(12, 2)
-  payment_amount_php   Decimal?  @default(0.00) @db.Decimal(12, 2)
-  payment_status       String?   @default("") @db.VarChar(20)
-  remarks              String?   @db.Text
-  created_at           DateTime? @db.DateTime(0)
-  updated_at           DateTime? @db.DateTime(0)
-  clients              clients?  @relation(fields: [client_id], references: [id])
+  payment_amount       Decimal?              @default(0.00) @db.Decimal(12, 2)
+  payment_amount_php   Decimal?              @default(0.00) @db.Decimal(12, 2)
+  payment_status       String?               @default("") @db.VarChar(20)
+  payment_details      payment_details[]
+  payment_emails       payment_emails[]
+  payment_attachments  payment_attachments[]
+  remarks              String?               @db.Text
+  created_at           DateTime?             @db.DateTime(0)
+  updated_at           DateTime?             @db.DateTime(0)
+  companies            companies?            @relation(fields: [company_id], references: [id])
+  currencies           currencies?           @relation(fields: [currency_id], references: [id])
+  clients              clients?              @relation(fields: [client_id], references: [id])
 
   @@index([client_id], map: "index_payments_on_client_id")
   @@index([company_id], map: "index_payments_on_company_id")
