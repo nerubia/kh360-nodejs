@@ -1,6 +1,3 @@
--- CreateIndex
-CREATE INDEX `index_payment_details_on_payment_id` ON `payment_details`(`payment_id`);
-
 -- AddForeignKey
 ALTER TABLE `payment_attachments` ADD CONSTRAINT `payment_attachments_payment_id_fkey` FOREIGN KEY (`payment_id`) REFERENCES `payments`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
