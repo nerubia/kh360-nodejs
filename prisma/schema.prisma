@@ -2081,7 +2081,6 @@ model payment_details {
   payments       payments? @relation(fields: [payment_id], references: [id])
   invoices       invoices? @relation(fields: [invoice_id], references: [id])
 
-  @@index([payment_id], map: "index_payment_details_on_payment_id")
   @@index([invoice_id], map: "index_payment_details_on_invoice_id")
 }
 
