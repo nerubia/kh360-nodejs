@@ -22,7 +22,7 @@ export const paginateByFilters = async (
         payment_date: "desc",
       },
       {
-        payment_reference_no: "asc",
+        payment_no: "asc",
       },
       {
         clients: {
