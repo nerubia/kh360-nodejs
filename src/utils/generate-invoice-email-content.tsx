@@ -109,7 +109,7 @@ export default function EmailContent({ invoice, type }: EmailContentProps) {
                 <Section style={sectionStyle}>
                   <Button
                     style={buttonStyle}
-                    href={`${process.env.KHBOOKS_URL}/client/invoices/${invoice.token}`}
+                    href={`${process.env.HOST_NAME}/kh-books/client/invoices/${invoice.token}`}
                   >
                     View Invoice
                   </Button>
