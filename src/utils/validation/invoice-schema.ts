@@ -1,5 +1,7 @@
 import { array, boolean, number, object, string } from "yup"
 
+const MAX_INVOICE_AMOUNT = 9_999_999_999.99
+
 const emailSchema = string().test("valid-emails", "Some emails are invalid", (value) => {
   if (value === undefined) return false
   const emails = value.split(",").map((email) => email.trim())
@@ -33,9 +35,9 @@ export const createInvoiceSchema = object().shape({
   due_date: string().required("Due date is required"),
   invoice_amount: number()
     .required("Invoice amount is required")
-    .test("is-valid", "Max supported amount per invoice is only 9,999,999,999.", (value) => {
-      const invoiceAmount = String(value)
-      return invoiceAmount.length <= 10
+    .test("is-valid", "Max supported amount per invoice is only 9,999,999,999.99", (value) => {
+      const invoiceAmount = Number(value)
+      return invoiceAmount <= MAX_INVOICE_AMOUNT
     }),
   sub_total: number().required("Sub total is required"),
   tax_amount: number().required("Tax amount is required"),
