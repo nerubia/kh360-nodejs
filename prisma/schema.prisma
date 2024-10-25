@@ -2054,11 +2054,21 @@ model invoice_activities {
 }
 
 model payment_attachments {
-  id Int @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
+  payment_id  Int?
+  sequence_no Int?
+  filename    String?   @default("") @db.VarChar(255)
+  mime_type   String?   @db.VarChar(50)
+  description String?   @default("") @db.VarChar(255)
+  created_at  DateTime? @db.DateTime(0)
+  updated_at  DateTime? @db.DateTime(0)
+
+  @@index([payment_id], map: "index_payment_attachments_on_payment_id")
 }
 
 model payment_details {
   id             Int       @id @default(autoincrement())
+  payment_id     Int?
   invoice_id     Int?
   payment_amount Decimal?  @default(0.00) @db.Decimal(12, 2)
   created_at     DateTime? @db.DateTime(0)
@@ -2068,7 +2078,15 @@ model payment_details {
 }
 
 model payment_emails {
-  id Int @id @default(autoincrement())
+  id            Int       @id @default(autoincrement())
+  payment_id    Int?
+  sequence_no   Int?
+  email_type    String?   @default("") @db.VarChar(255)
+  email_address String?   @default("") @db.VarChar(255)
+  created_at    DateTime? @db.DateTime(0)
+  updated_at    DateTime? @db.DateTime(0)
+
+  @@index([payment_id], map: "index_payment_emails_on_payment_id")
 }
 
 model payments {
@@ -2077,6 +2095,8 @@ model payments {
   company_id           Int?
   currency_id          Int?
   payment_date         DateTime? @db.Date
+  payment_no           String?   @default("") @db.VarChar(255)
+  or_no                String?   @default("") @db.VarChar(255)
   payment_reference_no String?   @default("") @db.VarChar(255)
   payment_account_id   Int?
   payment_amount       Decimal?  @default(0.00) @db.Decimal(12, 2)
