@@ -681,6 +681,10 @@ export const getInvoiceByToken = async (token: string) => {
     throw new CustomError("Invoice link is either invalid or has expired.", 400)
   }
 
+  if (invoice?.companies === null) {
+    invoice.companies = await CompanyRepository.getById(1)
+  }
+
   return invoice
 }
 
@@ -690,17 +694,6 @@ export const generateToken = async () => {
     uuid = uuidv4()
   } while ((await InvoiceLinkRepository.getByToken(uuid)) != null)
   return uuid
-}
-
-export const getInvoiceFromToken = async (token: string) => {
-  const invoiceLink = await InvoiceLinkRepository.getByToken(token)
-  const invoice = await InvoiceRepository.getById(invoiceLink?.invoice_id ?? 0)
-
-  if (invoice?.companies === null) {
-    invoice.companies = await CompanyRepository.getById(1)
-  }
-
-  return invoice
 }
 
 export const updateOverdueInvoices = async () => {

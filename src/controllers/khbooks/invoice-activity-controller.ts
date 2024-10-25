@@ -1,7 +1,6 @@
 import { type Request, type Response } from "express"
 import logger from "../../utils/logger"
 import CustomError from "../../utils/custom-error"
-import { getInvoiceFromToken } from "../../services/khbooks/invoice-service"
 import * as InvoiceActivityService from "../../services/khbooks/invoice-activity-service"
 import * as InvoiceService from "../../services/khbooks/invoice-service"
 import { InvoiceStatus } from "../../types/invoice-type"
@@ -26,10 +25,13 @@ export const index = async (req: Request, res: Response) => {
   }
 }
 
+/*
+ * NOTE: This is for capturing invoice clicks from an email
+ */
 export const captureAndShow = async (req: Request, res: Response) => {
   try {
     const { token } = req.params
-    const invoice = await getInvoiceFromToken(token)
+    const invoice = await InvoiceService.getInvoiceByToken(token)
     if (invoice !== null) {
       await InvoiceActivityService.create({
         action: InvoiceActivityAction.VIEWED,
@@ -41,7 +43,8 @@ export const captureAndShow = async (req: Request, res: Response) => {
         await InvoiceService.updateInvoiceStatusById(invoice.id, InvoiceStatus.VIEWED)
       }
     }
-    res.json(invoice)
+
+    res.redirect(`${process.env.KHBOOKS_URL}/invoices/${token}/download`)
   } catch (error) {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
