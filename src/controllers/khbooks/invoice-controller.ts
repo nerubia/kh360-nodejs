@@ -23,13 +23,15 @@ import { SendInvoiceAction } from "../../types/invoice-type"
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const { invoice_date, client_id, status, due_date, page } = req.query
+    const { invoice_date, client_id, status, due_date, page, sort_by, sort_order } = req.query
     const results = await InvoiceService.getAllByFilters(
       invoice_date as string,
       parseInt(client_id as string),
       status as string,
       due_date as string,
-      page as string
+      page as string,
+      sort_by as "invoice_no" | "due_date",
+      sort_order as "asc" | "desc"
     )
     res.json(results)
   } catch (error) {
@@ -389,7 +391,6 @@ export const sendReminder = async (req: Request, res: Response) => {
  */
 export const duplicate = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params
     res.json({ message: "Invoice duplicated" })
   } catch (error) {
     if (error instanceof CustomError) {
@@ -405,7 +406,6 @@ export const duplicate = async (req: Request, res: Response) => {
  */
 export const download = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params
     res.json({ message: "Invoice downloaded" })
   } catch (error) {
     if (error instanceof CustomError) {
