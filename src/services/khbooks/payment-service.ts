@@ -1,7 +1,23 @@
 import { type Prisma } from "@prisma/client"
 import { subMonths } from "date-fns"
 import * as PaymentRepository from "../../repositories/khbooks/payment-repository"
-import { PaymentDateFilter, PaymentStatusFilter } from "../../types/payment-type"
+import {
+  PaymentDateFilter,
+  PaymentStatusFilter,
+  type Payment,
+  SendPaymentAction,
+  PaymentStatus,
+} from "../../types/payment-type"
+import CustomError from "../../utils/custom-error"
+import * as InvoiceRepository from "../../repositories/khbooks/invoice-repository"
+import * as InvoiceActivityRepository from "../../repositories/khbooks/invoice-activity-repository"
+import * as ClientRepository from "../../repositories/client-repository"
+import * as CurrencyRepository from "../../repositories/khbooks/currency-repository"
+import * as PaymentEmailRepository from "../../repositories/khbooks/payment-email-repository"
+import * as PaymentAttachmentRepository from "../../repositories/khbooks/payment-attachment-repository"
+import * as PaymentDetailService from "../khbooks/payment-detail-service"
+import { type S3File } from "../../types/s3-file-type"
+import { InvoiceStatus } from "../../types/invoice-type"
 
 export const getAllByFilters = async (
   payment_date: string,
@@ -113,4 +129,114 @@ export const getAllByFilters = async (
       totalItems,
     },
   }
+}
+
+export const create = async (data: Payment, sendPaymentAction: SendPaymentAction) => {
+  const client = await ClientRepository.getById(data.client_id ?? 0)
+  if (client === null) {
+    throw new CustomError("Client not found", 400)
+  }
+
+  const currency = await CurrencyRepository.getById(data.currency_id ?? 0)
+  if (currency === null) {
+    throw new CustomError("Currency not found", 400)
+  }
+
+  const currentDate = new Date()
+
+  const newPayment = await PaymentRepository.create({
+    client_id: client.id,
+    company_id: client.company_id,
+    currency_id: currency.id,
+    payment_date: new Date(data.payment_date ?? ""),
+    payment_reference_no: data.payment_reference_no ?? "",
+    or_no: data.or_no ?? "",
+
+    payment_amount: data.payment_amount ?? 0.0,
+    payment_amount_php: data.payment_amount_php ?? 0.0,
+
+    payment_status:
+      sendPaymentAction === SendPaymentAction.RECEIVED ||
+      sendPaymentAction === SendPaymentAction.SEND
+        ? PaymentStatus.RECEIVED
+        : PaymentStatus.DRAFT,
+
+    created_at: currentDate,
+    updated_at: currentDate,
+  })
+
+  await PaymentRepository.generatePaymentNumberById(newPayment.id)
+
+  if (data.to !== undefined && data.to.length > 0) {
+    await PaymentEmailRepository.create({
+      payment_id: newPayment.id,
+      email_type: "to",
+      email_address: data.to,
+    })
+  }
+
+  if (data.cc !== undefined && data.cc.length > 0) {
+    await PaymentEmailRepository.create({
+      payment_id: newPayment.id,
+      email_type: "cc",
+      email_address: data.cc,
+    })
+  }
+
+  if (data.bcc !== undefined && data.bcc.length > 0) {
+    await PaymentEmailRepository.create({
+      payment_id: newPayment.id,
+      email_type: "bcc",
+      email_address: data.bcc,
+    })
+  }
+
+  await PaymentDetailService.updateByPaymentId(newPayment.id, data.payment_details ?? [])
+
+  if (sendPaymentAction === SendPaymentAction.RECEIVED) {
+    const invoiceIds = data.payment_details
+      ?.map((detail) => detail.invoice_id)
+      .filter((id) => id !== null)
+    const invoices = await InvoiceRepository.getByIds(invoiceIds ?? [])
+
+    for (const invoice of invoices) {
+      await InvoiceRepository.updateById(invoice.id, {
+        invoice_status: InvoiceStatus.PAID,
+        payment_status: InvoiceStatus.PAID,
+      })
+
+      await InvoiceActivityRepository.create({
+        invoice_id: invoice.id,
+        action: SendPaymentAction.RECEIVED,
+        created_at: currentDate,
+        updated_at: currentDate,
+      })
+    }
+  }
+
+  return newPayment
+}
+
+export const show = async (id: number) => {
+  return await PaymentRepository.getById(id)
+}
+
+export const uploadAttachments = async (id: number, files: S3File[]) => {
+  const payment = await PaymentRepository.getById(id)
+
+  if (payment === null) {
+    throw new CustomError("Payment not found", 400)
+  }
+
+  const currentDate = new Date()
+
+  const invoiceAttachments: Prisma.invoice_attachmentsCreateInput[] = files.map((file) => ({
+    payment_id: payment.id,
+    filename: file.key,
+    mime_type: file.mimetype,
+    created_at: currentDate,
+    updated_at: currentDate,
+  }))
+
+  await PaymentAttachmentRepository.createMany(invoiceAttachments)
 }

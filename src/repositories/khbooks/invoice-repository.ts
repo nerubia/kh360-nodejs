@@ -6,23 +6,32 @@ import { type Prisma } from "@prisma/client"
 export const paginateByFilters = async (
   skip: number,
   take: number,
-  where: Prisma.invoicesWhereInput
+  where: Prisma.invoicesWhereInput,
+  sort_by: "invoice_no" | "due_date" = "invoice_no",
+  sort_order: "asc" | "desc" = "desc"
 ) => {
+  const orderBy: Prisma.invoicesOrderByWithRelationInput[] = []
+
+  if (sort_by === "invoice_no") {
+    orderBy.push({ invoice_no: sort_order })
+    orderBy.push({ invoice_date: sort_order })
+  } else if (sort_by === "due_date") {
+    orderBy.push({ due_date: sort_order })
+  }
+
+  if (sort_by !== undefined) {
+    orderBy.push({ invoice_no: "desc" }, { created_at: "desc" }, { invoice_date: "desc" })
+  }
+
+  if (orderBy.length === 0) {
+    orderBy.push({ invoice_no: "desc" }, { created_at: "desc" }, { invoice_date: "desc" })
+  }
+
   return await prisma.invoices.findMany({
     skip,
     take,
     where,
-    orderBy: [
-      {
-        invoice_no: "desc",
-      },
-      {
-        created_at: "desc",
-      },
-      {
-        invoice_date: "desc",
-      },
-    ],
+    orderBy,
     include: {
       clients: {
         select: {
@@ -310,6 +319,143 @@ export const deleteById = async (id: number) => {
   await prisma.invoices.delete({
     where: {
       id,
+    },
+  })
+}
+
+export const getByIds = async (ids: number[]) => {
+  return await prisma.invoices.findMany({
+    where: {
+      id: { in: ids },
+    },
+    include: {
+      addresses: {
+        select: {
+          address1: true,
+          address2: true,
+          city: true,
+          state: true,
+          country: true,
+          postal_code: true,
+        },
+      },
+      clients: {
+        select: {
+          id: true,
+          name: true,
+          display_name: true,
+          contact_no: true,
+          status: true,
+        },
+      },
+      companies: {
+        select: {
+          name: true,
+          city: true,
+          state: true,
+          country: true,
+          zip: true,
+          street: true,
+          public_url: true,
+          shorthand: true,
+        },
+      },
+      currencies: {
+        select: {
+          id: true,
+          name: true,
+          code: true,
+          prefix: true,
+        },
+      },
+      invoice_details: {
+        select: {
+          id: true,
+          contract_id: true,
+          contract_billing_id: true,
+          period_start: true,
+          period_end: true,
+          details: true,
+          quantity: true,
+          rate: true,
+          tax: true,
+          total: true,
+          uom_id: true,
+          sub_total: true,
+          offerings: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          contracts: {
+            select: {
+              contract_no: true,
+              description: true,
+            },
+          },
+          projects: {
+            select: {
+              name: true,
+            },
+          },
+          uoms: {
+            select: {
+              name: true,
+              short_name: true,
+            },
+          },
+        },
+      },
+      invoice_emails: {
+        select: {
+          id: true,
+          email_type: true,
+          email_address: true,
+        },
+      },
+      invoice_attachments: {
+        select: {
+          id: true,
+          sequence_no: true,
+          filename: true,
+          mime_type: true,
+          description: true,
+        },
+      },
+      tax_types: {
+        select: {
+          id: true,
+          name: true,
+          rate: true,
+        },
+      },
+      payment_accounts: {
+        select: {
+          account_name: true,
+          account_type: true,
+          account_no: true,
+          bank_name: true,
+          bank_branch: true,
+          bank_code: true,
+          swift_code: true,
+          address1: true,
+          address2: true,
+          country_id: true,
+          postal_code: true,
+          payment_network: true,
+          countries: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+      payment_terms: {
+        select: {
+          name: true,
+        },
+      },
     },
   })
 }
