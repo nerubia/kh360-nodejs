@@ -11,6 +11,7 @@ import * as InvoiceLinkRepository from "../../repositories/khbooks/invoice-link-
 import * as InvoiceRepository from "../../repositories/khbooks/invoice-repository"
 import * as PaymentTermRepository from "../../repositories/khbooks/payment-term-repository"
 import * as TaxTypeRepository from "../../repositories/khbooks/tax-type-repository"
+import * as PaymentDetailRepository from "../../repositories/khbooks/payment-detail-repository"
 import { type Contract } from "../../types/contract-type"
 import {
   type Invoice,
@@ -36,7 +37,9 @@ export const getAllByFilters = async (
   client_id: number,
   status: string,
   due_date: string,
-  page: string
+  page: string,
+  sort_by?: "invoice_no" | "due_date",
+  sort_order?: "asc" | "desc"
 ) => {
   const itemsPerPage = 20
   const parsedPage = parseInt(page)
@@ -172,14 +175,36 @@ export const getAllByFilters = async (
   const invoices = await InvoiceRepository.paginateByFilters(
     (currentPage - 1) * itemsPerPage,
     itemsPerPage,
-    where
+    where,
+    sort_by,
+    sort_order
+  )
+
+  const finalInvoices = await Promise.all(
+    invoices.map(async (invoice) => {
+      const paymentDetails = await PaymentDetailRepository.getByInvoiceId(invoice.id)
+
+      const totalPayments = paymentDetails.reduce((acc, payment) => {
+        const paymentAmount =
+          payment.payment_amount !== null ? payment.payment_amount.toNumber() : 0
+        return acc + paymentAmount
+      }, 0)
+
+      const invoiceAmount = invoice.invoice_amount !== null ? invoice.invoice_amount.toNumber() : 0
+
+      return {
+        ...invoice,
+        paid_amount: totalPayments,
+        open_balance: invoiceAmount - totalPayments,
+      }
+    })
   )
 
   const totalItems = await InvoiceRepository.countAllByFilters(where)
   const totalPages = Math.ceil(totalItems / itemsPerPage)
 
   return {
-    data: invoices,
+    data: finalInvoices,
     pageInfo: {
       hasPreviousPage: currentPage > 1,
       hasNextPage: currentPage < totalPages,
