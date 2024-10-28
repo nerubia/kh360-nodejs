@@ -74,13 +74,13 @@ export const generatePaymentNumberById = async (id: number) => {
       take: 1,
     })
 
-    let paymentNo = Number(process.env.INVOICE_NO_OFFSET ?? 0)
+    let paymentNo = 0
 
     if (payments.length === 1) {
       paymentNo = Number(payments[0].payment_no) + 1
     }
 
-    const formattedPaymentNo = paymentNo.toString().padStart(6, "0")
+    const formattedPaymentNo = paymentNo.toString().padStart(4, "0")
 
     await tx.payments.update({
       where: {
