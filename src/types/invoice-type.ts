@@ -70,7 +70,7 @@ export enum InvoiceStatus {
   CANCELLED = "cancelled",
 }
 
-export enum PaymentStatus {
+export enum InvoicePaymentStatus {
   OPEN = "open",
   OVERDUE = "overdue",
   PAID = "paid",
