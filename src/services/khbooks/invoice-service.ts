@@ -16,9 +16,9 @@ import { type Contract } from "../../types/contract-type"
 import {
   type Invoice,
   InvoiceDateFilter,
+  InvoicePaymentStatus,
   InvoiceStatus,
   InvoiceStatusFilter,
-  PaymentStatus,
   SendInvoiceAction,
 } from "../../types/invoice-type"
 import { type S3File } from "../../types/s3-file-type"
@@ -98,7 +98,7 @@ export const getAllByFilters = async (
           in: [InvoiceStatus.BILLED, InvoiceStatus.VIEWED],
         },
         payment_status: {
-          in: [PaymentStatus.OPEN, PaymentStatus.OVERDUE],
+          in: [InvoicePaymentStatus.OPEN, InvoicePaymentStatus.OVERDUE],
         },
       })
     }
@@ -108,7 +108,7 @@ export const getAllByFilters = async (
           in: [InvoiceStatus.BILLED, InvoiceStatus.VIEWED],
         },
         payment_status: {
-          in: [PaymentStatus.OPEN],
+          in: [InvoicePaymentStatus.OPEN],
         },
       })
     }
@@ -118,7 +118,7 @@ export const getAllByFilters = async (
           in: [InvoiceStatus.BILLED, InvoiceStatus.VIEWED],
         },
         payment_status: {
-          in: [PaymentStatus.OVERDUE],
+          in: [InvoicePaymentStatus.OVERDUE],
         },
       })
     }
@@ -128,7 +128,7 @@ export const getAllByFilters = async (
           in: [InvoiceStatus.PAID],
         },
         payment_status: {
-          in: [PaymentStatus.PAID],
+          in: [InvoicePaymentStatus.PAID],
         },
       })
     }
@@ -257,7 +257,7 @@ export const create = async (data: Invoice, sendInvoiceAction: SendInvoiceAction
     billing_address_id: data.billing_address_id,
     invoice_status:
       sendInvoiceAction === SendInvoiceAction.BILLED ? InvoiceStatus.BILLED : InvoiceStatus.DRAFT,
-    payment_status: isPaymentOpen ? PaymentStatus.OPEN : PaymentStatus.OVERDUE,
+    payment_status: isPaymentOpen ? InvoicePaymentStatus.OPEN : InvoicePaymentStatus.OVERDUE,
     created_at: currentDate,
     updated_at: currentDate,
   })
@@ -419,7 +419,7 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
     tax_toggle: data.tax_toggle,
     payment_account_id: data.payment_account_id,
     payment_term_id: paymentTerm.id,
-    payment_status: isPaymentOpen ? PaymentStatus.OPEN : PaymentStatus.OVERDUE,
+    payment_status: isPaymentOpen ? InvoicePaymentStatus.OPEN : InvoicePaymentStatus.OVERDUE,
     invoice_status: currentInvoiceStatus,
     updated_at: currentDate,
   })
@@ -726,11 +726,11 @@ export const updateOverdueInvoices = async () => {
     due_date: {
       lt: startOfDay(new Date()),
     },
-    payment_status: PaymentStatus.OPEN,
+    payment_status: InvoicePaymentStatus.OPEN,
   })
 
   await InvoiceRepository.updateInvoicePaymentStatusByIds(
     overdueInvoices.map((invoice) => invoice.id),
-    PaymentStatus.OVERDUE
+    InvoicePaymentStatus.OVERDUE
   )
 }
