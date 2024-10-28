@@ -6,5 +6,7 @@ const router = express.Router()
 
 router.get("/", PaymentController.index)
 router.post("/", uploadMiddleware.array("files"), PaymentController.store)
+router.get("/:id", PaymentController.show)
+router.put("/:id", uploadMiddleware.array("files"), PaymentController.update)
 
 export default router

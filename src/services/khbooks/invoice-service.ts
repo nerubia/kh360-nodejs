@@ -11,6 +11,7 @@ import * as InvoiceLinkRepository from "../../repositories/khbooks/invoice-link-
 import * as InvoiceRepository from "../../repositories/khbooks/invoice-repository"
 import * as PaymentTermRepository from "../../repositories/khbooks/payment-term-repository"
 import * as TaxTypeRepository from "../../repositories/khbooks/tax-type-repository"
+import * as PaymentRepository from "../../repositories/khbooks/payment-repository"
 import * as PaymentDetailRepository from "../../repositories/khbooks/payment-detail-repository"
 import { type Contract } from "../../types/contract-type"
 import {
@@ -31,6 +32,7 @@ import { sendMail } from "../../utils/sendgrid"
 import * as InvoiceAttachmentService from "../khbooks/invoice-attachment-service"
 import * as InvoiceDetailService from "../khbooks/invoice-detail-service"
 import { InvoiceActivityAction } from "../../types/invoice-activity-type"
+import { PaymentStatus } from "../../types/payment-type"
 
 export const getAllByFilters = async (
   invoice_date: string,
@@ -180,11 +182,19 @@ export const getAllByFilters = async (
     sort_order
   )
 
+  const receivedPayments = await PaymentRepository.getByFilters({
+    payment_status: PaymentStatus.RECEIVED,
+  })
+  const receivedPaymentIds = receivedPayments.map((payment) => payment.id)
+
   const finalInvoices = await Promise.all(
     invoices.map(async (invoice) => {
       const paymentDetails = await PaymentDetailRepository.getByInvoiceId(invoice.id)
+      const fiteredPaymentDetails = paymentDetails.filter((payment) =>
+        receivedPaymentIds.includes(payment.id)
+      )
 
-      const totalPayments = paymentDetails.reduce((acc, payment) => {
+      const totalPayments = fiteredPaymentDetails.reduce((acc, payment) => {
         const paymentAmount =
           payment.payment_amount !== null ? payment.payment_amount.toNumber() : 0
         return acc + paymentAmount

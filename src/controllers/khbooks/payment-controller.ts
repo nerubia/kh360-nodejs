@@ -55,7 +55,6 @@ export const show = async (req: Request, res: Response) => {
 /**
  * Store a new payment.
  * @param req.body.client_id - Client id.
- * @param req.body.company_id - Company id.
  * @param req.body.to - To.
  * @param req.body.cc - Cc.
  * @param req.body.bcc - Bcc.
@@ -63,7 +62,6 @@ export const show = async (req: Request, res: Response) => {
  * @param req.body.payment_date - Payment date.
  * @param req.body.or_no - OR number.
  * @param req.body.payment_reference_no - Payment reference number.
- * @param req.body.payment_account_id - Payment account id.
  * @param req.body.payment_amount - Payment amount.
  * @param req.body.payment_amount_php - Payment amount in PHP.
  * @param req.body.payment_status - Payment status.
@@ -130,6 +128,94 @@ export const store = async (req: Request, res: Response) => {
     await PaymentService.uploadAttachments(newPayment.id, files)
 
     res.json(newPayment)
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Update an existing invoice.
+ * @param req.body.client_id - Client id.
+ * @param req.body.to - To.
+ * @param req.body.cc - Cc.
+ * @param req.body.bcc - Bcc.
+ * @param req.body.currency_id - Currency id.
+ * @param req.body.payment_date - Payment date.
+ * @param req.body.or_no - OR number.
+ * @param req.body.payment_reference_no - Payment reference number.
+ * @param req.body.payment_amount - Payment amount.
+ * @param req.body.payment_amount_php - Payment amount in PHP.
+ * @param req.body.payment_status - Payment status.
+ * @param req.body.payment_details - Payment details.
+ * @param req.body.remarks - Remarks.
+ * @param req.body.send_payment_action - Send payment action.
+ */
+export const update = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const {
+      to,
+      cc,
+      bcc,
+      client_id,
+      currency_id,
+      payment_date,
+      payment_reference_no,
+      or_no,
+      payment_amount,
+      payment_amount_php,
+      payment_status,
+      remarks,
+      payment_details,
+      send_payment_action,
+    } = req.body
+
+    const files = req.files as S3File[]
+
+    await createPaymentSchema.validate({
+      to,
+      cc,
+      bcc,
+      client_id,
+      currency_id,
+      payment_date,
+      payment_reference_no,
+      or_no,
+      payment_amount,
+      payment_amount_php,
+      payment_status,
+      payment_details: JSON.parse(payment_details),
+      remarks,
+    })
+
+    const updatedPayment = await PaymentService.update(
+      Number(id),
+      {
+        to,
+        cc,
+        bcc,
+        currency_id: parseInt(currency_id as string),
+        payment_date: payment_date as string,
+        payment_details: JSON.parse(payment_details),
+        payment_reference_no: payment_reference_no as string,
+        or_no: or_no as string,
+        payment_amount: parseFloat(payment_amount as string),
+        payment_amount_php: parseFloat(payment_amount_php as string),
+        payment_status: payment_status as string,
+      },
+      send_payment_action as SendPaymentAction
+    )
+
+    await PaymentService.uploadAttachments(updatedPayment.id, files)
+
+    res.json(updatedPayment)
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
