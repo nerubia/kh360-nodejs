@@ -1,5 +1,6 @@
 import { InvoiceActivityAction } from "../../types/invoice-activity-type"
-import { type PaymentStatus, type InvoiceStatus } from "../../types/invoice-type"
+import { type InvoicePaymentStatus, type InvoiceStatus } from "../../types/invoice-type"
+import { PaymentStatus } from "../../types/payment-type"
 import prisma from "../../utils/prisma"
 import { type Prisma } from "@prisma/client"
 
@@ -207,6 +208,21 @@ export const getById = async (id: number) => {
           },
         },
       },
+      payment_details: {
+        select: {
+          id: true,
+          payments: {
+            select: {
+              payment_no: true,
+              payment_date: true,
+              payment_amount: true,
+            },
+            where: {
+              payment_status: PaymentStatus.RECEIVED,
+            },
+          },
+        },
+      },
       payment_terms: {
         select: {
           name: true,
@@ -252,7 +268,10 @@ export const updateInvoiceStatusById = async (id: number, status: InvoiceStatus)
   })
 }
 
-export const updateInvoicePaymentStatusByIds = async (ids: number[], status: PaymentStatus) => {
+export const updateInvoicePaymentStatusByIds = async (
+  ids: number[],
+  status: InvoicePaymentStatus
+) => {
   return await prisma.invoices.updateMany({
     where: {
       id: {
