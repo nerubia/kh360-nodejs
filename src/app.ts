@@ -1,4 +1,4 @@
-import express, { type Application } from "express"
+import express, { type Request, type Response, type Application } from "express"
 import bodyParser from "body-parser"
 import cookieParser from "cookie-parser"
 import cors from "cors"
@@ -63,11 +63,14 @@ import paymentRoute from "./routes/khbooks/payment-route"
 
 import morgan from "morgan"
 import logger from "./utils/logger"
+import helmet from "helmet"
+import rateLimit from "express-rate-limit"
 
 const app: Application = express()
 
 const whitelist = process.env.WHITELIST !== undefined ? process.env.WHITELIST.split(",") : []
 
+app.use(helmet())
 app.use(
   cors({
     credentials: true,
@@ -165,6 +168,27 @@ app.use("/kh-books/payments", adminMiddleware, paymentRoute)
 
 app.use("/kh-books/public/invoices", publicInvoiceRoute)
 app.use("/kh-books/client/invoices", publicInvoiceActivityRoute)
+
+/**
+ * Not found
+ */
+
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 30,
+  handler: (req: Request, res: Response) => {
+    logger.warn(`Too many requests from: ${req.ip}`)
+    res.status(429).send({
+      message: "Too many requests, please try again later.",
+    })
+  },
+})
+
+app.use(limiter, (req, res) => {
+  res.status(404).send({
+    message: "Not found",
+  })
+})
 
 /**
  * Global error
