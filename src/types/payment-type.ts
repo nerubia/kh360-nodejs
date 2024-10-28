@@ -6,7 +6,7 @@ export interface Payment {
   to: string
   cc: string
   bcc: string
-  client_id: number | null
+  client_id?: number | null
   company_id?: number | null
   currency_id: number | null
   payment_date: string | null
@@ -19,6 +19,7 @@ export interface Payment {
   payment_details?: PaymentDetail[]
   payment_emails?: PaymentEmail[]
   clients?: Client | null
+  payment_attachment_ids?: number[]
 }
 
 export enum PaymentDateFilter {
@@ -38,6 +39,7 @@ export enum SendPaymentAction {
   NONE = "none",
   RECEIVED = "received",
   SEND = "send",
+  EDITED = "edited",
 }
 
 export enum PaymentStatus {

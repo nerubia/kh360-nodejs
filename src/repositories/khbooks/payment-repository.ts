@@ -33,6 +33,19 @@ export const paginateByFilters = async (
   })
 }
 
+export const getByFilters = async (where: Prisma.paymentsWhereInput) => {
+  return await prisma.payments.findMany({
+    where,
+    include: {
+      clients: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  })
+}
+
 export const countAllByFilters = async (where: Prisma.paymentsWhereInput) => {
   const count = await prisma.payments.count({
     where,
@@ -131,6 +144,23 @@ export const getById = async (id: number) => {
           prefix: true,
         },
       },
+      payment_emails: {
+        select: {
+          id: true,
+          payment_id: true,
+          email_type: true,
+          email_address: true,
+        },
+      },
+      payment_attachments: {
+        select: {
+          id: true,
+          payment_id: true,
+          filename: true,
+          mime_type: true,
+          description: true,
+        },
+      },
       payment_details: {
         select: {
           id: true,
@@ -141,5 +171,14 @@ export const getById = async (id: number) => {
         },
       },
     },
+  })
+}
+
+export const updateById = async (id: number, data: Prisma.paymentsUncheckedUpdateInput) => {
+  return await prisma.payments.update({
+    where: {
+      id,
+    },
+    data,
   })
 }
