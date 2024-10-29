@@ -1,6 +1,7 @@
 import { type Prisma } from "@prisma/client"
 import * as PaymentAccountRepository from "../../repositories/khbooks/payment-account-repository"
 import { getCache, setCache } from "../../utils/redis"
+import CustomError from "../../utils/custom-error"
 
 export const getAllByFilters = async (page: string) => {
   const KEY = `PAYMENT_ACCOUNTS_${page}`
@@ -38,4 +39,18 @@ export const getAllByFilters = async (page: string) => {
   }
 
   return results
+}
+
+export const getById = async (id: number) => {
+  return await PaymentAccountRepository.getById(id)
+}
+
+export const deleteById = async (id: number) => {
+  const paymentAccount = await PaymentAccountRepository.getById(id)
+
+  if (paymentAccount === null) {
+    throw new CustomError("Payment account not found", 400)
+  }
+
+  await PaymentAccountRepository.deleteById(id)
 }
