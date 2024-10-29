@@ -31,3 +31,19 @@ export const countAllByFilters = async (where: Prisma.payment_accountsWhereInput
   })
   return count
 }
+
+export const getById = async (id: number) => {
+  return await prisma.payment_accounts.findFirst({
+    where: {
+      id,
+    },
+  })
+}
+
+export const deleteById = async (id: number) => {
+  await prisma.payment_accounts.delete({
+    where: {
+      id,
+    },
+  })
+}
