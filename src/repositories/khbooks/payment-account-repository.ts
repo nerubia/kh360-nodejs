@@ -40,6 +40,29 @@ export const getById = async (id: number) => {
   })
 }
 
+export const getByName = async (name: string) => {
+  return await prisma.payment_accounts.findFirst({
+    where: {
+      name,
+    },
+  })
+}
+
+export const create = async (data: Prisma.payment_accountsUncheckedCreateInput) => {
+  return await prisma.payment_accounts.create({
+    data,
+  })
+}
+
+export const updateById = async (id: number, data: Prisma.payment_accountsUncheckedUpdateInput) => {
+  return await prisma.payment_accounts.update({
+    where: {
+      id,
+    },
+    data,
+  })
+}
+
 export const deleteById = async (id: number) => {
   await prisma.payment_accounts.delete({
     where: {

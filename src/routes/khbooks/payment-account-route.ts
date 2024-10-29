@@ -4,6 +4,8 @@ import * as PaymentAccountController from "../../controllers/khbooks/payment-acc
 const router = express.Router()
 
 router.get("/", PaymentAccountController.index)
+router.post("/", PaymentAccountController.store)
+router.put("/:id", PaymentAccountController.update)
 router.get("/:id", PaymentAccountController.show)
 router.delete("/:id", PaymentAccountController.destroy)
 
