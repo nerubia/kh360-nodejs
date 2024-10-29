@@ -199,7 +199,10 @@ export const create = async (data: Payment, sendPaymentAction: SendPaymentAction
 
   await PaymentDetailService.updateByPaymentId(newPayment.id, data.payment_details ?? [])
 
-  if (sendPaymentAction === SendPaymentAction.RECEIVED) {
+  if (
+    sendPaymentAction === SendPaymentAction.RECEIVED ||
+    sendPaymentAction === SendPaymentAction.SEND
+  ) {
     const invoiceIds = data.payment_details
       ?.map((detail) => detail.invoice_id)
       .filter((id) => id !== null)
@@ -360,7 +363,8 @@ export const update = async (id: number, data: Payment, sendPaymentAction: SendP
 
   if (
     currentPaymentStatus === PaymentStatus.DRAFT &&
-    sendPaymentAction === SendPaymentAction.RECEIVED
+    (sendPaymentAction === SendPaymentAction.RECEIVED ||
+      sendPaymentAction === SendPaymentAction.SEND)
   ) {
     currentPaymentStatus = PaymentStatus.RECEIVED
 
@@ -377,7 +381,7 @@ export const update = async (id: number, data: Payment, sendPaymentAction: SendP
 
       await InvoiceActivityRepository.create({
         invoice_id: invoice.id,
-        action: SendPaymentAction.RECEIVED,
+        action: InvoiceActivityAction.PAID,
         created_at: currentDate,
         updated_at: currentDate,
       })
@@ -392,11 +396,7 @@ export const update = async (id: number, data: Payment, sendPaymentAction: SendP
     payment_amount: data.payment_amount ?? 0.0,
     payment_amount_php: data.payment_amount_php ?? 0.0,
 
-    payment_status:
-      sendPaymentAction === SendPaymentAction.RECEIVED ||
-      sendPaymentAction === SendPaymentAction.SEND
-        ? PaymentStatus.RECEIVED
-        : PaymentStatus.DRAFT,
+    payment_status: currentPaymentStatus,
 
     created_at: currentDate,
     updated_at: currentDate,

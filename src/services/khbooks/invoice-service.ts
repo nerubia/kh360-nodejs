@@ -313,7 +313,28 @@ export const create = async (data: Invoice, sendInvoiceAction: SendInvoiceAction
 }
 
 export const show = async (id: number) => {
-  return await InvoiceRepository.getById(id)
+  const invoice = await InvoiceRepository.getById(id)
+  if (invoice === null) {
+    throw new CustomError("Invoice not found", 400)
+  }
+
+  const fiteredPaymentDetails = invoice.payment_details.filter(
+    (payment) => payment.payments?.payment_status === PaymentStatus.RECEIVED
+  )
+
+  const totalPayments = fiteredPaymentDetails.reduce((acc, payment) => {
+    const paymentAmount =
+      payment.payments?.payment_amount !== null ? payment.payments?.payment_amount.toNumber() : 0
+    return acc + (paymentAmount ?? 0)
+  }, 0)
+
+  const invoiceAmount = invoice.invoice_amount !== null ? invoice.invoice_amount.toNumber() : 0
+
+  return {
+    ...invoice,
+    paid_amount: totalPayments,
+    open_balance: invoiceAmount - totalPayments,
+  }
 }
 
 export const update = async (id: number, data: Invoice, sendInvoiceAction: SendInvoiceAction) => {
