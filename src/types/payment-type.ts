@@ -1,6 +1,9 @@
 import { type PaymentDetail } from "./payment-detail-type"
 import { type PaymentEmail } from "./payment-email-type"
 import { type Client } from "./client-type"
+import { type Company } from "./company-type"
+import { type Currency } from "./currency-type"
+
 export interface Payment {
   id?: number
   to: string
@@ -45,4 +48,16 @@ export enum SendPaymentAction {
 export enum PaymentStatus {
   DRAFT = "draft",
   RECEIVED = "received",
+}
+
+export interface EmailPaymentContent {
+  payment_no: string | null
+  payment_date: string
+  payment_amount: string | null
+  or_no: string | null
+  payment_details?: PaymentDetail[]
+
+  clients: Partial<Client> | null
+  companies?: Company | null
+  currencies?: Currency | null
 }

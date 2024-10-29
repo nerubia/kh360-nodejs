@@ -15,11 +15,15 @@ import * as ClientRepository from "../../repositories/client-repository"
 import * as CurrencyRepository from "../../repositories/khbooks/currency-repository"
 import * as PaymentEmailRepository from "../../repositories/khbooks/payment-email-repository"
 import * as PaymentAttachmentRepository from "../../repositories/khbooks/payment-attachment-repository"
+import * as PaymentDetailRepository from "../../repositories/khbooks/payment-detail-repository"
 import * as PaymentAttachmentService from "../khbooks/payment-attachment-service"
 import * as PaymentDetailService from "../khbooks/payment-detail-service"
 import { type S3File } from "../../types/s3-file-type"
 import { InvoiceStatus } from "../../types/invoice-type"
 import { InvoiceActivityAction } from "../../types/invoice-activity-type"
+import { generatePaymentEmailContent } from "../../utils/generate-payment-email-content"
+import { sendMail } from "../../utils/sendgrid"
+import { generatePayment } from "../../utils/generate-payment"
 
 export const getAllByFilters = async (
   payment_date: string,
@@ -396,5 +400,121 @@ export const update = async (id: number, data: Payment, sendPaymentAction: SendP
 
     created_at: currentDate,
     updated_at: currentDate,
+  })
+}
+
+export const sendPayment = async (id: number) => {
+  const payment = await PaymentRepository.getById(id)
+
+  if (payment === null) {
+    throw new CustomError("Payment not found", 400)
+  }
+
+  const to = payment.payment_emails.find(
+    (paymentEmail) => paymentEmail.email_type === "to"
+  )?.email_address
+  const cc = payment.payment_emails.find(
+    (paymentEmail) => paymentEmail.email_type === "cc"
+  )?.email_address
+  const bcc = payment.payment_emails.find(
+    (paymentEmail) => paymentEmail.email_type === "bcc"
+  )?.email_address
+
+  const toEmails = to?.split(",") ?? []
+  const ccEmails = cc?.split(",") ?? []
+  const bccEmails = bcc?.split(",") ?? []
+
+  if (toEmails.length === 0) {
+    throw new CustomError("Invoice email not found", 400)
+  }
+
+  const pdfBuffer = await generatePayment({
+    payment_no: payment.payment_no,
+    payment_date: payment.payment_date?.toISOString() ?? "",
+    payment_amount: payment.payment_amount?.toString() ?? "",
+    or_no: payment.or_no,
+    payment_details: await Promise.all(
+      payment.payment_details.map(async (paymentDetail) => {
+        const paymentDetails = await PaymentDetailRepository.getByInvoiceId(
+          paymentDetail.invoice_id ?? 0
+        )
+
+        const invoiceAmount = paymentDetail.invoices?.invoice_amount?.toNumber() ?? 0
+
+        const totalPayments = paymentDetails.reduce((acc, payment) => {
+          const paymentAmount =
+            paymentDetail.id !== payment.id && payment.payment_amount !== null
+              ? payment.payment_amount.toNumber()
+              : 0
+          return acc + paymentAmount
+        }, 0)
+
+        const openBalance = invoiceAmount - totalPayments
+
+        return {
+          id: paymentDetail.id,
+          payment_id: null,
+          invoice_id: null,
+          payment_amount: paymentDetail.payment_amount?.toString() ?? "",
+          showQuantityField: false,
+          open_balance: openBalance,
+          invoices: {
+            invoice_no: paymentDetail.invoices?.invoice_no ?? "",
+            invoice_date: paymentDetail.invoices?.invoice_date?.toISOString() ?? "",
+            due_date: paymentDetail.invoices?.due_date?.toISOString() ?? "",
+            invoice_amount: invoiceAmount,
+            tax_type_id: 0,
+            tax_toggle: false,
+            payment_account_id: 0,
+            payment_term_id: 0,
+            invoice_details: [],
+          },
+        }
+      })
+    ),
+    clients: {
+      name: payment.clients?.name ?? "",
+      address1: payment.clients?.address1 ?? "",
+      address2: payment.clients?.address2 ?? "",
+      city: payment.clients?.city ?? "",
+      state: payment.clients?.state ?? "",
+      postal_code: payment.clients?.postal_code ?? null,
+      countries: payment.clients?.countries,
+    },
+    companies: payment.companies,
+    currencies: payment.currencies,
+  })
+
+  const emailContent = await generatePaymentEmailContent({
+    payment_no: payment.payment_no,
+    payment_date: payment.payment_date?.toISOString() ?? "",
+    payment_amount: payment.payment_amount?.toString() ?? "",
+    or_no: payment.or_no,
+    clients: {
+      name: payment.clients?.name ?? "",
+      address1: payment.clients?.address1 ?? "",
+      address2: payment.clients?.address2 ?? "",
+      city: payment.clients?.city ?? "",
+      state: payment.clients?.state ?? "",
+      postal_code: payment.clients?.postal_code ?? null,
+      countries: payment.clients?.countries,
+    },
+    companies: payment.companies,
+  })
+
+  await sendMail({
+    to: toEmails,
+    cc: ccEmails,
+    bcc: bccEmails,
+    subject: `Payment Receipt from ${payment.companies?.name}`,
+    content: emailContent,
+    attachments: [
+      {
+        content: pdfBuffer.toString("base64"),
+        filename: "document.pdf",
+        type: "application/pdf",
+        disposition: "attachment",
+      },
+    ],
   })
 }

@@ -192,6 +192,7 @@ model clients {
   offerings          offerings[]
   payments           payments[]
   payment_accounts   payment_accounts? @relation(fields: [payment_account_id], references: [id])
+  countries          countries?        @relation(fields: [country_id], references: [id])
 
   @@index([company_id], map: "index_clients_on_company_id")
   @@index([currency_id], map: "index_clients_on_currency_id")
@@ -360,6 +361,7 @@ model countries {
   eea               Int?     @db.TinyInt
   is_active         Boolean?
 
+  clients          clients[]
   payment_accounts payment_accounts[]
 }
 

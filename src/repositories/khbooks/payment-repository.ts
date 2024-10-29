@@ -121,6 +121,19 @@ export const getById = async (id: number) => {
           display_name: true,
           contact_no: true,
           status: true,
+
+          address1: true,
+          address2: true,
+          city: true,
+          state: true,
+          postal_code: true,
+
+          countries: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       },
       companies: {
@@ -164,10 +177,20 @@ export const getById = async (id: number) => {
       payment_details: {
         select: {
           id: true,
+          payment_id: true,
           invoice_id: true,
           payment_amount: true,
           created_at: true,
           updated_at: true,
+          invoices: {
+            select: {
+              id: true,
+              invoice_no: true,
+              invoice_date: true,
+              due_date: true,
+              invoice_amount: true,
+            },
+          },
         },
       },
     },
