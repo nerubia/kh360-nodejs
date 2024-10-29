@@ -19,6 +19,7 @@ import * as PaymentAttachmentService from "../khbooks/payment-attachment-service
 import * as PaymentDetailService from "../khbooks/payment-detail-service"
 import { type S3File } from "../../types/s3-file-type"
 import { InvoiceStatus } from "../../types/invoice-type"
+import { InvoiceActivityAction } from "../../types/invoice-activity-type"
 
 export const getAllByFilters = async (
   payment_date: string,
@@ -198,6 +199,7 @@ export const create = async (data: Payment, sendPaymentAction: SendPaymentAction
     const invoiceIds = data.payment_details
       ?.map((detail) => detail.invoice_id)
       .filter((id) => id !== null)
+
     const invoices = await InvoiceRepository.getByIds(invoiceIds ?? [])
 
     for (const invoice of invoices) {
@@ -208,7 +210,7 @@ export const create = async (data: Payment, sendPaymentAction: SendPaymentAction
 
       await InvoiceActivityRepository.create({
         invoice_id: invoice.id,
-        action: SendPaymentAction.RECEIVED,
+        action: InvoiceActivityAction.PAID,
         created_at: currentDate,
         updated_at: currentDate,
       })
