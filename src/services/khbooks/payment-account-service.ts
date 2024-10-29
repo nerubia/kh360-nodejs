@@ -1,7 +1,8 @@
 import { type Prisma } from "@prisma/client"
 import * as PaymentAccountRepository from "../../repositories/khbooks/payment-account-repository"
+import * as CountryRepository from "../../repositories/khbooks/country-repository"
 import CustomError from "../../utils/custom-error"
-import { type PaymentAccountFilters } from "../../types/payment-account-type"
+import { type PaymentAccount, type PaymentAccountFilters } from "../../types/payment-account-type"
 
 export const getAllByFilters = async ({
   payment_account_name,
@@ -80,6 +81,78 @@ export const getAllByFilters = async ({
 
 export const getById = async (id: number) => {
   return await PaymentAccountRepository.getById(id)
+}
+
+export const create = async (data: PaymentAccount) => {
+  let country = null
+  if (data.country_id !== null && data.country_id !== undefined) {
+    country = await CountryRepository.getById(data.country_id ?? 0)
+    if (country === null) {
+      throw new CustomError("Country not found", 400)
+    }
+  }
+
+  const currentDate = new Date()
+
+  return await PaymentAccountRepository.create({
+    name: data.name,
+    payment_network: data.payment_network,
+    account_name: data.account_name,
+    account_type: data.account_type,
+    account_no: data.account_no,
+    bank_name: data.bank_name,
+    bank_branch: data.bank_branch,
+    bank_code: data.bank_code,
+    swift_code: data.swift_code,
+    address1: data.address1,
+    address2: data.address2,
+    city: data.city,
+    state: data.state,
+    country_id: country?.id ?? null,
+    postal_code: data.postal_code,
+    description: data.description,
+    created_at: currentDate,
+    updated_at: currentDate,
+  })
+}
+
+export const updateById = async (id: number, data: PaymentAccount) => {
+  const paymentAccount = await PaymentAccountRepository.getById(id)
+
+  if (paymentAccount === null) {
+    throw new CustomError("Payment Account not found", 400)
+  }
+
+  let country = null
+  if (data.country_id !== null && data.country_id !== undefined) {
+    country = await CountryRepository.getById(data.country_id ?? 0)
+    if (country === null) {
+      throw new CustomError("Country not found", 400)
+    }
+  }
+
+  const currentDate = new Date()
+
+  return await PaymentAccountRepository.updateById(paymentAccount.id, {
+    name: data.name,
+    payment_network: data.payment_network,
+    account_name: data.account_name,
+    account_type: data.account_type,
+    account_no: data.account_no,
+    bank_name: data.bank_name,
+    bank_branch: data.bank_branch,
+    bank_code: data.bank_code,
+    swift_code: data.swift_code,
+    address1: data.address1,
+    address2: data.address2,
+    city: data.city,
+    state: data.state,
+    country_id: country?.id ?? null,
+    postal_code: data.postal_code,
+    description: data.description,
+    created_at: currentDate,
+    updated_at: currentDate,
+  })
 }
 
 export const deleteById = async (id: number) => {
