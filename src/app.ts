@@ -70,6 +70,8 @@ const app: Application = express()
 
 const whitelist = process.env.WHITELIST !== undefined ? process.env.WHITELIST.split(",") : []
 
+app.set("trust proxy", true)
+
 app.use(helmet())
 app.use(
   cors({

@@ -1,3 +1,5 @@
+import { type Invoice } from "./invoice-type"
+
 export interface PaymentDetail {
   id?: number
   payment_id: number | null
@@ -5,4 +7,7 @@ export interface PaymentDetail {
   payment_amount: string | number
   showQuantityField: boolean
   quantityError?: string
+
+  invoices?: Invoice
+  open_balance?: number
 }
