@@ -1,44 +1,81 @@
 import { type Prisma } from "@prisma/client"
 import * as PaymentAccountRepository from "../../repositories/khbooks/payment-account-repository"
-import { getCache, setCache } from "../../utils/redis"
 import CustomError from "../../utils/custom-error"
+import { type PaymentAccountFilters } from "../../types/payment-account-type"
 
-export const getAllByFilters = async (page: string) => {
-  const KEY = `PAYMENT_ACCOUNTS_${page}`
+export const getAllByFilters = async ({
+  payment_account_name,
+  payment_network,
+  account_name,
+  account_no,
+  bank_name,
+  page,
+}: PaymentAccountFilters) => {
+  const itemsPerPage = 20
+  const parsedPage = parseInt(page ?? "1")
+  const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
-  let results = await getCache(KEY)
+  const where: Prisma.payment_accountsWhereInput = {}
 
-  if (results === null) {
-    const itemsPerPage = 20
-    const parsedPage = parseInt(page)
-    const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
-
-    const where: Prisma.payment_accountsWhereInput = {}
-
-    const paymentAccounts = await PaymentAccountRepository.paginateByFilters(
-      (currentPage - 1) * itemsPerPage,
-      itemsPerPage,
-      where
-    )
-
-    const totalItems = await PaymentAccountRepository.countAllByFilters(where)
-    const totalPages = Math.ceil(totalItems / itemsPerPage)
-
-    results = {
-      data: paymentAccounts,
-      pageInfo: {
-        hasPreviousPage: currentPage > 1,
-        hasNextPage: currentPage < totalPages,
-        currentPage,
-        totalPages,
-        totalItems,
+  if (payment_account_name !== undefined) {
+    Object.assign(where, {
+      name: {
+        contains: payment_account_name,
       },
-    }
-
-    await setCache(KEY, results)
+    })
   }
 
-  return results
+  if (payment_network !== undefined) {
+    Object.assign(where, {
+      payment_network: {
+        contains: payment_network,
+      },
+    })
+  }
+
+  if (account_name !== undefined) {
+    Object.assign(where, {
+      account_name: {
+        contains: account_name,
+      },
+    })
+  }
+
+  if (account_no !== undefined) {
+    Object.assign(where, {
+      account_no: {
+        contains: account_no,
+      },
+    })
+  }
+
+  if (bank_name !== undefined) {
+    Object.assign(where, {
+      bank_name: {
+        contains: bank_name,
+      },
+    })
+  }
+
+  const paymentAccounts = await PaymentAccountRepository.paginateByFilters(
+    (currentPage - 1) * itemsPerPage,
+    itemsPerPage,
+    where
+  )
+
+  const totalItems = await PaymentAccountRepository.countAllByFilters(where)
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+
+  return {
+    data: paymentAccounts,
+    pageInfo: {
+      hasPreviousPage: currentPage > 1,
+      hasNextPage: currentPage < totalPages,
+      currentPage,
+      totalPages,
+      totalItems,
+    },
+  }
 }
 
 export const getById = async (id: number) => {
