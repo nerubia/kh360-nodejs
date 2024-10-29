@@ -3,7 +3,7 @@ import logger from "../../utils/logger"
 import * as PaymentService from "../../services/khbooks/payment-service"
 import { createPaymentSchema } from "../../utils/validation/payment-schema"
 import { type S3File } from "../../types/s3-file-type"
-import { type SendPaymentAction } from "../../types/payment-type"
+import { SendPaymentAction } from "../../types/payment-type"
 import { ValidationError } from "yup"
 import CustomError from "../../utils/custom-error"
 
@@ -28,24 +28,6 @@ export const index = async (req: Request, res: Response) => {
       page as string
     )
     res.json(results)
-  } catch (error) {
-    logger.error(error)
-    res.status(500).json({ message: "Something went wrong" })
-  }
-}
-
-/**
- * Get a specific payment by ID.
- * @param req.params.id - Invoice id
- */
-export const show = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params
-    const payment = await PaymentService.show(parseInt(id))
-
-    res.json({
-      ...payment,
-    })
   } catch (error) {
     logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
@@ -127,6 +109,10 @@ export const store = async (req: Request, res: Response) => {
 
     await PaymentService.uploadAttachments(newPayment.id, files)
 
+    if (send_payment_action === SendPaymentAction.SEND) {
+      await PaymentService.sendPayment(newPayment.id)
+    }
+
     res.json(newPayment)
   } catch (error) {
     if (error instanceof ValidationError) {
@@ -135,6 +121,24 @@ export const store = async (req: Request, res: Response) => {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
     }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Get a specific payment by ID.
+ * @param req.params.id - Invoice id
+ */
+export const show = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const payment = await PaymentService.show(parseInt(id))
+
+    res.json({
+      ...payment,
+    })
+  } catch (error) {
     logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
