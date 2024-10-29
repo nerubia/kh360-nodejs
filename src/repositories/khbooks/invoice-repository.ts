@@ -98,6 +98,7 @@ export const getById = async (id: number) => {
           id: true,
           name: true,
           display_name: true,
+          email: true,
           contact_no: true,
           status: true,
         },
@@ -216,6 +217,7 @@ export const getById = async (id: number) => {
               payment_no: true,
               payment_date: true,
               payment_amount: true,
+              payment_status: true,
             },
             where: {
               payment_status: PaymentStatus.RECEIVED,
@@ -363,6 +365,7 @@ export const getByIds = async (ids: number[]) => {
           id: true,
           name: true,
           display_name: true,
+          email: true,
           contact_no: true,
           status: true,
         },
