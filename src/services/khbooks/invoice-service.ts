@@ -41,7 +41,8 @@ export const getAllByFilters = async (
   due_date: string,
   page: string,
   sort_by?: "invoice_no" | "due_date",
-  sort_order?: "asc" | "desc"
+  sort_order?: "asc" | "desc",
+  has_open_balance?: boolean
 ) => {
   const itemsPerPage = 20
   const parsedPage = parseInt(page)
@@ -192,7 +193,7 @@ export const getAllByFilters = async (
     invoices.map(async (invoice) => {
       const paymentDetails = await PaymentDetailRepository.getByInvoiceId(invoice.id)
       const fiteredPaymentDetails = paymentDetails.filter((payment) =>
-        receivedPaymentIds.includes(payment.id)
+        receivedPaymentIds.includes(payment.payment_id ?? 0)
       )
 
       const totalPayments = fiteredPaymentDetails.reduce((acc, payment) => {
@@ -202,11 +203,24 @@ export const getAllByFilters = async (
       }, 0)
 
       const invoiceAmount = invoice.invoice_amount !== null ? invoice.invoice_amount.toNumber() : 0
+      const open_balance = invoiceAmount - totalPayments
+
+      if (has_open_balance === true) {
+        if (
+          invoice.invoice_status === InvoiceStatus.DRAFT ||
+          invoice.invoice_status === InvoiceStatus.CANCELLED
+        ) {
+          return
+        }
+        if (open_balance === 0) {
+          return
+        }
+      }
 
       return {
         ...invoice,
         paid_amount: totalPayments,
-        open_balance: invoiceAmount - totalPayments,
+        open_balance,
       }
     })
   )
@@ -215,7 +229,7 @@ export const getAllByFilters = async (
   const totalPages = Math.ceil(totalItems / itemsPerPage)
 
   return {
-    data: finalInvoices,
+    data: finalInvoices.filter((invoice) => invoice !== null && invoice !== undefined),
     pageInfo: {
       hasPreviousPage: currentPage > 1,
       hasNextPage: currentPage < totalPages,

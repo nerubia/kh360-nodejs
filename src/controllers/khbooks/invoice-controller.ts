@@ -20,10 +20,20 @@ import { SendInvoiceAction } from "../../types/invoice-type"
  * @param req.query.status - Filter by status.
  * @param req.query.due_date - Filter by due_date.
  * @param req.query.page - Page number for pagination.
+ * @param req.query.has_open_balance - Filter invoices with an open balance.
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const { invoice_date, client_id, status, due_date, page, sort_by, sort_order } = req.query
+    const {
+      invoice_date,
+      client_id,
+      status,
+      due_date,
+      page,
+      sort_by,
+      sort_order,
+      has_open_balance,
+    } = req.query
     const results = await InvoiceService.getAllByFilters(
       invoice_date as string,
       parseInt(client_id as string),
@@ -31,7 +41,8 @@ export const index = async (req: Request, res: Response) => {
       due_date as string,
       page as string,
       sort_by as "invoice_no" | "due_date",
-      sort_order as "asc" | "desc"
+      sort_order as "asc" | "desc",
+      Boolean(has_open_balance)
     )
     res.json(results)
   } catch (error) {
