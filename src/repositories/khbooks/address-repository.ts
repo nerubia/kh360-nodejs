@@ -6,3 +6,12 @@ export const create = async (data: Prisma.addressesUncheckedCreateInput) => {
     data,
   })
 }
+
+export const updateById = async (id: number, data: Prisma.addressesUncheckedUpdateInput) => {
+  return await prisma.addresses.update({
+    where: {
+      id,
+    },
+    data,
+  })
+}
