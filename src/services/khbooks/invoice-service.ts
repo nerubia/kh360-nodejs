@@ -697,6 +697,15 @@ export const cancelInvoice = async (id: number) => {
     throw new CustomError("Only invoices that have been billed or viewed can be cancelled", 400)
   }
 
+  const currentDate = new Date()
+
+  await InvoiceActivityRepository.create({
+    invoice_id: invoice.id,
+    action: InvoiceActivityAction.CANCELLED,
+    created_at: currentDate,
+    updated_at: currentDate,
+  })
+
   await InvoiceRepository.updateInvoiceStatusById(invoice.id, InvoiceStatus.CANCELLED)
 }
 
