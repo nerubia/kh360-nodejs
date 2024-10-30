@@ -15,3 +15,17 @@ export const create = async (data: Address) => {
     updated_at: currentDate,
   })
 }
+
+export const update = async (id: number, data: Address) => {
+  const currentDate = new Date()
+
+  return await AddressRepository.updateById(id, {
+    address1: data.address1,
+    address2: data.address2,
+    city: data.city,
+    state: data.state,
+    country: data.country,
+    postal_code: data.postal_code,
+    updated_at: currentDate,
+  })
+}

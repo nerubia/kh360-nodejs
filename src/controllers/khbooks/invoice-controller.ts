@@ -83,13 +83,13 @@ export const store = async (req: Request, res: Response) => {
       tax_toggle,
       payment_account_id,
       payment_term_id,
-      invoice_details,
       address1,
       address2,
       city,
       state,
       country_id,
       postal_code,
+      invoice_details,
       send_invoice_action,
     } = req.body
 
@@ -226,6 +226,12 @@ export const show = async (req: Request, res: Response) => {
  * @param req.body.tax_toggle - Tax toggle.
  * @param req.body.payment_account_id - Payment account id.
  * @param req.body.payment_term_id - Payment term id.
+ * @param req.body.address1 - Address 1.
+ * @param req.body.address2 - Address 2.
+ * @param req.body.city - City.
+ * @param req.body.state - State.
+ * @param req.body.country_id - Country id.
+ * @param req.body.postal_code - Postal code.
  * @param req.body.invoice_details - Invoice details.
  * @param req.body.invoice_attachment_ids - Invoice attachment ids.
  * @param req.body.send_invoice_action - Send invoice action.
@@ -248,12 +254,27 @@ export const update = async (req: Request, res: Response) => {
       tax_toggle,
       payment_account_id,
       payment_term_id,
+      address1,
+      address2,
+      city,
+      state,
+      country_id,
+      postal_code,
       invoice_details,
       invoice_attachment_ids,
       send_invoice_action,
     } = req.body
 
     const files = req.files as S3File[]
+
+    await createAddressSchema.validate({
+      address1,
+      address2,
+      city,
+      state,
+      country_id,
+      postal_code,
+    })
 
     await createInvoiceSchema.validate({
       client_id,
@@ -294,6 +315,19 @@ export const update = async (req: Request, res: Response) => {
       },
       send_invoice_action as SendInvoiceAction
     )
+
+    if (updatedInvoice.billing_address_id !== null) {
+      const country = await CountryService.getById(parseInt(country_id ?? "0"))
+
+      await AddressService.update(updatedInvoice.billing_address_id, {
+        address1,
+        address2,
+        city,
+        state,
+        country: country?.name ?? null,
+        postal_code,
+      })
+    }
 
     await InvoiceService.uploadAttachments(updatedInvoice.id, files)
 
