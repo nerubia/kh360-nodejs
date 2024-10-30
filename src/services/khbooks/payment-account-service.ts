@@ -1,5 +1,6 @@
 import { type Prisma } from "@prisma/client"
 import * as PaymentAccountRepository from "../../repositories/khbooks/payment-account-repository"
+import * as PaymentNetworkRepository from "../../repositories/khbooks/payment-network-repository"
 import * as CountryRepository from "../../repositories/khbooks/country-repository"
 import CustomError from "../../utils/custom-error"
 import { type PaymentAccount, type PaymentAccountFilters } from "../../types/payment-account-type"
@@ -92,11 +93,19 @@ export const create = async (data: PaymentAccount) => {
     }
   }
 
+  let payment_network = null
+  if (data.payment_network_id !== null && data.payment_network_id !== undefined) {
+    payment_network = await PaymentNetworkRepository.getById(data.payment_network_id ?? 0)
+    if (payment_network === null) {
+      throw new CustomError("Payment Network not found", 400)
+    }
+  }
+
   const currentDate = new Date()
 
   return await PaymentAccountRepository.create({
     name: data.name,
-    payment_network: data.payment_network,
+    payment_network_id: payment_network?.id ?? null,
     account_name: data.account_name,
     account_type: data.account_type,
     account_no: data.account_no,
@@ -131,11 +140,19 @@ export const updateById = async (id: number, data: PaymentAccount) => {
     }
   }
 
+  let payment_network = null
+  if (data.payment_network_id !== null && data.payment_network_id !== undefined) {
+    payment_network = await PaymentNetworkRepository.getById(data.payment_network_id ?? 0)
+    if (payment_network === null) {
+      throw new CustomError("Payment Network not found", 400)
+    }
+  }
+
   const currentDate = new Date()
 
   return await PaymentAccountRepository.updateById(paymentAccount.id, {
     name: data.name,
-    payment_network: data.payment_network,
+    payment_network_id: payment_network?.id ?? null,
     account_name: data.account_name,
     account_type: data.account_type,
     account_no: data.account_no,

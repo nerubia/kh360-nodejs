@@ -1,7 +1,7 @@
 export interface PaymentAccount {
   name?: string | null
   currency_id?: number | null
-  payment_network?: string | null
+  payment_network_id?: number | null
   account_name: string | null
   account_type?: string | null
   account_no: string | null
