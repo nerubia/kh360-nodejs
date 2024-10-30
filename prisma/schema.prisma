@@ -1997,40 +1997,41 @@ model offerings {
 }
 
 model payment_accounts {
-  id              Int        @id @default(autoincrement())
-  name            String?    @default("") @db.VarChar(255)
-  currency_id     Int?
+  id                 Int               @id @default(autoincrement())
+  name               String?           @default("") @db.VarChar(255)
+  currency_id        Int?
   payment_network_id Int?
-  account_name    String?    @default("") @db.VarChar(255)
-  account_type    String?    @default("") @db.VarChar(255)
-  account_no      String?    @default("") @db.VarChar(255)
-  bank_name       String?    @default("") @db.VarChar(255)
-  bank_branch     String?    @default("") @db.VarChar(255)
-  bank_code       String?    @default("") @db.VarChar(50)
-  swift_code      String?    @default("") @db.VarChar(255)
-  address1        String?    @default("") @db.VarChar(255)
-  address2        String?    @default("") @db.VarChar(255)
-  city            String?    @default("") @db.VarChar(255)
-  state           String?    @default("") @db.VarChar(255)
-  country_id      Int?
-  postal_code     String?    @default("") @db.VarChar(255)
-  description     String?    @default("") @db.VarChar(255)
-  created_at      DateTime?  @db.DateTime(0)
-  updated_at      DateTime?  @db.DateTime(0)
-  clients         clients[]
-  invoices        invoices[]
-  countries       countries? @relation(fields: [country_id], references: [id])
+  account_name       String?           @default("") @db.VarChar(255)
+  account_type       String?           @default("") @db.VarChar(255)
+  account_no         String?           @default("") @db.VarChar(255)
+  bank_name          String?           @default("") @db.VarChar(255)
+  bank_branch        String?           @default("") @db.VarChar(255)
+  bank_code          String?           @default("") @db.VarChar(50)
+  swift_code         String?           @default("") @db.VarChar(255)
+  address1           String?           @default("") @db.VarChar(255)
+  address2           String?           @default("") @db.VarChar(255)
+  city               String?           @default("") @db.VarChar(255)
+  state              String?           @default("") @db.VarChar(255)
+  country_id         Int?
+  postal_code        String?           @default("") @db.VarChar(255)
+  description        String?           @default("") @db.VarChar(255)
+  created_at         DateTime?         @db.DateTime(0)
+  updated_at         DateTime?         @db.DateTime(0)
+  clients            clients[]
+  invoices           invoices[]
+  countries          countries?        @relation(fields: [country_id], references: [id])
+  payment_networks   payment_networks? @relation(fields: [payment_network_id], references: [id])
 
   @@index([currency_id], map: "index_payment_accounts_on_currency_id")
 }
 
-
 model payment_networks {
-  id          Int       @id @default(autoincrement())
-  name        String?   @db.VarChar(100)
-  description String?   @db.Text
-  created_at  DateTime? @db.DateTime(0)
-  updated_at  DateTime? @db.DateTime(0)
+  id               Int                @id @default(autoincrement())
+  name             String?            @db.VarChar(100)
+  description      String?            @db.Text
+  created_at       DateTime?          @db.DateTime(0)
+  updated_at       DateTime?          @db.DateTime(0)
+  payment_accounts payment_accounts[]
 }
 
 model tax_types {
