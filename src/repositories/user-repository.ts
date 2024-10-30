@@ -12,6 +12,7 @@ export const getById = async (id: number) => {
       last_name: true,
       slug: true,
       picture: true,
+      is_active: true,
     },
     where: {
       id,
