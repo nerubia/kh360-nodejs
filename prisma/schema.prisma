@@ -2000,7 +2000,7 @@ model payment_accounts {
   id              Int        @id @default(autoincrement())
   name            String?    @default("") @db.VarChar(255)
   currency_id     Int?
-  payment_network String?    @default("") @db.VarChar(100)
+  payment_network_id Int?
   account_name    String?    @default("") @db.VarChar(255)
   account_type    String?    @default("") @db.VarChar(255)
   account_no      String?    @default("") @db.VarChar(255)
@@ -2022,6 +2022,15 @@ model payment_accounts {
   countries       countries? @relation(fields: [country_id], references: [id])
 
   @@index([currency_id], map: "index_payment_accounts_on_currency_id")
+}
+
+
+model payment_networks {
+  id          Int       @id @default(autoincrement())
+  name        String?   @db.VarChar(100)
+  description String?   @db.Text
+  created_at  DateTime? @db.DateTime(0)
+  updated_at  DateTime? @db.DateTime(0)
 }
 
 model tax_types {
