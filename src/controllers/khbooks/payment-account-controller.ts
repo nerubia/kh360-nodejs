@@ -79,7 +79,7 @@ export const store = async (req: Request, res: Response) => {
   try {
     const {
       name,
-      payment_network,
+      payment_network_id,
       account_name,
       account_type,
       account_no,
@@ -97,7 +97,7 @@ export const store = async (req: Request, res: Response) => {
 
     await createPaymentAccountSchema.validate({
       name,
-      payment_network,
+      payment_network_id,
       account_name,
       account_type,
       account_no,
@@ -115,7 +115,7 @@ export const store = async (req: Request, res: Response) => {
 
     const paymentAccount: PaymentAccount = {
       name,
-      payment_network,
+      payment_network_id,
       account_name,
       account_type,
       account_no,
@@ -171,7 +171,7 @@ export const update = async (req: Request, res: Response) => {
     const { id } = req.params
     const {
       name,
-      payment_network,
+      payment_network_id,
       account_name,
       account_type,
       account_no,
@@ -189,7 +189,7 @@ export const update = async (req: Request, res: Response) => {
 
     await createPaymentAccountSchema.validate({
       name,
-      payment_network,
+      payment_network_id,
       account_name,
       account_type,
       account_no,
@@ -207,7 +207,7 @@ export const update = async (req: Request, res: Response) => {
 
     const paymentAccount: PaymentAccount = {
       name,
-      payment_network,
+      payment_network_id,
       account_name,
       account_type,
       account_no,

@@ -201,7 +201,8 @@ export const getById = async (id: number) => {
           address2: true,
           country_id: true,
           postal_code: true,
-          payment_network: true,
+          payment_networks: true,
+          payment_network_id: true,
           countries: {
             select: {
               name: true,
@@ -465,7 +466,8 @@ export const getByIds = async (ids: number[]) => {
           address2: true,
           country_id: true,
           postal_code: true,
-          payment_network: true,
+          payment_networks: true,
+          payment_network_id: true,
           countries: {
             select: {
               name: true,
