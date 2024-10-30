@@ -12,4 +12,5 @@ export enum InvoiceActivityAction {
   VIEWED = "viewed",
   REMINDER_SENT = "reminder_sent",
   PAID = "paid",
+  CANCELLED = "cancelled",
 }
