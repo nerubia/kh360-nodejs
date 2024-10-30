@@ -7,7 +7,7 @@ export const createPaymentAccountSchema = object().shape({
   bank_name: string().required("Bank name is required"),
 
   currency_id: number().nullable(),
-  payment_network: string().nullable(),
+  payment_network_id: number().nullable(),
 
   account_type: string().nullable(),
   bank_branch: string().nullable(),
