@@ -16,6 +16,12 @@ export const paginateByFilters = async (
           name: true,
         },
       },
+      payment_networks: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
     },
     orderBy: [
       {
@@ -36,6 +42,14 @@ export const getById = async (id: number) => {
   return await prisma.payment_accounts.findFirst({
     where: {
       id,
+    },
+    include: {
+      payment_networks: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
     },
   })
 }
