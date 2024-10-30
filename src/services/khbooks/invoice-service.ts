@@ -1,5 +1,5 @@
 import { type Prisma } from "@prisma/client"
-import { addDays, startOfDay, subMonths } from "date-fns"
+import { addDays, endOfMonth, startOfDay, startOfMonth, subMonths } from "date-fns"
 import { v4 as uuidv4 } from "uuid"
 import * as ClientRepository from "../../repositories/client-repository"
 import * as CompanyRepository from "../../repositories/company-repository"
@@ -147,7 +147,8 @@ export const getAllByFilters = async (
     if (due_date === InvoiceDateFilter.THIS_MONTH) {
       Object.assign(where, {
         due_date: {
-          gte: subMonths(new Date(), 1),
+          gte: startOfMonth(new Date()),
+          lte: endOfMonth(new Date()),
         },
       })
     }
