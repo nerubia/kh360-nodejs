@@ -9,7 +9,7 @@ import { type PaymentAccount } from "../../types/payment-account-type"
 /**
  * List payment accounts based on provided filters.
  * @param req.query.payment_account_name - Filter by payment account name.
- * @param req.query.payment_network - Filter by payment network.
+ * @param req.query.payment_network_id - Filter by payment network id.
  * @param req.query.account_name - Filter by account name.
  * @param req.query.account_no - Filter by account no.
  * @param req.query.bank_name - Filter by bank name.
@@ -17,11 +17,11 @@ import { type PaymentAccount } from "../../types/payment-account-type"
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const { payment_account_name, payment_network, account_name, account_no, bank_name, page } =
+    const { payment_account_name, payment_network_id, account_name, account_no, bank_name, page } =
       req.query
     const results = await PaymentAccountService.getAllByFilters({
       payment_account_name: payment_account_name as string,
-      payment_network: payment_network as string,
+      payment_network_id: Number(payment_network_id),
       account_name: account_name as string,
       account_no: account_no as string,
       bank_name: bank_name as string,
