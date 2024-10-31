@@ -7,7 +7,7 @@ import { type PaymentAccount, type PaymentAccountFilters } from "../../types/pay
 
 export const getAllByFilters = async ({
   payment_account_name,
-  payment_network,
+  payment_network_id,
   account_name,
   account_no,
   bank_name,
@@ -27,11 +27,9 @@ export const getAllByFilters = async ({
     })
   }
 
-  if (payment_network !== undefined) {
+  if (!isNaN(payment_network_id)) {
     Object.assign(where, {
-      payment_network: {
-        contains: payment_network,
-      },
+      payment_network_id,
     })
   }
 
