@@ -47,6 +47,7 @@ export const getAllByFilters = async (where: Prisma.projectsWhereInput) => {
     select: {
       id: true,
       name: true,
+      status: true,
     },
     where,
   })
