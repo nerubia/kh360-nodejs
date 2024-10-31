@@ -60,6 +60,15 @@ export const paginateByFilters = async (
         },
         take: 1,
       },
+      payment_details: {
+        select: {
+          payments: {
+            where: {
+              payment_status: PaymentStatus.RECEIVED,
+            },
+          },
+        },
+      },
     },
   })
 }
@@ -215,6 +224,7 @@ export const getById = async (id: number) => {
           id: true,
           payments: {
             select: {
+              id: true,
               payment_no: true,
               payment_date: true,
               payment_amount: true,
