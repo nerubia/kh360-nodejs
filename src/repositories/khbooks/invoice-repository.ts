@@ -8,8 +8,8 @@ export const paginateByFilters = async (
   skip: number,
   take: number,
   where: Prisma.invoicesWhereInput,
-  sort_by: "invoice_no" | "due_date" = "invoice_no",
-  sort_order: "asc" | "desc" = "desc"
+  sort_order: "asc" | "desc" = "desc",
+  sort_by?: "invoice_no" | "due_date"
 ) => {
   const orderBy: Prisma.invoicesOrderByWithRelationInput[] = []
 
@@ -18,10 +18,6 @@ export const paginateByFilters = async (
     orderBy.push({ invoice_date: sort_order })
   } else if (sort_by === "due_date") {
     orderBy.push({ due_date: sort_order })
-  }
-
-  if (sort_by !== undefined) {
-    orderBy.push({ invoice_no: "desc" }, { created_at: "desc" }, { invoice_date: "desc" })
   }
 
   if (orderBy.length === 0) {
