@@ -358,6 +358,10 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
     throw new CustomError("Invoice not found", 400)
   }
 
+  if (invoice.invoice_status === InvoiceStatus.PAID) {
+    throw new CustomError("Paid invoice cannot be updated", 400)
+  }
+
   const taxType = await TaxTypeRepository.getById(data.tax_type_id)
   if (taxType === null) {
     throw new CustomError("Tax type not found", 400)
