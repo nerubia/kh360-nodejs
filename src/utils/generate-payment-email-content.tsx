@@ -9,11 +9,14 @@ export const generatePaymentEmailContent = async (payment: EmailPaymentContent) 
   return await render(<EmailContent payment={payment} />)
 }
 
-const main = { backgroundColor: "#525659", padding: "20px" }
+const main = { padding: "20px" }
+
 const container = {
   padding: "20px",
   margin: "0 auto",
   backgroundColor: "#ffffff",
+  border: "1px solid #eee",
+  borderRadius: "5px",
 }
 
 const imgStyle = {
@@ -46,6 +49,33 @@ interface EmailContentProps {
 }
 
 export default function EmailContent({ payment }: EmailContentProps) {
+  const getSalutation = () => {
+    const client = payment.clients
+
+    if (client === undefined || client === null) return ""
+
+    if (
+      client.contact_first_name !== undefined &&
+      client.contact_last_name !== undefined &&
+      client.contact_first_name !== null &&
+      client.contact_last_name !== null &&
+      client.contact_first_name.length > 0 &&
+      client.contact_last_name.length > 0
+    ) {
+      return `Dear ${client.contact_first_name} ${client.contact_last_name},`
+    }
+
+    if (
+      client.display_name !== undefined &&
+      client.display_name !== null &&
+      client.display_name?.length > 0
+    ) {
+      return `Dear ${client.display_name},`
+    }
+
+    return `Dear ${client.name},`
+  }
+
   return (
     <Html>
       <Body style={main}>
@@ -61,7 +91,7 @@ export default function EmailContent({ payment }: EmailContentProps) {
             />
             <Text style={companyText}>{payment.companies?.name}</Text>
             <Container style={emailSection}>
-              <Text style={emailTitle}>Dear {payment.clients?.name},</Text>
+              <Text style={emailTitle}>{getSalutation()}</Text>
               <Text style={emailBody}>Please find our payment receipt attached to this email:</Text>
               <Container style={receiptSummaryContainer}>
                 <Container style={receiptSummary}>
