@@ -1,7 +1,10 @@
 import sgMail from "@sendgrid/mail"
 import CustomError from "./custom-error"
+import * as SystemSettingsRepository from "../repositories/system-settings-repository"
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY as string)
+
+const DEFAULT_FROM_ADDRESS = "info@nerubia.com"
 
 interface Attachment {
   content: string
@@ -42,11 +45,13 @@ export const sendMail = async ({ to, cc, bcc, subject, content, attachments }: M
       uniqueBcc = getUniqueEmails(bcc, [...uniqueTo, ...uniqueCc])
     }
 
+    const systemSettings = await SystemSettingsRepository.getByName("invoice_email_sender")
+
     const msg = {
       to: uniqueTo,
       cc: uniqueCc,
       bcc: uniqueBcc,
-      from: process.env.SENDGRID_FROM_ADDRESS as string,
+      from: systemSettings?.value ?? DEFAULT_FROM_ADDRESS,
       subject,
       html: content,
       attachments,
@@ -60,9 +65,11 @@ export const sendMail = async ({ to, cc, bcc, subject, content, attachments }: M
 
 export const sendMultipleMail = async ({ to, subject, content }: MailProps) => {
   try {
+    const systemSettings = await SystemSettingsRepository.getByName("invoice_email_sender")
+
     const msg = {
       to,
-      from: process.env.SENDGRID_FROM_ADDRESS as string,
+      from: systemSettings?.value ?? DEFAULT_FROM_ADDRESS,
       subject,
       html: content,
     }
@@ -79,11 +86,13 @@ export const sendMailWithAttachment = async ({
   pdfBuffer,
 }: MailProps & { pdfBuffer: Buffer }) => {
   try {
+    const systemSettings = await SystemSettingsRepository.getByName("invoice_email_sender")
+
     const msg = {
       to,
       cc,
       bcc,
-      from: process.env.SENDGRID_FROM_ADDRESS as string,
+      from: systemSettings?.value ?? DEFAULT_FROM_ADDRESS,
       subject,
       html: content,
       attachments: [
