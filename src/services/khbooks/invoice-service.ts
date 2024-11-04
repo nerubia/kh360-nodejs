@@ -180,8 +180,8 @@ export const getAllByFilters = async (
     (currentPage - 1) * itemsPerPage,
     itemsPerPage,
     where,
-    sort_by,
-    sort_order
+    sort_order,
+    sort_by
   )
 
   const receivedPayments = await PaymentRepository.getByFilters({
