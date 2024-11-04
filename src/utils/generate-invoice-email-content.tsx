@@ -1,5 +1,5 @@
 import { Body, Container, Text, Html, Img, render, Section, Button } from "@react-email/components"
-import { formatDate } from "./format-date"
+import { shortenFormatDate } from "./format-date"
 import { type EmailInvoiceContent } from "../types/invoice-type"
 import { formatAmount } from "./format-amount"
 import { SendInvoiceType } from "../types/send-invoice-type"
@@ -11,11 +11,14 @@ export const generateInvoiceEmailContent = async (invoice: EmailInvoiceContent, 
   return await render(<EmailContent invoice={invoice} type={type} />)
 }
 
-const main = { backgroundColor: "#525659", padding: "20px" }
+const main = { padding: "20px" }
+
 const container = {
   padding: "20px",
   margin: "0 auto",
   backgroundColor: "#ffffff",
+  border: "1px solid #eee",
+  borderRadius: "5px",
 }
 
 const text = {
@@ -70,6 +73,31 @@ interface EmailContentProps {
 }
 
 export default function EmailContent({ invoice, type }: EmailContentProps) {
+  const getSalutation = () => {
+    const client = invoice.clients
+
+    if (client === undefined || client === null) return ""
+
+    if (
+      client.contact_first_name !== null &&
+      client.contact_last_name !== null &&
+      client.contact_first_name.length > 0 &&
+      client.contact_last_name.length > 0
+    ) {
+      return `Dear ${client.contact_first_name} ${client.contact_last_name},`
+    }
+
+    if (
+      client.display_name !== undefined &&
+      client.display_name !== null &&
+      client.display_name?.length > 0
+    ) {
+      return `Dear ${client.display_name},`
+    }
+
+    return `Dear ${client.name},`
+  }
+
   return (
     <>
       <Html>
@@ -88,14 +116,14 @@ export default function EmailContent({ invoice, type }: EmailContentProps) {
 
               <Text style={companyText}>{invoice.companies?.name}</Text>
 
-              <Text style={dueDateStyle}>DUE {formatDate(invoice.due_date)}</Text>
+              <Text style={dueDateStyle}>DUE {shortenFormatDate(invoice.due_date)}</Text>
 
               <Text style={amount}>
                 {invoice.currencies?.code} {formatAmount(invoice.invoice_amount)}
               </Text>
 
               <Container style={emailSection}>
-                <Text style={emailTitle}>Dear {invoice.clients?.name},</Text>
+                <Text style={emailTitle}>{getSalutation()}</Text>
                 {type === SendInvoiceType.Invoice ? (
                   <Text style={emailBody}>
                     Here’s your invoice! We appreciate your prompt payment.

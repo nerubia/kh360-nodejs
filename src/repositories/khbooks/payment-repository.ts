@@ -119,6 +119,8 @@ export const getById = async (id: number) => {
           id: true,
           name: true,
           display_name: true,
+          contact_first_name: true,
+          contact_last_name: true,
           contact_no: true,
           status: true,
 

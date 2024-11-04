@@ -45,3 +45,16 @@ export const convertToFullDate = (date?: Date) => {
   const utcDate = utcToZonedTime(inputDate, "UTC")
   return format(utcDate, "MMMM d, yyyy", { timeZone: "UTC" })
 }
+
+export const shortenFormatDate = (dateString?: string): string => {
+  if (dateString == null) {
+    return "Invalid date"
+  }
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) {
+    return "Invalid date"
+  }
+  const targetTimeZone = "UTC"
+  const convertedDate = utcToZonedTime(date, targetTimeZone)
+  return format(convertedDate, "MMM d, yyyy", { timeZone: targetTimeZone })
+}
