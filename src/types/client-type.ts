@@ -4,6 +4,8 @@ export interface Client {
   id: number
   name: string | null
   display_name?: string | null
+  contact_first_name: string | null
+  contact_last_name: string | null
 
   address1?: string | null
   address2?: string | null
