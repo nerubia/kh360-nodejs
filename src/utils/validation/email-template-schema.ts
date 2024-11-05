@@ -9,4 +9,5 @@ export const addEmailTemplate = object().shape({
     .max(100, "Template type should not exceed 100 characters."),
   subject: string().max(255, "Subject should not exceed 255 characters."),
   content: string().required("Content is required"),
+  system_name: string().max(100, "System name should not exceed 255 characters."),
 })
