@@ -1,3 +1,4 @@
+import { type Prisma } from "@prisma/client"
 import * as EmailTemplateRepository from "../repositories/email-template-repository"
 import { type EmailTemplate } from "../types/email-template-type"
 import CustomError from "../utils/custom-error"
@@ -33,6 +34,7 @@ export const getAllByFilters = async (
   name: string,
   template_type: string,
   is_default: string,
+  system_name: string,
   page: string
 ) => {
   const templateType = template_type === "all" ? undefined : template_type
@@ -42,7 +44,7 @@ export const getAllByFilters = async (
   const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
   const isDefaultSet = is_default === undefined ? undefined : is_default === "true"
 
-  const where = {
+  const where: Prisma.email_templatesWhereInput = {
     name: {
       contains: name,
     },
@@ -50,6 +52,19 @@ export const getAllByFilters = async (
       equals: templateType,
     },
     is_default: isDefaultSet,
+  }
+
+  if (system_name !== undefined) {
+    Object.assign(where, {
+      OR: [
+        {
+          system_name: null,
+        },
+        {
+          system_name,
+        },
+      ],
+    })
   }
 
   const totalItems = await EmailTemplateRepository.countByFilters(where)
