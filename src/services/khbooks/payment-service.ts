@@ -1,5 +1,5 @@
 import { type Prisma } from "@prisma/client"
-import { subMonths } from "date-fns"
+import { endOfMonth, startOfMonth, subMonths } from "date-fns"
 import * as PaymentRepository from "../../repositories/khbooks/payment-repository"
 import {
   PaymentDateFilter,
@@ -43,7 +43,8 @@ export const getAllByFilters = async (
     if (payment_date === PaymentDateFilter.THIS_MONTH) {
       Object.assign(where, {
         payment_date: {
-          gte: subMonths(new Date(), 1),
+          gte: startOfMonth(new Date()),
+          lte: endOfMonth(new Date()),
         },
       })
     }
@@ -51,6 +52,7 @@ export const getAllByFilters = async (
       Object.assign(where, {
         payment_date: {
           gte: subMonths(new Date(), 3),
+          lte: new Date(),
         },
       })
     }
@@ -58,6 +60,7 @@ export const getAllByFilters = async (
       Object.assign(where, {
         payment_date: {
           gte: subMonths(new Date(), 6),
+          lte: new Date(),
         },
       })
     }
@@ -65,6 +68,7 @@ export const getAllByFilters = async (
       Object.assign(where, {
         payment_date: {
           gte: subMonths(new Date(), 12),
+          lte: new Date(),
         },
       })
     }
