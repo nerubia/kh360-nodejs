@@ -82,6 +82,7 @@ jobs:
               npx prisma db seed &&
               npm run build &&
               pm2 start npm -- start
+              pm2 save
               '
 
       - name: Revoke Security Group Ingress
