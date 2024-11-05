@@ -11,6 +11,7 @@ export interface EmailTemplate {
   is_default: boolean
   subject: string
   content: string
+  system_name?: string
   created_by_id?: number
   updated_by_id?: number
   created_at?: Date

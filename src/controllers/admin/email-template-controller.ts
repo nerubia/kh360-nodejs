@@ -21,16 +21,18 @@ export const getDefaultEmailTemplate = async (req: Request, res: Response) => {
  * List email templates based on provided filters.
  * @param req.query.name - Filter by name.
  * @param req.query.type - Filter by type.
+ * @param req.query.system_name - Filter by system name.
  * @param req.query.page - Page number for pagination.
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const { name, template_type, is_default, page } = req.query
+    const { name, template_type, is_default, system_name, page } = req.query
 
     const emailTemplates = await EmailTemplateService.getAllByFilters(
       name as string,
       template_type as string,
       is_default as string,
+      system_name as string,
       page as string
     )
 
@@ -48,6 +50,7 @@ export const index = async (req: Request, res: Response) => {
  * @param req.body.is_default - Is Default.
  * @param req.body.subject - Subject.
  * @param req.body.content - Content.
+ * @param req.body.system_name - System name.
  */
 export const store = async (req: Request, res: Response) => {
   try {
@@ -55,13 +58,14 @@ export const store = async (req: Request, res: Response) => {
 
     const currentDate = new Date()
 
-    const { name, template_type, is_default, subject, content } = req.body
+    const { name, template_type, is_default, subject, content, system_name } = req.body
 
     await addEmailTemplate.validate({
       name,
       template_type,
       subject,
       content,
+      system_name,
     })
 
     const newTemplate = await EmailTemplateService.create({
@@ -70,6 +74,7 @@ export const store = async (req: Request, res: Response) => {
       is_default,
       subject,
       content,
+      system_name,
       created_by_id: user.id,
       created_at: currentDate,
     })
@@ -112,6 +117,7 @@ export const show = async (req: Request, res: Response) => {
  * @param req.body.is_default - Is Default.
  * @param req.body.subject - Subject.
  * @param req.body.content - Content.
+ * @param req.body.system_name - System name.
  */
 export const update = async (req: Request, res: Response) => {
   try {
@@ -121,13 +127,14 @@ export const update = async (req: Request, res: Response) => {
 
     const currentDate = new Date()
 
-    const { name, template_type, is_default, subject, content } = req.body
+    const { name, template_type, is_default, subject, content, system_name } = req.body
 
     await addEmailTemplate.validate({
       name,
       template_type,
       subject,
       content,
+      system_name,
     })
 
     const updateEmailTemplate = await EmailTemplateService.updateById(parseInt(id), {
@@ -136,6 +143,7 @@ export const update = async (req: Request, res: Response) => {
       content,
       subject,
       is_default,
+      system_name,
       updated_by_id: user.id,
       updated_at: currentDate,
     })
