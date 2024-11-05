@@ -54,7 +54,8 @@ export const getAllByFilters = async (
     if (invoice_date === InvoiceDateFilter.THIS_MONTH) {
       Object.assign(where, {
         invoice_date: {
-          gte: subMonths(new Date(), 1),
+          gte: startOfMonth(new Date()),
+          lte: endOfMonth(new Date()),
         },
       })
     }
@@ -62,6 +63,7 @@ export const getAllByFilters = async (
       Object.assign(where, {
         invoice_date: {
           gte: subMonths(new Date(), 3),
+          lte: new Date(),
         },
       })
     }
@@ -69,6 +71,7 @@ export const getAllByFilters = async (
       Object.assign(where, {
         invoice_date: {
           gte: subMonths(new Date(), 6),
+          lte: new Date(),
         },
       })
     }
@@ -76,6 +79,7 @@ export const getAllByFilters = async (
       Object.assign(where, {
         invoice_date: {
           gte: subMonths(new Date(), 12),
+          lte: new Date(),
         },
       })
     }
@@ -157,6 +161,7 @@ export const getAllByFilters = async (
       Object.assign(where, {
         due_date: {
           gte: subMonths(new Date(), 3),
+          lte: new Date(),
         },
       })
     }
@@ -164,6 +169,7 @@ export const getAllByFilters = async (
       Object.assign(where, {
         due_date: {
           gte: subMonths(new Date(), 6),
+          lte: new Date(),
         },
       })
     }
@@ -171,6 +177,7 @@ export const getAllByFilters = async (
       Object.assign(where, {
         due_date: {
           gte: subMonths(new Date(), 12),
+          lte: new Date(),
         },
       })
     }
