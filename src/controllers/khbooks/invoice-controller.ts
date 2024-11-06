@@ -106,7 +106,7 @@ export const store = async (req: Request, res: Response) => {
 
     const files = req.files as S3File[]
 
-    await createAddressSchema.validate({
+    const validatedAddress = await createAddressSchema.validate({
       address1,
       address2,
       city,
@@ -135,14 +135,25 @@ export const store = async (req: Request, res: Response) => {
 
     const country = await CountryService.getById(parseInt(country_id ?? "0"))
 
-    const address = await AddressService.create({
-      address1,
-      address2,
-      city,
-      state,
-      country: country?.name ?? null,
-      postal_code,
-    })
+    let address = null
+
+    if (
+      (validatedAddress.address1 !== undefined && validatedAddress.address1.length > 0) ||
+      (validatedAddress.address2 !== undefined && validatedAddress.address2.length > 0) ||
+      (validatedAddress.city !== undefined && validatedAddress.city.length > 0) ||
+      (validatedAddress.state !== undefined && validatedAddress.state.length > 0) ||
+      (validatedAddress.country_id !== null && validatedAddress.country_id !== 0) ||
+      (validatedAddress.postal_code !== undefined && validatedAddress.postal_code.length > 0)
+    ) {
+      address = await AddressService.create({
+        address1,
+        address2,
+        city,
+        state,
+        country: country?.name ?? null,
+        postal_code,
+      })
+    }
 
     const newInvoice = await InvoiceService.create(
       {
@@ -160,7 +171,7 @@ export const store = async (req: Request, res: Response) => {
         tax_toggle: Boolean(Number(tax_toggle)),
         payment_account_id: parseInt(payment_account_id as string),
         payment_term_id: parseInt(payment_term_id as string),
-        billing_address_id: address.id,
+        billing_address_id: address?.id,
         invoice_details: JSON.parse(invoice_details),
       },
       send_invoice_action as SendInvoiceAction
@@ -278,7 +289,7 @@ export const update = async (req: Request, res: Response) => {
 
     const files = req.files as S3File[]
 
-    await createAddressSchema.validate({
+    const validatedAddress = await createAddressSchema.validate({
       address1,
       address2,
       city,
@@ -327,9 +338,9 @@ export const update = async (req: Request, res: Response) => {
       send_invoice_action as SendInvoiceAction
     )
 
-    if (updatedInvoice.billing_address_id !== null) {
-      const country = await CountryService.getById(parseInt(country_id ?? "0"))
+    const country = await CountryService.getById(parseInt(country_id ?? "0"))
 
+    if (updatedInvoice.billing_address_id !== null) {
       await AddressService.update(updatedInvoice.billing_address_id, {
         address1,
         address2,
@@ -338,6 +349,26 @@ export const update = async (req: Request, res: Response) => {
         country: country?.name ?? null,
         postal_code,
       })
+    } else {
+      if (
+        (validatedAddress.address1 !== undefined && validatedAddress.address1.length > 0) ||
+        (validatedAddress.address2 !== undefined && validatedAddress.address2.length > 0) ||
+        (validatedAddress.city !== undefined && validatedAddress.city.length > 0) ||
+        (validatedAddress.state !== undefined && validatedAddress.state.length > 0) ||
+        (validatedAddress.country_id !== null && validatedAddress.country_id !== 0) ||
+        (validatedAddress.postal_code !== undefined && validatedAddress.postal_code.length > 0)
+      ) {
+        const address = await AddressService.create({
+          address1,
+          address2,
+          city,
+          state,
+          country: country?.name ?? null,
+          postal_code,
+        })
+
+        await InvoiceService.updateBillingAddressById(updatedInvoice.id, address.id)
+      }
     }
 
     await InvoiceService.uploadAttachments(updatedInvoice.id, files)
