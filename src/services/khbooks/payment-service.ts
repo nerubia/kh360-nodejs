@@ -514,7 +514,7 @@ export const sendPayment = async (id: number) => {
     attachments: [
       {
         content: pdfBuffer.toString("base64"),
-        filename: "document.pdf",
+        filename: `${company?.shorthand} - Payment ${payment.payment_no}`,
         type: "application/pdf",
         disposition: "attachment",
       },
