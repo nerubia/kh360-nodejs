@@ -699,12 +699,11 @@ export const sendInvoice = async (id: number, type: string = SendInvoiceType.Inv
     })
   }
 
-  let subject = `Invoice ${invoice.invoice_no} from ${invoice.companies?.name}`
+  let subject = `Invoice ${invoice.invoice_no} from ${company?.name}`
 
   if (type === SendInvoiceType.Reminder) {
-    subject = `Reminder for Invoice ${invoice.invoice_no} from ${invoice.companies?.name}`
+    subject = `Reminder for Invoice ${invoice.invoice_no} from ${company?.name}`
   }
-
   await sendMail({
     to: toEmails,
     cc: ccEmails,
