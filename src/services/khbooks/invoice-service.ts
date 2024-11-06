@@ -489,6 +489,12 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
   })
 }
 
+export const updateBillingAddressById = async (id: number, billing_address_id: number) => {
+  return await InvoiceRepository.updateById(id, {
+    billing_address_id,
+  })
+}
+
 export const deleteById = async (id: number) => {
   const invoice = await InvoiceRepository.getById(id)
   if (invoice === null) {
