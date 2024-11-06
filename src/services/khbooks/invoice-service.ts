@@ -340,6 +340,12 @@ export const show = async (id: number) => {
     throw new CustomError("Invoice not found", 400)
   }
 
+  let company = invoice.companies
+
+  if (company === null) {
+    company = await CompanyRepository.getById(1)
+  }
+
   const fiteredPaymentDetails = invoice.payment_details.filter(
     (payment) => payment.payments?.payment_status === PaymentStatus.RECEIVED
   )
@@ -356,6 +362,7 @@ export const show = async (id: number) => {
     ...invoice,
     paid_amount: totalPayments,
     open_balance: invoiceAmount - totalPayments,
+    companies: company,
   }
 }
 
