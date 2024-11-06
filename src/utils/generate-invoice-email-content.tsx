@@ -130,7 +130,7 @@ export default function EmailContent({ invoice, type }: EmailContentProps) {
                   </Text>
                 ) : (
                   <Text style={emailBody}>
-                    Just a reminder that we have not received a payment for this invoice yet. Let us
+                    Just a reminder that we have not yet received a payment for this invoice. Let us
                     know if you have questions.
                   </Text>
                 )}
