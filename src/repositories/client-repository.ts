@@ -36,6 +36,8 @@ export const getAllByFilters = async (where: Prisma.clientsWhereInput) => {
       id: true,
       name: true,
       display_name: true,
+      contact_first_name: true,
+      contact_last_name: true,
       email: true,
       address1: true,
       address2: true,
