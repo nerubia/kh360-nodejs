@@ -9,6 +9,7 @@ import {
   PaymentStatus,
 } from "../../types/payment-type"
 import CustomError from "../../utils/custom-error"
+import * as CompanyRepository from "../../repositories/company-repository"
 import * as InvoiceRepository from "../../repositories/khbooks/invoice-repository"
 import * as InvoiceActivityRepository from "../../repositories/khbooks/invoice-activity-repository"
 import * as ClientRepository from "../../repositories/client-repository"
@@ -414,6 +415,12 @@ export const sendPayment = async (id: number) => {
     throw new CustomError("Payment not found", 400)
   }
 
+  let company = payment.companies
+
+  if (company === null) {
+    company = await CompanyRepository.getById(1)
+  }
+
   const to = payment.payment_emails.find(
     (paymentEmail) => paymentEmail.email_type === "to"
   )?.email_address
@@ -510,7 +517,7 @@ export const sendPayment = async (id: number) => {
     to: toEmails,
     cc: ccEmails,
     bcc: bccEmails,
-    subject: `Payment Receipt from ${payment.companies?.name}`,
+    subject: `Payment Receipt from ${company?.name}`,
     content: emailContent,
     attachments: [
       {
