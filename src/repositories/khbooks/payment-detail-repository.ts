@@ -9,6 +9,12 @@ export const getByInvoiceId = async (invoice_id: number) => {
   })
 }
 
+export const getAllByFilters = async (where: Prisma.payment_detailsWhereInput) => {
+  return await prisma.payment_details.findMany({
+    where,
+  })
+}
+
 export const countAllByFilters = async (where: Prisma.payment_detailsWhereInput) => {
   const count = await prisma.payment_details.count({
     where,
