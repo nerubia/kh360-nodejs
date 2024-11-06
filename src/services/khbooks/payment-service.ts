@@ -239,27 +239,26 @@ export const show = async (id: number) => {
     throw new CustomError("Payment not found", 400)
   }
 
-  const receivedPayments = await PaymentRepository.getByFilters({
-    payment_status: PaymentStatus.RECEIVED,
-  })
-  const receivedPaymentIds = receivedPayments.map((payment) => payment.id)
-  const fiteredPaymentDetails = payment.payment_details.filter((payment) =>
-    receivedPaymentIds.includes(payment.id)
-  )
-
   const paymentDetails = await Promise.all(
     payment.payment_details.map(async (paymentDetail) => {
       const invoice = await InvoiceRepository.getById(paymentDetail.invoice_id ?? 0)
-      if (invoice === null) {
-        return null
-      }
-      const totalPayments = fiteredPaymentDetails.reduce((acc, payment) => {
-        const paymentAmount =
-          payment.payment_amount !== null ? payment.payment_amount.toNumber() : 0
-        return acc + paymentAmount
-      }, 0)
+      if (invoice === null) return null
 
-      const invoiceAmount = invoice.invoice_amount !== null ? invoice.invoice_amount.toNumber() : 0
+      const invoiceAmount = invoice.invoice_amount?.toNumber() ?? 0
+
+      const previousPaymentDetails = await PaymentDetailRepository.getAllByFilters({
+        payment_id: {
+          not: paymentDetail.payment_id,
+        },
+        invoice_id: paymentDetail.invoice_id,
+        created_at: {
+          lt: new Date(paymentDetail.created_at ?? ""),
+        },
+      })
+
+      const totalPaidAmount = previousPaymentDetails.reduce((prev: number, paymentDetail) => {
+        return prev + Number(paymentDetail.payment_amount)
+      }, 0)
 
       return {
         ...paymentDetail,
@@ -267,8 +266,8 @@ export const show = async (id: number) => {
         invoice_date: invoice.invoice_date,
         due_date: invoice.due_date,
         invoice_amount: invoiceAmount,
-        paid_amount: totalPayments,
-        open_balance: invoiceAmount - totalPayments,
+        paid_amount: totalPaidAmount,
+        open_balance: invoiceAmount - totalPaidAmount,
       }
     })
   )
