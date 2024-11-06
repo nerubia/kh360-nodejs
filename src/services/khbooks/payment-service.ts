@@ -490,15 +490,7 @@ export const sendPayment = async (id: number) => {
     payment_date: payment.payment_date?.toISOString() ?? "",
     payment_amount: payment.payment_amount?.toString() ?? "",
     or_no: payment.or_no,
-    clients: {
-      name: payment.clients?.name ?? "",
-      address1: payment.clients?.address1 ?? "",
-      address2: payment.clients?.address2 ?? "",
-      city: payment.clients?.city ?? "",
-      state: payment.clients?.state ?? "",
-      postal_code: payment.clients?.postal_code ?? null,
-      countries: payment.clients?.countries,
-    },
+    clients: payment.clients,
     companies: payment.companies,
   })
 
