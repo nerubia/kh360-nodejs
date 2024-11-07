@@ -16,6 +16,14 @@ export const paginateByFilters = async (
           name: true,
         },
       },
+      currencies: {
+        select: {
+          id: true,
+          name: true,
+          code: true,
+          prefix: true,
+        },
+      },
     },
     orderBy: [
       {
