@@ -223,8 +223,10 @@ export const getById = async (id: number) => {
           payments: {
             select: {
               id: true,
-              payment_no: true,
               payment_date: true,
+              payment_no: true,
+              or_no: true,
+              payment_reference_no: true,
               payment_amount: true,
               payment_status: true,
             },
