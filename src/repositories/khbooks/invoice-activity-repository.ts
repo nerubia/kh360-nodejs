@@ -15,6 +15,15 @@ export const paginateByFilters = async (
         created_at: "asc",
       },
     ],
+    include: {
+      payments: {
+        select: {
+          id: true,
+          payment_no: true,
+          payment_amount: true,
+        },
+      },
+    },
   })
 }
 

@@ -2058,13 +2058,15 @@ model uoms {
 }
 
 model invoice_activities {
-  id          Int       @id @default(autoincrement())
-  invoice_id  Int?
-  action      String?   @db.VarChar(20)
-  description String?   @default("") @db.VarChar(255)
-  created_at  DateTime? @db.DateTime(0)
-  updated_at  DateTime? @db.DateTime(0)
-  invoices    invoices? @relation(fields: [invoice_id], references: [id])
+  id           Int       @id @default(autoincrement())
+  invoice_id   Int?
+  action       String?   @db.VarChar(20)
+  reference_id Int?
+  description  String?   @default("") @db.VarChar(255)
+  created_at   DateTime? @db.DateTime(0)
+  updated_at   DateTime? @db.DateTime(0)
+  invoices     invoices? @relation(fields: [invoice_id], references: [id])
+  payments     payments? @relation(fields: [reference_id], references: [id])
 
   @@index([invoice_id], map: "index_invoice_activities_on_invoice_id")
 }
@@ -2132,6 +2134,7 @@ model payments {
   companies            companies?            @relation(fields: [company_id], references: [id])
   currencies           currencies?           @relation(fields: [currency_id], references: [id])
   clients              clients?              @relation(fields: [client_id], references: [id])
+  invoice_activities   invoice_activities[]
 
   @@index([client_id], map: "index_payments_on_client_id")
   @@index([company_id], map: "index_payments_on_company_id")
