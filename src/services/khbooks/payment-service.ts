@@ -223,6 +223,7 @@ export const create = async (data: Payment, sendPaymentAction: SendPaymentAction
       await InvoiceActivityRepository.create({
         invoice_id: invoice.id,
         action: InvoiceActivityAction.PAID,
+        reference_id: newPayment.id,
         created_at: currentDate,
         updated_at: currentDate,
       })
@@ -386,13 +387,14 @@ export const update = async (id: number, data: Payment, sendPaymentAction: SendP
       await InvoiceActivityRepository.create({
         invoice_id: invoice.id,
         action: InvoiceActivityAction.PAID,
+        reference_id: payment.id,
         created_at: currentDate,
         updated_at: currentDate,
       })
     }
   }
 
-  return await PaymentRepository.updateById(id, {
+  return await PaymentRepository.updateById(payment.id, {
     payment_date: new Date(data.payment_date ?? ""),
     payment_reference_no: data.payment_reference_no ?? "",
     or_no: data.or_no ?? "",
