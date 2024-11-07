@@ -15,7 +15,9 @@ import path from "path"
 import { type EmailPaymentContent } from "../types/payment-type"
 import { formatAmount } from "./format-amount"
 
-const logo = path.resolve(__dirname, "../../public/assets/nerubia.png")
+const nerubiaLogo = path.resolve(__dirname, "../../public/assets/nerubia.png")
+const ideaRobinLogo = path.resolve(__dirname, "../../public/assets/idearobin.jpg")
+
 const openSansRegularPath = path.resolve(
   __dirname,
   "../../public/assets/fonts/OpenSans-Regular.ttf"
@@ -137,9 +139,9 @@ export const MyDocument = ({ payment }: Props) => {
             justifyContent: "space-between",
           }}
         >
-          <View style={{ display: "flex", flexDirection: "row" }}>
+          <View style={{ display: "flex", flexDirection: "row", gap: "8px" }}>
             <Image
-              src={logo}
+              src={payment.companies?.shorthand === "NRB" ? nerubiaLogo : ideaRobinLogo}
               style={{
                 width: 40,
                 height: 40,
