@@ -492,7 +492,7 @@ export const sendPayment = async (id: number) => {
       postal_code: payment.clients?.postal_code ?? null,
       countries: payment.clients?.countries,
     },
-    companies: payment.companies,
+    companies: company,
     currencies: payment.currencies,
   })
 
@@ -502,7 +502,7 @@ export const sendPayment = async (id: number) => {
     payment_amount: payment.payment_amount?.toString() ?? "",
     or_no: payment.or_no,
     clients: payment.clients,
-    companies: payment.companies,
+    companies: company,
   })
 
   await sendMail({
