@@ -38,7 +38,15 @@ const dueDateStyle = {
   color: "#000000",
   textAlign: "center" as const,
 }
+const paymentHistoryStyle = {
+  fontSize: "11px",
+  marginTop: "0px",
+  marginBottom: "0px",
+  color: "#000000",
+  textAlign: "center" as const,
+}
 const amount = {
+  marginTop: "30px",
   fontWeight: "bold",
   fontSize: "2rem",
   color: "#000000",
@@ -117,6 +125,13 @@ export default function EmailContent({ invoice, type }: EmailContentProps) {
               <Text style={companyText}>{invoice.companies?.name}</Text>
 
               <Text style={dueDateStyle}>DUE {shortenFormatDate(invoice.due_date)}</Text>
+
+              {invoice.previous_payments?.map((payment, idx) => (
+                <Text style={paymentHistoryStyle} key={idx}>
+                  {shortenFormatDate(payment.payment_date?.toString() ?? "")} | Payment{" "}
+                  {payment.payment_no} | {invoice.currencies?.code} {payment.payment_amount}
+                </Text>
+              ))}
 
               <Text style={amount}>
                 {invoice.currencies?.code} {formatAmount(invoice.open_balance)}
