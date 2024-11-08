@@ -69,6 +69,23 @@ export const paginateByFilters = async (
   })
 }
 
+export const getByFilters = async (where: Prisma.invoicesWhereInput) => {
+  return await prisma.invoices.findMany({
+    where,
+    include: {
+      payment_details: {
+        select: {
+          payments: {
+            where: {
+              payment_status: PaymentStatus.RECEIVED,
+            },
+          },
+        },
+      },
+    },
+  })
+}
+
 export const countAllByFilters = async (where: Prisma.invoicesWhereInput) => {
   const count = await prisma.invoices.count({
     where,
