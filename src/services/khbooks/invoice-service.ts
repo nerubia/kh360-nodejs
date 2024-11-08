@@ -11,8 +11,6 @@ import * as InvoiceLinkRepository from "../../repositories/khbooks/invoice-link-
 import * as InvoiceRepository from "../../repositories/khbooks/invoice-repository"
 import * as PaymentTermRepository from "../../repositories/khbooks/payment-term-repository"
 import * as TaxTypeRepository from "../../repositories/khbooks/tax-type-repository"
-import * as PaymentRepository from "../../repositories/khbooks/payment-repository"
-import * as PaymentDetailRepository from "../../repositories/khbooks/payment-detail-repository"
 import { type Contract } from "../../types/contract-type"
 import {
   type Invoice,
@@ -32,7 +30,6 @@ import { sendMail } from "../../utils/sendgrid"
 import * as InvoiceAttachmentService from "../khbooks/invoice-attachment-service"
 import * as InvoiceDetailService from "../khbooks/invoice-detail-service"
 import { InvoiceActivityAction } from "../../types/invoice-activity-type"
-import { PaymentStatus } from "../../types/payment-type"
 
 export const getAllByFilters = async (
   invoice_date: string,
@@ -191,26 +188,11 @@ export const getAllByFilters = async (
     sort_by
   )
 
-  const receivedPayments = await PaymentRepository.getByFilters({
-    payment_status: PaymentStatus.RECEIVED,
-  })
-  const receivedPaymentIds = receivedPayments.map((payment) => payment.id)
-
   const finalInvoices = await Promise.all(
     invoices.map(async (invoice) => {
-      const paymentDetails = await PaymentDetailRepository.getByInvoiceId(invoice.id)
-      const fiteredPaymentDetails = paymentDetails.filter((payment) =>
-        receivedPaymentIds.includes(payment.payment_id ?? 0)
-      )
-
-      const totalPayments = fiteredPaymentDetails.reduce((acc, payment) => {
-        const paymentAmount =
-          payment.payment_amount !== null ? payment.payment_amount.toNumber() : 0
-        return acc + paymentAmount
-      }, 0)
-
       const invoiceAmount = invoice.invoice_amount !== null ? invoice.invoice_amount.toNumber() : 0
-      const open_balance = invoiceAmount - totalPayments
+      const paymentAmount = invoice.invoice_amount !== null ? invoice.invoice_amount.toNumber() : 0
+      const open_balance = invoiceAmount - paymentAmount
 
       if (has_open_balance === true) {
         if (
@@ -226,7 +208,7 @@ export const getAllByFilters = async (
 
       return {
         ...invoice,
-        paid_amount: totalPayments,
+        paid_amount: paymentAmount,
         open_balance,
       }
     })
@@ -346,22 +328,13 @@ export const show = async (id: number) => {
     company = await CompanyRepository.getById(1)
   }
 
-  const fiteredPaymentDetails = invoice.payment_details.filter(
-    (payment) => payment.payments?.payment_status === PaymentStatus.RECEIVED
-  )
-
-  const totalPayments = fiteredPaymentDetails.reduce((acc, payment) => {
-    const paymentAmount =
-      payment.payments?.payment_amount !== null ? payment.payments?.payment_amount.toNumber() : 0
-    return acc + (paymentAmount ?? 0)
-  }, 0)
-
   const invoiceAmount = invoice.invoice_amount !== null ? invoice.invoice_amount.toNumber() : 0
+  const paymentAmount = invoice.payment_amount !== null ? invoice.payment_amount.toNumber() : 0
 
   return {
     ...invoice,
-    paid_amount: totalPayments,
-    open_balance: invoiceAmount - totalPayments,
+    paid_amount: paymentAmount,
+    open_balance: invoiceAmount - paymentAmount,
     companies: company,
   }
 }
@@ -556,6 +529,10 @@ export const sendInvoice = async (id: number, type: string = SendInvoiceType.Inv
     company = await CompanyRepository.getById(1)
   }
 
+  const invoiceAmount = invoice.invoice_amount !== null ? invoice.invoice_amount.toNumber() : 0
+  const paymentAmount = invoice.payment_amount !== null ? invoice.payment_amount.toNumber() : 0
+  const open_balance = invoiceAmount - paymentAmount
+
   const pdfBuffer = await generateInvoice({
     invoice_no: invoiceNo,
     invoice_date: invoice.invoice_date?.toISOString() ?? "",
@@ -589,6 +566,7 @@ export const sendInvoice = async (id: number, type: string = SendInvoiceType.Inv
         projects: invoiceDetail.projects ?? undefined,
       }
     }),
+    open_balance,
   })
 
   const to = invoice.invoice_emails.find(
@@ -645,6 +623,7 @@ export const sendInvoice = async (id: number, type: string = SendInvoiceType.Inv
           projects: invoiceDetail.projects ?? undefined,
         }
       }),
+      open_balance,
       token,
     },
     type
@@ -717,6 +696,7 @@ export const sendInvoice = async (id: number, type: string = SendInvoiceType.Inv
   if (type === SendInvoiceType.Reminder) {
     subject = `Reminder for Invoice ${invoice.invoice_no} from ${company?.name}`
   }
+
   await sendMail({
     to: toEmails,
     cc: ccEmails,
