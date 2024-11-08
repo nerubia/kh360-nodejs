@@ -10,6 +10,7 @@ import * as InvoiceEmailRepository from "../../repositories/khbooks/invoice-emai
 import * as InvoiceLinkRepository from "../../repositories/khbooks/invoice-link-repository"
 import * as InvoiceRepository from "../../repositories/khbooks/invoice-repository"
 import * as PaymentTermRepository from "../../repositories/khbooks/payment-term-repository"
+import * as PaymentRepository from "../../repositories/khbooks/payment-repository"
 import * as TaxTypeRepository from "../../repositories/khbooks/tax-type-repository"
 import { type Contract } from "../../types/contract-type"
 import {
@@ -588,6 +589,14 @@ export const sendInvoice = async (id: number, type: string = SendInvoiceType.Inv
 
   const token = await generateToken()
 
+  const previousPayments = await PaymentRepository.getByFilters({
+    payment_details: {
+      some: {
+        invoice_id: invoice.id,
+      },
+    },
+  })
+
   const invoiceContent = await generateInvoiceEmailContent(
     {
       invoice_no: invoiceNo,
@@ -623,6 +632,11 @@ export const sendInvoice = async (id: number, type: string = SendInvoiceType.Inv
         }
       }),
       open_balance,
+      previous_payments: previousPayments.map((payment) => ({
+        payment_date: payment.payment_date,
+        payment_no: payment.payment_no ?? "",
+        payment_amount: payment.payment_amount?.toString() ?? "",
+      })),
       token,
     },
     type

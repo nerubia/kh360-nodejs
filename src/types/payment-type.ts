@@ -12,7 +12,7 @@ export interface Payment {
   client_id?: number | null
   company_id?: number | null
   currency_id: number | null
-  payment_date: string | null
+  payment_date: string | Date | null
   payment_reference_no?: string | null
   or_no?: string | null
   payment_account_id?: number | null
