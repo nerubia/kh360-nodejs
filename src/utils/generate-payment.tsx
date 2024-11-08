@@ -275,16 +275,6 @@ export const MyDocument = ({ payment }: Props) => {
                   justifyContent: "space-between",
                 }}
               >
-                <Text>Amount Credited</Text>
-                <Text>0.00</Text>
-              </View>
-              <View
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
                 <Text>Total</Text>
                 <Text>
                   {payment.currencies?.code} {formatAmount(Number(payment.payment_amount))}
