@@ -119,7 +119,7 @@ export default function EmailContent({ invoice, type }: EmailContentProps) {
               <Text style={dueDateStyle}>DUE {shortenFormatDate(invoice.due_date)}</Text>
 
               <Text style={amount}>
-                {invoice.currencies?.code} {formatAmount(invoice.invoice_amount)}
+                {invoice.currencies?.code} {formatAmount(invoice.open_balance)}
               </Text>
 
               <Container style={emailSection}>

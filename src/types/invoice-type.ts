@@ -44,6 +44,7 @@ export interface EmailInvoiceContent {
   payment_accounts: PaymentAccount | null
   token?: string
   invoice_details: InvoiceDetail[]
+  open_balance?: number
 }
 
 export enum InvoiceDateFilter {
