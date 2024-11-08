@@ -169,6 +169,30 @@ export const updateById = async (id: number, data: Offering) => {
         400
       )
     }
+
+    const invoices = await InvoiceRepository.getByFilters({
+      invoice_status: {
+        in: [InvoiceStatus.BILLED, InvoiceStatus.PAID],
+      },
+      invoice_details: {
+        some: {
+          offering_id: offering.id,
+        },
+      },
+    })
+
+    for (const invoice of invoices) {
+      const totalPaidAmount = invoice.payment_details.reduce((prev: number, paymentDetail) => {
+        return prev + Number(paymentDetail.payments?.payment_amount)
+      }, 0)
+
+      if (invoice.invoice_amount?.toNumber() !== totalPaidAmount) {
+        throw new CustomError(
+          "Unable to update. This item is currently referenced in an invoice with a remaining balance.",
+          400
+        )
+      }
+    }
   }
 
   const currentDate = new Date()
