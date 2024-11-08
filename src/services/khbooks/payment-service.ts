@@ -215,9 +215,29 @@ export const create = async (data: Payment, sendPaymentAction: SendPaymentAction
     const invoices = await InvoiceRepository.getByIds(invoiceIds ?? [])
 
     for (const invoice of invoices) {
+      if (invoice.invoice_status === InvoiceStatus.PAID) {
+        throw new CustomError(
+          `Unable to process Invoice ${invoice.invoice_no}. It's already fully paid.`,
+          400
+        )
+      }
+
+      const totalPaidAmount = invoice.payment_details.reduce((prev: number, paymentDetail) => {
+        return prev + Number(paymentDetail.payments?.payment_amount)
+      }, 0)
+
+      const updatedInvoiceData = {}
+
+      if (invoice.invoice_amount?.toNumber() === totalPaidAmount) {
+        Object.assign(updatedInvoiceData, {
+          invoice_status: InvoiceStatus.PAID,
+          payment_status: InvoiceStatus.PAID,
+        })
+      }
+
       await InvoiceRepository.updateById(invoice.id, {
-        invoice_status: InvoiceStatus.PAID,
-        payment_status: InvoiceStatus.PAID,
+        ...updatedInvoiceData,
+        payment_amount: totalPaidAmount,
       })
 
       await InvoiceActivityRepository.create({
@@ -376,12 +396,33 @@ export const update = async (id: number, data: Payment, sendPaymentAction: SendP
     const invoiceIds = data.payment_details
       ?.map((detail) => detail.invoice_id)
       .filter((id) => id !== null)
+
     const invoices = await InvoiceRepository.getByIds(invoiceIds ?? [])
 
     for (const invoice of invoices) {
+      if (invoice.invoice_status === InvoiceStatus.PAID) {
+        throw new CustomError(
+          `Unable to process Invoice ${invoice.invoice_no}. It's already fully paid.`,
+          400
+        )
+      }
+
+      const totalPaidAmount = invoice.payment_details.reduce((prev: number, paymentDetail) => {
+        return prev + Number(paymentDetail.payments?.payment_amount)
+      }, 0)
+
+      const updatedInvoiceData = {}
+
+      if (invoice.invoice_amount?.toNumber() === totalPaidAmount) {
+        Object.assign(updatedInvoiceData, {
+          invoice_status: InvoiceStatus.PAID,
+          payment_status: InvoiceStatus.PAID,
+        })
+      }
+
       await InvoiceRepository.updateById(invoice.id, {
-        invoice_status: InvoiceStatus.PAID,
-        payment_status: InvoiceStatus.PAID,
+        ...updatedInvoiceData,
+        payment_amount: totalPaidAmount,
       })
 
       await InvoiceActivityRepository.create({

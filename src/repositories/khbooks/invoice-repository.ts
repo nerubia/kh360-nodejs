@@ -69,23 +69,6 @@ export const paginateByFilters = async (
   })
 }
 
-export const getByFilters = async (where: Prisma.invoicesWhereInput) => {
-  return await prisma.invoices.findMany({
-    where,
-    include: {
-      payment_details: {
-        select: {
-          payments: {
-            where: {
-              payment_status: PaymentStatus.RECEIVED,
-            },
-          },
-        },
-      },
-    },
-  })
-}
-
 export const countAllByFilters = async (where: Prisma.invoicesWhereInput) => {
   const count = await prisma.invoices.count({
     where,
@@ -235,6 +218,11 @@ export const getById = async (id: number) => {
         },
       },
       payment_details: {
+        where: {
+          payments: {
+            payment_status: PaymentStatus.RECEIVED,
+          },
+        },
         select: {
           id: true,
           payments: {
@@ -246,9 +234,6 @@ export const getById = async (id: number) => {
               payment_reference_no: true,
               payment_amount: true,
               payment_status: true,
-            },
-            where: {
-              payment_status: PaymentStatus.RECEIVED,
             },
           },
         },
@@ -500,6 +485,16 @@ export const getByIds = async (ids: number[]) => {
               name: true,
             },
           },
+        },
+      },
+      payment_details: {
+        where: {
+          payments: {
+            payment_status: PaymentStatus.RECEIVED,
+          },
+        },
+        select: {
+          payments: true,
         },
       },
       payment_terms: {
