@@ -30,6 +30,7 @@ import { sendMail } from "../../utils/sendgrid"
 import * as InvoiceAttachmentService from "../khbooks/invoice-attachment-service"
 import * as InvoiceDetailService from "../khbooks/invoice-detail-service"
 import { InvoiceActivityAction } from "../../types/invoice-activity-type"
+import prisma from "../../utils/prisma"
 
 export const getAllByFilters = async (
   invoice_date: string,
@@ -180,6 +181,16 @@ export const getAllByFilters = async (
     }
   }
 
+  if (has_open_balance === true) {
+    Object.assign(where, {
+      invoice_amount: {
+        not: {
+          equals: prisma.invoices.fields.payment_amount,
+        },
+      },
+    })
+  }
+
   const invoices = await InvoiceRepository.paginateByFilters(
     (currentPage - 1) * itemsPerPage,
     itemsPerPage,
@@ -189,22 +200,10 @@ export const getAllByFilters = async (
   )
 
   const finalInvoices = await Promise.all(
-    invoices.map(async (invoice) => {
-      const invoiceAmount = invoice.invoice_amount !== null ? invoice.invoice_amount.toNumber() : 0
-      const paymentAmount = invoice.invoice_amount !== null ? invoice.invoice_amount.toNumber() : 0
+    invoices.map((invoice) => {
+      const invoiceAmount = invoice.invoice_amount?.toNumber() ?? 0
+      const paymentAmount = invoice.payment_amount?.toNumber() ?? 0
       const open_balance = invoiceAmount - paymentAmount
-
-      if (has_open_balance === true) {
-        if (
-          invoice.invoice_status === InvoiceStatus.DRAFT ||
-          invoice.invoice_status === InvoiceStatus.CANCELLED
-        ) {
-          return
-        }
-        if (open_balance === 0) {
-          return
-        }
-      }
 
       return {
         ...invoice,
@@ -218,7 +217,7 @@ export const getAllByFilters = async (
   const totalPages = Math.ceil(totalItems / itemsPerPage)
 
   return {
-    data: finalInvoices.filter((invoice) => invoice !== null && invoice !== undefined),
+    data: finalInvoices,
     pageInfo: {
       hasPreviousPage: currentPage > 1,
       hasNextPage: currentPage < totalPages,
