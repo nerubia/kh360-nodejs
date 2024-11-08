@@ -219,6 +219,10 @@ export const update = async (req: Request, res: Response) => {
 
     await PaymentService.uploadAttachments(updatedPayment.id, files)
 
+    if (send_payment_action === SendPaymentAction.SEND) {
+      await PaymentService.sendPayment(updatedPayment.id)
+    }
+
     res.json(updatedPayment)
   } catch (error) {
     if (error instanceof ValidationError) {
