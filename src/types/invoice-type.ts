@@ -30,6 +30,12 @@ export interface Invoice {
   invoice_attachment_ids?: number[]
 }
 
+export interface EmailPreviousPaymentContent {
+  payment_date: Date | null
+  payment_no: string | null
+  payment_amount: string | null
+}
+
 export interface EmailInvoiceContent {
   invoice_no?: string
   invoice_date: string
@@ -45,6 +51,7 @@ export interface EmailInvoiceContent {
   token?: string
   invoice_details: InvoiceDetail[]
   open_balance?: number
+  previous_payments?: EmailPreviousPaymentContent[]
 }
 
 export enum InvoiceDateFilter {
