@@ -223,7 +223,7 @@ export const create = async (data: Payment, sendPaymentAction: SendPaymentAction
       }
 
       const totalPaidAmount = invoice.payment_details.reduce((prev: number, paymentDetail) => {
-        return prev + Number(paymentDetail.payments?.payment_amount)
+        return prev + Number(paymentDetail.payment_amount)
       }, 0)
 
       const updatedInvoiceData = {}
@@ -408,7 +408,7 @@ export const update = async (id: number, data: Payment, sendPaymentAction: SendP
       }
 
       const totalPaidAmount = invoice.payment_details.reduce((prev: number, paymentDetail) => {
-        return prev + Number(paymentDetail.payments?.payment_amount)
+        return prev + Number(paymentDetail.payment_amount)
       }, 0)
 
       const updatedInvoiceData = {}
