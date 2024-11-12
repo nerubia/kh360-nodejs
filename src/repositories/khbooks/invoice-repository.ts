@@ -225,6 +225,7 @@ export const getById = async (id: number) => {
         },
         select: {
           id: true,
+          payment_amount: true,
           payments: {
             select: {
               id: true,
@@ -494,6 +495,7 @@ export const getByIds = async (ids: number[]) => {
           },
         },
         select: {
+          payment_amount: true,
           payments: true,
         },
       },
