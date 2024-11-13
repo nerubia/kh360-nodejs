@@ -1,6 +1,7 @@
 import { type Request, type Response } from "express"
 import logger from "../../utils/logger"
 import * as PaymentService from "../../services/khbooks/payment-service"
+import * as EmailTemplateService from "../../services/email-template-service"
 import { createPaymentSchema } from "../../utils/validation/payment-schema"
 import { type S3File } from "../../types/s3-file-type"
 import { SendPaymentAction } from "../../types/payment-type"
@@ -110,7 +111,14 @@ export const store = async (req: Request, res: Response) => {
     await PaymentService.uploadAttachments(newPayment.id, files)
 
     if (send_payment_action === SendPaymentAction.SEND) {
-      await PaymentService.sendPayment(newPayment.id)
+      const emailTemplate = await EmailTemplateService.getDefaultByTemplateType(
+        "Create Payment Email Template"
+      )
+      await PaymentService.sendPayment({
+        id: newPayment.id,
+        subject: emailTemplate.subject ?? "",
+        content: emailTemplate.content ?? "",
+      })
     }
 
     res.json(newPayment)
@@ -220,7 +228,14 @@ export const update = async (req: Request, res: Response) => {
     await PaymentService.uploadAttachments(updatedPayment.id, files)
 
     if (send_payment_action === SendPaymentAction.SEND) {
-      await PaymentService.sendPayment(updatedPayment.id)
+      const emailTemplate = await EmailTemplateService.getDefaultByTemplateType(
+        "Create Payment Email Template"
+      )
+      await PaymentService.sendPayment({
+        id: updatedPayment.id,
+        subject: emailTemplate.subject ?? "",
+        content: emailTemplate.content ?? "",
+      })
     }
 
     res.json(updatedPayment)
