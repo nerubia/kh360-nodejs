@@ -100,8 +100,12 @@ export default function EmailContent({ payment }: EmailContentProps) {
                     <br />
                     Payment Date: {formatDate(payment.payment_date)}
                     <br />
-                    {payment.payment_no !== null && `OR No: ${payment.or_no}`}
-                    <br />
+                    {payment.or_no !== null && payment.or_no.length > 0 && (
+                      <>
+                        OR No: {payment.or_no}
+                        <br />
+                      </>
+                    )}
                     Amount Received: {payment.payment_amount}
                   </Text>
                 </Container>
