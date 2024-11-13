@@ -516,7 +516,17 @@ export const uploadAttachments = async (id: number, files: S3File[]) => {
   await InvoiceAttachmentRepository.createMany(invoiceAttachments)
 }
 
-export const sendInvoice = async (id: number, type: string = SendInvoiceType.Invoice) => {
+export const sendInvoice = async ({
+  id,
+  type = SendInvoiceType.Invoice,
+  subject,
+  content,
+}: {
+  id: number
+  type?: SendInvoiceType
+  subject: string
+  content: string
+}) => {
   const invoice = await InvoiceRepository.getById(id)
 
   if (invoice === null) {
@@ -649,7 +659,7 @@ export const sendInvoice = async (id: number, type: string = SendInvoiceType.Inv
       })),
       token,
     },
-    type
+    content
   )
 
   const location = "invoices"
@@ -714,7 +724,14 @@ export const sendInvoice = async (id: number, type: string = SendInvoiceType.Inv
     })
   }
 
-  let subject = `Invoice ${invoice.invoice_no} from ${company?.name}`
+  const replacements: Record<string, string> = {
+    invoice_no: invoice.invoice_no ?? "",
+    company: company?.name ?? "",
+  }
+
+  const modifiedSubject: string = subject.replace(/{{(.*?)}}/g, (match: string, p1: string) => {
+    return replacements[p1] ?? match
+  })
 
   if (type === SendInvoiceType.Reminder) {
     subject = `Reminder for Invoice ${invoice.invoice_no} from ${company?.name}`
@@ -724,7 +741,7 @@ export const sendInvoice = async (id: number, type: string = SendInvoiceType.Inv
     to: toEmails,
     cc: ccEmails,
     bcc: bccEmails,
-    subject,
+    subject: modifiedSubject,
     content: invoiceContent,
     attachments: attachments.filter((attachment) => attachment !== null),
   })

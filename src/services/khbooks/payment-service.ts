@@ -450,7 +450,15 @@ export const update = async (id: number, data: Payment, sendPaymentAction: SendP
   })
 }
 
-export const sendPayment = async (id: number) => {
+export const sendPayment = async ({
+  id,
+  subject,
+  content,
+}: {
+  id: number
+  subject: string
+  content: string
+}) => {
   const payment = await PaymentRepository.getById(id)
 
   if (payment === null) {
@@ -538,20 +546,31 @@ export const sendPayment = async (id: number) => {
     currencies: payment.currencies,
   })
 
-  const emailContent = await generatePaymentEmailContent({
-    payment_no: payment.payment_no,
-    payment_date: payment.payment_date?.toISOString() ?? "",
-    payment_amount: payment.payment_amount?.toString() ?? "",
-    or_no: payment.or_no,
-    clients: payment.clients,
-    companies: company,
+  const emailContent = await generatePaymentEmailContent(
+    {
+      payment_no: payment.payment_no,
+      payment_date: payment.payment_date?.toISOString() ?? "",
+      payment_amount: payment.payment_amount?.toString() ?? "",
+      or_no: payment.or_no,
+      clients: payment.clients,
+      companies: company,
+    },
+    content
+  )
+
+  const replacements: Record<string, string> = {
+    company: company?.name ?? "",
+  }
+
+  const modifiedSubject: string = subject.replace(/{{(.*?)}}/g, (match: string, p1: string) => {
+    return replacements[p1] ?? match
   })
 
   await sendMail({
     to: toEmails,
     cc: ccEmails,
     bcc: bccEmails,
-    subject: `Payment Receipt from ${company?.name}`,
+    subject: modifiedSubject,
     content: emailContent,
     attachments: [
       {
