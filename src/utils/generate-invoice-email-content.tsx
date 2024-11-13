@@ -2,13 +2,20 @@ import { Body, Container, Text, Html, Img, render, Section, Button } from "@reac
 import { convertToFullDate } from "./format-date"
 import { type EmailInvoiceContent } from "../types/invoice-type"
 import { formatAmount } from "./format-amount"
-import { SendInvoiceType } from "../types/send-invoice-type"
 
 const nerubiaLogo = "https://drive.google.com/uc?export=view&id=1nBqgLU0-mSLkqgSLrhhVEG-E6_cwxjTE"
 const ideaRobinLogo = "https://drive.google.com/uc?export=view&id=1-w2Y3YQcw6oc_6zl0YmqfErWeKchCfHV"
 
-export const generateInvoiceEmailContent = async (invoice: EmailInvoiceContent, type: string) => {
-  return await render(<EmailContent invoice={invoice} type={type} />)
+export const generateInvoiceEmailContent = async (
+  invoice: EmailInvoiceContent,
+  content: string
+) => {
+  let emailContent = await render(<EmailContent invoice={invoice} content={content} />)
+
+  const viewButton = await render(<ViewButton invoice={invoice} />)
+  emailContent = emailContent.replace("{{view_invoice_button}}", viewButton)
+
+  return emailContent
 }
 
 const main = { padding: "20px" }
@@ -52,8 +59,6 @@ const amount = {
   color: "#000000",
   textAlign: "center" as const,
 }
-const emailTitle = { padding: "0 20px", color: "#000000" }
-const emailBody = { padding: "0 20px", marginTop: "30px", color: "#000000" }
 
 const sectionStyle = {
   textAlign: "center" as const,
@@ -73,15 +78,35 @@ const footerFontSize = {
   textAlign: "center" as const,
   lineHeight: "16px",
 }
-const emailSection = { width: "100%" }
+
+const emailSection = {
+  width: "100%",
+  marginTop: "30px",
+  padding: "0px 20px",
+  color: "#000000",
+  whiteSpace: "pre",
+}
 
 interface EmailContentProps {
   invoice: EmailInvoiceContent
-  type: string
+  content: string
 }
 
-export default function EmailContent({ invoice, type }: EmailContentProps) {
-  const getSalutation = () => {
+const ViewButton = ({ invoice }: { invoice: EmailInvoiceContent }) => {
+  return (
+    <Section style={sectionStyle}>
+      <Button
+        style={buttonStyle}
+        href={`${process.env.HOST_NAME}/kh-books/client/invoices/${invoice.token}`}
+      >
+        View Invoice
+      </Button>
+    </Section>
+  )
+}
+
+export default function EmailContent({ invoice, content }: EmailContentProps) {
+  const getClientName = () => {
     const client = invoice.clients
 
     if (client === undefined || client === null) return ""
@@ -92,7 +117,7 @@ export default function EmailContent({ invoice, type }: EmailContentProps) {
       client.contact_first_name.length > 0 &&
       client.contact_last_name.length > 0
     ) {
-      return `Dear ${client.contact_first_name} ${client.contact_last_name},`
+      return `${client.contact_first_name} ${client.contact_last_name}`
     }
 
     if (
@@ -100,10 +125,23 @@ export default function EmailContent({ invoice, type }: EmailContentProps) {
       client.display_name !== null &&
       client.display_name?.length > 0
     ) {
-      return `Dear ${client.display_name},`
+      return `${client.display_name}`
     }
 
-    return `Dear ${client.name},`
+    return `${client.name}`
+  }
+
+  const getEmailContent = () => {
+    const replacements: Record<string, string> = {
+      client: getClientName(),
+      company: invoice.companies?.name ?? "",
+    }
+
+    const modifiedContent: string = content.replace(/{{(.*?)}}/g, (match: string, p1: string) => {
+      return replacements[p1] ?? match
+    })
+
+    return <Container style={emailSection}>{modifiedContent}</Container>
   }
 
   return (
@@ -137,32 +175,8 @@ export default function EmailContent({ invoice, type }: EmailContentProps) {
                 {invoice.currencies?.code} {formatAmount(invoice.open_balance)}
               </Text>
 
-              <Container style={emailSection}>
-                <Text style={emailTitle}>{getSalutation()}</Text>
-                {type === SendInvoiceType.Invoice ? (
-                  <Text style={emailBody}>
-                    Here’s your invoice! We appreciate your prompt payment.
-                  </Text>
-                ) : (
-                  <Text style={emailBody}>
-                    Just a reminder that we have not yet received a payment for this invoice. Let us
-                    know if you have questions.
-                  </Text>
-                )}
-                <Section style={sectionStyle}>
-                  <Button
-                    style={buttonStyle}
-                    href={`${process.env.HOST_NAME}/kh-books/client/invoices/${invoice.token}`}
-                  >
-                    View Invoice
-                  </Button>
-                </Section>
-                <Text style={emailBody}>
-                  Thanks for your business!
-                  <br />
-                  {invoice.companies?.name}
-                </Text>
-              </Container>
+              {getEmailContent()}
+
               <hr style={{ marginTop: "16px", width: "90%" }} />
               <Text style={footerFontSize}>
                 {invoice.companies?.name}

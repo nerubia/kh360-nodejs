@@ -3,6 +3,7 @@ import logger from "../../utils/logger"
 import * as InvoiceService from "../../services/khbooks/invoice-service"
 import * as AddressService from "../../services/khbooks/address-service"
 import * as CountryService from "../../services/khbooks/country-service"
+import * as EmailTemplateService from "../../services/email-template-service"
 import { ValidationError } from "yup"
 import CustomError from "../../utils/custom-error"
 import { createInvoiceSchema } from "../../utils/validation/invoice-schema"
@@ -80,6 +81,8 @@ export const index = async (req: Request, res: Response) => {
  * @param req.body.postal_code - Postal code.
  * @param req.body.invoice_details - Invoice details.
  * @param req.body.send_invoice_action - Send invoice action.
+ * @param req.body.subject - Subject.
+ * @param req.body.content - Content.
  */
 
 export const store = async (req: Request, res: Response) => {
@@ -109,6 +112,8 @@ export const store = async (req: Request, res: Response) => {
       postal_code,
       invoice_details,
       send_invoice_action,
+      subject,
+      content,
     } = req.body
 
     const files = req.files as S3File[]
@@ -140,6 +145,8 @@ export const store = async (req: Request, res: Response) => {
       payment_account_id,
       payment_term_id,
       invoice_details: JSON.parse(invoice_details),
+      subject,
+      content,
     })
 
     const country = await CountryService.getById(parseInt(country_id ?? "0"))
@@ -191,7 +198,11 @@ export const store = async (req: Request, res: Response) => {
     await InvoiceService.uploadAttachments(newInvoice.id, files)
 
     if (send_invoice_action === SendInvoiceAction.SEND) {
-      await InvoiceService.sendInvoice(newInvoice.id)
+      await InvoiceService.sendInvoice({
+        id: newInvoice.id,
+        subject,
+        content,
+      })
     }
 
     res.json(newInvoice)
@@ -270,6 +281,8 @@ export const show = async (req: Request, res: Response) => {
  * @param req.body.invoice_details - Invoice details.
  * @param req.body.invoice_attachment_ids - Invoice attachment ids.
  * @param req.body.send_invoice_action - Send invoice action.
+ * @param req.body.subject - Subject.
+ * @param req.body.content - Content.
  */
 export const update = async (req: Request, res: Response) => {
   try {
@@ -300,6 +313,8 @@ export const update = async (req: Request, res: Response) => {
       invoice_details,
       invoice_attachment_ids,
       send_invoice_action,
+      subject,
+      content,
     } = req.body
 
     const files = req.files as S3File[]
@@ -332,6 +347,8 @@ export const update = async (req: Request, res: Response) => {
       payment_term_id,
       invoice_details: JSON.parse(invoice_details),
       invoice_attachment_ids: JSON.parse(invoice_attachment_ids),
+      subject,
+      content,
     })
 
     const updatedInvoice = await InvoiceService.update(
@@ -393,7 +410,7 @@ export const update = async (req: Request, res: Response) => {
     await InvoiceService.uploadAttachments(updatedInvoice.id, files)
 
     if (send_invoice_action === SendInvoiceAction.SEND) {
-      await InvoiceService.sendInvoice(updatedInvoice.id)
+      await InvoiceService.sendInvoice({ id: updatedInvoice.id, subject, content })
     }
 
     res.json(updatedInvoice)
@@ -453,7 +470,7 @@ export const uploadAttachments = async (req: Request, res: Response) => {
 export const send = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    await InvoiceService.sendInvoice(parseInt(id))
+    await InvoiceService.sendInvoice({ id: parseInt(id), subject: "", content: "" })
     res.json({ message: "Invoice sent" })
   } catch (error) {
     if (error instanceof CustomError) {
@@ -470,7 +487,15 @@ export const send = async (req: Request, res: Response) => {
 export const sendReminder = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    await InvoiceService.sendInvoice(parseInt(id), SendInvoiceType.Reminder)
+    const emailTemplate = await EmailTemplateService.getDefaultByTemplateType(
+      "Invoice Reminder Email Template"
+    )
+    await InvoiceService.sendInvoice({
+      id: parseInt(id),
+      type: SendInvoiceType.Reminder,
+      subject: emailTemplate.subject ?? "",
+      content: emailTemplate.content ?? "",
+    })
     res.json({ message: "Invoice reminder sent" })
   } catch (error) {
     if (error instanceof CustomError) {

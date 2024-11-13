@@ -5,8 +5,16 @@ import { formatDate } from "./format-date"
 const nerubiaLogo = "https://drive.google.com/uc?export=view&id=1nBqgLU0-mSLkqgSLrhhVEG-E6_cwxjTE"
 const ideaRobinLogo = "https://drive.google.com/uc?export=view&id=1-w2Y3YQcw6oc_6zl0YmqfErWeKchCfHV"
 
-export const generatePaymentEmailContent = async (payment: EmailPaymentContent) => {
-  return await render(<EmailContent payment={payment} />)
+export const generatePaymentEmailContent = async (
+  payment: EmailPaymentContent,
+  content: string
+) => {
+  let emailContent = await render(<EmailContent payment={payment} content={content} />)
+
+  const receiptSummary = await render(<ReceiptSummary payment={payment} />)
+  emailContent = emailContent.replace("{{receipt_summary}}", receiptSummary)
+
+  return emailContent
 }
 
 const main = { padding: "20px" }
@@ -25,12 +33,12 @@ const imgStyle = {
 
 const companyText = { color: "#000000", fontSize: "18px", textAlign: "center" as const }
 
-const emailTitle = { padding: "0 20px", color: "#000000" }
-const emailBody = { padding: "0 20px", marginTop: "30px", color: "#000000" }
-const emailSection = { width: "100%" }
-
-const receiptSummaryContainer = {
-  padding: "0 20px",
+const emailSection = {
+  width: "100%",
+  marginTop: "30px",
+  padding: "0px 20px",
+  color: "#000000",
+  whiteSpace: "pre",
 }
 
 const receiptSummary = {
@@ -46,10 +54,31 @@ const footerFontSize = {
 
 interface EmailContentProps {
   payment: EmailPaymentContent
+  content: string
 }
 
-export default function EmailContent({ payment }: EmailContentProps) {
-  const getSalutation = () => {
+const ReceiptSummary = ({ payment }: { payment: EmailPaymentContent }) => {
+  return (
+    <Container style={receiptSummary}>
+      <Text>
+        Payment No: {payment.payment_no}
+        <br />
+        Payment Date: {formatDate(payment.payment_date)}
+        <br />
+        {payment.or_no !== null && payment.or_no.length > 0 && (
+          <>
+            OR No: {payment.or_no}
+            <br />
+          </>
+        )}
+        Amount Received: {payment.payment_amount}
+      </Text>
+    </Container>
+  )
+}
+
+export default function EmailContent({ payment, content }: EmailContentProps) {
+  const getClientName = () => {
     const client = payment.clients
 
     if (client === undefined || client === null) return ""
@@ -62,7 +91,7 @@ export default function EmailContent({ payment }: EmailContentProps) {
       client.contact_first_name.length > 0 &&
       client.contact_last_name.length > 0
     ) {
-      return `Dear ${client.contact_first_name} ${client.contact_last_name},`
+      return `${client.contact_first_name} ${client.contact_last_name}`
     }
 
     if (
@@ -70,10 +99,23 @@ export default function EmailContent({ payment }: EmailContentProps) {
       client.display_name !== null &&
       client.display_name?.length > 0
     ) {
-      return `Dear ${client.display_name},`
+      return `${client.display_name}`
     }
 
-    return `Dear ${client.name},`
+    return `${client.name}`
+  }
+
+  const getEmailContent = () => {
+    const replacements: Record<string, string> = {
+      client: getClientName(),
+      company: payment.companies?.name ?? "",
+    }
+
+    const modifiedContent: string = content.replace(/{{(.*?)}}/g, (match: string, p1: string) => {
+      return replacements[p1] ?? match
+    })
+
+    return <Container style={emailSection}>{modifiedContent}</Container>
   }
 
   return (
@@ -90,32 +132,7 @@ export default function EmailContent({ payment }: EmailContentProps) {
               style={imgStyle}
             />
             <Text style={companyText}>{payment.companies?.name}</Text>
-            <Container style={emailSection}>
-              <Text style={emailTitle}>{getSalutation()}</Text>
-              <Text style={emailBody}>Please find our payment receipt attached to this email:</Text>
-              <Container style={receiptSummaryContainer}>
-                <Container style={receiptSummary}>
-                  <Text>
-                    Payment No: {payment.payment_no}
-                    <br />
-                    Payment Date: {formatDate(payment.payment_date)}
-                    <br />
-                    {payment.or_no !== null && payment.or_no.length > 0 && (
-                      <>
-                        OR No: {payment.or_no}
-                        <br />
-                      </>
-                    )}
-                    Amount Received: {payment.payment_amount}
-                  </Text>
-                </Container>
-              </Container>
-              <Text style={emailBody}>
-                Thank you
-                <br />
-                {payment.companies?.name}
-              </Text>
-            </Container>
+            {getEmailContent()}
             <hr style={{ marginTop: "16px", width: "90%" }} />
             <Text style={footerFontSize}>
               {payment.companies?.name}
