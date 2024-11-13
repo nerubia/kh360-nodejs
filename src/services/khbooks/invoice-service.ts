@@ -356,6 +356,15 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
     throw new CustomError("Payment term not found", 400)
   }
 
+  if (invoice.invoice_status === InvoiceStatus.PAID) {
+    const newInvoiceAmount = data.invoice_amount ?? 0
+    const paymentAmount = invoice.payment_amount?.toNumber() ?? 0
+
+    if (newInvoiceAmount < paymentAmount) {
+      throw new CustomError("Total amount should not be less than on the Paid Amount", 400)
+    }
+  }
+
   const invoiceEmails = invoice.invoice_emails
 
   const currentDate = new Date()
@@ -436,14 +445,18 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
     currentInvoiceStatus = InvoiceStatus.BILLED
 
     await InvoiceActivityRepository.create({
-      invoice_id: id,
+      invoice_id: invoice.id,
       action: InvoiceActivityAction.BILLED,
       created_at: currentDate,
       updated_at: currentDate,
     })
   }
 
-  return await InvoiceRepository.updateById(id, {
+  if (invoice.invoice_status === InvoiceStatus.PAID) {
+    currentInvoiceStatus = InvoiceStatus.BILLED
+  }
+
+  return await InvoiceRepository.updateById(invoice.id, {
     invoice_date: new Date(data.invoice_date),
     due_date: new Date(data.due_date),
     invoice_amount: data.invoice_amount,
