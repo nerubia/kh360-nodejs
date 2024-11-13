@@ -330,11 +330,12 @@ export const show = async (id: number) => {
 
   const invoiceAmount = invoice.invoice_amount !== null ? invoice.invoice_amount.toNumber() : 0
   const paymentAmount = invoice.payment_amount !== null ? invoice.payment_amount.toNumber() : 0
+  const openBalance = Math.round((invoiceAmount - paymentAmount) * 100) / 100
 
   return {
     ...invoice,
     paid_amount: paymentAmount,
-    open_balance: invoiceAmount - paymentAmount,
+    open_balance: openBalance,
     companies: company,
   }
 }
