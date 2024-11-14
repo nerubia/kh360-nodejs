@@ -8,7 +8,7 @@ export const getAllByFilters = async (page: string) => {
   let results = await getCache(KEY)
 
   if (results === null) {
-    const itemsPerPage = 20
+    const itemsPerPage = 250
     const parsedPage = parseInt(page)
     const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
