@@ -1,5 +1,5 @@
 import { Body, Container, Text, Html, Img, render, Section, Button } from "@react-email/components"
-import { shortenFormatDate } from "./format-date"
+import { convertToFullDate } from "./format-date"
 import { type EmailInvoiceContent } from "../types/invoice-type"
 import { formatAmount } from "./format-amount"
 import { SendInvoiceType } from "../types/send-invoice-type"
@@ -124,11 +124,11 @@ export default function EmailContent({ invoice, type }: EmailContentProps) {
 
               <Text style={companyText}>{invoice.companies?.name}</Text>
 
-              <Text style={dueDateStyle}>DUE {shortenFormatDate(invoice.due_date)}</Text>
+              <Text style={dueDateStyle}>DUE {convertToFullDate(new Date(invoice.due_date))}</Text>
 
               {invoice.previous_payments?.map((payment, idx) => (
                 <Text style={paymentHistoryStyle} key={idx}>
-                  {shortenFormatDate(payment.payment_date?.toString() ?? "")} | Payment{" "}
+                  {convertToFullDate(payment.payment_date ?? new Date())} | Payment{" "}
                   {payment.payment_no} | {invoice.currencies?.code} {payment.payment_amount}
                 </Text>
               ))}
