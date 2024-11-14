@@ -44,6 +44,12 @@ export const getById = async (id: number) => {
       id,
     },
     include: {
+      countries: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
       payment_networks: {
         select: {
           id: true,
