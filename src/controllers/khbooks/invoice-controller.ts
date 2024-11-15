@@ -16,6 +16,7 @@ import { SendInvoiceAction } from "../../types/invoice-type"
 /**
  * List invoices based on provided filters.
  * @param req.query.invoice_date - Filter by invoice date.
+ * @param req.query.invoice_no - Filter by invoice no.
  * @param req.query.client_id - Filter by client_id.
  * @param req.query.status - Filter by status.
  * @param req.query.due_date - Filter by due_date.
@@ -26,6 +27,7 @@ export const index = async (req: Request, res: Response) => {
   try {
     const {
       invoice_date,
+      invoice_no,
       client_id,
       status,
       due_date,
@@ -36,6 +38,7 @@ export const index = async (req: Request, res: Response) => {
     } = req.query
     const results = await InvoiceService.getAllByFilters(
       invoice_date as string,
+      invoice_no as string,
       parseInt(client_id as string),
       status as string,
       due_date as string,
