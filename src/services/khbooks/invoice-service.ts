@@ -364,12 +364,7 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
   }
 
   if (invoice.invoice_status === InvoiceStatus.PAID) {
-    const newInvoiceAmount = data.invoice_amount ?? 0
-    const paymentAmount = invoice.payment_amount?.toNumber() ?? 0
-
-    if (newInvoiceAmount < paymentAmount) {
-      throw new CustomError("Total amount should not be less than on the Paid Amount", 400)
-    }
+    throw new CustomError("Paid invoice cannot be updated", 400)
   }
 
   const invoiceEmails = invoice.invoice_emails
