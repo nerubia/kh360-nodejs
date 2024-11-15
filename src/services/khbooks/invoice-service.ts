@@ -192,9 +192,7 @@ export const getAllByFilters = async (
   if (has_open_balance === true) {
     Object.assign(where, {
       invoice_amount: {
-        not: {
-          equals: prisma.invoices.fields.payment_amount,
-        },
+        gt: prisma.invoices.fields.payment_amount,
       },
     })
   }
@@ -431,8 +429,6 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
     await InvoiceAttachmentService.deleteMany(toDelete)
   }
 
-  let currentInvoiceStatus = invoice.invoice_status
-
   if (sendInvoiceAction === SendInvoiceAction.NONE) {
     await InvoiceActivityRepository.create({
       invoice_id: id,
@@ -442,14 +438,15 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
     })
   }
 
-  const isPaymentOpen =
-    new Date(data.due_date).setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)
+  let newInvoiceStatus = invoice.invoice_status
+  let newPaymentStatus = InvoicePaymentStatus.OPEN
 
-  if (
-    currentInvoiceStatus === InvoiceStatus.DRAFT &&
-    sendInvoiceAction === SendInvoiceAction.BILLED
-  ) {
-    currentInvoiceStatus = InvoiceStatus.BILLED
+  if (new Date(data.due_date).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
+    newPaymentStatus = InvoicePaymentStatus.OVERDUE
+  }
+
+  if (newInvoiceStatus === InvoiceStatus.DRAFT && sendInvoiceAction === SendInvoiceAction.BILLED) {
+    newInvoiceStatus = InvoiceStatus.BILLED
 
     await InvoiceActivityRepository.create({
       invoice_id: invoice.id,
@@ -459,8 +456,12 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
     })
   }
 
-  if (invoice.invoice_status === InvoiceStatus.PAID) {
-    currentInvoiceStatus = InvoiceStatus.BILLED
+  const newInvoiceAmount = data.invoice_amount ?? 0
+  const currentPaymentAmount = invoice.payment_amount?.toNumber() ?? 0
+
+  if (newInvoiceAmount < currentPaymentAmount) {
+    newInvoiceStatus = InvoiceStatus.PAID
+    newPaymentStatus = InvoicePaymentStatus.PAID
   }
 
   return await InvoiceRepository.updateById(invoice.id, {
@@ -473,8 +474,8 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
     tax_toggle: data.tax_toggle,
     payment_account_id: data.payment_account_id,
     payment_term_id: paymentTerm.id,
-    payment_status: isPaymentOpen ? InvoicePaymentStatus.OPEN : InvoicePaymentStatus.OVERDUE,
-    invoice_status: currentInvoiceStatus,
+    invoice_status: newInvoiceStatus,
+    payment_status: newPaymentStatus,
     updated_at: currentDate,
   })
 }
