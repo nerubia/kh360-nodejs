@@ -208,7 +208,8 @@ export const update = async (req: Request, res: Response) => {
 
     const paymentAccount: PaymentAccount = {
       name,
-      payment_network_id,
+      payment_network_id:
+        payment_network_id !== null ? parseInt(payment_network_id as string) : null,
       account_name,
       account_type,
       account_no,
@@ -220,7 +221,7 @@ export const update = async (req: Request, res: Response) => {
       address2,
       city,
       state,
-      country_id: parseInt(country_id as string),
+      country_id: country_id !== null ? parseInt(country_id as string) : null,
       postal_code,
     }
 

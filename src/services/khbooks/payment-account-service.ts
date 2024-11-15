@@ -131,7 +131,7 @@ export const updateById = async (id: number, data: PaymentAccount) => {
   }
 
   let country = null
-  if (data.country_id !== null && data.country_id !== undefined) {
+  if (data.country_id !== undefined && data.country_id !== null) {
     country = await CountryRepository.getById(data.country_id ?? 0)
     if (country === null) {
       throw new CustomError("Country not found", 400)
