@@ -35,6 +35,7 @@ import prisma from "../../utils/prisma"
 
 export const getAllByFilters = async (
   invoice_date: string,
+  invoice_no: string,
   client_id: number,
   status: string,
   due_date: string,
@@ -82,6 +83,12 @@ export const getAllByFilters = async (
         },
       })
     }
+  }
+
+  if (invoice_no !== undefined) {
+    Object.assign(where, {
+      invoice_no,
+    })
   }
 
   if (!isNaN(client_id)) {
