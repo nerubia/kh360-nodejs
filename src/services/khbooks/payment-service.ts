@@ -20,7 +20,7 @@ import * as PaymentDetailRepository from "../../repositories/khbooks/payment-det
 import * as PaymentAttachmentService from "../khbooks/payment-attachment-service"
 import * as PaymentDetailService from "../khbooks/payment-detail-service"
 import { type S3File } from "../../types/s3-file-type"
-import { InvoiceStatus } from "../../types/invoice-type"
+import { InvoicePaymentStatus, InvoiceStatus } from "../../types/invoice-type"
 import { InvoiceActivityAction } from "../../types/invoice-activity-type"
 import { generatePaymentEmailContent } from "../../utils/generate-payment-email-content"
 import { sendMail } from "../../utils/sendgrid"
@@ -325,6 +325,10 @@ export const update = async (id: number, data: Payment, sendPaymentAction: SendP
     throw new CustomError("Payment not found", 400)
   }
 
+  if (payment.payment_status === PaymentStatus.RECEIVED) {
+    throw new CustomError("Received payment cannot be updated", 400)
+  }
+
   const paymentEmails = payment.payment_emails
 
   const currentDate = new Date()
@@ -416,7 +420,7 @@ export const update = async (id: number, data: Payment, sendPaymentAction: SendP
       if (invoice.invoice_amount?.toNumber() === totalPaidAmount) {
         Object.assign(updatedInvoiceData, {
           invoice_status: InvoiceStatus.PAID,
-          payment_status: InvoiceStatus.PAID,
+          payment_status: InvoicePaymentStatus.PAID,
         })
       }
 
