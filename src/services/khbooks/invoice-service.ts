@@ -87,7 +87,9 @@ export const getAllByFilters = async (
 
   if (invoice_no !== undefined) {
     Object.assign(where, {
-      invoice_no,
+      invoice_no: {
+        contains: invoice_no,
+      },
     })
   }
 
