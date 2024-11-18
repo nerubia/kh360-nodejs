@@ -57,12 +57,15 @@ export const paginateByFilters = async (
         take: 1,
       },
       payment_details: {
-        select: {
+        where: {
           payments: {
-            where: {
-              payment_status: PaymentStatus.RECEIVED,
-            },
+            payment_status: PaymentStatus.RECEIVED,
           },
+        },
+        select: {
+          id: true,
+          payment_amount: true,
+          payments: true,
         },
       },
     },
