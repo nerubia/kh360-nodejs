@@ -275,6 +275,9 @@ export const show = async (id: number) => {
         created_at: {
           lt: new Date(paymentDetail.created_at ?? ""),
         },
+        payments: {
+          payment_status: PaymentStatus.RECEIVED,
+        },
       })
 
       const totalPaidAmount = previousPaymentDetails.reduce((prev: number, paymentDetail) => {
@@ -388,36 +391,60 @@ export const update = async (id: number, data: Payment, sendPaymentAction: SendP
     await PaymentAttachmentService.deleteMany(toDelete)
   }
 
-  let currentPaymentStatus = payment.payment_status
+  const invoiceIds = data.payment_details
+    ?.map((detail) => detail.invoice_id)
+    .filter((id) => id !== null)
+
+  let newPaymentStatus = payment.payment_status
 
   if (
-    currentPaymentStatus === PaymentStatus.DRAFT &&
+    newPaymentStatus === PaymentStatus.DRAFT &&
     (sendPaymentAction === SendPaymentAction.RECEIVED ||
       sendPaymentAction === SendPaymentAction.SEND)
   ) {
-    currentPaymentStatus = PaymentStatus.RECEIVED
-
-    const invoiceIds = data.payment_details
-      ?.map((detail) => detail.invoice_id)
-      .filter((id) => id !== null)
+    newPaymentStatus = PaymentStatus.RECEIVED
 
     const invoices = await InvoiceRepository.getByIds(invoiceIds ?? [])
 
     for (const invoice of invoices) {
       if (invoice.invoice_status === InvoiceStatus.PAID) {
         throw new CustomError(
-          `Unable to process Invoice ${invoice.invoice_no}. It's already fully paid.`,
+          `Unable to update payment. Invoice ${invoice.invoice_no} has already been fully paid.`,
           400
         )
       }
+    }
+  }
 
+  const updatedPayment = await PaymentRepository.updateById(payment.id, {
+    payment_date: new Date(data.payment_date ?? ""),
+    payment_reference_no: data.payment_reference_no ?? "",
+    or_no: data.or_no ?? "",
+
+    payment_amount: data.payment_amount ?? 0.0,
+    payment_amount_php: data.payment_amount_php ?? 0.0,
+
+    payment_status: newPaymentStatus,
+
+    updated_at: currentDate,
+  })
+
+  if (
+    payment.payment_status === PaymentStatus.DRAFT &&
+    (sendPaymentAction === SendPaymentAction.RECEIVED ||
+      sendPaymentAction === SendPaymentAction.SEND)
+  ) {
+    const invoices = await InvoiceRepository.getByIds(invoiceIds ?? [])
+
+    for (const invoice of invoices) {
+      const invoiceAmount = invoice.invoice_amount?.toNumber() ?? 0
       const totalPaidAmount = invoice.payment_details.reduce((prev: number, paymentDetail) => {
         return prev + Number(paymentDetail.payment_amount)
       }, 0)
 
       const updatedInvoiceData = {}
 
-      if (invoice.invoice_amount?.toNumber() === totalPaidAmount) {
+      if (totalPaidAmount >= invoiceAmount) {
         Object.assign(updatedInvoiceData, {
           invoice_status: InvoiceStatus.PAID,
           payment_status: InvoicePaymentStatus.PAID,
@@ -439,19 +466,7 @@ export const update = async (id: number, data: Payment, sendPaymentAction: SendP
     }
   }
 
-  return await PaymentRepository.updateById(payment.id, {
-    payment_date: new Date(data.payment_date ?? ""),
-    payment_reference_no: data.payment_reference_no ?? "",
-    or_no: data.or_no ?? "",
-
-    payment_amount: data.payment_amount ?? 0.0,
-    payment_amount_php: data.payment_amount_php ?? 0.0,
-
-    payment_status: currentPaymentStatus,
-
-    created_at: currentDate,
-    updated_at: currentDate,
-  })
+  return updatedPayment
 }
 
 export const sendPayment = async (id: number) => {
