@@ -8,5 +8,6 @@ router.get("/", PaymentController.index)
 router.post("/", uploadMiddleware.array("files"), PaymentController.store)
 router.get("/:id", PaymentController.show)
 router.put("/:id", uploadMiddleware.array("files"), PaymentController.update)
+router.post("/:id/cancel", PaymentController.cancel)
 
 export default router

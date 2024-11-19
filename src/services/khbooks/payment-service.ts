@@ -582,3 +582,58 @@ export const sendPayment = async (id: number) => {
     ],
   })
 }
+
+export const cancel = async (id: number) => {
+  const payment = await PaymentRepository.getById(id)
+
+  if (payment === null) {
+    throw new CustomError("Payment not found", 400)
+  }
+
+  if (payment.payment_status !== PaymentStatus.RECEIVED) {
+    throw new CustomError("Only received payments can be cancelled", 400)
+  }
+
+  const currentDate = new Date()
+
+  const updatedPayment = await PaymentRepository.updateById(payment.id, {
+    payment_status: PaymentStatus.CANCELLED,
+    updated_at: currentDate,
+  })
+
+  const invoiceIds = payment.payment_details
+    .map((paymentDetail) => paymentDetail.invoice_id)
+    .filter((id) => id !== null)
+
+  const invoices = await InvoiceRepository.getByIds(invoiceIds ?? [])
+
+  for (const invoice of invoices) {
+    const invoiceAmount = invoice.invoice_amount?.toNumber() ?? 0
+    const totalPaidAmount = invoice.payment_details.reduce((prev: number, paymentDetail) => {
+      return prev + Number(paymentDetail.payment_amount)
+    }, 0)
+
+    const isPaymentOpen =
+      new Date(invoice.due_date ?? "").setHours(0, 0, 0, 0) >= new Date().setHours(0, 0, 0, 0)
+
+    const updatedInvoiceData = {
+      invoice_status: InvoiceStatus.BILLED,
+      payment_status: isPaymentOpen ? InvoicePaymentStatus.OPEN : InvoicePaymentStatus.OVERDUE,
+    }
+
+    if (totalPaidAmount >= invoiceAmount) {
+      Object.assign(updatedInvoiceData, {
+        invoice_status: InvoiceStatus.PAID,
+        payment_status: InvoicePaymentStatus.PAID,
+      })
+    }
+
+    await InvoiceRepository.updateById(invoice.id, {
+      ...updatedInvoiceData,
+      payment_amount: totalPaidAmount,
+      updated_at: currentDate,
+    })
+  }
+
+  return updatedPayment
+}
