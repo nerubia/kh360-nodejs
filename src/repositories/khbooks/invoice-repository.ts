@@ -223,7 +223,9 @@ export const getById = async (id: number) => {
       payment_details: {
         where: {
           payments: {
-            payment_status: PaymentStatus.RECEIVED,
+            payment_status: {
+              in: [PaymentStatus.RECEIVED, PaymentStatus.CANCELLED],
+            },
           },
         },
         select: {

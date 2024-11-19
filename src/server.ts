@@ -17,3 +17,19 @@ void connectRedis()
 server.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`)
 })
+
+process.on("SIGINT", () => {
+  handleShutdownSignal("SIGINT")
+})
+
+process.on("SIGTERM", () => {
+  handleShutdownSignal("SIGTERM")
+})
+
+const handleShutdownSignal = (signal: string) => {
+  logger.info(`Received ${signal}. Closing server...`)
+  server.close(() => {
+    logger.info("Server closed gracefully.")
+    process.exit(0)
+  })
+}
