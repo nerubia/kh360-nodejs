@@ -48,6 +48,7 @@ export enum SendPaymentAction {
 export enum PaymentStatus {
   DRAFT = "draft",
   RECEIVED = "received",
+  CANCELLED = "cancelled",
 }
 
 export interface EmailPaymentContent {
