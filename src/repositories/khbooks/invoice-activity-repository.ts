@@ -21,6 +21,7 @@ export const paginateByFilters = async (
           id: true,
           payment_no: true,
           payment_amount: true,
+          payment_status: true,
           payment_details: {
             select: {
               id: true,
