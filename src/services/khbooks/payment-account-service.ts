@@ -11,6 +11,7 @@ export const getAllByFilters = async ({
   account_name,
   account_no,
   bank_name,
+  is_active,
   page,
 }: PaymentAccountFilters) => {
   const itemsPerPage = 20
@@ -54,6 +55,12 @@ export const getAllByFilters = async ({
       bank_name: {
         contains: bank_name,
       },
+    })
+  }
+
+  if (is_active !== undefined) {
+    Object.assign(where, {
+      is_active: Boolean(parseInt(is_active)),
     })
   }
 
@@ -118,6 +125,7 @@ export const create = async (data: PaymentAccount) => {
     country_id: country?.id ?? null,
     postal_code: data.postal_code,
     description: data.description,
+    is_active: data.is_active,
     created_at: currentDate,
     updated_at: currentDate,
   })
@@ -165,6 +173,7 @@ export const updateById = async (id: number, data: PaymentAccount) => {
     country_id: country?.id ?? null,
     postal_code: data.postal_code,
     description: data.description,
+    is_active: data.is_active,
     created_at: currentDate,
     updated_at: currentDate,
   })
@@ -175,6 +184,13 @@ export const deleteById = async (id: number) => {
 
   if (paymentAccount === null) {
     throw new CustomError("Payment account not found", 400)
+  }
+
+  if (paymentAccount._count.invoices > 0) {
+    throw new CustomError(
+      "This payment account is linked to an invoice and cannot be deleted.",
+      400
+    )
   }
 
   await PaymentAccountRepository.deleteById(id)

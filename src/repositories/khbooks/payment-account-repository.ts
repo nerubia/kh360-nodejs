@@ -22,6 +22,11 @@ export const paginateByFilters = async (
           name: true,
         },
       },
+      _count: {
+        select: {
+          invoices: true,
+        },
+      },
     },
     orderBy: [
       {
@@ -54,6 +59,11 @@ export const getById = async (id: number) => {
         select: {
           id: true,
           name: true,
+        },
+      },
+      _count: {
+        select: {
+          invoices: true,
         },
       },
     },

@@ -2016,6 +2016,7 @@ model payment_accounts {
   country_id         Int?
   postal_code        String?           @default("") @db.VarChar(255)
   description        String?           @default("") @db.VarChar(255)
+  is_active          Boolean?
   created_at         DateTime?         @db.DateTime(0)
   updated_at         DateTime?         @db.DateTime(0)
   clients            clients[]
