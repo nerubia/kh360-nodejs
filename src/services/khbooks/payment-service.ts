@@ -332,6 +332,10 @@ export const update = async (id: number, data: Payment, sendPaymentAction: SendP
     throw new CustomError("Received payment cannot be updated", 400)
   }
 
+  if (payment.payment_status === PaymentStatus.CANCELLED) {
+    throw new CustomError("Cancelled payment cannot be updated", 400)
+  }
+
   const paymentEmails = payment.payment_emails
 
   const currentDate = new Date()
