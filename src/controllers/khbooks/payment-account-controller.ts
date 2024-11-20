@@ -13,43 +13,31 @@ import { type PaymentAccount } from "../../types/payment-account-type"
  * @param req.query.account_name - Filter by account name.
  * @param req.query.account_no - Filter by account no.
  * @param req.query.bank_name - Filter by bank name.
+ * @param req.query.is_active - Filter by is active.
  * @param req.query.page - Page number for pagination.
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const { payment_account_name, payment_network_id, account_name, account_no, bank_name, page } =
-      req.query
+    const {
+      payment_account_name,
+      payment_network_id,
+      account_name,
+      account_no,
+      bank_name,
+      is_active,
+      page,
+    } = req.query
     const results = await PaymentAccountService.getAllByFilters({
       payment_account_name: payment_account_name as string,
       payment_network_id: Number(payment_network_id),
       account_name: account_name as string,
       account_no: account_no as string,
       bank_name: bank_name as string,
+      is_active: is_active as string,
       page: page as string,
     })
     res.json(results)
   } catch (error) {
-    logger.error(error)
-    res.status(500).json({ message: "Something went wrong" })
-  }
-}
-
-/**
- * Get a specific payment account by ID.
- * @param req.params.id - Payment account id
- */
-export const show = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params
-    const paymentAccount = await PaymentAccountService.getById(parseInt(id))
-    res.json(paymentAccount)
-  } catch (error) {
-    if (error instanceof ValidationError) {
-      return res.status(400).json(error)
-    }
-    if (error instanceof CustomError) {
-      return res.status(error.status).json({ message: error.message })
-    }
     logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
@@ -73,6 +61,7 @@ export const show = async (req: Request, res: Response) => {
  * @param req.body.state - State.
  * @param req.body.country_id - Country ID.
  * @param req.body.postal_code - Postal code.
+ * @param req.body.is_active - Is active.
  */
 
 export const store = async (req: Request, res: Response) => {
@@ -93,9 +82,10 @@ export const store = async (req: Request, res: Response) => {
       state,
       country_id,
       postal_code,
+      is_active,
     } = req.body
 
-    await createPaymentAccountSchema.validate({
+    const parsedData = await createPaymentAccountSchema.validate({
       name,
       payment_network_id,
       account_name,
@@ -111,6 +101,7 @@ export const store = async (req: Request, res: Response) => {
       state,
       country_id,
       postal_code,
+      is_active,
     })
 
     const paymentAccount: PaymentAccount = {
@@ -130,11 +121,33 @@ export const store = async (req: Request, res: Response) => {
       state,
       country_id: country_id !== null ? parseInt(country_id as string) : null,
       postal_code,
+      is_active: parsedData.is_active,
     }
 
     const newPaymentAccount = await PaymentAccountService.create(paymentAccount)
 
     res.json(newPaymentAccount)
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Get a specific payment account by ID.
+ * @param req.params.id - Payment account id
+ */
+export const show = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const paymentAccount = await PaymentAccountService.getById(parseInt(id))
+    res.json(paymentAccount)
   } catch (error) {
     if (error instanceof ValidationError) {
       return res.status(400).json(error)
@@ -165,6 +178,7 @@ export const store = async (req: Request, res: Response) => {
  * @param req.body.state - State.
  * @param req.body.country_id - Country ID.
  * @param req.body.postal_code - Postal code.
+ * @param req.body.is_active - Is active.
  */
 
 export const update = async (req: Request, res: Response) => {
@@ -186,9 +200,10 @@ export const update = async (req: Request, res: Response) => {
       state,
       country_id,
       postal_code,
+      is_active,
     } = req.body
 
-    await createPaymentAccountSchema.validate({
+    const parsedData = await createPaymentAccountSchema.validate({
       name,
       payment_network_id,
       account_name,
@@ -204,6 +219,7 @@ export const update = async (req: Request, res: Response) => {
       state,
       country_id,
       postal_code,
+      is_active,
     })
 
     const paymentAccount: PaymentAccount = {
@@ -223,6 +239,7 @@ export const update = async (req: Request, res: Response) => {
       state,
       country_id: country_id !== null ? parseInt(country_id as string) : null,
       postal_code,
+      is_active: parsedData.is_active,
     }
 
     const updatedPaymentAccount = await PaymentAccountService.updateById(

@@ -25,5 +25,6 @@ export interface PaymentAccountFilters {
   account_name: string
   account_no: string
   bank_name: string
+  is_active: string
   page?: string
 }

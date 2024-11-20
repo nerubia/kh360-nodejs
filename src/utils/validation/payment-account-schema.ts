@@ -1,4 +1,4 @@
-import { object, string, number } from "yup"
+import { object, string, number, boolean } from "yup"
 
 export const createPaymentAccountSchema = object().shape({
   name: string().required("Account name is required"),
@@ -20,4 +20,6 @@ export const createPaymentAccountSchema = object().shape({
   state: string().nullable(),
   country_id: number().nullable(),
   postal_code: string().nullable(),
+
+  is_active: boolean().required(),
 })
