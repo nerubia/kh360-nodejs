@@ -4,17 +4,14 @@ import { type Prisma } from "@prisma/client"
 export const paginateByFilters = async (
   skip: number,
   take: number,
-  where: Prisma.offeringsWhereInput
+  where: Prisma.offeringsWhereInput,
+  orderBy: Prisma.offeringsOrderByWithRelationInput[]
 ) => {
   return await prisma.offerings.findMany({
     skip,
     take,
     where,
-    orderBy: [
-      {
-        created_at: "desc",
-      },
-    ],
+    orderBy,
     include: {
       offering_categories: {
         select: {
