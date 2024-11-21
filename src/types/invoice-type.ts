@@ -17,6 +17,8 @@ export interface Invoice {
   due_date: string
   invoice_amount?: number
   sub_total?: number
+  discount_amount?: number
+  discount_toggle: boolean
   tax_amount?: number
   tax_type_id: number
   tax_toggle: boolean

@@ -634,6 +634,7 @@ model invoices {
   due_date            DateTime?             @db.Date
   invoice_amount      Decimal?              @default(0.00) @db.Decimal(12, 2)
   discount_amount     Decimal?              @default(0.00) @db.Decimal(12, 2)
+  discount_toggle     Boolean?
   tax_amount          Decimal?              @default(0.00) @db.Decimal(12, 2)
   sub_total           Decimal?              @default(0.00) @db.Decimal(12, 2)
   payment_amount      Decimal?              @default(0.00) @db.Decimal(12, 2)

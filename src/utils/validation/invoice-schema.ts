@@ -40,6 +40,8 @@ export const createInvoiceSchema = object().shape({
       return invoiceAmount <= MAX_INVOICE_AMOUNT
     }),
   sub_total: number().required("Sub total is required"),
+  discount_amount: number().required("Discount amount is required"),
+  discount_toggle: boolean().required("Discount toggle is required"),
   tax_amount: number().required("Tax amount is required"),
   tax_type_id: number().required("Tax type is required"),
   tax_toggle: boolean().required("Tax toggle is requried"),
