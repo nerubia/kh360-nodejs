@@ -13,6 +13,7 @@ export const getAllByFilters = async ({
   bank_name,
   is_active,
   page,
+  orderBy,
 }: PaymentAccountFilters) => {
   const itemsPerPage = 20
   const parsedPage = parseInt(page ?? "1")
@@ -64,10 +65,18 @@ export const getAllByFilters = async ({
     })
   }
 
+  const finalOrderBy = orderBy ?? []
+
   const paymentAccounts = await PaymentAccountRepository.paginateByFilters(
     (currentPage - 1) * itemsPerPage,
     itemsPerPage,
-    where
+    where,
+    [
+      ...finalOrderBy,
+      {
+        created_at: "desc",
+      },
+    ]
   )
 
   const totalItems = await PaymentAccountRepository.countAllByFilters(where)
