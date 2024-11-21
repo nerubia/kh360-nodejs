@@ -12,7 +12,7 @@ export const paginateByFilters = async (
     where,
     orderBy: [
       {
-        created_at: "desc",
+        name: "asc",
       },
     ],
   })
