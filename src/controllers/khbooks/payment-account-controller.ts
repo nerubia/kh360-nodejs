@@ -3,7 +3,10 @@ import logger from "../../utils/logger"
 import * as PaymentAccountService from "../../services/khbooks/payment-account-service"
 import { ValidationError } from "yup"
 import CustomError from "../../utils/custom-error"
-import { createPaymentAccountSchema } from "../../utils/validation/payment-account-schema"
+import {
+  createPaymentAccountSchema,
+  paymentAccountSchema,
+} from "../../utils/validation/payment-account-schema"
 import { type PaymentAccount } from "../../types/payment-account-type"
 
 /**
@@ -15,6 +18,7 @@ import { type PaymentAccount } from "../../types/payment-account-type"
  * @param req.query.bank_name - Filter by bank name.
  * @param req.query.is_active - Filter by is active.
  * @param req.query.page - Page number for pagination.
+ * @param req.query.orderBy - Order by
  */
 export const index = async (req: Request, res: Response) => {
   try {
@@ -26,7 +30,13 @@ export const index = async (req: Request, res: Response) => {
       bank_name,
       is_active,
       page,
+      orderBy,
     } = req.query
+
+    const parsedData = await paymentAccountSchema.validate({
+      orderBy,
+    })
+
     const results = await PaymentAccountService.getAllByFilters({
       payment_account_name: payment_account_name as string,
       payment_network_id: Number(payment_network_id),
@@ -35,7 +45,9 @@ export const index = async (req: Request, res: Response) => {
       bank_name: bank_name as string,
       is_active: is_active as string,
       page: page as string,
+      orderBy: parsedData.orderBy,
     })
+
     res.json(results)
   } catch (error) {
     logger.error(error)

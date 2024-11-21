@@ -4,7 +4,8 @@ import { type Prisma } from "@prisma/client"
 export const paginateByFilters = async (
   skip: number,
   take: number,
-  where: Prisma.payment_accountsWhereInput
+  where: Prisma.payment_accountsWhereInput,
+  orderBy: Prisma.payment_accountsOrderByWithRelationInput[]
 ) => {
   return await prisma.payment_accounts.findMany({
     skip,
@@ -28,11 +29,7 @@ export const paginateByFilters = async (
         },
       },
     },
-    orderBy: [
-      {
-        created_at: "desc",
-      },
-    ],
+    orderBy,
   })
 }
 
