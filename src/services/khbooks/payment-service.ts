@@ -539,6 +539,8 @@ export const sendPayment = async (id: number) => {
             invoice_date: paymentDetail.invoices?.invoice_date?.toISOString() ?? "",
             due_date: paymentDetail.invoices?.due_date?.toISOString() ?? "",
             invoice_amount: invoiceAmount,
+            discount_amount: paymentDetail.invoices?.discount_amount?.toNumber() ?? 0,
+            discount_toggle: paymentDetail.invoices?.discount_toggle ?? false,
             tax_type_id: 0,
             tax_toggle: false,
             payment_account_id: 0,
