@@ -27,4 +27,12 @@ export interface PaymentAccountFilters {
   bank_name: string
   is_active: string
   page?: string
+  orderBy?: PaymentAccountOrderBy[]
 }
+
+export interface PaymentAccountOrderBy {
+  name?: SortOrder
+  created_at?: SortOrder
+}
+
+type SortOrder = "asc" | "desc"
