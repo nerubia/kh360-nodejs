@@ -199,6 +199,8 @@ export const getById = async (id: number) => {
               invoice_date: true,
               due_date: true,
               invoice_amount: true,
+              discount_amount: true,
+              discount_toggle: true,
             },
           },
         },

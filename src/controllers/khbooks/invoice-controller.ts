@@ -65,6 +65,8 @@ export const index = async (req: Request, res: Response) => {
  * @param req.body.due_date - Due date.
  * @param req.body.invoice_amount - Invoice amount.
  * @param req.body.sub_total - Sub total.
+ * @param req.body.discount_amount - Discount amount.
+ * @param req.body.discount_toggle - Discount toggle.
  * @param req.body.tax_amount - Tax amount.
  * @param req.body.tax_type_id - Tax type id.
  * @param req.body.tax_toggle - Tax toggle.
@@ -92,6 +94,8 @@ export const store = async (req: Request, res: Response) => {
       due_date,
       invoice_amount,
       sub_total,
+      discount_amount,
+      discount_toggle,
       tax_amount,
       tax_type_id,
       tax_toggle,
@@ -128,6 +132,8 @@ export const store = async (req: Request, res: Response) => {
       due_date,
       invoice_amount,
       sub_total,
+      discount_amount,
+      discount_toggle,
       tax_amount,
       tax_type_id,
       tax_toggle,
@@ -169,6 +175,8 @@ export const store = async (req: Request, res: Response) => {
         due_date,
         invoice_amount: parseFloat(invoice_amount as string),
         sub_total: parseFloat(sub_total as string),
+        discount_amount: parseFloat(discount_amount as string),
+        discount_toggle: Boolean(Number(discount_toggle)),
         tax_amount: parseFloat(tax_amount as string),
         tax_type_id: parseInt(tax_type_id as string),
         tax_toggle: Boolean(Number(tax_toggle)),
@@ -246,6 +254,8 @@ export const show = async (req: Request, res: Response) => {
  * @param req.body.due_date - Due date.
  * @param req.body.invoice_amount - Invoice amount.
  * @param req.body.sub_total - Sub total.
+ * @param req.body.discount_amount - Discount amount.
+ * @param req.body.discount_toggle - Discount toggle.
  * @param req.body.tax_amount - Tax amount.
  * @param req.body.tax_type_id - Tax type id.
  * @param req.body.tax_toggle - Tax toggle.
@@ -274,6 +284,8 @@ export const update = async (req: Request, res: Response) => {
       due_date,
       invoice_amount,
       sub_total,
+      discount_amount,
+      discount_toggle,
       tax_amount,
       tax_type_id,
       tax_toggle,
@@ -311,6 +323,8 @@ export const update = async (req: Request, res: Response) => {
       due_date,
       invoice_amount,
       sub_total,
+      discount_amount,
+      discount_toggle,
       tax_amount,
       tax_type_id,
       tax_toggle,
@@ -330,6 +344,8 @@ export const update = async (req: Request, res: Response) => {
         due_date,
         invoice_amount: Number(invoice_amount),
         sub_total: Number(sub_total),
+        discount_amount: Number(discount_amount),
+        discount_toggle: Boolean(Number(discount_toggle)),
         tax_amount: Number(tax_amount),
         tax_type_id: Number(tax_type_id),
         tax_toggle: Boolean(Number(tax_toggle)),
