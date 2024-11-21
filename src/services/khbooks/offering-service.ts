@@ -5,18 +5,19 @@ import * as ClientRepository from "../../repositories/client-repository"
 import * as CurrencyRepository from "../../repositories/khbooks/currency-repository"
 import * as InvoiceRepository from "../../repositories/khbooks/invoice-repository"
 import CustomError from "../../utils/custom-error"
-import { type Offering } from "../../types/offering-type"
+import { type OfferingFilters, type Offering } from "../../types/offering-type"
 import { removeWhitespace } from "../../utils/format-string"
 import { InvoiceStatus } from "../../types/invoice-type"
 
-export const getAllByFilters = async (
-  name: string,
-  category_id: number,
-  client_id: number,
-  global: boolean,
-  is_active: string,
-  page: string
-) => {
+export const getAllByFilters = async ({
+  name,
+  category_id,
+  client_id,
+  global,
+  is_active,
+  page,
+  orderBy,
+}: OfferingFilters) => {
   const itemsPerPage = 20
   const parsedPage = parseInt(page)
   const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
@@ -68,10 +69,18 @@ export const getAllByFilters = async (
     })
   }
 
+  const finalOrderBy = orderBy ?? []
+
   const offerings = await OfferingRepository.paginateByFilters(
     (currentPage - 1) * itemsPerPage,
     itemsPerPage,
-    where
+    where,
+    [
+      ...finalOrderBy,
+      {
+        created_at: "desc",
+      },
+    ]
   )
 
   const totalItems = await OfferingRepository.countAllByFilters(where)

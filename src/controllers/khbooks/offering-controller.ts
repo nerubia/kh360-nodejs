@@ -3,7 +3,7 @@ import logger from "../../utils/logger"
 import * as OfferingService from "../../services/khbooks/offering-service"
 import { ValidationError } from "yup"
 import CustomError from "../../utils/custom-error"
-import { createOfferingSchema } from "../../utils/validation/offering-schema"
+import { createOfferingSchema, offeringSchema } from "../../utils/validation/offering-schema"
 
 /**
  * List offerings based on provided filters.
@@ -13,20 +13,30 @@ import { createOfferingSchema } from "../../utils/validation/offering-schema"
  * @param req.query.global - Filter by global.
  * @param req.query.is_active - Filter by is active.
  * @param req.query.page - Page number for pagination.
+ * @param req.query.orderBy - Order by
  */
 export const index = async (req: Request, res: Response) => {
   try {
-    const { name, category_id, client_id, global, is_active, page } = req.query
-    const results = await OfferingService.getAllByFilters(
-      name as string,
-      parseInt(category_id as string),
-      parseInt(client_id as string),
-      Boolean(parseInt(global as string)),
-      is_active as string,
-      page as string
-    )
+    const { name, category_id, client_id, global, is_active, page, orderBy } = req.query
+
+    const parsedData = await offeringSchema.validate({
+      orderBy,
+    })
+
+    const results = await OfferingService.getAllByFilters({
+      name: name as string,
+      category_id: parseInt(category_id as string),
+      client_id: parseInt(client_id as string),
+      global: Boolean(parseInt(global as string)),
+      is_active: is_active as string,
+      page: page as string,
+      orderBy: parsedData.orderBy,
+    })
     res.json(results)
   } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
     logger.error(error)
     res.status(500).json({ message: "Something went wrong" })
   }
