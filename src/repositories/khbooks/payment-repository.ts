@@ -217,3 +217,11 @@ export const updateById = async (id: number, data: Prisma.paymentsUncheckedUpdat
     data,
   })
 }
+
+export const deleteById = async (id: number) => {
+  await prisma.payments.delete({
+    where: {
+      id,
+    },
+  })
+}
