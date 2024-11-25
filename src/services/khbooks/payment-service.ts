@@ -608,6 +608,17 @@ export const sendPayment = async ({
   })
 }
 
+export const deleteById = async (id: number) => {
+  const payment = await PaymentRepository.getById(id)
+  if (payment === null) {
+    throw new CustomError("Payment not found", 400)
+  }
+  if (payment.payment_status !== PaymentStatus.DRAFT) {
+    throw new CustomError("Only draft payments can be deleted", 400)
+  }
+  await PaymentRepository.deleteById(id)
+}
+
 export const cancel = async (id: number) => {
   const payment = await PaymentRepository.getById(id)
 

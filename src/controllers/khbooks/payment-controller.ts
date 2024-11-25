@@ -252,6 +252,27 @@ export const update = async (req: Request, res: Response) => {
 }
 
 /**
+ * Delete payment
+ * @param req.params.id - The ID of the payment to be deleted
+ */
+export const destroy = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    await PaymentService.deleteById(parseInt(id))
+    res.json({ id, message: "Payment successfully deleted" })
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return res.status(400).json(error)
+    }
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
  * Cancel
  */
 export const cancel = async (req: Request, res: Response) => {
