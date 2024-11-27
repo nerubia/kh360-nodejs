@@ -373,12 +373,14 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
 
   const currentDate = new Date()
 
-  if (data.to !== undefined && data.to.length > 0) {
+  if (data.to !== undefined) {
     const to = invoiceEmails.find((invoiceEmail) => invoiceEmail.email_type === "to")
     if (to !== undefined) {
-      await InvoiceEmailRepository.updateById(to.id, {
-        email_address: data.to,
-      })
+      if (data.to.length > 0) {
+        await InvoiceEmailRepository.updateById(to.id, {
+          email_address: data.to,
+        })
+      }
     } else {
       await InvoiceEmailRepository.create({
         invoice_id: invoice.id,
@@ -388,12 +390,17 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
     }
   }
 
-  if (data.cc !== undefined && data.cc.length > 0) {
+  if (data.cc !== undefined) {
     const cc = invoiceEmails.find((invoiceEmail) => invoiceEmail.email_type === "cc")
     if (cc !== undefined) {
-      await InvoiceEmailRepository.updateById(cc.id, {
-        email_address: data.cc,
-      })
+      if (data.cc.length > 0) {
+        await InvoiceEmailRepository.updateById(cc.id, {
+          email_address: data.cc,
+        })
+      }
+      if (data.cc.length === 0) {
+        await InvoiceEmailRepository.deleteById(cc.id)
+      }
     } else {
       await InvoiceEmailRepository.create({
         invoice_id: invoice.id,
@@ -403,12 +410,17 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
     }
   }
 
-  if (data.bcc !== undefined && data.bcc.length > 0) {
+  if (data.bcc !== undefined) {
     const bcc = invoiceEmails.find((invoiceEmail) => invoiceEmail.email_type === "bcc")
     if (bcc !== undefined) {
-      await InvoiceEmailRepository.updateById(bcc.id, {
-        email_address: data.bcc,
-      })
+      if (data.bcc.length > 0) {
+        await InvoiceEmailRepository.updateById(bcc.id, {
+          email_address: data.bcc,
+        })
+      }
+      if (data.bcc.length === 0) {
+        await InvoiceEmailRepository.deleteById(bcc.id)
+      }
     } else {
       await InvoiceEmailRepository.create({
         invoice_id: invoice.id,
