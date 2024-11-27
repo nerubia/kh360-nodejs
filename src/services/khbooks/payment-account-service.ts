@@ -15,7 +15,7 @@ export const getAllByFilters = async ({
   page,
   orderBy,
 }: PaymentAccountFilters) => {
-  const itemsPerPage = 20
+  const itemsPerPage = 50
   const parsedPage = parseInt(page ?? "1")
   const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
