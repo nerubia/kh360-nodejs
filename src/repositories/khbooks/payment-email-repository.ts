@@ -15,3 +15,11 @@ export const updateById = async (id: number, data: Prisma.payment_emailsUnchecke
     data,
   })
 }
+
+export const deleteById = async (id: number) => {
+  await prisma.payment_emails.delete({
+    where: {
+      id,
+    },
+  })
+}
