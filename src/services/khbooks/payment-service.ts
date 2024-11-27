@@ -340,12 +340,14 @@ export const update = async (id: number, data: Payment, sendPaymentAction: SendP
 
   const currentDate = new Date()
 
-  if (data.to !== undefined && data.to.length > 0) {
+  if (data.to !== undefined) {
     const to = paymentEmails.find((paymentEmail) => paymentEmail.email_type === "to")
     if (to !== undefined) {
-      await PaymentEmailRepository.updateById(to.id, {
-        email_address: data.to,
-      })
+      if (data.to.length > 0) {
+        await PaymentEmailRepository.updateById(to.id, {
+          email_address: data.to,
+        })
+      }
     } else {
       await PaymentEmailRepository.create({
         payment_id: payment.id,
@@ -355,12 +357,17 @@ export const update = async (id: number, data: Payment, sendPaymentAction: SendP
     }
   }
 
-  if (data.cc !== undefined && data.cc.length > 0) {
+  if (data.cc !== undefined) {
     const cc = paymentEmails.find((paymentEmail) => paymentEmail.email_type === "cc")
     if (cc !== undefined) {
-      await PaymentEmailRepository.updateById(cc.id, {
-        email_address: data.cc,
-      })
+      if (data.cc.length > 0) {
+        await PaymentEmailRepository.updateById(cc.id, {
+          email_address: data.cc,
+        })
+      }
+      if (data.cc.length === 0) {
+        await PaymentEmailRepository.deleteById(cc.id)
+      }
     } else {
       await PaymentEmailRepository.create({
         payment_id: payment.id,
@@ -370,12 +377,17 @@ export const update = async (id: number, data: Payment, sendPaymentAction: SendP
     }
   }
 
-  if (data.bcc !== undefined && data.bcc.length > 0) {
+  if (data.bcc !== undefined) {
     const bcc = paymentEmails.find((paymentEmail) => paymentEmail.email_type === "bcc")
     if (bcc !== undefined) {
-      await PaymentEmailRepository.updateById(bcc.id, {
-        email_address: data.bcc,
-      })
+      if (data.bcc.length > 0) {
+        await PaymentEmailRepository.updateById(bcc.id, {
+          email_address: data.bcc,
+        })
+      }
+      if (data.bcc.length === 0) {
+        await PaymentEmailRepository.deleteById(bcc.id)
+      }
     } else {
       await PaymentEmailRepository.create({
         payment_id: payment.id,
