@@ -1909,6 +1909,7 @@ model invoice_attachments {
 model invoice_details {
   id                  Int        @id @default(autoincrement())
   invoice_id          Int?
+  sequence_no         Int?
   contract_id         Int?
   contract_billing_id Int?
   offering_id         Int?
