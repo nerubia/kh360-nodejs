@@ -23,6 +23,7 @@ export const updateByInvoiceId = async (id: number, invoiceDetails: InvoiceDetai
     if (invoiceDetail.id === undefined) {
       newInvoiceDetails.push({
         invoice_id: invoice.id,
+        sequence_no: invoiceDetail.sequence_no,
         contract_id: invoiceDetail.contract_id,
         contract_billing_id: invoiceDetail.contract_billing_id,
         offering_id: invoiceDetail.offering_id,
@@ -43,6 +44,7 @@ export const updateByInvoiceId = async (id: number, invoiceDetails: InvoiceDetai
     } else {
       await InvoiceDetailRepository.updateById(invoiceDetail.id, {
         invoice_id: invoice.id,
+        sequence_no: invoiceDetail.sequence_no,
         contract_id: invoiceDetail.contract_id,
         contract_billing_id: invoiceDetail.contract_billing_id,
         offering_id: invoiceDetail.offering_id,
