@@ -3,6 +3,7 @@ import { type Project } from "./project-type"
 
 export interface InvoiceDetail {
   id?: number
+  sequence_no?: number
   contract_id: number | null
   contract_billing_id: number | null
   offering_id: number | null

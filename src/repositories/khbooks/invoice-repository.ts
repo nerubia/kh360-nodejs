@@ -136,6 +136,7 @@ export const getById = async (id: number) => {
       invoice_details: {
         select: {
           id: true,
+          sequence_no: true,
           contract_id: true,
           contract_billing_id: true,
           offering_id: true,
