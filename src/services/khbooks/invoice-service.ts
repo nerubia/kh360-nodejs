@@ -292,6 +292,8 @@ export const create = async (data: Invoice, sendInvoiceAction: SendInvoiceAction
       invoice_id: newInvoice.id,
       email_type: "to",
       email_address: data.to,
+      created_at: currentDate,
+      updated_at: currentDate,
     })
   }
 
@@ -300,6 +302,8 @@ export const create = async (data: Invoice, sendInvoiceAction: SendInvoiceAction
       invoice_id: newInvoice.id,
       email_type: "cc",
       email_address: data.cc,
+      created_at: currentDate,
+      updated_at: currentDate,
     })
   }
 
@@ -308,6 +312,8 @@ export const create = async (data: Invoice, sendInvoiceAction: SendInvoiceAction
       invoice_id: newInvoice.id,
       email_type: "bcc",
       email_address: data.bcc,
+      created_at: currentDate,
+      updated_at: currentDate,
     })
   }
 
@@ -379,6 +385,7 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
       if (data.to.length > 0) {
         await InvoiceEmailRepository.updateById(to.id, {
           email_address: data.to,
+          updated_at: currentDate,
         })
       }
     } else {
@@ -386,6 +393,8 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
         invoice_id: invoice.id,
         email_type: "to",
         email_address: data.to,
+        created_at: currentDate,
+        updated_at: currentDate,
       })
     }
   }
@@ -396,6 +405,7 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
       if (data.cc.length > 0) {
         await InvoiceEmailRepository.updateById(cc.id, {
           email_address: data.cc,
+          updated_at: currentDate,
         })
       }
       if (data.cc.length === 0) {
@@ -406,6 +416,8 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
         invoice_id: invoice.id,
         email_type: "cc",
         email_address: data.cc,
+        created_at: currentDate,
+        updated_at: currentDate,
       })
     }
   }
@@ -416,6 +428,7 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
       if (data.bcc.length > 0) {
         await InvoiceEmailRepository.updateById(bcc.id, {
           email_address: data.bcc,
+          updated_at: currentDate,
         })
       }
       if (data.bcc.length === 0) {
@@ -426,6 +439,8 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
         invoice_id: invoice.id,
         email_type: "bcc",
         email_address: data.bcc,
+        created_at: currentDate,
+        updated_at: currentDate,
       })
     }
   }
