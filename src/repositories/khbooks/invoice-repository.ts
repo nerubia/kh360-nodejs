@@ -356,6 +356,46 @@ export const generateInvoiceNumberById = async (id: number) => {
   })
 }
 
+export const getNextInvoiceNo = async () => {
+  return await prisma.$transaction(async (tx) => {
+    const invoices = await tx.invoices.findMany({
+      where: {
+        AND: [
+          {
+            invoice_no: {
+              not: undefined,
+            },
+          },
+          {
+            invoice_no: {
+              not: null,
+            },
+          },
+          {
+            invoice_no: {
+              not: "",
+            },
+          },
+        ],
+      },
+      orderBy: {
+        invoice_no: "desc",
+      },
+      take: 1,
+    })
+
+    let invoiceNo = Number(process.env.INVOICE_NO_OFFSET ?? 0)
+
+    if (invoices.length === 1) {
+      invoiceNo = Number(invoices[0].invoice_no) + 1
+    }
+
+    const formattedInvoiceNo = invoiceNo.toString().padStart(6, "0")
+
+    return formattedInvoiceNo
+  })
+}
+
 export const deleteById = async (id: number) => {
   await prisma.invoices.delete({
     where: {
