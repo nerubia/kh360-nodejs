@@ -12,6 +12,8 @@ import * as InvoiceRepository from "../../repositories/khbooks/invoice-repositor
 import * as PaymentTermRepository from "../../repositories/khbooks/payment-term-repository"
 import * as PaymentRepository from "../../repositories/khbooks/payment-repository"
 import * as TaxTypeRepository from "../../repositories/khbooks/tax-type-repository"
+import * as EmailTemplateRepository from "../../repositories/email-template-repository"
+import * as EmailLogRepository from "../../repositories/email-log-repository"
 import { type Contract } from "../../types/contract-type"
 import {
   type Invoice,
@@ -32,6 +34,8 @@ import * as InvoiceAttachmentService from "../khbooks/invoice-attachment-service
 import * as InvoiceDetailService from "../khbooks/invoice-detail-service"
 import { InvoiceActivityAction } from "../../types/invoice-activity-type"
 import prisma from "../../utils/prisma"
+import { type EmailLog, EmailLogType } from "../../types/email-log-type"
+import { type UserToken } from "../../types/user-token-type"
 
 export const getAllByFilters = async (
   invoice_date: string,
@@ -553,11 +557,13 @@ export const uploadAttachments = async (id: number, files: S3File[]) => {
 }
 
 export const sendInvoice = async ({
+  user,
   id,
   type = SendInvoiceType.Invoice,
   subject,
   content,
 }: {
+  user?: UserToken
   id: number
   type?: SendInvoiceType
   subject: string
@@ -577,6 +583,16 @@ export const sendInvoice = async ({
 
   if (invoice.invoice_status === InvoiceStatus.DRAFT) {
     await InvoiceRepository.updateInvoiceStatusById(invoice.id, InvoiceStatus.BILLED)
+  }
+
+  const emailTemplate = await EmailTemplateRepository.getByTemplateType(
+    type === SendInvoiceType.Invoice
+      ? "Create Invoice Email Template"
+      : "Invoice Reminder Email Template"
+  )
+
+  if (emailTemplate === null) {
+    throw new CustomError("Template not found", 400)
   }
 
   let company = invoice.companies
@@ -653,7 +669,7 @@ export const sendInvoice = async ({
     },
   })
 
-  const invoiceContent = await generateInvoiceEmailContent(
+  const emailContent = await generateInvoiceEmailContent(
     {
       invoice_no: invoiceNo,
       invoice_date: invoice.invoice_date?.toISOString() ?? "",
@@ -712,6 +728,7 @@ export const sendInvoice = async ({
   })
 
   const currentDate = new Date()
+
   await InvoiceLinkRepository.create({
     invoice_id: invoice.id,
     token,
@@ -773,14 +790,38 @@ export const sendInvoice = async ({
     subject = `Reminder for Invoice ${invoice.invoice_no} from ${company?.name}`
   }
 
-  await sendMail({
+  const emailLogData: EmailLog = {
+    content: emailContent,
+    created_at: currentDate,
+    email_address: toEmails.join(","),
+    email_status: EmailLogType.Pending,
+    email_type: emailTemplate.template_type,
+    mail_id: "",
+    notes: `{"invoice_id": ${invoice.id}}`,
+    sent_at: currentDate,
+    subject: modifiedSubject,
+    updated_at: currentDate,
+    user_id: user?.id,
+  }
+
+  const sgRes = await sendMail({
     to: toEmails,
     cc: ccEmails,
     bcc: bccEmails,
     subject: modifiedSubject,
-    content: invoiceContent,
+    content: emailContent,
     attachments: attachments.filter((attachment) => attachment !== null),
   })
+
+  if (sgRes !== undefined && sgRes !== null) {
+    const mailId = sgRes[0].headers["x-message-id"]
+    emailLogData.mail_id = mailId
+    emailLogData.email_status = EmailLogType.Sent
+  } else {
+    emailLogData.email_status = EmailLogType.Error
+  }
+
+  await EmailLogRepository.create(emailLogData)
 }
 
 export const cancelInvoice = async (id: number) => {

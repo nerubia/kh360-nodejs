@@ -87,6 +87,8 @@ export const index = async (req: Request, res: Response) => {
 
 export const store = async (req: Request, res: Response) => {
   try {
+    const user = req.user
+
     const {
       client_id,
       to,
@@ -199,6 +201,7 @@ export const store = async (req: Request, res: Response) => {
 
     if (send_invoice_action === SendInvoiceAction.SEND) {
       await InvoiceService.sendInvoice({
+        user,
         id: newInvoice.id,
         subject,
         content,
@@ -286,7 +289,10 @@ export const show = async (req: Request, res: Response) => {
  */
 export const update = async (req: Request, res: Response) => {
   try {
+    const user = req.user
+
     const { id } = req.params
+
     const {
       client_id,
       to,
@@ -410,7 +416,7 @@ export const update = async (req: Request, res: Response) => {
     await InvoiceService.uploadAttachments(updatedInvoice.id, files)
 
     if (send_invoice_action === SendInvoiceAction.SEND) {
-      await InvoiceService.sendInvoice({ id: updatedInvoice.id, subject, content })
+      await InvoiceService.sendInvoice({ user, id: updatedInvoice.id, subject, content })
     }
 
     res.json(updatedInvoice)
@@ -469,8 +475,9 @@ export const uploadAttachments = async (req: Request, res: Response) => {
  */
 export const send = async (req: Request, res: Response) => {
   try {
+    const user = req.user
     const { id } = req.params
-    await InvoiceService.sendInvoice({ id: parseInt(id), subject: "", content: "" })
+    await InvoiceService.sendInvoice({ user, id: parseInt(id), subject: "", content: "" })
     res.json({ message: "Invoice sent" })
   } catch (error) {
     if (error instanceof CustomError) {
@@ -486,11 +493,13 @@ export const send = async (req: Request, res: Response) => {
  */
 export const sendReminder = async (req: Request, res: Response) => {
   try {
+    const user = req.user
     const { id } = req.params
     const emailTemplate = await EmailTemplateService.getDefaultByTemplateType(
       "Invoice Reminder Email Template"
     )
     await InvoiceService.sendInvoice({
+      user,
       id: parseInt(id),
       type: SendInvoiceType.Reminder,
       subject: emailTemplate.subject ?? "",
