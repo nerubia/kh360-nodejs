@@ -193,6 +193,7 @@ model clients {
   payments           payments[]
   payment_accounts   payment_accounts? @relation(fields: [payment_account_id], references: [id])
   countries          countries?        @relation(fields: [country_id], references: [id])
+  companies          companies?        @relation(fields: [company_id], references: [id])
 
   @@index([company_id], map: "index_clients_on_company_id")
   @@index([currency_id], map: "index_clients_on_currency_id")
@@ -223,6 +224,7 @@ model companies {
   leave_periods        leave_periods[]
   leave_types          leave_types[]
   payments             payments[]
+  clients              clients[]
 
   @@index([city], map: "index_companies_on_city")
   @@index([country], map: "index_companies_on_country")
