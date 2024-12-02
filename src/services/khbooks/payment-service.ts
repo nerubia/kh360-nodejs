@@ -19,12 +19,16 @@ import * as PaymentAttachmentRepository from "../../repositories/khbooks/payment
 import * as PaymentDetailRepository from "../../repositories/khbooks/payment-detail-repository"
 import * as PaymentAttachmentService from "../khbooks/payment-attachment-service"
 import * as PaymentDetailService from "../khbooks/payment-detail-service"
+import * as EmailTemplateRepository from "../../repositories/email-template-repository"
+import * as EmailLogRepository from "../../repositories/email-log-repository"
 import { type S3File } from "../../types/s3-file-type"
 import { InvoicePaymentStatus, InvoiceStatus } from "../../types/invoice-type"
 import { InvoiceActivityAction } from "../../types/invoice-activity-type"
 import { generatePaymentEmailContent } from "../../utils/generate-payment-email-content"
 import { sendMail } from "../../utils/sendgrid"
 import { generatePayment } from "../../utils/generate-payment"
+import { type EmailLog, EmailLogType } from "../../types/email-log-type"
+import { type UserToken } from "../../types/user-token-type"
 
 export const getAllByFilters = async (
   payment_date: string,
@@ -486,10 +490,12 @@ export const update = async (id: number, data: Payment, sendPaymentAction: SendP
 }
 
 export const sendPayment = async ({
+  user,
   id,
   subject,
   content,
 }: {
+  user?: UserToken
   id: number
   subject: string
   content: string
@@ -498,6 +504,14 @@ export const sendPayment = async ({
 
   if (payment === null) {
     throw new CustomError("Payment not found", 400)
+  }
+
+  const emailTemplate = await EmailTemplateRepository.getByTemplateType(
+    "Create Payment Email Template"
+  )
+
+  if (emailTemplate === null) {
+    throw new CustomError("Template not found", 400)
   }
 
   let company = payment.companies
@@ -603,7 +617,23 @@ export const sendPayment = async ({
     return replacements[p1] ?? match
   })
 
-  await sendMail({
+  const currentDate = new Date()
+
+  const emailLogData: EmailLog = {
+    content: emailContent,
+    created_at: currentDate,
+    email_address: toEmails.join(","),
+    email_status: EmailLogType.Pending,
+    email_type: emailTemplate.template_type,
+    mail_id: "",
+    notes: `{"payment_id": ${payment.id}}`,
+    sent_at: currentDate,
+    subject: modifiedSubject,
+    updated_at: currentDate,
+    user_id: user?.id,
+  }
+
+  const sgRes = await sendMail({
     to: toEmails,
     cc: ccEmails,
     bcc: bccEmails,
@@ -618,6 +648,16 @@ export const sendPayment = async ({
       },
     ],
   })
+
+  if (sgRes !== undefined && sgRes !== null) {
+    const mailId = sgRes[0].headers["x-message-id"]
+    emailLogData.mail_id = mailId
+    emailLogData.email_status = EmailLogType.Sent
+  } else {
+    emailLogData.email_status = EmailLogType.Error
+  }
+
+  await EmailLogRepository.create(emailLogData)
 }
 
 export const deleteById = async (id: number) => {

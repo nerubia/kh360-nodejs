@@ -55,6 +55,8 @@ export const index = async (req: Request, res: Response) => {
 
 export const store = async (req: Request, res: Response) => {
   try {
+    const user = req.user
+
     const {
       client_id,
       to,
@@ -115,6 +117,7 @@ export const store = async (req: Request, res: Response) => {
         "Create Payment Email Template"
       )
       await PaymentService.sendPayment({
+        user,
         id: newPayment.id,
         subject: emailTemplate.subject ?? "",
         content: emailTemplate.content ?? "",
@@ -171,7 +174,10 @@ export const show = async (req: Request, res: Response) => {
  */
 export const update = async (req: Request, res: Response) => {
   try {
+    const user = req.user
+
     const { id } = req.params
+
     const {
       to,
       cc,
@@ -232,6 +238,7 @@ export const update = async (req: Request, res: Response) => {
         "Create Payment Email Template"
       )
       await PaymentService.sendPayment({
+        user,
         id: updatedPayment.id,
         subject: emailTemplate.subject ?? "",
         content: emailTemplate.content ?? "",
