@@ -1,6 +1,7 @@
 import sgMail from "@sendgrid/mail"
 import CustomError from "./custom-error"
 import * as SystemSettingsRepository from "../repositories/system-settings-repository"
+import logger from "./logger"
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY as string)
 
@@ -59,6 +60,7 @@ export const sendMail = async ({ to, cc, bcc, subject, content, attachments }: M
 
     return await sgMail.send(msg)
   } catch (error) {
+    logger.error(error)
     throw new CustomError("Unable to send email", 400)
   }
 }
