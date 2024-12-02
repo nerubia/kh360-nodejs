@@ -51,6 +51,12 @@ export const getAllByFilters = async (where: Prisma.clientsWhereInput) => {
       payment_account_id: true,
       tax_type_id: true,
       status: true,
+      companies: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
       currencies: {
         select: {
           id: true,
