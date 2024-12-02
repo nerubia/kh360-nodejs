@@ -616,3 +616,19 @@ export const getInvoiceByToken = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+/**
+ * Get next invoice_no
+ */
+export const getNextInvoiceNo = async (req: Request, res: Response) => {
+  try {
+    const invoiceNo = await InvoiceService.getNextInvoiceNo()
+    res.json(invoiceNo)
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}

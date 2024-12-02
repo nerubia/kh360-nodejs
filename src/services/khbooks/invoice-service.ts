@@ -894,6 +894,10 @@ export const getInvoiceByToken = async (token: string) => {
   return invoice
 }
 
+export const getNextInvoiceNo = async () => {
+  return await InvoiceRepository.getNextInvoiceNo()
+}
+
 export const generateToken = async () => {
   let uuid
   do {
