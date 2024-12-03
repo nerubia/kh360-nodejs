@@ -8,7 +8,7 @@ import {
   Font,
   renderToStream,
 } from "@react-pdf/renderer"
-import { formatDate } from "./format-date"
+import { shortenFormatDate } from "./format-date"
 
 import path from "path"
 
@@ -202,7 +202,7 @@ export const MyDocument = ({ payment }: Props) => {
               }}
             >
               <Text>DATE</Text>
-              <Text>{formatDate(payment.payment_date)}</Text>
+              <Text>{shortenFormatDate(payment.payment_date)}</Text>
             </View>
           </View>
         </View>
@@ -238,8 +238,8 @@ export const MyDocument = ({ payment }: Props) => {
               wrap={false}
             >
               <Text style={{ width: "20%" }}>{item.invoices?.invoice_no}</Text>
-              <Text style={{ width: "16%" }}>{formatDate(item.invoices?.invoice_date)}</Text>
-              <Text style={{ width: "16%" }}>{formatDate(item.invoices?.due_date)}</Text>
+              <Text style={{ width: "16%" }}>{shortenFormatDate(item.invoices?.invoice_date)}</Text>
+              <Text style={{ width: "16%" }}>{shortenFormatDate(item.invoices?.due_date)}</Text>
               <Text style={{ width: "16%", textAlign: "right" }}>
                 {payment.currencies?.code} {formatAmount(item.invoices?.invoice_amount)}
               </Text>

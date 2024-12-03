@@ -1,6 +1,6 @@
 import { Body, Container, Text, Html, Img, render, Section } from "@react-email/components"
 import { type EmailPaymentContent } from "../types/payment-type"
-import { formatDate } from "./format-date"
+import { convertToFullDate } from "./format-date"
 
 const nerubiaLogo = "https://drive.google.com/uc?export=view&id=1nBqgLU0-mSLkqgSLrhhVEG-E6_cwxjTE"
 const ideaRobinLogo = "https://drive.google.com/uc?export=view&id=1-w2Y3YQcw6oc_6zl0YmqfErWeKchCfHV"
@@ -63,7 +63,7 @@ const ReceiptSummary = ({ payment }: { payment: EmailPaymentContent }) => {
       <Text>
         Payment No: {payment.payment_no}
         <br />
-        Payment Date: {formatDate(payment.payment_date)}
+        Payment Date: {convertToFullDate(new Date(payment.payment_date))}
         <br />
         {payment.or_no !== null && payment.or_no.length > 0 && (
           <>
