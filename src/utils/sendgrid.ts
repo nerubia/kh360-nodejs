@@ -2,10 +2,12 @@ import sgMail from "@sendgrid/mail"
 import CustomError from "./custom-error"
 import * as SystemSettingsRepository from "../repositories/system-settings-repository"
 import logger from "./logger"
+import { type Request } from "express"
+import { EventWebhook, EventWebhookHeader } from "@sendgrid/eventwebhook"
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY as string)
 
-const DEFAULT_FROM_ADDRESS = "info@nerubia.com"
+const DEFAULT_FROM_ADDRESS = process.env.SENDGRID_FROM_ADDRESS ?? ""
 
 interface Attachment {
   content: string
@@ -111,4 +113,16 @@ export const sendMailWithAttachment = async ({
   } catch (error) {
     return null
   }
+}
+
+export const verifySendGridRequest = (req: Request) => {
+  const publicKey = process.env.SENDGRID_PUBLIC_KEY ?? ""
+  const payload = req.body
+
+  const signature = req.get(EventWebhookHeader.SIGNATURE()) ?? ""
+  const timestamp = req.get(EventWebhookHeader.TIMESTAMP()) ?? ""
+
+  const eventWebhook = new EventWebhook()
+  const ecPublicKey = eventWebhook.convertPublicKeyToECDSA(publicKey)
+  return eventWebhook.verifySignature(ecPublicKey, payload, signature, timestamp)
 }
