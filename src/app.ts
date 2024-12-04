@@ -62,10 +62,21 @@ import paymentAccountRoute from "./routes/khbooks/payment-account-route"
 import paymentNetworkRoute from "./routes/khbooks/payment-network-route"
 import paymentRoute from "./routes/khbooks/payment-route"
 
+import webhookRoute from "./routes/webhook-route"
+
 import morgan from "morgan"
 import logger from "./utils/logger"
 import helmet from "helmet"
 import rateLimit from "express-rate-limit"
+import { unless } from "express-unless"
+
+declare global {
+  namespace Express {
+    interface Request {
+      user: UserToken
+    }
+  }
+}
 
 const app: Application = express()
 
@@ -80,8 +91,16 @@ app.use(
     origin: whitelist,
   })
 )
-app.use(bodyParser.json({ limit: "5mb" }))
+
+const jsonParser = bodyParser.json({ limit: "5mb" }) as bodyParser.BodyParser & {
+  unless: typeof unless
+}
+
+jsonParser.unless = unless
+
+app.use(jsonParser.unless({ path: ["/webhooks/sendgrid"] }))
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }))
+
 app.use(cookieParser())
 app.use(
   morgan("dev", {
@@ -92,14 +111,6 @@ app.use(
     },
   })
 )
-
-declare global {
-  namespace Express {
-    interface Request {
-      user: UserToken
-    }
-  }
-}
 
 app.use("/", homeRoute)
 app.use("/auth", authRoute)
@@ -172,6 +183,12 @@ app.use("/kh-books/payments", adminMiddleware, paymentRoute)
 
 app.use("/kh-books/public/invoices", publicInvoiceRoute)
 app.use("/kh-books/client/invoices", publicInvoiceActivityRoute)
+
+/**
+ * Webhooks
+ */
+
+app.use("/webhooks", webhookRoute)
 
 /**
  * Not found
