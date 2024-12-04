@@ -651,9 +651,9 @@ export const sendInvoice = async ({
     (invoiceEmail) => invoiceEmail.email_type === "bcc"
   )?.email_address
 
-  const toEmails = to?.split(",") ?? []
-  const ccEmails = cc?.split(",") ?? []
-  const bccEmails = bcc?.split(",") ?? []
+  const toEmails = to?.split(",").map((email) => email.trim()) ?? []
+  const ccEmails = cc?.split(",").map((email) => email.trim()) ?? []
+  const bccEmails = bcc?.split(",").map((email) => email.trim()) ?? []
 
   if (toEmails.length === 0) {
     throw new CustomError("Invoice email not found", 400)
