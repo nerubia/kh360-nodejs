@@ -957,6 +957,20 @@ export const getLink = async (id: number) => {
   return invoiceLink
 }
 
+export const getInvoiceById = async (id: number) => {
+  const invoice = await InvoiceRepository.getById(id)
+
+  if (invoice === null) {
+    throw new CustomError("Invoice not found", 400)
+  }
+
+  if (invoice?.companies === null) {
+    invoice.companies = await CompanyRepository.getById(1)
+  }
+
+  return invoice
+}
+
 export const getInvoiceByToken = async (token: string) => {
   const invoiceLink = await InvoiceLinkRepository.getLatestByToken(token)
 
