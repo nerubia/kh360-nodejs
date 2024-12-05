@@ -5,3 +5,7 @@ export const formatAmount = (value?: number | null) => {
   })
   return formatter.format(value ?? 0)
 }
+
+export const formatInteger = (value: number) => {
+  return value.toLocaleString("en-US")
+}

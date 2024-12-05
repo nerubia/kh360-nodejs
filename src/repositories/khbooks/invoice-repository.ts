@@ -201,6 +201,7 @@ export const getById = async (id: number) => {
       },
       payment_accounts: {
         select: {
+          id: true,
           account_name: true,
           account_type: true,
           account_no: true,
@@ -210,12 +211,15 @@ export const getById = async (id: number) => {
           swift_code: true,
           address1: true,
           address2: true,
+          city: true,
+          state: true,
           country_id: true,
           postal_code: true,
           payment_networks: true,
           payment_network_id: true,
           countries: {
             select: {
+              id: true,
               name: true,
             },
           },

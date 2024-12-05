@@ -118,6 +118,7 @@ export const store = async (req: Request, res: Response) => {
 
     const paymentAccount: PaymentAccount = {
       name,
+      currency_id: null,
       payment_network_id:
         payment_network_id !== null ? parseInt(payment_network_id as string) : null,
       account_name,
@@ -131,9 +132,12 @@ export const store = async (req: Request, res: Response) => {
       address2,
       city,
       state,
+      description: "",
       country_id: country_id !== null ? parseInt(country_id as string) : null,
       postal_code,
       is_active: parsedData.is_active,
+      countries: null,
+      payment_networks: null,
     }
 
     const newPaymentAccount = await PaymentAccountService.create(paymentAccount)
@@ -236,6 +240,7 @@ export const update = async (req: Request, res: Response) => {
 
     const paymentAccount: PaymentAccount = {
       name,
+      currency_id: null,
       payment_network_id:
         payment_network_id !== null ? parseInt(payment_network_id as string) : null,
       account_name,
@@ -249,9 +254,12 @@ export const update = async (req: Request, res: Response) => {
       address2,
       city,
       state,
+      description: "",
       country_id: country_id !== null ? parseInt(country_id as string) : null,
       postal_code,
       is_active: parsedData.is_active,
+      countries: null,
+      payment_networks: null,
     }
 
     const updatedPaymentAccount = await PaymentAccountService.updateById(
