@@ -21,6 +21,7 @@ import * as PaymentAttachmentService from "../khbooks/payment-attachment-service
 import * as PaymentDetailService from "../khbooks/payment-detail-service"
 import * as EmailTemplateRepository from "../../repositories/email-template-repository"
 import * as EmailLogRepository from "../../repositories/email-log-repository"
+import * as SystemSettingsRepository from "../../repositories/system-settings-repository"
 import { type S3File } from "../../types/s3-file-type"
 import { InvoicePaymentStatus, InvoiceStatus } from "../../types/invoice-type"
 import { InvoiceActivityAction } from "../../types/invoice-activity-type"
@@ -633,10 +634,13 @@ export const sendPayment = async ({
     user_id: user?.id,
   }
 
+  const systemSettings = await SystemSettingsRepository.getByName("khbooks_email_sender")
+
   const sgRes = await sendMail({
     to: toEmails,
     cc: ccEmails,
     bcc: bccEmails,
+    from: systemSettings?.value,
     subject: modifiedSubject,
     content: emailContent,
     attachments: [
