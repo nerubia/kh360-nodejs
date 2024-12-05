@@ -10,5 +10,6 @@ export interface SendGridEvent {
 }
 
 export enum SendGridEventType {
+  OPEN = "open",
   CLICK = "click",
 }

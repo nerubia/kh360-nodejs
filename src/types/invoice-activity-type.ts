@@ -9,6 +9,7 @@ export enum InvoiceActivityAction {
   SENT_MAIL = "sent_mail",
   RESENT = "resent",
   EDITED = "edited",
+  OPENED = "opened",
   VIEWED = "viewed",
   REMINDER_SENT = "reminder_sent",
   PAID = "paid",

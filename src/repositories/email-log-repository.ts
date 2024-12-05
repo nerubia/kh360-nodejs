@@ -44,3 +44,11 @@ export const getAllByFilters = async (where: Prisma.email_logsWhereInput) => {
     where,
   })
 }
+
+export const getByMailId = async (mail_id: string) => {
+  return await prisma.email_logs.findFirst({
+    where: {
+      mail_id,
+    },
+  })
+}
