@@ -83,6 +83,7 @@ export const index = async (req: Request, res: Response) => {
  * @param req.body.send_invoice_action - Send invoice action.
  * @param req.body.subject - Subject.
  * @param req.body.content - Content.
+ * @param req.body.should_attach_invoice - Should attach invoice
  */
 
 export const store = async (req: Request, res: Response) => {
@@ -116,6 +117,7 @@ export const store = async (req: Request, res: Response) => {
       send_invoice_action,
       subject,
       content,
+      should_attach_invoice,
     } = req.body
 
     const files = req.files as S3File[]
@@ -149,6 +151,7 @@ export const store = async (req: Request, res: Response) => {
       invoice_details: JSON.parse(invoice_details),
       subject,
       content,
+      should_attach_invoice,
     })
 
     const country = await CountryService.getById(parseInt(country_id ?? "0"))
@@ -205,6 +208,7 @@ export const store = async (req: Request, res: Response) => {
         id: newInvoice.id,
         subject,
         content,
+        shouldAttachInvoice: Boolean(Number(should_attach_invoice)),
       })
     }
 
@@ -286,6 +290,7 @@ export const show = async (req: Request, res: Response) => {
  * @param req.body.send_invoice_action - Send invoice action.
  * @param req.body.subject - Subject.
  * @param req.body.content - Content.
+ * @param req.body.should_attach_invoice - Should attach invoice
  */
 export const update = async (req: Request, res: Response) => {
   try {
@@ -321,6 +326,7 @@ export const update = async (req: Request, res: Response) => {
       send_invoice_action,
       subject,
       content,
+      should_attach_invoice,
     } = req.body
 
     const files = req.files as S3File[]
@@ -355,6 +361,7 @@ export const update = async (req: Request, res: Response) => {
       invoice_attachment_ids: JSON.parse(invoice_attachment_ids),
       subject,
       content,
+      should_attach_invoice,
     })
 
     const updatedInvoice = await InvoiceService.update(
@@ -416,7 +423,13 @@ export const update = async (req: Request, res: Response) => {
     await InvoiceService.uploadAttachments(updatedInvoice.id, files)
 
     if (send_invoice_action === SendInvoiceAction.SEND) {
-      await InvoiceService.sendInvoice({ user, id: updatedInvoice.id, subject, content })
+      await InvoiceService.sendInvoice({
+        user,
+        id: updatedInvoice.id,
+        subject,
+        content,
+        shouldAttachInvoice: Boolean(Number(should_attach_invoice)),
+      })
     }
 
     res.json(updatedInvoice)
@@ -477,7 +490,13 @@ export const send = async (req: Request, res: Response) => {
   try {
     const user = req.user
     const { id } = req.params
-    await InvoiceService.sendInvoice({ user, id: parseInt(id), subject: "", content: "" })
+    await InvoiceService.sendInvoice({
+      user,
+      id: parseInt(id),
+      subject: "",
+      content: "",
+      shouldAttachInvoice: false,
+    })
     res.json({ message: "Invoice sent" })
   } catch (error) {
     if (error instanceof CustomError) {
@@ -504,6 +523,7 @@ export const sendReminder = async (req: Request, res: Response) => {
       type: SendInvoiceType.Reminder,
       subject: emailTemplate.subject ?? "",
       content: emailTemplate.content ?? "",
+      shouldAttachInvoice: false,
     })
     res.json({ message: "Invoice reminder sent" })
   } catch (error) {
