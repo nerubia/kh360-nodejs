@@ -4,6 +4,7 @@ import { type Company } from "./company-type"
 import { type Currency } from "./currency-type"
 import { type InvoiceDetail } from "./invoice-detail-type"
 import { type PaymentAccount } from "./payment-account-type"
+import { type TaxType } from "./tax-type"
 
 export interface Invoice {
   client_id?: number
@@ -44,7 +45,11 @@ export interface EmailInvoiceContent {
   due_date: string
   invoice_amount?: number
   sub_total?: number
+  discount_amount: string
+  discount_toggle: boolean | null
   tax_amount?: number
+  invoice_status: string
+
   clients?: Client | null
   companies?: Company | null
   currencies?: Currency | null
@@ -54,6 +59,10 @@ export interface EmailInvoiceContent {
   invoice_details: InvoiceDetail[]
   open_balance?: number
   previous_payments?: EmailPreviousPaymentContent[]
+
+  tax_types: TaxType | null
+
+  addresses: Address | null
 }
 
 export enum InvoiceDateFilter {

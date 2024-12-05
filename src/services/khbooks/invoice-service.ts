@@ -14,6 +14,7 @@ import * as PaymentRepository from "../../repositories/khbooks/payment-repositor
 import * as TaxTypeRepository from "../../repositories/khbooks/tax-type-repository"
 import * as EmailTemplateRepository from "../../repositories/email-template-repository"
 import * as EmailLogRepository from "../../repositories/email-log-repository"
+import * as SystemSettingsRepository from "../../repositories/system-settings-repository"
 import { type Contract } from "../../types/contract-type"
 import {
   type Invoice,
@@ -562,12 +563,14 @@ export const sendInvoice = async ({
   type = SendInvoiceType.Invoice,
   subject,
   content,
+  shouldAttachInvoice,
 }: {
   user?: UserToken
   id: number
   type?: SendInvoiceType
   subject: string
   content: string
+  shouldAttachInvoice: boolean
 }) => {
   const invoice = await InvoiceRepository.getById(id)
 
@@ -611,11 +614,48 @@ export const sendInvoice = async ({
     due_date: invoice.due_date?.toISOString() ?? "",
     invoice_amount: invoice.invoice_amount?.toNumber(),
     sub_total: invoice.sub_total?.toNumber(),
+    discount_amount: invoice.discount_amount?.toString() ?? "",
+    discount_toggle: invoice.discount_toggle,
     tax_amount: invoice.tax_amount?.toNumber(),
+    invoice_status:
+      invoice.invoice_status === InvoiceStatus.DRAFT
+        ? InvoiceStatus.BILLED
+        : (invoice.invoice_status ?? ""),
+
     clients: invoice.clients,
     companies: company,
     currencies: invoice.currencies,
-    payment_accounts: invoice.payment_accounts,
+    payment_accounts: {
+      name: null,
+      currency_id: null,
+      payment_network_id: null,
+      account_name: invoice.payment_accounts?.account_name ?? null,
+      account_type: invoice.payment_accounts?.account_type ?? null,
+      account_no: invoice.payment_accounts?.account_no ?? null,
+      bank_name: invoice.payment_accounts?.bank_name ?? null,
+      bank_branch: invoice.payment_accounts?.bank_branch ?? null,
+      bank_code: invoice.payment_accounts?.bank_code ?? null,
+      swift_code: invoice.payment_accounts?.swift_code ?? null,
+      address1: invoice.payment_accounts?.address1 ?? null,
+      address2: invoice.payment_accounts?.address2 ?? null,
+      city: invoice.payment_accounts?.city ?? null,
+      state: invoice.payment_accounts?.state ?? null,
+      description: null,
+      country_id: null,
+      postal_code: invoice.payment_accounts?.postal_code ?? null,
+      is_active: null,
+
+      countries: invoice.payment_accounts?.countries ?? null,
+      payment_networks:
+        invoice.payment_accounts?.payment_networks !== undefined &&
+        invoice.payment_accounts.payment_networks !== null
+          ? {
+              id: invoice.payment_accounts.payment_networks.id,
+              name: invoice.payment_accounts.payment_networks.name,
+            }
+          : null,
+    },
+
     billing_addresses: invoice.addresses,
     invoice_details: invoice.invoice_details.map((invoiceDetail) => {
       return {
@@ -639,6 +679,9 @@ export const sendInvoice = async ({
       }
     }),
     open_balance,
+
+    tax_types: invoice.tax_types,
+    addresses: invoice.addresses,
   })
 
   const to = invoice.invoice_emails.find(
@@ -676,11 +719,37 @@ export const sendInvoice = async ({
       due_date: invoice.due_date?.toISOString() ?? "",
       invoice_amount: invoice.invoice_amount?.toNumber(),
       sub_total: invoice.sub_total?.toNumber(),
+      discount_amount: invoice.discount_amount?.toString() ?? "",
+      discount_toggle: invoice.discount_toggle,
       tax_amount: invoice.tax_amount?.toNumber(),
+      invoice_status: invoice.invoice_status ?? "",
+
       clients: invoice.clients,
       companies: company,
       currencies: invoice.currencies,
-      payment_accounts: invoice.payment_accounts,
+      payment_accounts: {
+        name: null,
+        currency_id: null,
+        payment_network_id: null,
+        account_name: null,
+        account_type: null,
+        account_no: null,
+        bank_name: null,
+        bank_branch: null,
+        bank_code: null,
+        swift_code: null,
+        address1: null,
+        address2: null,
+        city: null,
+        state: null,
+        description: null,
+        country_id: null,
+        postal_code: null,
+        is_active: null,
+
+        countries: null,
+        payment_networks: null,
+      },
       billing_addresses: invoice.addresses,
       invoice_details: invoice.invoice_details.map((invoiceDetail) => {
         return {
@@ -710,6 +779,9 @@ export const sendInvoice = async ({
         payment_amount: payment.payment_amount?.toString() ?? "",
       })),
       token,
+
+      tax_types: invoice.tax_types,
+      addresses: invoice.addresses,
     },
     content
   )
@@ -752,6 +824,14 @@ export const sendInvoice = async ({
       }
     })
   )
+
+  if (shouldAttachInvoice) {
+    attachments.unshift({
+      content: pdfBuffer.toString("base64"),
+      filename: "invoice.pdf",
+      disposition: "attachment",
+    })
+  }
 
   if (type === SendInvoiceType.Invoice) {
     const totalSentActions = await InvoiceActivityRepository.countAllByFilters({
@@ -804,10 +884,13 @@ export const sendInvoice = async ({
     user_id: user?.id,
   }
 
+  const systemSettings = await SystemSettingsRepository.getByName("khbooks_email_sender")
+
   const sgRes = await sendMail({
     to: toEmails,
     cc: ccEmails,
     bcc: bccEmails,
+    from: systemSettings?.value,
     subject: modifiedSubject,
     content: emailContent,
     attachments: attachments.filter((attachment) => attachment !== null),

@@ -51,4 +51,5 @@ export const createInvoiceSchema = object().shape({
   invoice_attachment_ids: array().of(number()).optional(),
   subject: string().required("Subject is required"),
   content: string().required("Content is required"),
+  should_attach_invoice: boolean().required("Should attach invoice is requried"),
 })

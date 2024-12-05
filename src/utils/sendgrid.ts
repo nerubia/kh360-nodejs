@@ -1,6 +1,5 @@
 import sgMail from "@sendgrid/mail"
 import CustomError from "./custom-error"
-import * as SystemSettingsRepository from "../repositories/system-settings-repository"
 import logger from "./logger"
 import { type Request } from "express"
 import { EventWebhook, EventWebhookHeader } from "@sendgrid/eventwebhook"
@@ -20,6 +19,7 @@ interface MailProps {
   to: string[]
   cc?: string[]
   bcc?: string[]
+  from?: string | null
   subject: string
   content: string
   attachments?: Attachment[]
@@ -35,7 +35,7 @@ const getUniqueEmails = (group: string[], others: string[]) => {
   return uniqueEmails.filter((email) => !others.includes(email))
 }
 
-export const sendMail = async ({ to, cc, bcc, subject, content, attachments }: MailProps) => {
+export const sendMail = async ({ to, cc, bcc, from, subject, content, attachments }: MailProps) => {
   try {
     const uniqueTo: string[] = getUniqueEmails(to, [])
     let uniqueCc: string[] = []
@@ -48,13 +48,11 @@ export const sendMail = async ({ to, cc, bcc, subject, content, attachments }: M
       uniqueBcc = getUniqueEmails(bcc, [...uniqueTo, ...uniqueCc])
     }
 
-    const systemSettings = await SystemSettingsRepository.getByName("invoice_email_sender")
-
     const msg = {
       to: uniqueTo,
       cc: uniqueCc,
       bcc: uniqueBcc,
-      from: systemSettings?.value ?? DEFAULT_FROM_ADDRESS,
+      from: from ?? DEFAULT_FROM_ADDRESS,
       subject,
       html: content,
       attachments,
@@ -67,13 +65,11 @@ export const sendMail = async ({ to, cc, bcc, subject, content, attachments }: M
   }
 }
 
-export const sendMultipleMail = async ({ to, subject, content }: MailProps) => {
+export const sendMultipleMail = async ({ to, from, subject, content }: MailProps) => {
   try {
-    const systemSettings = await SystemSettingsRepository.getByName("invoice_email_sender")
-
     const msg = {
       to,
-      from: systemSettings?.value ?? DEFAULT_FROM_ADDRESS,
+      from: from ?? DEFAULT_FROM_ADDRESS,
       subject,
       html: content,
     }
@@ -85,18 +81,17 @@ export const sendMailWithAttachment = async ({
   to,
   cc,
   bcc,
+  from,
   subject,
   content,
   pdfBuffer,
 }: MailProps & { pdfBuffer: Buffer }) => {
   try {
-    const systemSettings = await SystemSettingsRepository.getByName("invoice_email_sender")
-
     const msg = {
       to,
       cc,
       bcc,
-      from: systemSettings?.value ?? DEFAULT_FROM_ADDRESS,
+      from: from ?? DEFAULT_FROM_ADDRESS,
       subject,
       html: content,
       attachments: [
