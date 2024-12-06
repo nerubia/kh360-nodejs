@@ -9,6 +9,7 @@ import * as EmailTemplateRepository from "../repositories/email-template-reposit
 import * as EmailLogRepository from "../repositories/email-log-repository"
 import * as UserRepository from "../repositories/user-repository"
 import * as ExternalUserRepository from "../repositories/external-user-repository"
+import * as SystemSettingsRepository from "../repositories/system-settings-repository"
 import CustomError from "../utils/custom-error"
 import { type UserToken } from "../types/user-token-type"
 import { SurveyAdministrationStatus } from "../types/survey-administration-type"
@@ -16,6 +17,7 @@ import { sendMail } from "../utils/sendgrid"
 import { format } from "date-fns"
 import { EmailLogType, type EmailLog } from "../types/email-log-type"
 import { SurveyAnswerStatus } from "../types/survey-answer-type"
+import { EmailSender } from "../types/email-sender"
 
 export const create = async (
   survey_administration_id: number,
@@ -343,8 +345,11 @@ export const sendReminderByRespondent = async (
   }
 
   if (respondent !== null) {
+    const systemSettings = await SystemSettingsRepository.getByName(EmailSender.SURVEY)
+
     const sgResp = await sendMail({
       to: [respondent.email],
+      from: systemSettings?.value,
       subject: emailTemplate.subject ?? "",
       content: modifiedContent,
     })
@@ -399,8 +404,12 @@ export const sendSurveyEmailByRespondentId = async (
         "{{respondent_first_name}}",
         `${respondent.first_name}`
       )
+
+      const systemSettings = await SystemSettingsRepository.getByName(EmailSender.SURVEY)
+
       await sendMail({
         to: [respondent.email],
+        from: systemSettings?.value,
         subject: surveyAdministration.email_subject ?? "",
         content: modifiedContent,
       })

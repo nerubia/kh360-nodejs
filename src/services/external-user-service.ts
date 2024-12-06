@@ -7,12 +7,14 @@ import * as EmailTemplateRepository from "../repositories/email-template-reposit
 import * as EvaluationRatingRepository from "../repositories/evaluation-rating-repository"
 import * as EvaluationRepository from "../repositories/evaluation-repository"
 import * as ExternalUserRepository from "../repositories/external-user-repository"
+import * as SystemSettingsRepository from "../repositories/system-settings-repository"
 import { type ExternalUser } from "../types/external-user-type"
 import CustomError from "../utils/custom-error"
 import { sendMail } from "../utils/sendgrid"
 import { EvaluationStatus } from "../types/evaluation-type"
 import { addHours } from "date-fns"
 import { constructNameFilter } from "../utils/format-filter"
+import { EmailSender } from "../types/email-sender"
 
 export const login = async (token: string, code: string) => {
   const externalUser = await ExternalUserRepository.getByAccessToken(token)
@@ -81,8 +83,12 @@ export const resendCodeByAccessToken = async (token: string) => {
     let modifiedContent =
       emailTemplate.content?.replace("{{verification_code}}", `<b>${code}</b>`) ?? ""
     modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
+
+    const systemSettings = await SystemSettingsRepository.getByName(EmailSender.EVALUATION)
+
     await sendMail({
       to: [externalUser.email],
+      from: systemSettings?.value,
       subject: emailTemplate.subject ?? "",
       content: modifiedContent,
     })
