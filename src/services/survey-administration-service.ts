@@ -2,6 +2,7 @@ import * as SurveyAdministrationRepository from "../repositories/survey-administ
 import * as SurveyResultRepository from "../repositories/survey-result-repository"
 import * as SurveyAnswerRepository from "../repositories/survey-answer-repository"
 import * as UserRepository from "../repositories/user-repository"
+import * as SystemSettingsRepository from "../repositories/system-settings-repository"
 import { sendMail } from "../utils/sendgrid"
 import {
   SurveyAdministrationStatus,
@@ -12,6 +13,7 @@ import { format } from "date-fns"
 import { SurveyAnswerStatus } from "../types/survey-answer-type"
 import { SurveyResultStatus } from "../types/survey-result-type"
 import { removeWhitespace } from "../utils/format-string"
+import { EmailSender } from "../types/email-sender"
 
 export const getAllByFilters = async (name: string, status: string, page: string) => {
   const itemsPerPage = 10
@@ -134,6 +136,8 @@ export const sendSurveyEmailById = async (id: number) => {
       survey_administration_id: surveyAdministration.id,
     })
 
+    const systemSettings = await SystemSettingsRepository.getByName(EmailSender.SURVEY)
+
     for (const surveyResult of surveyResults) {
       const emailContent = surveyAdministration.email_content ?? ""
 
@@ -166,6 +170,7 @@ export const sendSurveyEmailById = async (id: number) => {
         )
         await sendMail({
           to: [respondent.email],
+          from: systemSettings?.value,
           subject: surveyAdministration.email_subject ?? "",
           content: modifiedContent,
         })

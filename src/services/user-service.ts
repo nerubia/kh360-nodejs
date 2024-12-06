@@ -44,6 +44,7 @@ import { SurveyAdministrationStatus } from "../types/survey-administration-type"
 import { SkillMapAdministrationStatus } from "../types/skill-map-administration-type"
 import { SkillMapRatingStatus, type SkillMapRating } from "../types/skill-map-rating-type"
 import { SkillMapResultStatus } from "../types/skill-map-result-type"
+import { EmailSender } from "../types/email-sender"
 
 export const getById = async (id: number) => {
   return await UserRepository.getById(id)
@@ -296,9 +297,9 @@ export const submitEvaluation = async (
         const emailSubject = emailTemplate.subject ?? ""
         const emailContent = emailTemplate.content ?? ""
 
-        const systemSettings = await SystemSettingsRepository.getByName("default_timezone")
+        const defaultTimezone = await SystemSettingsRepository.getByName("default_timezone")
 
-        const targetTimeZone = systemSettings?.value ?? "+08:00"
+        const targetTimeZone = defaultTimezone?.value ?? "+08:00"
 
         const convertedDate = utcToZonedTime(currentDate, targetTimeZone)
 
@@ -326,11 +327,15 @@ export const submitEvaluation = async (
 
         modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
 
+        const systemSettings = await SystemSettingsRepository.getByName(
+          EmailSender.EVALUATION_RECIPIENT
+        )
         const emailRecipients = await EmailRecipientRepository.getAllByEmailType("KH360 Admin")
 
         for (const emailRecipient of emailRecipients) {
           await sendMail({
             to: [emailRecipient.email],
+            from: systemSettings?.value,
             subject: modifiedSubject,
             content: modifiedContent,
           })
@@ -742,9 +747,12 @@ export const sendRequestToRemove = async (evaluation_id: number, comment: string
     throw new CustomError("Recipients not found", 400)
   }
 
+  const systemSettings = await SystemSettingsRepository.getByName(EmailSender.EVALUATION_RECIPIENT)
+
   for (const emailRecipient of emailRecipients) {
     await sendMail({
       to: [emailRecipient.email],
+      from: systemSettings?.value,
       subject: emailTemplate.subject ?? "",
       content: modifiedContent,
     })

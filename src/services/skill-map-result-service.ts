@@ -6,6 +6,7 @@ import * as SkillMapRatingRepository from "../repositories/skill-map-rating-repo
 import * as EmailTemplateRepository from "../repositories/email-template-repository"
 import * as EmailLogRepository from "../repositories/email-log-repository"
 import * as UserRepository from "../repositories/user-repository"
+import * as SystemSettingsRepository from "../repositories/system-settings-repository"
 import CustomError from "../utils/custom-error"
 import { type UserToken } from "../types/user-token-type"
 import { SkillMapAdministrationStatus } from "../types/skill-map-administration-type"
@@ -14,6 +15,7 @@ import { format } from "date-fns"
 import { EmailLogType, type EmailLog } from "../types/email-log-type"
 import * as SkillRepository from "../repositories/skill-repository"
 import { constructNameFilter } from "../utils/format-filter"
+import { EmailSender } from "../types/email-sender"
 
 export const getLatestSkillMapRating = async (name: string, status: string, page: string) => {
   const itemsPerPage = 10
@@ -286,8 +288,11 @@ export const sendReminderByRespondent = async (
   }
 
   if (respondent !== null) {
+    const systemSettings = await SystemSettingsRepository.getByName(EmailSender.SKILL_MAP)
+
     const sgResp = await sendMail({
       to: [respondent.email],
+      from: systemSettings?.value,
       subject: emailTemplate.subject ?? "",
       content: modifiedContent,
     })
@@ -343,8 +348,12 @@ export const sendSkillMapEmailByRespondentId = async (
         "{{respondent_first_name}}",
         `${respondent.first_name}`
       )
+
+      const systemSettings = await SystemSettingsRepository.getByName(EmailSender.SKILL_MAP)
+
       await sendMail({
         to: [respondent.email],
+        from: systemSettings?.value,
         subject: skillMapAdministration.email_subject ?? "",
         content: modifiedContent,
       })

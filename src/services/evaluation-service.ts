@@ -18,6 +18,7 @@ import { calculateNorms } from "../utils/calculate-norms"
 import { formatDateRange } from "../utils/format-date"
 import { sendMail } from "../utils/sendgrid"
 import { format, utcToZonedTime } from "date-fns-tz"
+import { EmailSender } from "../types/email-sender"
 
 export const getById = async (id: number) => {
   return await EvaluationRepository.getById(id)
@@ -448,7 +449,14 @@ export const approve = async (id: number) => {
   })
   modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
 
-  await sendMail({ to: [evaluator.email], subject: modifiedSubject, content: modifiedContent })
+  const systemSettings = await SystemSettingsRepository.getByName(EmailSender.EVALUATION)
+
+  await sendMail({
+    to: [evaluator.email],
+    from: systemSettings?.value,
+    subject: modifiedSubject,
+    content: modifiedContent,
+  })
 
   await EvaluationRepository.updateStatusById(evaluation.id, EvaluationStatus.Removed)
   await EvaluationRatingRepository.resetByEvaluationId(evaluation.id)
@@ -482,15 +490,17 @@ export const approve = async (id: number) => {
       "Evaluation Completed by Evaluator"
     )
 
+    const systemSettings = await SystemSettingsRepository.getByName(EmailSender.EVALUATION)
+
     if (evaluationAdministration !== null && emailTemplate !== null) {
       const currentDate = new Date()
 
       const emailSubject = emailTemplate.subject ?? ""
       const emailContent = emailTemplate.content ?? ""
 
-      const systemSettings = await SystemSettingsRepository.getByName("default_timezone")
+      const defaultTimezone = await SystemSettingsRepository.getByName("default_timezone")
 
-      const targetTimeZone = systemSettings?.value ?? "+08:00"
+      const targetTimeZone = defaultTimezone?.value ?? "+08:00"
 
       const convertedDate = utcToZonedTime(currentDate, targetTimeZone)
 
@@ -523,6 +533,7 @@ export const approve = async (id: number) => {
       for (const emailRecipient of emailRecipients) {
         await sendMail({
           to: [emailRecipient.email],
+          from: systemSettings?.value,
           subject: modifiedSubject,
           content: modifiedContent,
         })
@@ -545,7 +556,12 @@ export const approve = async (id: number) => {
     modifiedContent = emailContent.concat(`\n\nThanks and Best Regards,\nKH360 Admin`)
     modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
 
-    await sendMail({ to: [evaluator.email], subject: emailSubject, content: modifiedContent })
+    await sendMail({
+      to: [evaluator.email],
+      from: systemSettings?.value,
+      subject: emailSubject,
+      content: modifiedContent,
+    })
   }
 }
 
@@ -625,7 +641,14 @@ export const decline = async (id: number) => {
   })
   modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
 
-  await sendMail({ to: [evaluator.email], subject: modifiedSubject, content: modifiedContent })
+  const systemSettings = await SystemSettingsRepository.getByName(EmailSender.EVALUATION)
+
+  await sendMail({
+    to: [evaluator.email],
+    from: systemSettings?.value,
+    subject: modifiedSubject,
+    content: modifiedContent,
+  })
 
   await EvaluationRepository.updateStatusById(evaluation.id, EvaluationStatus.Ongoing)
 }

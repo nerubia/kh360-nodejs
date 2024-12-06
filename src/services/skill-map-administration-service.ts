@@ -5,6 +5,7 @@ import * as SkillMapResultRepository from "../repositories/skill-map-result-repo
 import * as SkillMapRatingRepository from "../repositories/skill-map-rating-repository"
 import * as SkillRepository from "../repositories/skill-repository"
 import * as UserRepository from "../repositories/user-repository"
+import * as SystemSettingsRepository from "../repositories/system-settings-repository"
 import { sendMail } from "../utils/sendgrid"
 import {
   type SkillMapAdministration,
@@ -20,6 +21,7 @@ import { type Prisma } from "@prisma/client"
 import { parse } from "csv-parse/sync"
 import { removeWhitespace } from "../utils/format-string"
 import { convertOldAnswer } from "../utils/answer"
+import { EmailSender } from "../types/email-sender"
 
 export const getAllByFilters = async (name: string, status: string, page: string) => {
   const itemsPerPage = 10
@@ -332,6 +334,8 @@ export const sendSkillMapEmailById = async (id: number) => {
       skill_map_administration_id: skillMapAdministration.id,
     })
 
+    const systemSettings = await SystemSettingsRepository.getByName(EmailSender.SKILL_MAP)
+
     for (const skillMapResult of skilMapResults) {
       const emailContent = skillMapAdministration.email_content ?? ""
 
@@ -364,6 +368,7 @@ export const sendSkillMapEmailById = async (id: number) => {
         )
         await sendMail({
           to: [respondent.email],
+          from: systemSettings?.value,
           subject: skillMapAdministration.email_subject ?? "",
           content: modifiedContent,
         })
