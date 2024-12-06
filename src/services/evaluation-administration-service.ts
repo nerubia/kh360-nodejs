@@ -18,6 +18,7 @@ import * as EvaluationResultDetailService from "../services/evaluation-result-de
 import * as EvaluationResultService from "../services/evaluation-result-service"
 import * as EvaluationService from "../services/evaluation-service"
 import * as ExternalUserService from "../services/external-user-service"
+import * as SystemSettingsRepository from "../repositories/system-settings-repository"
 import {
   EvaluationAdministrationStatus,
   type EvaluationAdministration,
@@ -28,6 +29,7 @@ import { EvaluationResultStatus } from "../types/evaluation-result-type"
 import { EvaluationStatus } from "../types/evaluation-type"
 import { type Decimal } from "@prisma/client/runtime/library"
 import { EmailLogType, type EmailLog } from "../types/email-log-type"
+import { EmailSender } from "../types/email-sender"
 
 export const getAllByStatusAndDate = async (status: string, date: Date) => {
   return await EvaluationAdministrationRepository.getAllByStatusAndDate(status, date)
@@ -177,6 +179,8 @@ export const sendEvaluationEmailById = async (id: number) => {
       ["evaluator_id"]
     )
 
+    const systemSettings = await SystemSettingsRepository.getByName(EmailSender.EVALUATION)
+
     for (const evaluation of internalEvaluations) {
       let modifiedContent: string = emailContent.replace(
         /{{(.*?)}}/g,
@@ -194,6 +198,7 @@ export const sendEvaluationEmailById = async (id: number) => {
       if (evaluator !== null) {
         await sendMail({
           to: [evaluator.email],
+          from: systemSettings?.value,
           subject: evaluationAdministration.email_subject ?? "",
           content: modifiedContent,
         })
@@ -237,6 +242,7 @@ export const sendEvaluationEmailById = async (id: number) => {
         )
         await sendMail({
           to: [evaluator.email],
+          from: systemSettings?.value,
           subject: evaluationAdministration.email_subject ?? "",
           content: modifiedContent,
         })
@@ -366,6 +372,8 @@ export const generateUpdate = async (evaluation_result_id: number) => {
       ["evaluator_id"]
     )
 
+    const systemSettings = await SystemSettingsRepository.getByName(EmailSender.EVALUATION)
+
     for (const evaluation of internalEvaluations) {
       let modifiedContent: string = emailContent.replace(
         /{{(.*?)}}/g,
@@ -383,6 +391,7 @@ export const generateUpdate = async (evaluation_result_id: number) => {
       if (evaluator !== null) {
         await sendMail({
           to: [evaluator.email],
+          from: systemSettings?.value,
           subject: emailTemplate?.subject ?? "",
           content: modifiedContent,
         })
@@ -434,6 +443,7 @@ export const generateUpdate = async (evaluation_result_id: number) => {
         )
         await sendMail({
           to: [evaluator.email],
+          from: systemSettings?.value,
           subject: evaluationAdministration.email_subject ?? "",
           content: modifiedContent,
         })
@@ -567,6 +577,8 @@ export const publish = async (id: number) => {
     evaluationAdministration.id
   )
 
+  const systemSettings = await SystemSettingsRepository.getByName(EmailSender.EVALUATION)
+
   for (const evaluationResult of evaluationResults) {
     const evaluee = await UserRepository.getById(evaluationResult.user_id ?? 0)
     if (evaluee !== null) {
@@ -579,6 +591,7 @@ export const publish = async (id: number) => {
       modifiedContent = modifiedContent.replace(/(?:\r\n|\r|\n)/g, "<br>")
       await sendMail({
         to: [evaluee.email],
+        from: systemSettings?.value,
         subject: emailTemplate.subject ?? "",
         content: modifiedContent,
       })
@@ -822,8 +835,11 @@ export const sendReminderByEvaluator = async (
       user_id: evaluator.id,
     }
 
+    const systemSettings = await SystemSettingsRepository.getByName(EmailSender.EVALUATION)
+
     const sgResp = await sendMail({
       to: [evaluator.email],
+      from: systemSettings?.value,
       subject: emailTemplate.subject ?? "",
       content: modifiedContent,
     })
@@ -872,6 +888,8 @@ export const sendReminders = async (id: number) => {
     ["evaluator_id"]
   )
 
+  const systemSettings = await SystemSettingsRepository.getByName(EmailSender.EVALUATION)
+
   for (const evaluation of internalEvaluations) {
     const evaluator = await UserRepository.getById(evaluation.evaluator_id ?? 0)
     if (evaluator !== null) {
@@ -908,6 +926,7 @@ export const sendReminders = async (id: number) => {
 
       await sendMail({
         to: [evaluator.email],
+        from: systemSettings?.value,
         subject: emailTemplate.subject ?? "",
         content: modifiedContent,
       })
@@ -961,6 +980,7 @@ export const sendReminders = async (id: number) => {
 
       await sendMail({
         to: [evaluator.email],
+        from: systemSettings?.value,
         subject: emailTemplate.subject ?? "",
         content: modifiedContent,
       })
