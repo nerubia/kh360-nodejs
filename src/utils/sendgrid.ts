@@ -23,6 +23,7 @@ interface MailProps {
   subject: string
   content: string
   attachments?: Attachment[]
+  custom_args?: Record<string, string>
 }
 
 const getUniqueEmails = (group: string[], others: string[]) => {
@@ -35,7 +36,16 @@ const getUniqueEmails = (group: string[], others: string[]) => {
   return uniqueEmails.filter((email) => !others.includes(email))
 }
 
-export const sendMail = async ({ to, cc, bcc, from, subject, content, attachments }: MailProps) => {
+export const sendMail = async ({
+  to,
+  cc,
+  bcc,
+  from,
+  subject,
+  content,
+  attachments,
+  custom_args,
+}: MailProps) => {
   try {
     const uniqueTo: string[] = getUniqueEmails(to, [])
     let uniqueCc: string[] = []
@@ -56,6 +66,7 @@ export const sendMail = async ({ to, cc, bcc, from, subject, content, attachment
       subject,
       html: content,
       attachments,
+      custom_args,
     }
 
     return await sgMail.send(msg)

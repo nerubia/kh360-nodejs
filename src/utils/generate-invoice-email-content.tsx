@@ -97,7 +97,7 @@ const ViewButton = ({ invoice }: { invoice: EmailInvoiceContent }) => {
     <Section style={sectionStyle}>
       <Button
         style={buttonStyle}
-        href={`${process.env.HOST_NAME}/kh-books/client/invoices/${invoice.token}`}
+        href={`${process.env.KHBOOKS_URL}/invoices/${invoice.token}/download`}
       >
         View Invoice
       </Button>

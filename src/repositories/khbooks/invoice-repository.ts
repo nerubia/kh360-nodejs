@@ -111,6 +111,12 @@ export const getById = async (id: number) => {
           email: true,
           contact_no: true,
           status: true,
+          companies: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       },
       companies: {

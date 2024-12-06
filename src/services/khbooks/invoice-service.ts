@@ -564,6 +564,10 @@ export const sendInvoice = async ({
   subject,
   content,
   shouldAttachInvoice,
+  shouldSendTestEmail,
+  test_to,
+  test_cc,
+  test_bcc,
 }: {
   user?: UserToken
   id: number
@@ -571,6 +575,10 @@ export const sendInvoice = async ({
   subject: string
   content: string
   shouldAttachInvoice: boolean
+  shouldSendTestEmail?: boolean
+  test_to?: string
+  test_cc?: string
+  test_bcc?: string
 }) => {
   const invoice = await InvoiceRepository.getById(id)
 
@@ -584,7 +592,7 @@ export const sendInvoice = async ({
     invoiceNo = await InvoiceRepository.generateInvoiceNumberById(invoice.id)
   }
 
-  if (invoice.invoice_status === InvoiceStatus.DRAFT) {
+  if (invoice.invoice_status === InvoiceStatus.DRAFT && shouldSendTestEmail !== true) {
     await InvoiceRepository.updateInvoiceStatusById(invoice.id, InvoiceStatus.BILLED)
   }
 
@@ -694,9 +702,20 @@ export const sendInvoice = async ({
     (invoiceEmail) => invoiceEmail.email_type === "bcc"
   )?.email_address
 
-  const toEmails = to?.split(",").map((email) => email.trim()) ?? []
-  const ccEmails = cc?.split(",").map((email) => email.trim()) ?? []
-  const bccEmails = bcc?.split(",").map((email) => email.trim()) ?? []
+  const toEmails =
+    test_to?.split(",").map((email) => email.trim()) ??
+    to?.split(",").map((email) => email.trim()) ??
+    []
+
+  const ccEmails =
+    test_cc?.split(",").map((email) => email.trim()) ??
+    cc?.split(",").map((email) => email.trim()) ??
+    []
+
+  const bccEmails =
+    test_bcc?.split(",").map((email) => email.trim()) ??
+    bcc?.split(",").map((email) => email.trim()) ??
+    []
 
   if (toEmails.length === 0) {
     throw new CustomError("Invoice email not found", 400)
@@ -833,7 +852,7 @@ export const sendInvoice = async ({
     })
   }
 
-  if (type === SendInvoiceType.Invoice) {
+  if (type === SendInvoiceType.Invoice && shouldSendTestEmail !== true) {
     const totalSentActions = await InvoiceActivityRepository.countAllByFilters({
       invoice_id: invoice.id,
       action: InvoiceActivityAction.SENT_MAIL,
@@ -848,7 +867,7 @@ export const sendInvoice = async ({
     })
   }
 
-  if (type === SendInvoiceType.Reminder) {
+  if (type === SendInvoiceType.Reminder && shouldSendTestEmail !== true) {
     await InvoiceActivityRepository.create({
       invoice_id: invoice.id,
       action: InvoiceActivityAction.REMINDER_SENT,
@@ -894,6 +913,10 @@ export const sendInvoice = async ({
     subject: modifiedSubject,
     content: emailContent,
     attachments: attachments.filter((attachment) => attachment !== null),
+    custom_args: {
+      invoice_id: invoice.id.toString(),
+      test_email: shouldSendTestEmail === true ? "1" : "0",
+    },
   })
 
   if (sgRes !== undefined && sgRes !== null) {
