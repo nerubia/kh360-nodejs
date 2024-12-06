@@ -39,6 +39,7 @@ import surveyResultRoute from "./routes/admin/survey-result-route"
 import surveyTemplateRoute from "./routes/admin/survey-template-route"
 import surveyTemplateQuestionRoute from "./routes/admin/survey-template-question-route"
 import skillMapSearchRoute from "./routes/admin/skill-map-search-route"
+import systemSettingsRoute from "./routes/admin/system-settings-route"
 
 import testSuiteRoute from "./routes/test-suite/test-suite-route"
 import testApiRoute from "./routes/test-suite/test-api-route"
@@ -48,7 +49,6 @@ import testBatchRoute from "./routes/test-suite/test-batch-route"
 import invoiceRoute from "./routes/khbooks/invoice-route"
 import invoiceActivityRoute from "./routes/khbooks/invoice-activity-route"
 import publicInvoiceRoute from "./routes/khbooks/public-invoice-route"
-import publicInvoiceActivityRoute from "./routes/khbooks/public-invoice-acitivity-route"
 import offeringCategoryRoute from "./routes/khbooks/offering-category-route"
 import offeringRoute from "./routes/khbooks/offering-route"
 import currencyRoute from "./routes/khbooks/currency-route"
@@ -151,6 +151,7 @@ app.use("/admin/survey-administrations", adminMiddleware, surveyAdministrationRo
 app.use("/admin/survey-results", adminMiddleware, surveyResultRoute)
 app.use("/admin/survey-templates", adminMiddleware, surveyTemplateRoute)
 app.use("/admin/survey-template-questions", adminMiddleware, surveyTemplateQuestionRoute)
+app.use("/admin/system-settings", adminMiddleware, systemSettingsRoute)
 app.use("/admin/users", adminMiddleware, usersRoute)
 
 /**
@@ -182,7 +183,6 @@ app.use("/kh-books/payment-networks", adminMiddleware, paymentNetworkRoute)
 app.use("/kh-books/payments", adminMiddleware, paymentRoute)
 
 app.use("/kh-books/public/invoices", publicInvoiceRoute)
-app.use("/kh-books/client/invoices", publicInvoiceActivityRoute)
 
 /**
  * Webhooks

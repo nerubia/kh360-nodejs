@@ -2,7 +2,6 @@ import { type Request, type Response } from "express"
 import { verifySendGridRequest } from "../utils/sendgrid"
 import * as InvoiceActivityService from "../services/khbooks/invoice-activity-service"
 import * as InvoiceService from "../services/khbooks/invoice-service"
-import * as EmailLogRepository from "../repositories/email-log-repository"
 import { InvoiceActivityAction } from "../types/invoice-activity-type"
 import { InvoiceStatus } from "../types/invoice-type"
 import { type SendGridEvent, SendGridEventType } from "../types/sendgrid-type"
@@ -18,14 +17,10 @@ export const handleSendGrid = async (req: Request, res: Response) => {
     const events: SendGridEvent[] = parsedBody
 
     for (const event of events) {
-      const mailId = event.sg_message_id.split(".")[0]
+      if (event.invoice_id === undefined) continue
+      if (event.test_email === "1") continue
 
-      const emailLog = await EmailLogRepository.getByMailId(mailId)
-
-      if (emailLog === null) continue
-
-      const notes = JSON.parse(emailLog.notes ?? "")
-      const invoiceId = notes.invoice_id as number
+      const invoiceId = Number(event.invoice_id)
 
       const invoice = await InvoiceService.getInvoiceById(invoiceId)
 

@@ -16,11 +16,11 @@ router.post(
   uploadMiddleware.array("files"),
   InvoiceController.uploadAttachments
 )
-// router.post("/:id/send", InvoiceController.send)
 router.post("/:id/send-reminder", InvoiceController.sendReminder)
 router.post("/:id/duplicate", InvoiceController.duplicate)
 router.post("/:id/download", InvoiceController.download)
 router.post("/:id/cancel", InvoiceController.cancel)
+router.post("/:id/send-test-email", InvoiceController.sendTestEmail)
 
 router.get("/:id/link", InvoiceController.getLink)
 
