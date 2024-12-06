@@ -7,6 +7,8 @@ export interface SendGridEvent {
   category: string[]
   sg_event_id: string
   sg_message_id: string
+  invoice_id?: string
+  test_email?: string
 }
 
 export enum SendGridEventType {

@@ -652,3 +652,43 @@ export const getNextInvoiceNo = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+/**
+ * Send test email
+ * @param req.params.id - The ID of the invoice to be used
+ * @param req.body.subject - Subject.
+ * @param req.body.content - Content.
+ * @param req.body.should_attach_invoice - Should attach invoice
+ * @param req.body.test_to - To.
+ * @param req.body.test_cc - Cc.
+ * @param req.body.test_bcc - Bcc.
+ */
+export const sendTestEmail = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+
+    const { id } = req.params
+    const { test_to, test_cc, test_bcc, subject, content, should_attach_invoice } = req.body
+
+    await InvoiceService.sendInvoice({
+      user,
+      id: parseInt(id),
+      type: SendInvoiceType.Reminder,
+      subject,
+      content,
+      shouldAttachInvoice: Boolean(Number(should_attach_invoice)),
+      shouldSendTestEmail: true,
+      test_to,
+      test_cc,
+      test_bcc,
+    })
+
+    res.json({ message: "Test email sent" })
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
