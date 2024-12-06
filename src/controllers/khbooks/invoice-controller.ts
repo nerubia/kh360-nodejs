@@ -490,11 +490,14 @@ export const send = async (req: Request, res: Response) => {
   try {
     const user = req.user
     const { id } = req.params
+    const emailTemplate = await EmailTemplateService.getDefaultByTemplateType(
+      "Create Batch Invoice Email Template"
+    )
     await InvoiceService.sendInvoice({
       user,
       id: parseInt(id),
-      subject: "",
-      content: "",
+      subject: emailTemplate.subject ?? "",
+      content: emailTemplate.content ?? "",
       shouldAttachInvoice: false,
     })
     res.json({ message: "Invoice sent" })
@@ -526,6 +529,24 @@ export const sendReminder = async (req: Request, res: Response) => {
       shouldAttachInvoice: false,
     })
     res.json({ message: "Invoice reminder sent" })
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Update status
+ */
+export const updateStatus = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params
+    const { status } = req.body
+    await InvoiceService.updateInvoiceStatusById(Number(id), status)
+    res.json({ message: "Invoice status updated" })
   } catch (error) {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })
