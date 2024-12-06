@@ -16,7 +16,9 @@ router.post(
   uploadMiddleware.array("files"),
   InvoiceController.uploadAttachments
 )
+router.post("/:id/send", InvoiceController.send)
 router.post("/:id/send-reminder", InvoiceController.sendReminder)
+router.post("/:id/status", InvoiceController.updateStatus)
 router.post("/:id/duplicate", InvoiceController.duplicate)
 router.post("/:id/download", InvoiceController.download)
 router.post("/:id/cancel", InvoiceController.cancel)
