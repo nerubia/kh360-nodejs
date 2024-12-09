@@ -37,6 +37,8 @@ import { InvoiceActivityAction } from "../../types/invoice-activity-type"
 import prisma from "../../utils/prisma"
 import { type EmailLog, EmailLogType } from "../../types/email-log-type"
 import { type UserToken } from "../../types/user-token-type"
+import { type SendGridAttachment } from "../../types/sendgrid-type"
+import { generateBatchInvoiceEmailContent } from "../../utils/generate-batch-invoice-email-content"
 
 export const getAllByFilters = async (
   invoice_date: string,
@@ -847,7 +849,7 @@ export const sendInvoice = async ({
   if (shouldAttachInvoice) {
     attachments.unshift({
       content: pdfBuffer.toString("base64"),
-      filename: "invoice.pdf",
+      filename: `${company?.shorthand} - Invoice ${invoice?.invoice_no}.pdf`,
       disposition: "attachment",
     })
   }
@@ -884,10 +886,6 @@ export const sendInvoice = async ({
   const modifiedSubject: string = subject.replace(/{{(.*?)}}/g, (match: string, p1: string) => {
     return replacements[p1] ?? match
   })
-
-  if (type === SendInvoiceType.Reminder) {
-    subject = `Reminder for Invoice ${invoice.invoice_no} from ${company?.name}`
-  }
 
   const emailLogData: EmailLog = {
     content: emailContent,
@@ -1024,6 +1022,220 @@ export const generateToken = async () => {
     uuid = uuidv4()
   } while ((await InvoiceLinkRepository.getByToken(uuid)) != null)
   return uuid
+}
+
+export const sendBatchInvoice = async ({
+  user,
+  clientId,
+  invoiceIds,
+  to,
+  cc,
+  bcc,
+  subject,
+  content,
+  shouldAttachInvoice,
+  shouldSendTestEmail,
+}: {
+  user?: UserToken
+  clientId: number
+  invoiceIds: number[]
+  to: string
+  cc: string
+  bcc: string
+  subject: string
+  content: string
+  shouldAttachInvoice: boolean
+  shouldSendTestEmail?: boolean
+}) => {
+  const client = await ClientRepository.getById(clientId)
+
+  if (client === null) {
+    throw new CustomError("Client not found", 400)
+  }
+
+  const emailTemplate = await EmailTemplateRepository.getByTemplateType(
+    "Create Batch Invoice Email Template"
+  )
+
+  if (emailTemplate === null) {
+    throw new CustomError("Template not found", 400)
+  }
+
+  const invoices = await InvoiceRepository.getByIds(invoiceIds)
+
+  const attachments: SendGridAttachment[] = []
+
+  let defaultCompany = client.companies
+
+  if (defaultCompany === null) {
+    defaultCompany = await CompanyRepository.getById(1)
+  }
+
+  const currentDate = new Date()
+
+  for (const invoice of invoices) {
+    if (invoice.invoice_status === InvoiceStatus.DRAFT && shouldSendTestEmail !== true) {
+      await InvoiceRepository.updateInvoiceStatusById(invoice.id, InvoiceStatus.BILLED)
+    }
+
+    const company = invoice.companies ?? defaultCompany
+
+    const invoiceAmount = invoice.invoice_amount !== null ? invoice.invoice_amount.toNumber() : 0
+    const paymentAmount = invoice.payment_amount !== null ? invoice.payment_amount.toNumber() : 0
+    const open_balance = invoiceAmount - paymentAmount
+
+    const pdfBuffer = await generateInvoice({
+      invoice_no: invoice.invoice_no ?? "",
+      invoice_date: invoice.invoice_date?.toISOString() ?? "",
+      due_date: invoice.due_date?.toISOString() ?? "",
+      invoice_amount: invoice.invoice_amount?.toNumber(),
+      sub_total: invoice.sub_total?.toNumber(),
+      discount_amount: invoice.discount_amount?.toString() ?? "",
+      discount_toggle: invoice.discount_toggle,
+      tax_amount: invoice.tax_amount?.toNumber(),
+      invoice_status:
+        invoice.invoice_status === InvoiceStatus.DRAFT
+          ? InvoiceStatus.BILLED
+          : (invoice.invoice_status ?? ""),
+
+      clients: invoice.clients,
+      companies: company,
+      currencies: invoice.currencies,
+      payment_accounts: {
+        name: null,
+        currency_id: null,
+        payment_network_id: null,
+        account_name: invoice.payment_accounts?.account_name ?? null,
+        account_type: invoice.payment_accounts?.account_type ?? null,
+        account_no: invoice.payment_accounts?.account_no ?? null,
+        bank_name: invoice.payment_accounts?.bank_name ?? null,
+        bank_branch: invoice.payment_accounts?.bank_branch ?? null,
+        bank_code: invoice.payment_accounts?.bank_code ?? null,
+        swift_code: invoice.payment_accounts?.swift_code ?? null,
+        address1: invoice.payment_accounts?.address1 ?? null,
+        address2: invoice.payment_accounts?.address2 ?? null,
+        city: invoice.payment_accounts?.city ?? null,
+        state: invoice.payment_accounts?.state ?? null,
+        description: null,
+        country_id: null,
+        postal_code: invoice.payment_accounts?.postal_code ?? null,
+        is_active: null,
+
+        countries: invoice.payment_accounts?.countries ?? null,
+        payment_networks:
+          invoice.payment_accounts?.payment_networks !== undefined &&
+          invoice.payment_accounts.payment_networks !== null
+            ? {
+                id: invoice.payment_accounts.payment_networks.id,
+                name: invoice.payment_accounts.payment_networks.name,
+              }
+            : null,
+      },
+
+      billing_addresses: invoice.addresses,
+      invoice_details: invoice.invoice_details.map((invoiceDetail) => {
+        return {
+          id: invoiceDetail.id,
+          contract_id: null,
+          contract_billing_id: null,
+          offering_id: null,
+          project_id: null,
+          employee_id: null,
+          period_start: invoiceDetail.period_start?.toISOString() ?? null,
+          period_end: invoiceDetail.period_end?.toISOString() ?? null,
+          details: invoiceDetail.details,
+          quantity: invoiceDetail.quantity?.toNumber() ?? null,
+          uom_id: null,
+          rate: invoiceDetail.rate?.toString() ?? null,
+          sub_total: null,
+          tax: null,
+          total: invoiceDetail.total?.toNumber() ?? null,
+          contracts: (invoiceDetail.contracts as Contract) ?? undefined,
+          projects: invoiceDetail.projects ?? undefined,
+        }
+      }),
+      open_balance,
+
+      tax_types: invoice.tax_types,
+      addresses: invoice.addresses,
+    })
+
+    if (shouldAttachInvoice) {
+      attachments.push({
+        content: pdfBuffer.toString("base64"),
+        filename: `${company?.shorthand} - Invoice ${invoice?.invoice_no}.pdf`,
+        disposition: "attachment",
+      })
+    }
+
+    if (shouldSendTestEmail !== true) {
+      await InvoiceActivityRepository.create({
+        invoice_id: invoice.id,
+        action: InvoiceActivityAction.SENT_BATCH_MAIL,
+        created_at: currentDate,
+        updated_at: currentDate,
+      })
+    }
+  }
+
+  const toEmails = to?.split(",").map((email) => email.trim()) ?? []
+  const ccEmails = cc?.split(",").map((email) => email.trim()) ?? []
+  const bccEmails = bcc?.split(",").map((email) => email.trim()) ?? []
+
+  if (toEmails.length === 0) {
+    throw new CustomError("Invoice email not found", 400)
+  }
+
+  const emailContent = await generateBatchInvoiceEmailContent({
+    client,
+    company: {
+      name: defaultCompany?.name ?? "",
+      city: defaultCompany?.city ?? "",
+      state: defaultCompany?.state ?? "",
+      country: defaultCompany?.country ?? "",
+      zip: defaultCompany?.zip ?? "",
+      street: defaultCompany?.street ?? "",
+      public_url: defaultCompany?.public_url ?? "",
+      shorthand: defaultCompany?.shorthand ?? "",
+    },
+    content,
+  })
+
+  const emailLogData: EmailLog = {
+    content: emailContent,
+    created_at: currentDate,
+    email_address: toEmails.join(","),
+    email_status: EmailLogType.Pending,
+    email_type: emailTemplate.template_type,
+    mail_id: "",
+    notes: "",
+    sent_at: currentDate,
+    subject,
+    updated_at: currentDate,
+    user_id: user?.id,
+  }
+
+  const systemSettings = await SystemSettingsRepository.getByName("khbooks_email_sender")
+
+  const sgRes = await sendMail({
+    to: toEmails,
+    cc: ccEmails,
+    bcc: bccEmails,
+    from: systemSettings?.value,
+    subject,
+    content: emailContent,
+    attachments: attachments.filter((attachment) => attachment !== null),
+  })
+
+  if (sgRes !== undefined && sgRes !== null) {
+    const mailId = sgRes[0].headers["x-message-id"]
+    emailLogData.mail_id = mailId
+    emailLogData.email_status = EmailLogType.Sent
+  } else {
+    emailLogData.email_status = EmailLogType.Error
+  }
+
+  await EmailLogRepository.create(emailLogData)
 }
 
 export const updateOverdueInvoices = async () => {

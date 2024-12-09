@@ -6,6 +6,25 @@ export const getById = async (id: number) => {
     select: {
       id: true,
       name: true,
+      display_name: true,
+      contact_first_name: true,
+      contact_last_name: true,
+      email: true,
+      contact_no: true,
+      status: true,
+      companies: {
+        select: {
+          id: true,
+          name: true,
+          city: true,
+          state: true,
+          country: true,
+          zip: true,
+          street: true,
+          public_url: true,
+          shorthand: true,
+        },
+      },
       company_id: true,
       payment_account_id: true,
       currencies: {

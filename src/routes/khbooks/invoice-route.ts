@@ -26,4 +26,6 @@ router.post("/:id/send-test-email", InvoiceController.sendTestEmail)
 
 router.get("/:id/link", InvoiceController.getLink)
 
+router.post("/send-batch-invoice", InvoiceController.sendBatchInvoice)
+
 export default router

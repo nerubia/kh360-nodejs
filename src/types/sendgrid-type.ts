@@ -15,3 +15,10 @@ export enum SendGridEventType {
   OPEN = "open",
   CLICK = "click",
 }
+
+export interface SendGridAttachment {
+  content: string
+  filename: string
+  type?: string
+  disposition: string
+}
