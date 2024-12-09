@@ -14,4 +14,5 @@ export enum InvoiceActivityAction {
   REMINDER_SENT = "reminder_sent",
   PAID = "paid",
   CANCELLED = "cancelled",
+  SENT_BATCH_MAIL = "sent_batch_mail",
 }
