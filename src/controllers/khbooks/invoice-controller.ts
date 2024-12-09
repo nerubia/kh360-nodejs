@@ -703,7 +703,6 @@ export const sendTestEmail = async (req: Request, res: Response) => {
     await InvoiceService.sendInvoice({
       user,
       id: parseInt(id),
-      type: SendInvoiceType.Reminder,
       to: test_to,
       cc: test_cc,
       bcc: test_bcc,
@@ -714,6 +713,57 @@ export const sendTestEmail = async (req: Request, res: Response) => {
     })
 
     res.json({ message: "Test email sent" })
+  } catch (error) {
+    if (error instanceof CustomError) {
+      return res.status(error.status).json({ message: error.message })
+    }
+    logger.error(error)
+    res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+/**
+ * Send batch invoice
+ * @param req.body.client_id - Client ID.
+ * @param req.body.invoice_ids - Invoice IDs.
+ * @param req.body.to - To.
+ * @param req.body.cc - Cc.
+ * @param req.body.bcc - Bcc.
+ * @param req.body.subject - Subject.
+ * @param req.body.content - Content.
+ * @param req.body.should_attach_invoice - Should attach invoice
+ * @param req.body.should_send_test_email - Should send test email
+ */
+export const sendBatchInvoice = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+
+    const {
+      client_id,
+      invoice_ids,
+      to,
+      cc,
+      bcc,
+      subject,
+      content,
+      should_attach_invoice,
+      should_send_test_email,
+    } = req.body
+
+    await InvoiceService.sendBatchInvoice({
+      user,
+      clientId: Number(client_id),
+      invoiceIds: invoice_ids,
+      to,
+      cc,
+      bcc,
+      subject,
+      content,
+      shouldAttachInvoice: Boolean(Number(should_attach_invoice)),
+      shouldSendTestEmail: Boolean(Number(should_send_test_email)),
+    })
+
+    res.json({ message: "Batch invoice sent" })
   } catch (error) {
     if (error instanceof CustomError) {
       return res.status(error.status).json({ message: error.message })

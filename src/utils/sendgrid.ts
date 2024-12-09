@@ -3,17 +3,11 @@ import CustomError from "./custom-error"
 import logger from "./logger"
 import { type Request } from "express"
 import { EventWebhook, EventWebhookHeader } from "@sendgrid/eventwebhook"
+import { type SendGridAttachment } from "../types/sendgrid-type"
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY as string)
 
 const DEFAULT_FROM_ADDRESS = process.env.SENDGRID_FROM_ADDRESS ?? ""
-
-interface Attachment {
-  content: string
-  filename: string
-  type?: string
-  disposition: string
-}
 
 interface MailProps {
   to: string[]
@@ -22,7 +16,7 @@ interface MailProps {
   from?: string | null
   subject: string
   content: string
-  attachments?: Attachment[]
+  attachments?: SendGridAttachment[]
   custom_args?: Record<string, string>
 }
 

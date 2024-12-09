@@ -442,9 +442,17 @@ export const getByIds = async (ids: number[]) => {
           id: true,
           name: true,
           display_name: true,
+          contact_first_name: true,
+          contact_last_name: true,
           email: true,
           contact_no: true,
           status: true,
+          companies: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       },
       companies: {
@@ -470,8 +478,12 @@ export const getByIds = async (ids: number[]) => {
       invoice_details: {
         select: {
           id: true,
+          sequence_no: true,
           contract_id: true,
           contract_billing_id: true,
+          offering_id: true,
+          project_id: true,
+          employee_id: true,
           period_start: true,
           period_end: true,
           details: true,
@@ -531,6 +543,7 @@ export const getByIds = async (ids: number[]) => {
       },
       payment_accounts: {
         select: {
+          id: true,
           account_name: true,
           account_type: true,
           account_no: true,
@@ -540,12 +553,15 @@ export const getByIds = async (ids: number[]) => {
           swift_code: true,
           address1: true,
           address2: true,
+          city: true,
+          state: true,
           country_id: true,
           postal_code: true,
           payment_networks: true,
           payment_network_id: true,
           countries: {
             select: {
+              id: true,
               name: true,
             },
           },
@@ -554,12 +570,25 @@ export const getByIds = async (ids: number[]) => {
       payment_details: {
         where: {
           payments: {
-            payment_status: PaymentStatus.RECEIVED,
+            payment_status: {
+              in: [PaymentStatus.RECEIVED, PaymentStatus.CANCELLED],
+            },
           },
         },
         select: {
+          id: true,
           payment_amount: true,
-          payments: true,
+          payments: {
+            select: {
+              id: true,
+              payment_date: true,
+              payment_no: true,
+              or_no: true,
+              payment_reference_no: true,
+              payment_amount: true,
+              payment_status: true,
+            },
+          },
         },
       },
       payment_terms: {
