@@ -56,6 +56,13 @@ export const paginateByFilters = async (
         },
         take: 1,
       },
+      invoice_emails: {
+        select: {
+          id: true,
+          email_type: true,
+          email_address: true,
+        },
+      },
       payment_details: {
         where: {
           payments: {
