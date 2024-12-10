@@ -64,16 +64,6 @@ export const getAllByFilters = async (
     deleted_at: null,
   }
 
-  if (user.roles.includes("khv2_cm")) {
-    Object.assign(where, {
-      users: {
-        user_details: {
-          cm_id: user.id,
-        },
-      },
-    })
-  }
-
   if (evaluation_administration_id === undefined || evaluation_administration_id === "all") {
     const evaluationResults = await EvaluationResultRepository.getAllDistinctByFilters(
       {
