@@ -645,6 +645,7 @@ model invoices {
   payment_account_id  Int?
   payment_term_id     Int?
   billing_address_id  Int?
+  attach_invoice      Boolean?              @default(true)
   invoice_status      String?               @default("") @db.VarChar(20)
   payment_status      String?               @default("") @db.VarChar(20)
   remarks             String?               @db.Text

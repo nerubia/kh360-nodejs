@@ -210,6 +210,7 @@ export const store = async (req: Request, res: Response) => {
         payment_term_id: parseInt(payment_term_id as string),
         billing_address_id: address?.id,
         invoice_details: invoiceDetails,
+        attach_invoice: Boolean(Number(should_attach_invoice)),
       },
       send_invoice_action as SendInvoiceAction
     )
@@ -410,6 +411,7 @@ export const update = async (req: Request, res: Response) => {
         payment_term_id: Number(payment_term_id),
         invoice_details: invoiceDetails,
         invoice_attachment_ids: JSON.parse(invoice_attachment_ids),
+        attach_invoice: Boolean(Number(should_attach_invoice)),
       },
       send_invoice_action as SendInvoiceAction
     )
