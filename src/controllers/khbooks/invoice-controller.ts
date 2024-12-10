@@ -491,7 +491,7 @@ export const send = async (req: Request, res: Response) => {
     const user = req.user
     const { id } = req.params
     const emailTemplate = await EmailTemplateService.getDefaultByTemplateType(
-      "Create Batch Invoice Email Template"
+      "Create Invoice Email Template"
     )
     await InvoiceService.sendInvoice({
       user,
@@ -512,22 +512,31 @@ export const send = async (req: Request, res: Response) => {
 
 /**
  * Send reminder
+ * @param req.body.to - To.
+ * @param req.body.cc - Cc.
+ * @param req.body.bcc - Bcc.
+ * @param req.body.subject - Subject.
+ * @param req.body.content - Content.
+ * @param req.body.should_attach_invoice - Should attach invoice
  */
 export const sendReminder = async (req: Request, res: Response) => {
   try {
     const user = req.user
     const { id } = req.params
-    const emailTemplate = await EmailTemplateService.getDefaultByTemplateType(
-      "Invoice Reminder Email Template"
-    )
+    const { to, cc, bcc, subject, content, should_attach_invoice } = req.body
+
     await InvoiceService.sendInvoice({
       user,
       id: parseInt(id),
       type: SendInvoiceType.Reminder,
-      subject: emailTemplate.subject ?? "",
-      content: emailTemplate.content ?? "",
-      shouldAttachInvoice: false,
+      to,
+      cc,
+      bcc,
+      subject,
+      content,
+      shouldAttachInvoice: Boolean(Number(should_attach_invoice)),
     })
+
     res.json({ message: "Invoice reminder sent" })
   } catch (error) {
     if (error instanceof CustomError) {
@@ -695,13 +704,13 @@ export const sendTestEmail = async (req: Request, res: Response) => {
       user,
       id: parseInt(id),
       type: SendInvoiceType.Reminder,
+      to: test_to,
+      cc: test_cc,
+      bcc: test_bcc,
       subject,
       content,
       shouldAttachInvoice: Boolean(Number(should_attach_invoice)),
       shouldSendTestEmail: true,
-      test_to,
-      test_cc,
-      test_bcc,
     })
 
     res.json({ message: "Test email sent" })

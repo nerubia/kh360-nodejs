@@ -561,24 +561,24 @@ export const sendInvoice = async ({
   user,
   id,
   type = SendInvoiceType.Invoice,
+  to,
+  cc,
+  bcc,
   subject,
   content,
   shouldAttachInvoice,
   shouldSendTestEmail,
-  test_to,
-  test_cc,
-  test_bcc,
 }: {
   user?: UserToken
   id: number
   type?: SendInvoiceType
+  to?: string
+  cc?: string
+  bcc?: string
   subject: string
   content: string
   shouldAttachInvoice: boolean
   shouldSendTestEmail?: boolean
-  test_to?: string
-  test_cc?: string
-  test_bcc?: string
 }) => {
   const invoice = await InvoiceRepository.getById(id)
 
@@ -692,29 +692,29 @@ export const sendInvoice = async ({
     addresses: invoice.addresses,
   })
 
-  const to = invoice.invoice_emails.find(
+  const invoiceTo = invoice.invoice_emails.find(
     (invoiceEmail) => invoiceEmail.email_type === "to"
   )?.email_address
-  const cc = invoice.invoice_emails.find(
+  const invoiceCc = invoice.invoice_emails.find(
     (invoiceEmail) => invoiceEmail.email_type === "cc"
   )?.email_address
-  const bcc = invoice.invoice_emails.find(
+  const invoiceBcc = invoice.invoice_emails.find(
     (invoiceEmail) => invoiceEmail.email_type === "bcc"
   )?.email_address
 
   const toEmails =
-    test_to?.split(",").map((email) => email.trim()) ??
     to?.split(",").map((email) => email.trim()) ??
+    invoiceTo?.split(",").map((email) => email.trim()) ??
     []
 
   const ccEmails =
-    test_cc?.split(",").map((email) => email.trim()) ??
     cc?.split(",").map((email) => email.trim()) ??
+    invoiceCc?.split(",").map((email) => email.trim()) ??
     []
 
   const bccEmails =
-    test_bcc?.split(",").map((email) => email.trim()) ??
     bcc?.split(",").map((email) => email.trim()) ??
+    invoiceBcc?.split(",").map((email) => email.trim()) ??
     []
 
   if (toEmails.length === 0) {
