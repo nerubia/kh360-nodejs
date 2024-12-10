@@ -17,7 +17,7 @@ const invoiceDetailSchema = object().shape({
   period_start: string().optional().nullable(),
   period_end: string().optional().nullable(),
   details: string().required("Details is required"),
-  quantity: number().required("Quantity is required"),
+  quantity: number().optional().nullable(),
   uom_id: number().optional().nullable(),
   rate: number().optional().nullable(),
   sub_total: number().optional().nullable(),
@@ -49,7 +49,7 @@ export const createInvoiceSchema = object().shape({
   payment_term_id: number().required("Payment term is required"),
   invoice_details: array().of(invoiceDetailSchema),
   invoice_attachment_ids: array().of(number()).optional(),
-  subject: string().required("Subject is required"),
-  content: string().required("Content is required"),
+  subject: string().optional(),
+  content: string().optional(),
   should_attach_invoice: boolean().required("Should attach invoice is requried"),
 })

@@ -13,6 +13,7 @@ import { getFileUrl } from "../../utils/s3"
 import { type InvoiceAttachment } from "../../types/invoice-attachment-type"
 import { SendInvoiceType } from "../../types/send-invoice-type"
 import { SendInvoiceAction } from "../../types/invoice-type"
+import { type InvoiceDetail } from "../../types/invoice-detail-type"
 
 /**
  * List invoices based on provided filters.
@@ -131,6 +132,19 @@ export const store = async (req: Request, res: Response) => {
       postal_code,
     })
 
+    const parsedInvoiceDetails: InvoiceDetail[] = JSON.parse(invoice_details)
+    const invoiceDetails = parsedInvoiceDetails.map((invoiceDetail) => {
+      const quantity =
+        invoiceDetail.quantity?.toString().length === 0 ? null : invoiceDetail.quantity
+      const rate = invoiceDetail.quantity?.toString().length === 0 ? null : invoiceDetail.rate
+
+      return {
+        ...invoiceDetail,
+        quantity,
+        rate,
+      }
+    })
+
     await createInvoiceSchema.validate({
       client_id,
       to,
@@ -148,7 +162,7 @@ export const store = async (req: Request, res: Response) => {
       tax_toggle,
       payment_account_id,
       payment_term_id,
-      invoice_details: JSON.parse(invoice_details),
+      invoice_details: invoiceDetails,
       subject,
       content,
       should_attach_invoice,
@@ -195,7 +209,7 @@ export const store = async (req: Request, res: Response) => {
         payment_account_id: parseInt(payment_account_id as string),
         payment_term_id: parseInt(payment_term_id as string),
         billing_address_id: address?.id,
-        invoice_details: JSON.parse(invoice_details),
+        invoice_details: invoiceDetails,
       },
       send_invoice_action as SendInvoiceAction
     )
@@ -340,6 +354,19 @@ export const update = async (req: Request, res: Response) => {
       postal_code,
     })
 
+    const parsedInvoiceDetails: InvoiceDetail[] = JSON.parse(invoice_details)
+    const invoiceDetails = parsedInvoiceDetails.map((invoiceDetail) => {
+      const quantity =
+        invoiceDetail.quantity?.toString().length === 0 ? null : invoiceDetail.quantity
+      const rate = invoiceDetail.quantity?.toString().length === 0 ? null : invoiceDetail.rate
+
+      return {
+        ...invoiceDetail,
+        quantity,
+        rate,
+      }
+    })
+
     await createInvoiceSchema.validate({
       client_id,
       to,
@@ -357,7 +384,7 @@ export const update = async (req: Request, res: Response) => {
       tax_toggle,
       payment_account_id,
       payment_term_id,
-      invoice_details: JSON.parse(invoice_details),
+      invoice_details: invoiceDetails,
       invoice_attachment_ids: JSON.parse(invoice_attachment_ids),
       subject,
       content,
@@ -381,7 +408,7 @@ export const update = async (req: Request, res: Response) => {
         tax_toggle: Boolean(Number(tax_toggle)),
         payment_account_id: Number(payment_account_id),
         payment_term_id: Number(payment_term_id),
-        invoice_details: JSON.parse(invoice_details),
+        invoice_details: invoiceDetails,
         invoice_attachment_ids: JSON.parse(invoice_attachment_ids),
       },
       send_invoice_action as SendInvoiceAction
