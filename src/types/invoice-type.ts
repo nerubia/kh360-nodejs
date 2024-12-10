@@ -31,6 +31,7 @@ export interface Invoice {
   currencies?: Currency
   invoice_details: InvoiceDetail[]
   invoice_attachment_ids?: number[]
+  attach_invoice?: boolean
 }
 
 export interface EmailPreviousPaymentContent {

@@ -285,6 +285,7 @@ export const create = async (data: Invoice, sendInvoiceAction: SendInvoiceAction
     payment_account_id: data.payment_account_id,
     payment_term_id: paymentTerm.id,
     billing_address_id: data.billing_address_id,
+    attach_invoice: data.attach_invoice,
     invoice_status:
       sendInvoiceAction === SendInvoiceAction.BILLED ? InvoiceStatus.BILLED : InvoiceStatus.DRAFT,
     payment_status: isPaymentOpen ? InvoicePaymentStatus.OPEN : InvoicePaymentStatus.OVERDUE,
@@ -509,6 +510,7 @@ export const update = async (id: number, data: Invoice, sendInvoiceAction: SendI
     tax_toggle: data.tax_toggle,
     payment_account_id: data.payment_account_id,
     payment_term_id: paymentTerm.id,
+    attach_invoice: data.attach_invoice,
     invoice_status: newInvoiceStatus,
     payment_status: newPaymentStatus,
     updated_at: currentDate,
