@@ -536,6 +536,17 @@ export const updateInvoiceStatusById = async (id: number, status: InvoiceStatus)
     throw new CustomError("Invoice not found", 400)
   }
 
+  if (invoice.invoice_status === InvoiceStatus.DRAFT && status === InvoiceStatus.BILLED) {
+    const currentDate = new Date()
+
+    await InvoiceActivityRepository.create({
+      invoice_id: invoice.id,
+      action: InvoiceActivityAction.BILLED,
+      created_at: currentDate,
+      updated_at: currentDate,
+    })
+  }
+
   return await InvoiceRepository.updateInvoiceStatusById(id, status)
 }
 
