@@ -382,21 +382,6 @@ export const generate = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "All evaluees must be ready." })
     }
 
-    const status =
-      evaluationAdministration.eval_schedule_start_date != null &&
-      evaluationAdministration.eval_schedule_start_date > currentDateTime
-        ? EvaluationAdministrationStatus.Pending
-        : EvaluationAdministrationStatus.Processing
-
-    await prisma.evaluation_administrations.update({
-      where: {
-        id: parseInt(id),
-      },
-      data: {
-        status,
-      },
-    })
-
     const evaluationRatings: Array<{
       evaluation_administration_id: number
       evaluation_id: number
@@ -454,6 +439,21 @@ export const generate = async (req: Request, res: Response) => {
 
     await prisma.evaluation_ratings.createMany({
       data: evaluationRatings,
+    })
+
+    const status =
+      evaluationAdministration.eval_schedule_start_date != null &&
+      evaluationAdministration.eval_schedule_start_date > currentDateTime
+        ? EvaluationAdministrationStatus.Pending
+        : EvaluationAdministrationStatus.Processing
+
+    await prisma.evaluation_administrations.update({
+      where: {
+        id: parseInt(id),
+      },
+      data: {
+        status,
+      },
     })
 
     res.json({ id })
