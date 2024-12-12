@@ -127,7 +127,7 @@ export const getAllByFilters = async (
 ) => {
   const evaluatorRole = role === "all" ? "" : role
 
-  const itemsPerPage = 10
+  const itemsPerPage = 20
   const parsedPage = parseInt(page)
   const currentPage = isNaN(parsedPage) || parsedPage < 0 ? 1 : parsedPage
 
