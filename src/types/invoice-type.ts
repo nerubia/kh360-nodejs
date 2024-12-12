@@ -102,3 +102,11 @@ export enum SendInvoiceAction {
   BILLED = "billed",
   SEND = "send",
 }
+
+export interface BatchInvoice {
+  invoice_date: string
+  invoice_no: string
+  due_date: string
+  invoice_amount: number
+  currencies?: Currency | null
+}

@@ -1212,6 +1212,13 @@ export const sendBatchInvoice = async ({
       shorthand: defaultCompany?.shorthand ?? "",
     },
     content,
+    invoices: invoices.map((invoice) => ({
+      invoice_date: invoice.invoice_date?.toISOString() ?? "",
+      invoice_no: invoice.invoice_no ?? "",
+      due_date: invoice.due_date?.toISOString() ?? "",
+      invoice_amount: invoice.invoice_amount?.toNumber() ?? 0,
+      currencies: invoice.currencies,
+    })),
   })
 
   const emailLogData: EmailLog = {
