@@ -21,6 +21,14 @@ export const getAllByFilters = async (
     skip,
     take,
     where,
+    orderBy: [
+      {
+        last_name: "asc",
+      },
+      {
+        first_name: "asc",
+      },
+    ],
   })
 }
 
