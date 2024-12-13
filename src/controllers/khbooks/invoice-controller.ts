@@ -21,6 +21,7 @@ import { type InvoiceDetail } from "../../types/invoice-detail-type"
  * @param req.query.invoice_no - Filter by invoice no.
  * @param req.query.client_id - Filter by client_id.
  * @param req.query.status - Filter by status.
+ * @param req.query.statuses - Filter by statuses.
  * @param req.query.due_date - Filter by due_date.
  * @param req.query.page - Page number for pagination.
  * @param req.query.has_open_balance - Filter invoices with an open balance.
@@ -32,6 +33,7 @@ export const index = async (req: Request, res: Response) => {
       invoice_no,
       client_id,
       status,
+      statuses,
       due_date,
       page,
       sort_by,
@@ -43,6 +45,7 @@ export const index = async (req: Request, res: Response) => {
       invoice_no as string,
       parseInt(client_id as string),
       status as string,
+      statuses as string,
       due_date as string,
       page as string,
       sort_by as "invoice_no" | "due_date",
