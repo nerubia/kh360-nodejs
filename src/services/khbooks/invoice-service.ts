@@ -45,6 +45,7 @@ export const getAllByFilters = async (
   invoice_no: string,
   client_id: number,
   status: string,
+  statuses: string,
   due_date: string,
   page: string,
   sort_by?: "invoice_no" | "due_date",
@@ -161,6 +162,15 @@ export const getAllByFilters = async (
         },
       })
     }
+  }
+
+  if (statuses !== undefined) {
+    const parsedStatuses = statuses.split(",")
+    Object.assign(where, {
+      invoice_status: {
+        in: parsedStatuses,
+      },
+    })
   }
 
   if (due_date !== undefined) {
