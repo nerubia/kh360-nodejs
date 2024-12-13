@@ -262,7 +262,7 @@ export const InvoicePdf = ({ invoice }: InvoiceProps) => {
                     {invoice?.clients?.contact_first_name} {invoice?.clients?.contact_last_name}
                   </Text>
                 )}
-              <Text style={{ fontSize: 10 }}>{invoice?.clients?.display_name}</Text>
+              <Text style={{ fontSize: 10 }}>{invoice?.clients?.name}</Text>
               <View
                 style={{
                   width: "200px",
