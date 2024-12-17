@@ -179,6 +179,7 @@ export const getById = async (id: number) => {
         select: {
           id: true,
           payment_id: true,
+          sequence_no: true,
           filename: true,
           mime_type: true,
           description: true,

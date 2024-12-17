@@ -23,6 +23,8 @@ export const createPaymentSchema = object().shape({
   payment_details: array().of(paymentDetailSchema),
 
   remarks: string().nullable(),
+
+  payment_attachment_ids: array().of(number()).optional(),
 })
 
 export const paymentAmountSchema = object().shape({
