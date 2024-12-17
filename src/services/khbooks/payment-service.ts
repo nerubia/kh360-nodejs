@@ -30,6 +30,7 @@ import { sendMail } from "../../utils/sendgrid"
 import { generatePayment } from "../../utils/generate-payment"
 import { type EmailLog, EmailLogType } from "../../types/email-log-type"
 import { type UserToken } from "../../types/user-token-type"
+import { getFile } from "../../utils/s3"
 
 export const getAllByFilters = async (
   payment_date: string,
@@ -316,7 +317,7 @@ export const uploadAttachments = async (id: number, files: S3File[]) => {
 
   const currentDate = new Date()
 
-  const invoiceAttachments: Prisma.invoice_attachmentsCreateInput[] = files.map((file) => ({
+  const paymentAttachments: Prisma.payment_attachmentsCreateInput[] = files.map((file) => ({
     payment_id: payment.id,
     filename: file.key,
     mime_type: file.mimetype,
@@ -324,7 +325,7 @@ export const uploadAttachments = async (id: number, files: S3File[]) => {
     updated_at: currentDate,
   }))
 
-  await PaymentAttachmentRepository.createMany(invoiceAttachments)
+  await PaymentAttachmentRepository.createMany(paymentAttachments)
 }
 
 export const update = async (id: number, data: Payment, sendPaymentAction: SendPaymentAction) => {
@@ -620,6 +621,28 @@ export const sendPayment = async ({
 
   const currentDate = new Date()
 
+  const attachments = await Promise.all(
+    payment.payment_attachments.map(async (paymentAttachment) => {
+      const filename = paymentAttachment.filename ?? ""
+      const file = await getFile(filename)
+      if (file === null) {
+        return null
+      }
+      const cleanedFilename = filename.replace(/^\d+-/, "")
+      return {
+        content: file,
+        filename: cleanedFilename,
+        disposition: "attachment",
+      }
+    })
+  )
+
+  attachments.unshift({
+    content: pdfBuffer.toString("base64"),
+    filename: `${company?.shorthand} - Payment ${payment.payment_no}.pdf`,
+    disposition: "attachment",
+  })
+
   const emailLogData: EmailLog = {
     content: emailContent,
     created_at: currentDate,
@@ -643,14 +666,7 @@ export const sendPayment = async ({
     from: systemSettings?.value,
     subject: modifiedSubject,
     content: emailContent,
-    attachments: [
-      {
-        content: pdfBuffer.toString("base64"),
-        filename: `${company?.shorthand} - Payment ${payment.payment_no}`,
-        type: "application/pdf",
-        disposition: "attachment",
-      },
-    ],
+    attachments: attachments.filter((attachment) => attachment !== null),
   })
 
   if (sgRes !== undefined && sgRes !== null) {
