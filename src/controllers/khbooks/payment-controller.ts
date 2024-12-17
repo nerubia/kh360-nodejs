@@ -7,6 +7,8 @@ import { type S3File } from "../../types/s3-file-type"
 import { SendPaymentAction } from "../../types/payment-type"
 import { ValidationError } from "yup"
 import CustomError from "../../utils/custom-error"
+import { type PaymentAttachment } from "../../types/payment-attachment-type"
+import { getFileUrl } from "../../utils/s3"
 
 /**
  * List payments based on provided filters.
@@ -146,8 +148,25 @@ export const show = async (req: Request, res: Response) => {
     const { id } = req.params
     const payment = await PaymentService.show(parseInt(id))
 
+    let paymentAttachments: PaymentAttachment[] = []
+
+    if (payment.payment_attachments !== undefined) {
+      paymentAttachments = await Promise.all(
+        payment.payment_attachments.map(async (paymentAttachment) => {
+          return {
+            ...paymentAttachment,
+            url: await getFileUrl(
+              paymentAttachment.filename ?? "",
+              paymentAttachment.mime_type ?? ""
+            ),
+          }
+        })
+      )
+    }
+
     res.json({
       ...payment,
+      payment_attachments: paymentAttachments,
     })
   } catch (error) {
     logger.error(error)
@@ -171,6 +190,7 @@ export const show = async (req: Request, res: Response) => {
  * @param req.body.payment_details - Payment details.
  * @param req.body.remarks - Remarks.
  * @param req.body.send_payment_action - Send payment action.
+ * @param req.body.payment_attachment_ids - Payment attachment ids.
  */
 export const update = async (req: Request, res: Response) => {
   try {
@@ -193,6 +213,7 @@ export const update = async (req: Request, res: Response) => {
       remarks,
       payment_details,
       send_payment_action,
+      payment_attachment_ids,
     } = req.body
 
     const files = req.files as S3File[]
@@ -211,6 +232,7 @@ export const update = async (req: Request, res: Response) => {
       payment_status,
       payment_details: JSON.parse(payment_details),
       remarks,
+      payment_attachment_ids: JSON.parse(payment_attachment_ids),
     })
 
     const updatedPayment = await PaymentService.update(
@@ -227,6 +249,7 @@ export const update = async (req: Request, res: Response) => {
         payment_amount: parseFloat(payment_amount as string),
         payment_amount_php: parseFloat(payment_amount_php as string),
         payment_status: payment_status as string,
+        payment_attachment_ids: JSON.parse(payment_attachment_ids),
       },
       send_payment_action as SendPaymentAction
     )
