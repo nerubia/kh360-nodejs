@@ -69,6 +69,13 @@ const emailSection = {
   whiteSpace: "pre",
 }
 
+const headerColumn = {
+  width: "25%",
+  backgroundColor: "#eee",
+  fontSize: "12px",
+  padding: "4px 0px",
+}
+
 const column = {
   width: "25%",
   backgroundColor: "#eee",
@@ -79,16 +86,16 @@ const InvoiceDetailsTable = ({ invoices }: { invoices: BatchInvoice[] }) => {
   return (
     <Section>
       <Row>
-        <Column align='center' style={column}>
+        <Column align='center' style={headerColumn}>
           INVOICE DATE
         </Column>
-        <Column align='center' style={column}>
+        <Column align='center' style={headerColumn}>
           INVOICE NO
         </Column>
-        <Column align='center' style={column}>
+        <Column align='right' style={headerColumn}>
           INVOICE AMOUNT
         </Column>
-        <Column align='center' style={column}>
+        <Column align='center' style={headerColumn}>
           DUE DATE
         </Column>
       </Row>
@@ -100,7 +107,7 @@ const InvoiceDetailsTable = ({ invoices }: { invoices: BatchInvoice[] }) => {
           <Column align='center' style={column}>
             {invoice.invoice_no}
           </Column>
-          <Column align='center' style={column}>
+          <Column align='right' style={column}>
             {invoice?.currencies?.code} {formatAmount(Number(invoice.invoice_amount))}
           </Column>
           <Column align='center' style={column}>
