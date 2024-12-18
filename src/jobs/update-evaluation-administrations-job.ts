@@ -54,10 +54,13 @@ export const updateEvaluationAdministrationsJob = async () => {
     }
   }
 
+  const currentDate = new Date()
+  currentDate.setHours(0, 0, 0, 0)
+
   const evaluationAdministrationsToClose =
     await EvaluationAdministrationService.getAllByStatusAndEndDate(
       EvaluationAdministrationStatus.Ongoing,
-      new Date()
+      currentDate
     )
 
   for (const evaluationAdministrationToClose of evaluationAdministrationsToClose) {
