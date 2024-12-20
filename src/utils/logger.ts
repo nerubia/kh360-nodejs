@@ -19,12 +19,24 @@ const logColors = {
 
 const logger = winston.createLogger({
   levels: logLevels,
-  format: winston.format.combine(winston.format.timestamp(), winston.format.simple()),
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.errors({ stack: true }),
+    winston.format.printf((info) => {
+      const message =
+        typeof info.message === "object" ? JSON.stringify(info.message, null, 2) : info.message
+      return `${info.timestamp} [${info.level}]: ${message}`
+    })
+  ),
   transports: [
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.colorize({ all: true }),
-        winston.format.printf((info) => `${info.timestamp} [${info.level}]: ${info.message}`)
+        winston.format.printf((info) => {
+          const message =
+            typeof info.message === "object" ? JSON.stringify(info.message, null, 2) : info.message
+          return `${info.timestamp} [${info.level}]: ${message}`
+        })
       ),
     }),
     new winston.transports.File({
