@@ -947,6 +947,7 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
           skill_rating_id: skillMapRating.id,
           other_skill_name: skillMapRating.other_skill_name,
           previous_rating: previousAnswerOption,
+          previous_submitted_date: previousSkillMapRating?.skill_map_results?.submitted_date,
           rating: answerOption,
         }
       })
@@ -966,6 +967,7 @@ export const getSkillMapRatings = async (skill_map_administration_id: number, us
         return {
           ...skill,
           previous_rating: answerOption,
+          previous_submitted_date: skillMapRating.skill_map_results?.submitted_date,
           rating: answerOption,
         }
       })
