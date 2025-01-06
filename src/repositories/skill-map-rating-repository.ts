@@ -332,6 +332,13 @@ export const getPreviousSkillMapRatings = async (
   skill_map_result_id: number
 ) => {
   return await prisma.skill_map_ratings.findMany({
+    include: {
+      skill_map_results: {
+        select: {
+          submitted_date: true,
+        },
+      },
+    },
     where: {
       skill_map_administration_id,
       skill_map_result_id,
