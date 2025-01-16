@@ -11,9 +11,6 @@ export const getLatestByInvoiceId = async (invoiceId: number) => {
   const invoiceLinks = await prisma.invoice_links.findMany({
     where: {
       invoice_id: invoiceId,
-      expires_at: {
-        gte: new Date(),
-      },
     },
     orderBy: {
       id: "desc",
@@ -32,9 +29,6 @@ export const getLatestByToken = async (token: string) => {
   const invoiceLinks = await prisma.invoice_links.findMany({
     where: {
       token,
-      expires_at: {
-        gte: new Date(),
-      },
     },
     orderBy: {
       id: "desc",
