@@ -29,7 +29,7 @@ import { SendInvoiceType } from "../../types/send-invoice-type"
 import CustomError from "../../utils/custom-error"
 import { generateInvoice } from "../../utils/generate-invoice"
 import { generateInvoiceEmailContent } from "../../utils/generate-invoice-email-content"
-import { getFile, uploadFile } from "../../utils/s3"
+import { getFile, getFileUrl, uploadFile } from "../../utils/s3"
 import { sendMail } from "../../utils/sendgrid"
 import * as InvoiceAttachmentService from "../khbooks/invoice-attachment-service"
 import * as InvoiceDetailService from "../khbooks/invoice-detail-service"
@@ -39,6 +39,7 @@ import { type EmailLog, EmailLogType } from "../../types/email-log-type"
 import { type UserToken } from "../../types/user-token-type"
 import { type SendGridAttachment } from "../../types/sendgrid-type"
 import { generateBatchInvoiceEmailContent } from "../../utils/generate-batch-invoice-email-content"
+import { type InvoiceAttachment } from "../../types/invoice-attachment-type"
 
 export const getAllByFilters = async (
   invoice_date: string,
@@ -225,15 +226,32 @@ export const getAllByFilters = async (
   )
 
   const finalInvoices = await Promise.all(
-    invoices.map((invoice) => {
+    invoices.map(async (invoice) => {
       const invoiceAmount = invoice.invoice_amount?.toNumber() ?? 0
       const paymentAmount = invoice.payment_amount?.toNumber() ?? 0
       const open_balance = invoiceAmount - paymentAmount
+
+      let invoiceAttachments: InvoiceAttachment[] = []
+
+      if (invoice?.invoice_attachments !== undefined) {
+        invoiceAttachments = await Promise.all(
+          invoice.invoice_attachments.map(async (invoiceAttachment) => {
+            return {
+              ...invoiceAttachment,
+              url: await getFileUrl(
+                invoiceAttachment.filename ?? "",
+                invoiceAttachment.mime_type ?? ""
+              ),
+            }
+          })
+        )
+      }
 
       return {
         ...invoice,
         paid_amount: paymentAmount,
         open_balance,
+        invoice_attachments: invoiceAttachments,
       }
     })
   )
@@ -1189,6 +1207,28 @@ export const sendBatchInvoice = async ({
         filename: `${company?.shorthand} - Invoice ${invoice?.invoice_no}.pdf`,
         disposition: "attachment",
       })
+
+      const invoiceAttachments = await Promise.all(
+        invoice.invoice_attachments.map(async (invoiceAttachment) => {
+          const filename = invoiceAttachment.filename ?? ""
+          const file = await getFile(filename)
+          if (file === null) {
+            return null
+          }
+          const cleanedFilename = filename.replace(/^\d+-/, "")
+          return {
+            content: file,
+            filename: cleanedFilename,
+            disposition: "attachment",
+          }
+        })
+      )
+
+      for (const attachment of invoiceAttachments) {
+        if (attachment !== null) {
+          attachments.push(attachment)
+        }
+      }
     }
 
     if (shouldSendTestEmail !== true) {
