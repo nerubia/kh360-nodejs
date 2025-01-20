@@ -51,9 +51,12 @@ export const updateSurveyAdministrationsJob = async () => {
     }
   }
 
+  const currentDate = new Date()
+  currentDate.setHours(0, 0, 0, 0)
+
   const surveyAdministrationsToClose = await SurveyAdministrationService.getAllByStatusAndEndDate(
     SurveyAdministrationStatus.Ongoing,
-    new Date()
+    currentDate
   )
 
   for (const surveyAdministrationToClose of surveyAdministrationsToClose) {
