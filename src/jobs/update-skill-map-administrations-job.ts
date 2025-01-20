@@ -51,10 +51,13 @@ export const updateSkillMapAdministrationsJob = async () => {
     }
   }
 
+  const currentDate = new Date()
+  currentDate.setHours(0, 0, 0, 0)
+
   const skillMapAdministrationsToClose =
     await SkillMapAdministrationService.getAllByStatusAndEndDate(
       SkillMapAdministrationStatus.Ongoing,
-      new Date()
+      currentDate
     )
 
   for (const skillMapAdministrationToClose of skillMapAdministrationsToClose) {
