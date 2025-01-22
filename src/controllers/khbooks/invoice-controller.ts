@@ -782,10 +782,14 @@ export const sendBatchInvoice = async (req: Request, res: Response) => {
       should_send_test_email,
     } = req.body
 
+    const files = req.files as S3File[]
+
+    const parsedInvoiceIds: number[] = JSON.parse(invoice_ids)
+
     await InvoiceService.sendBatchInvoice({
       user,
       clientId: Number(client_id),
-      invoiceIds: invoice_ids,
+      invoiceIds: parsedInvoiceIds,
       to,
       cc,
       bcc,
@@ -793,6 +797,7 @@ export const sendBatchInvoice = async (req: Request, res: Response) => {
       content,
       shouldAttachInvoice: Boolean(Number(should_attach_invoice)),
       shouldSendTestEmail: Boolean(Number(should_send_test_email)),
+      files,
     })
 
     res.json({ message: "Batch invoice sent" })
