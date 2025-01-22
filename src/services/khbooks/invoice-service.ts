@@ -1076,6 +1076,7 @@ export const sendBatchInvoice = async ({
   content,
   shouldAttachInvoice,
   shouldSendTestEmail,
+  files,
 }: {
   user?: UserToken
   clientId: number
@@ -1087,6 +1088,7 @@ export const sendBatchInvoice = async ({
   content: string
   shouldAttachInvoice: boolean
   shouldSendTestEmail?: boolean
+  files: S3File[]
 }) => {
   const client = await ClientRepository.getById(clientId)
 
@@ -1238,6 +1240,30 @@ export const sendBatchInvoice = async ({
         created_at: currentDate,
         updated_at: currentDate,
       })
+    }
+  }
+
+  if (shouldAttachInvoice) {
+    const invoiceAttachments = await Promise.all(
+      files.map(async (newFile) => {
+        const filename = newFile.key ?? ""
+        const file = await getFile(filename)
+        if (file === null) {
+          return null
+        }
+        const cleanedFilename = filename.replace(/^\d+-/, "")
+        return {
+          content: file,
+          filename: cleanedFilename,
+          disposition: "attachment",
+        }
+      })
+    )
+
+    for (const attachment of invoiceAttachments) {
+      if (attachment !== null) {
+        attachments.push(attachment)
+      }
     }
   }
 
