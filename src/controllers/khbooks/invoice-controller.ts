@@ -3,7 +3,6 @@ import logger from "../../utils/logger"
 import * as InvoiceService from "../../services/khbooks/invoice-service"
 import * as AddressService from "../../services/khbooks/address-service"
 import * as CountryService from "../../services/khbooks/country-service"
-import * as EmailTemplateService from "../../services/email-template-service"
 import { ValidationError } from "yup"
 import CustomError from "../../utils/custom-error"
 import { createInvoiceSchema } from "../../utils/validation/invoice-schema"
@@ -522,15 +521,17 @@ export const send = async (req: Request, res: Response) => {
   try {
     const user = req.user
     const { id } = req.params
-    const emailTemplate = await EmailTemplateService.getDefaultByTemplateType(
-      "Create Invoice Email Template"
-    )
+    const { to, cc, bcc, subject, content, should_attach_invoice } = req.body
+
     await InvoiceService.sendInvoice({
       user,
       id: parseInt(id),
-      subject: emailTemplate.subject ?? "",
-      content: emailTemplate.content ?? "",
-      shouldAttachInvoice: false,
+      to,
+      cc,
+      bcc,
+      subject,
+      content,
+      shouldAttachInvoice: Boolean(Number(should_attach_invoice)),
     })
     res.json({ message: "Invoice sent" })
   } catch (error) {
