@@ -23,7 +23,7 @@ import {
   EvaluationAdministrationStatus,
   type EvaluationAdministration,
 } from "../types/evaluation-administration-type"
-import { sendMail } from "../utils/sendgrid"
+import { sendMail } from "../utils/ses"
 import CustomError from "../utils/custom-error"
 import { EvaluationResultStatus } from "../types/evaluation-result-type"
 import { EvaluationStatus } from "../types/evaluation-type"
@@ -844,7 +844,7 @@ export const sendReminderByEvaluator = async (
       content: modifiedContent,
     })
     if (sgResp !== null && sgResp !== undefined) {
-      const mailId = sgResp[0].headers["x-message-id"]
+      const mailId = sgResp.MessageId ?? ""
       emailLogData.mail_id = mailId
       emailLogData.email_status = EmailLogType.Sent
     } else {

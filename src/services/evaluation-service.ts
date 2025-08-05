@@ -16,7 +16,7 @@ import { type UserToken } from "../types/user-token-type"
 import CustomError from "../utils/custom-error"
 import { calculateNorms } from "../utils/calculate-norms"
 import { formatDateRange } from "../utils/format-date"
-import { sendMail } from "../utils/sendgrid"
+import { sendMail } from "../utils/ses"
 import { format, utcToZonedTime } from "date-fns-tz"
 import { EmailSender } from "../types/email-sender"
 

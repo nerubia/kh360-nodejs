@@ -10,7 +10,7 @@ import * as ExternalUserRepository from "../repositories/external-user-repositor
 import * as SystemSettingsRepository from "../repositories/system-settings-repository"
 import { type ExternalUser } from "../types/external-user-type"
 import CustomError from "../utils/custom-error"
-import { sendMail } from "../utils/sendgrid"
+import { sendMail } from "../utils/ses"
 import { EvaluationStatus } from "../types/evaluation-type"
 import { addHours } from "date-fns"
 import { constructNameFilter } from "../utils/format-filter"
