@@ -1,3 +1,4 @@
+// LEGACY: This SendGrid utility is now used as a fallback. Main email sending is handled by Amazon SES (see ses.ts).
 import sgMail from "@sendgrid/mail"
 import CustomError from "./custom-error"
 import logger from "./logger"

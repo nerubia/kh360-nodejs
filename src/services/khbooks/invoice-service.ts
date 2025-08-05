@@ -30,7 +30,7 @@ import CustomError from "../../utils/custom-error"
 import { generateInvoice } from "../../utils/generate-invoice"
 import { generateInvoiceEmailContent } from "../../utils/generate-invoice-email-content"
 import { getFile, getFileUrl, uploadFile } from "../../utils/s3"
-import { sendMail } from "../../utils/sendgrid"
+import { sendMail } from "../../utils/ses"
 import * as InvoiceAttachmentService from "../khbooks/invoice-attachment-service"
 import * as InvoiceDetailService from "../khbooks/invoice-detail-service"
 import { InvoiceActivityAction } from "../../types/invoice-activity-type"
@@ -959,7 +959,7 @@ export const sendInvoice = async ({
   })
 
   if (sgRes !== undefined && sgRes !== null) {
-    const mailId = sgRes[0].headers["x-message-id"]
+    const mailId = sgRes.MessageId ?? ""
     emailLogData.mail_id = mailId
     emailLogData.email_status = EmailLogType.Sent
   } else {
@@ -1324,7 +1324,7 @@ export const sendBatchInvoice = async ({
   })
 
   if (sgRes !== undefined && sgRes !== null) {
-    const mailId = sgRes[0].headers["x-message-id"]
+    const mailId = sgRes.MessageId ?? ""
     emailLogData.mail_id = mailId
     emailLogData.email_status = EmailLogType.Sent
   } else {
