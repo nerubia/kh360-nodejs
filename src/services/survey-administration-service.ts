@@ -3,7 +3,7 @@ import * as SurveyResultRepository from "../repositories/survey-result-repositor
 import * as SurveyAnswerRepository from "../repositories/survey-answer-repository"
 import * as UserRepository from "../repositories/user-repository"
 import * as SystemSettingsRepository from "../repositories/system-settings-repository"
-import { sendMail } from "../utils/sendgrid"
+import { sendMail } from "../utils/ses"
 import {
   SurveyAdministrationStatus,
   type SurveyAdministration,
