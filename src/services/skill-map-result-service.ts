@@ -10,7 +10,7 @@ import * as SystemSettingsRepository from "../repositories/system-settings-repos
 import CustomError from "../utils/custom-error"
 import { type UserToken } from "../types/user-token-type"
 import { SkillMapAdministrationStatus } from "../types/skill-map-administration-type"
-import { sendMail } from "../utils/sendgrid"
+import { sendMail } from "../utils/ses"
 import { format } from "date-fns"
 import { EmailLogType, type EmailLog } from "../types/email-log-type"
 import * as SkillRepository from "../repositories/skill-repository"
@@ -297,7 +297,7 @@ export const sendReminderByRespondent = async (
       content: modifiedContent,
     })
     if (sgResp !== null && sgResp !== undefined) {
-      const mailId = sgResp[0].headers["x-message-id"]
+      const mailId = sgResp.MessageId ?? ""
       emailLogData.mail_id = mailId
       emailLogData.email_status = EmailLogType.Sent
     } else {

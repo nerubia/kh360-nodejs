@@ -1,6 +1,6 @@
 import { type Request, type Response } from "express"
 import { EvaluationStatus } from "../../types/evaluation-type"
-import { sendMail } from "../../utils/sendgrid"
+import { sendMail } from "../../utils/ses"
 import { ValidationError } from "yup"
 import { submitEvaluationSchema } from "../../utils/validation/evaluations/submit-evaluation-schema"
 import { createExternalUserSchema } from "../../utils/validation/external-user-schema"

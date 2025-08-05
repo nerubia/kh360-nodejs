@@ -6,7 +6,7 @@ import * as SkillMapRatingRepository from "../repositories/skill-map-rating-repo
 import * as SkillRepository from "../repositories/skill-repository"
 import * as UserRepository from "../repositories/user-repository"
 import * as SystemSettingsRepository from "../repositories/system-settings-repository"
-import { sendMail } from "../utils/sendgrid"
+import { sendMail } from "../utils/ses"
 import {
   type SkillMapAdministration,
   SkillMapAdministrationStatus,

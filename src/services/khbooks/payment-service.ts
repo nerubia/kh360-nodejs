@@ -26,7 +26,7 @@ import { type S3File } from "../../types/s3-file-type"
 import { InvoicePaymentStatus, InvoiceStatus } from "../../types/invoice-type"
 import { InvoiceActivityAction } from "../../types/invoice-activity-type"
 import { generatePaymentEmailContent } from "../../utils/generate-payment-email-content"
-import { sendMail } from "../../utils/sendgrid"
+import { sendMail } from "../../utils/ses"
 import { generatePayment } from "../../utils/generate-payment"
 import { type EmailLog, EmailLogType } from "../../types/email-log-type"
 import { type UserToken } from "../../types/user-token-type"
@@ -670,7 +670,7 @@ export const sendPayment = async ({
   })
 
   if (sgRes !== undefined && sgRes !== null) {
-    const mailId = sgRes[0].headers["x-message-id"]
+    const mailId = sgRes.MessageId ?? ""
     emailLogData.mail_id = mailId
     emailLogData.email_status = EmailLogType.Sent
   } else {
