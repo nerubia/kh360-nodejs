@@ -73,7 +73,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
               export NVM_DIR=~/.nvm
               source ~/.nvm/nvm.sh &&
-              cd /home/jlerit/kh360-nodejs &&
+              cd /home/nino/kh360-nodejs &&
               pm2 kill &&
               git pull &&
               npm install &&
