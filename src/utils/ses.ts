@@ -3,10 +3,11 @@ import {
   SendEmailCommand,
   type SendEmailRequest,
   SendRawEmailCommand,
+  type SendRawEmailRequest,
 } from "@aws-sdk/client-ses"
 import CustomError from "./custom-error"
 import logger from "./logger"
-import { type SendGridAttachment } from "../types/sendgrid-type"
+import type { SendGridAttachment } from "../types/sendgrid-type"
 
 const ses = new SESClient({
   region: process.env.AWS_REGION,
@@ -34,40 +35,7 @@ const getUniqueEmails = (group: string[], others: string[]) => {
   return uniqueEmails.filter((email) => !others.includes(email))
 }
 
-export const sendMail = async ({ to, cc, bcc, from, subject, content }: MailProps) => {
-  try {
-    const uniqueTo: string[] = getUniqueEmails(to, [])
-    let uniqueCc: string[] = []
-    let uniqueBcc: string[] = []
-    if (cc !== undefined) {
-      uniqueCc = getUniqueEmails(cc, uniqueTo)
-    }
-    if (bcc !== undefined) {
-      uniqueBcc = getUniqueEmails(bcc, [...uniqueTo, ...uniqueCc])
-    }
-    const params: SendEmailRequest = {
-      Destination: {
-        ToAddresses: uniqueTo,
-        CcAddresses: uniqueCc.length > 0 ? uniqueCc : undefined,
-        BccAddresses: uniqueBcc.length > 0 ? uniqueBcc : undefined,
-      },
-      Message: {
-        Subject: { Data: subject },
-        Body: { Html: { Data: content } },
-      },
-      Source: from ?? DEFAULT_FROM_ADDRESS,
-    }
-    const command = new SendEmailCommand(params)
-    return await ses.send(command)
-  } catch (error) {
-    logger.error(error)
-    throw new CustomError("Unable to send email via SES", 400)
-  }
-}
-
-export const sendMultipleMail = sendMail // SES handles multiple recipients in the same way
-
-export const sendMailWithAttachment = async ({
+export const sendMail = async ({
   to,
   cc,
   bcc,
@@ -75,10 +43,14 @@ export const sendMailWithAttachment = async ({
   subject,
   content,
   attachments,
+  custom_args,
 }: MailProps) => {
+  // eslint-disable-next-line no-console
+  console.log("sendMail:", { to, cc, bcc, from, subject, content, attachments, custom_args })
+
   // If no attachments, fallback to normal sendMail
   if (attachments === undefined || attachments.length === 0) {
-    return await sendMail({ to, cc, bcc, from, subject, content })
+    return await sendMailWithoutAttachment({ to, cc, bcc, from, subject, content })
   }
 
   // Build MIME message
@@ -109,10 +81,12 @@ export const sendMailWithAttachment = async ({
   }
   mime += `--${boundary}--${eol}`
 
-  const params = {
+  const params: SendRawEmailRequest = {
     RawMessage: { Data: Buffer.from(mime) },
     Source: fromAddress,
-    Destinations: [...to, ...(cc ?? []), ...(bcc ?? [])],
+    Destinations: [...to, ...(cc ?? []), ...(bcc ?? [])].filter(
+      (email) => typeof email === "string" && email.trim() !== ""
+    ),
   }
 
   try {
@@ -121,5 +95,43 @@ export const sendMailWithAttachment = async ({
   } catch (error) {
     logger.error(error)
     throw new CustomError("Unable to send email with attachment via SES", 400)
+  }
+}
+
+export const sendMailWithoutAttachment = async ({
+  to,
+  cc,
+  bcc,
+  from,
+  subject,
+  content,
+}: MailProps) => {
+  try {
+    const uniqueTo: string[] = getUniqueEmails(to, [])
+    let uniqueCc: string[] = []
+    let uniqueBcc: string[] = []
+    if (cc !== undefined) {
+      uniqueCc = getUniqueEmails(cc, uniqueTo)
+    }
+    if (bcc !== undefined) {
+      uniqueBcc = getUniqueEmails(bcc, [...uniqueTo, ...uniqueCc])
+    }
+    const params: SendEmailRequest = {
+      Destination: {
+        ToAddresses: uniqueTo,
+        CcAddresses: uniqueCc.length > 0 ? uniqueCc : undefined,
+        BccAddresses: uniqueBcc.length > 0 ? uniqueBcc : undefined,
+      },
+      Message: {
+        Subject: { Data: subject },
+        Body: { Html: { Data: content } },
+      },
+      Source: from ?? DEFAULT_FROM_ADDRESS,
+    }
+    const command = new SendEmailCommand(params)
+    return await ses.send(command)
+  } catch (error) {
+    logger.error(error)
+    throw new CustomError("Unable to send email via SES", 400)
   }
 }
