@@ -38,7 +38,7 @@ const deleteFilesFromS3 = async (fileNames: string[]) => {
 const uploadFilesToS3 = async (files: FileObject[]) => {
   try {
     files.forEach(async (file) => {
-      const result = parse(file.buffer)
+      const result = parse(file.buffer.buffer as ArrayBuffer)
 
       const command = new PutObjectCommand({
         Bucket: process.env.AWS_S3_BUCKET_NAME,
