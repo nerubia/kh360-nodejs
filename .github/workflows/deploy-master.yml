@@ -73,7 +73,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
               export NVM_DIR=~/.nvm
               source ~/.nvm/nvm.sh &&
-              nvm use v16.20.2 &&
+              nvm use v17.0.0 &&
               cd /home/ubuntu/kh360-nodejs &&
               pm2 kill &&
               git pull &&
